@@ -1,0 +1,18 @@
+# ignore files for prettier
+
+LICENSE.txt
+
+node_modules/
+
+*.md
+*.mdx
+
+*.min.js
+*.min.css
+*.js.map
+*.css.map
+
+dist/
+lib/
+build/
+# docs/

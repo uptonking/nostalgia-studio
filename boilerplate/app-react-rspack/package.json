@@ -1,0 +1,27 @@
+{
+  "name": "@datalking/app-react-rspack",
+  "version": "1.0.0",
+  "private": true,
+  "description": "simple react app built with rspack.",
+  "type": "module",
+  "main": "dist/index",
+  "scripts": {
+    "build": "npm run build:prod",
+    "build2": "npm run build:types && npm run build:js",
+    "build:dev": "cross-env REACT_APP_ENV=react rspack -c ./webpacker/rspack.config.demo.mjs",
+    "build:prod": "cross-env REACT_APP_ENV=react NODE_ENV=production rspack -c ./webpacker/rspack.config.prod.mjs",
+    "build:prod1": "cross-env REACT_APP_ENV=react NODE_ENV=production rspack -c ./webpacker/rspack.config.prod.mjs",
+    "demo": "cross-env REACT_APP_ENV=reacthot rspack serve -c ./webpacker/rspack.config.demo.mjs",
+    "demo-esm": "cross-env REACT_APP_ENV=reacthot rspack serve -c ./webpacker/rspack.config.demo.esm.mjs",
+    "dev": "npm run demo",
+    "start": "npm run demo",
+    "clean": "rimraf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@datalking/components": "*"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  }
+}

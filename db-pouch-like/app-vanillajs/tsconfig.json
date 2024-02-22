@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base",
+  "compilerOptions": {
+    "outDir": "dist",
+    "module": "esnext",
+    "types": ["node"],
+    "noImplicitAny": false
+  },
+  "include": ["./src/"]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "@datalking/app-nodejs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "simple nodejs app.",
+  "type": "module",
+  "scripts": {
+    "build": "npm run clean && npm run compile",
+    "build:prod": "npm run clean && tsc -p tsconfig.json -w",
+    "build:dev": "npm run clean && tsc -p tsconfig.json -w",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "dev": "npm run build:dev",
+    "dev1": "cross-env NODE_OPTIONS=\"--experimental-loader=ts-node/esm/transpile-only --experimental-specifier-resolution=node  \" node --watch ./src/index.ts",
+    "dev2": "cross-env NODE_OPTIONS=\"--experimental-loader=ts-node/esm/transpile-only --experimental-specifier-resolution=node  \" node --watch ./dist/index.js",
+    "dev3": "cross-env NODE_OPTIONS=\" \" node --watch ./dist/index.js",
+    "start": "npm run dev",
+    "test": "npm run test"
+  },
+  "dependencies": {
+    "@datalking/foo": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

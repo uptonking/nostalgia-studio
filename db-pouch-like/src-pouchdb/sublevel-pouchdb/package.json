@@ -1,0 +1,41 @@
+{
+  "name": "sublevel-pouchdb",
+  "version": "8.0.1111",
+  "description": "Fork of level-sublevel with ony the subset of the API that PouchDB uses",
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pouchdb/pouchdb.git",
+    "directory": "packages/node_modules/sublevel-pouchdb"
+  },
+  "license": "Apache-2.0",
+  "author": "Dale Harvey <dale@arandomurl.com>",
+  "contributors": [
+    {
+      "name": "Dominic Tarr",
+      "email": "dominic.tarr@gmail.com"
+    }
+  ],
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "scripts": {
+    "build": "npm run build:dev",
+    "build:dev": "npm run clean && npm run build:dev-esm",
+    "build:dev-esm": "rspack build -c ./webpacker/rspack.config.dev.mjs",
+    "build:prod": "npm run clean && rspack build -c ./webpacker/rspack.config.prod.mjs",
+    "build:tsc": "npm run clean && tsc -p tsconfig.json -w",
+    "clean": "rimraf lib *.tsbuildinfo",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "level-codec": "^9.0.2",
+    "ltgt": "^2.2.1",
+    "pull-stream": "^3.7.0",
+    "readable-stream": "1.1.14"
+  },
+  "devDependencies": {
+    "@types/level-codec": "^9.0.4",
+    "@types/node": "^20.11.19"
+  }
+}

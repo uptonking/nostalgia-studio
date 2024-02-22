@@ -1,0 +1,50 @@
+{
+  "name": "pouchdb-adapter-leveldb-core",
+  "version": "8.0.1111",
+  "description": "Core PouchDB adapter code for LevelDOWN-based adapters",
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pouchdb/pouchdb.git",
+    "directory": "packages/node_modules/pouchdb-adapter-leveldb-core"
+  },
+  "license": "Apache-2.0",
+  "author": "Dale Harvey <dale@arandomurl.com>",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "browser": {
+    "./lib/index.js": "./lib/index-browser.js",
+    "./src/createEmptyBlobOrBuffer.js": "./src/createEmptyBlobOrBuffer-browser.js",
+    "./src/prepareAttachmentForStorage.js": "./src/prepareAttachmentForStorage-browser.js",
+    "./src/readAsBlobOrBuffer.js": "./src/readAsBlobOrBuffer-browser.js"
+  },
+  "scripts": {
+    "build": "npm run build:dev",
+    "build:dev": "npm run clean && npm run build:dev-web && npm run build:dev-node",
+    "build:dev-node": "rspack build -c ./webpacker/rspack.config.dev.node.mjs",
+    "build:dev-web": "rspack build -c ./webpacker/rspack.config.dev.web.mjs",
+    "build:prod": "npm run clean && rspack build -c ./webpacker/rspack.config.prod.mjs",
+    "build:tsc": "npm run clean && tsc -p tsconfig.json",
+    "clean": "rimraf lib dist *.tsbuildinfo",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "double-ended-queue": "^2.1.0-0",
+    "levelup": "^4.4.0",
+    "pouchdb-adapter-utils": "8.0.1111",
+    "pouchdb-binary-utils": "8.0.1111",
+    "pouchdb-core": "8.0.1111",
+    "pouchdb-errors": "8.0.1111",
+    "pouchdb-json": "8.0.1111",
+    "pouchdb-md5": "8.0.1111",
+    "pouchdb-merge": "8.0.1111",
+    "pouchdb-utils": "8.0.1111",
+    "sublevel-pouchdb": "8.0.1111",
+    "through2": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "@rspack/plugin-node-polyfill": "^0.5.0"
+  }
+}

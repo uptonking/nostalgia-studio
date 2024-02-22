@@ -1,0 +1,19 @@
+{
+  "name": "pouchdb-types",
+  "version": "8.0.1111",
+  "description": "Common typings for the pouchdb ecosystem.",
+  "keywords": [],
+  "license": "Apache-2.0",
+  "author": "jinyaoo <jinyaoo86@outlook.com>",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "scripts": {
+    "build": "npm run build:dev",
+    "build:dev": "",
+    "clean": "rimraf lib *.tsbuildinfo",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "pouchdb-browser",
+  "version": "8.0.1111",
+  "description": "PouchDB, the browser-only edition.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pouchdb/pouchdb.git",
+    "directory": "packages/node_modules/pouchdb-browser"
+  },
+  "license": "Apache-2.0",
+  "author": "Dale Harvey <dale@arandomurl.com>",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "scripts": {
+    "build": "npm run build:dev",
+    "build:dev": "npm run clean && npm run build:dev-web",
+    "build:dev-web": "rspack build -c ./webpacker/rspack.config.dev.web.mjs",
+    "build:prod": "npm run clean && rspack build -c ./webpacker/rspack.config.prod.mjs",
+    "build:tsc": "tsc -p tsconfig.json",
+    "clean": "rimraf lib dist *.tsbuildinfo",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "pouchdb-adapter-http": "8.0.1111",
+    "pouchdb-adapter-idb": "8.0.1111",
+    "pouchdb-core": "8.0.1111",
+    "pouchdb-mapreduce": "8.0.1111",
+    "pouchdb-replication": "8.0.1111"
+  }
+}

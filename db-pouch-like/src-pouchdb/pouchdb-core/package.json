@@ -1,0 +1,36 @@
+{
+  "name": "pouchdb-core",
+  "version": "8.0.1111",
+  "description": "The core of PouchDB as a standalone package.",
+  "keywords": [],
+  "license": "Apache-2.0",
+  "author": "Dale Harvey <dale@arandomurl.com>",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "browser": {
+    "./lib/index.js": "./lib/index-browser.js"
+  },
+  "scripts": {
+    "build": "npm run build:dev",
+    "build:dev": "npm run clean && npm run build:dev-web && npm run build:dev-node",
+    "build:dev-node": "rspack build -c ./webpacker/rspack.config.dev.node.mjs",
+    "build:dev-web": "rspack build -c ./webpacker/rspack.config.dev.web.mjs",
+    "build:prod": "npm run clean && rspack build -c ./webpacker/rspack.config.prod.mjs",
+    "build:tsc": "npm run clean && tsc -p tsconfig.json -w",
+    "clean": "rimraf lib *.tsbuildinfo",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "pouchdb-changes-filter": "8.0.1111",
+    "pouchdb-errors": "8.0.1111",
+    "pouchdb-fetch": "8.0.1111",
+    "pouchdb-merge": "8.0.1111",
+    "pouchdb-types": "8.0.1111",
+    "pouchdb-utils": "8.0.1111",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19"
+  }
+}

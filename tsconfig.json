@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "./dist"
+    // "noEmit": true
+  },
+  "exclude": ["./**/*.test.ts", "./**/*.test.tsx"],
+  "references": [
+    { "path": "./packages/foo" },
+    { "path": "./packages/components" }
+    // { "path": "./apps/app-nodejs" },
+  ]
+}

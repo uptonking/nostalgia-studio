@@ -1,0 +1,35 @@
+{
+  "name": "pouchdb-fetch",
+  "version": "8.0.1111",
+  "description": "PouchDB's fetch() method.",
+  "main": "./lib/index.js",
+  "keywords": [],
+  "author": "Dale Harvey <dale@arandomurl.com>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pouchdb/pouchdb.git",
+    "directory": "packages/node_modules/pouchdb-fetch"
+  },
+  "module": "./lib/index.js",
+  "browser": {
+    "./lib/index.js": "./lib/index-browser.js",
+    "./src/fetch.js": "./src/fetch-browser.js"
+  },
+  "scripts": {
+    "build": "npm run build:dev",
+    "build:dev": "npm run clean && npm run build:dev-web && npm run build:dev-node",
+    "build:dev-node": "rspack build -c ./webpacker/rspack.config.dev.node.mjs",
+    "build:dev-web": "rspack build -c ./webpacker/rspack.config.dev.web.mjs",
+    "build:prod": "npm run clean && rspack build -c ./webpacker/rspack.config.prod.mjs",
+    "build:tsc": "npm run clean && tsc -p tsconfig.json -w",
+    "clean": "rimraf lib *.tsbuildinfo",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.9",
+    "fetch-cookie": "^2.1.0",
+    "abort-controller": "^3.0.0"
+  }
+}

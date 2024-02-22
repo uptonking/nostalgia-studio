@@ -1,0 +1,19 @@
+{
+  "name": "@examples-hub/pouch-app-vanillajs",
+  "version": "0.0.1111",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "scripts": {
+    "build": "rimraf dist && npm run build:dev",
+    "build:dev": "rspack build -c webpacker/rspack.config.demo.mjs",
+    "build:prod": "cross-env NODE_ENV=production webpack --config webpack/webpack.config.prod.js",
+    "build:types": "",
+    "demo": "rspack serve -c webpacker/rspack.config.demo.mjs",
+    "start": "npm run demo",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:log": "node index.js --name nested-a"
+  },
+  "dependencies": {
+    "pouchdb-browser": "8.0.1111"
+  }
+}

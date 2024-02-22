@@ -1,0 +1,198 @@
+import importSync from 'import-sync';
+import PouchDBNode from 'pouchdb';
+
+const commonUtils = {};
+
+commonUtils.isBrowser = function () {
+  return !commonUtils.isNode();
+};
+
+commonUtils.isNode = function () {
+  return typeof process !== 'undefined' && !process.browser;
+};
+
+commonUtils.params = function () {
+  if (commonUtils.isNode()) {
+    return process.env;
+  }
+  const usp = new URLSearchParams(window.location.search);
+  const params = {};
+  for (const [k, v] of usp) {
+    // This preserves previous behaviour: an empty value is re-mapped to
+    // `true`.  This is surprising, and differs from the handling of env vars in
+    // node (see above).
+    params[k] = v || true;
+  }
+  return params;
+};
+
+commonUtils.adapters = function () {
+  const adapters = commonUtils.isNode()
+    ? process.env.ADAPTERS
+    : commonUtils.params().adapters;
+  return adapters ? adapters.split(',') : [];
+};
+
+commonUtils.viewAdapters = function () {
+  const viewAdapters = commonUtils.isNode()
+    ? process.env.VIEW_ADAPTERS
+    : commonUtils.params().viewAdapters;
+  return viewAdapters ? viewAdapters.split(',') : [];
+};
+
+commonUtils.plugins = function () {
+  const plugins = commonUtils.isNode()
+    ? process.env.PLUGINS
+    : commonUtils.params().plugins;
+  return plugins ? plugins.split(',') : [];
+};
+
+const PLUGIN_ADAPTERS = ['indexeddb', 'localstorage', 'memory', 'node-websql'];
+
+commonUtils.loadPouchDB = function (opts) {
+  opts = opts || {};
+
+  const params = commonUtils.params();
+  const adapters = commonUtils.adapters().concat(opts.adapters || []);
+  const viewAdapters = commonUtils
+    .viewAdapters()
+    .concat(opts.viewAdapters || []);
+  const plugins = commonUtils.plugins().concat(opts.plugins || []);
+
+  const allAdapters = [...adapters, ...viewAdapters];
+  for (let adapter of allAdapters) {
+    if (adapter === 'websql') {
+      adapter = 'node-websql';
+    }
+    if (PLUGIN_ADAPTERS.includes(adapter)) {
+      plugins.push(`pouchdb-adapter-${adapter}`);
+    }
+  }
+
+  function configurePouch(PouchDB) {
+    if (adapters.length > 0) {
+      PouchDB.preferredAdapters = adapters;
+    }
+    if ('AUTO_COMPACTION' in params || 'autoCompaction' in params) {
+      PouchDB = PouchDB.defaults({ auto_compaction: true });
+    }
+    if (commonUtils.isNode()) {
+      PouchDB = PouchDB.defaults({ prefix: './tmp/_pouch_' });
+    }
+    return PouchDB;
+  }
+
+  if (commonUtils.isNode()) {
+    return configurePouch(commonUtils.loadPouchDBForNode(plugins));
+  } else {
+    return commonUtils.loadPouchDBForBrowser(plugins).then(configurePouch);
+  }
+};
+
+commonUtils.loadPouchDBForNode = function (plugins) {
+  const params = commonUtils.params();
+  // const scriptPath = '../packages/node_modules';
+  const scriptPath = '../';
+
+  const pouchdbSrc = params.COVERAGE
+    ? `${scriptPath}/pouchdb-for-coverage`
+    : `${scriptPath}/pouchdb`;
+
+  console.log(';; loadPouchNode ', pouchdbSrc, plugins.length, plugins);
+  // const PouchDB = require(pouchdbSrc);
+  const PouchDB = PouchDBNode;
+
+  if (!process.env.COVERAGE) {
+    for (const plugin of plugins) {
+      // PouchDB.plugin(require(`${scriptPath}/${plugin}`));
+      const plugInstance = importSync(`${scriptPath}/${plugin}`);
+      console.log(';; plugInstance ', plugInstance);
+      PouchDB.plugin(plugInstance);
+    }
+  }
+
+  return PouchDB;
+};
+
+commonUtils.pouchdbSrc = function () {
+  const scriptPath = '../../packages/node_modules/pouchdb/dist';
+  const params = commonUtils.params();
+  return params.src || `${scriptPath}/pouchdb.js`;
+};
+
+commonUtils.loadPouchDBForBrowser = function (plugins) {
+  const scriptPath = '../../packages/node_modules/pouchdb/dist';
+
+  plugins = plugins.map((plugin) => {
+    plugin = plugin.replace(/^pouchdb-(adapter-)?/, '');
+    return `${scriptPath}/pouchdb.${plugin}.js`;
+  });
+
+  const scripts = [commonUtils.pouchdbSrc()].concat(plugins);
+
+  console.log(';; loadPouchBrowser ', scripts);
+
+  const loadScripts = scripts.reduce((prevScriptLoaded, script) => {
+    return prevScriptLoaded.then(() => commonUtils.asyncLoadScript(script));
+  }, Promise.resolve());
+
+  return loadScripts.then(() => window.PouchDB);
+};
+
+// Thanks to http://engineeredweb.com/blog/simple-async-javascript-loader/
+commonUtils.asyncLoadScript = function (url) {
+  return new Promise(function (resolve, reject) {
+    // Create a new script and setup the basics.
+    const script = document.createElement('script');
+
+    script.async = true;
+    script.src = url;
+
+    script.onerror = reject;
+    script.onload = function () {
+      resolve();
+
+      // Clear it out to avoid getting called more than once or any
+      // memory leaks.
+      script.onload = script.onreadystatechange = undefined;
+    };
+    script.onreadystatechange = function () {
+      if ('loaded' === script.readyState || 'complete' === script.readyState) {
+        script.onload();
+      }
+    };
+
+    document.body.append(script);
+  });
+};
+
+commonUtils.couchHost = function () {
+  if (typeof window !== 'undefined' && window.COUCH_HOST) {
+    return window.COUCH_HOST;
+  }
+
+  if (typeof process !== 'undefined' && process.env.COUCH_HOST) {
+    return process.env.COUCH_HOST;
+  }
+
+  if ('couchHost' in commonUtils.params()) {
+    // Remove trailing slash from url if the user defines one
+    return commonUtils.params().couchHost.replace(/\/$/, '');
+  }
+
+  return 'http://localhost:5984';
+};
+
+commonUtils.safeRandomDBName = function () {
+  return 'test' + Math.random().toString().replace('.', '_');
+};
+
+commonUtils.createDocId = function (i) {
+  return 'doc_' + i.toString().padStart(10, '0');
+};
+
+// module.exports = commonUtils;
+
+export { commonUtils };
+
+export default commonUtils;

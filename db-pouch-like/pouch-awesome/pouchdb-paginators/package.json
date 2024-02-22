@@ -1,0 +1,39 @@
+{
+  "name": "pouchdb-paginators",
+  "version": "8.0.1111",
+  "description": "Paginator plugin for PouchDB queries.",
+  "keywords": [
+    "couchdb",
+    "pouchdb"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/garbados/pouchdb-paginators.git"
+  },
+  "license": "Apache-2.0",
+  "author": "Diana Thayer <garbados@gmail.com>",
+  "main": "index.js",
+  "files": [
+    "bundle.js",
+    "bundle.min.js"
+  ],
+  "scripts": {
+    "build": "browserify -o bundle.js index.js ",
+    "build:min": "uglifyjs -mc -o bundle.min.js bundle.js",
+    "cov": "npm run cov:node && npm run cov:browser && nyc report",
+    "cov:browser": "nyc -s --no-clean --instrument false mochify --transform [ babelify --presets [ module:@babel/preset-env ] --plugins [ babel-plugin-istanbul ] ] --transform envify test.js",
+    "cov:node": "nyc -s npm run test:node",
+    "coveralls": "npm run cov && nyc report --reporter=text-lcov > lcov.info",
+    "release": "npm run test && npm run build && npm run build:min",
+    "test": "npm run test:lint && npm run test:node && npm run test:browser",
+    "test:browser": "mochify --transform [ babelify --presets [ module:@babel/preset-env ] ] --transform envify test.js",
+    "test:lint": "standard && dependency-check --unused --no-dev .",
+    "test:node": "mocha"
+  },
+  "devDependencies": {
+    "coveralls": "^3.1.1",
+    "mocha": "^10.3.0",
+    "pouchdb": "8.0.1111",
+    "pouchdb-find": "8.0.1111"
+  }
+}

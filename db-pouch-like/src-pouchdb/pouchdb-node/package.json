@@ -1,0 +1,35 @@
+{
+  "name": "pouchdb-node",
+  "version": "8.0.1111",
+  "description": "PouchDB, the Node-only edition.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pouchdb/pouchdb.git",
+    "directory": "packages/node_modules/pouchdb-node"
+  },
+  "license": "Apache-2.0",
+  "author": "Dale Harvey <dale@arandomurl.com>",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "scripts": {
+    "build": "npm run build:dev",
+    "build:dev": "npm run clean && npm run build:dev-node",
+    "build:dev-node": "rspack build -c ./webpacker/rspack.config.dev.node.mjs",
+    "build:prod": "npm run clean && rspack build -c ./webpacker/rspack.config.prod.mjs",
+    "build:tsc": "tsc -p tsconfig.json",
+    "clean": "rimraf lib dist *.tsbuildinfo",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "pouchdb-adapter-http": "8.0.1111",
+    "pouchdb-adapter-leveldb": "8.0.1111",
+    "pouchdb-core": "8.0.1111",
+    "pouchdb-mapreduce": "8.0.1111",
+    "pouchdb-replication": "8.0.1111"
+  },
+  "devDependencies": {
+    "@types/level": "^6.0.3",
+    "@types/node": "^20.11.19"
+  }
+}

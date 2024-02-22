@@ -1,0 +1,29 @@
+{
+  "name": "@datalking/bar-app",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run build:dev",
+    "build:tsc": "npm run clean && tsc -p tsconfig.build.json -w",
+    "build:dev": "npm run clean && rspack build -c ./webpacker/rspack.config.dev.mjs",
+    "build:dev-esm": "rspack build -c ./webpacker/rspack.config.dev.esm.mjs",
+    "build:dev-cjs": "npm run clean && rspack build -c ./webpacker/rspack.config.dev.cjs.mjs",
+    "build:prod": "npm run clean && rspack build -c ./webpacker/rspack.config.prod.mjs",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@datalking/foo": "*",
+    "@datalking/components": "*"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  }
+}

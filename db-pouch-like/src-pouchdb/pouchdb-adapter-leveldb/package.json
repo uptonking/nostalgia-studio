@@ -1,0 +1,36 @@
+{
+  "name": "pouchdb-adapter-leveldb",
+  "version": "8.0.1111",
+  "description": "PouchDB adapter using LevelDB as its backing store.",
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pouchdb/pouchdb.git",
+    "directory": "packages/node_modules/pouchdb-adapter-leveldb"
+  },
+  "license": "Apache-2.0",
+  "author": "Dale Harvey <dale@arandomurl.com>",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "browser": {
+    "leveldown": false
+  },
+  "scripts": {
+    "build": "npm run build:dev",
+    "build:dev": "",
+    "clean": "rimraf lib *.tsbuildinfo",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "level": "^6.0.1",
+    "leveldown": "^5.6.0",
+    "level-write-stream": "^1.0.0",
+    "pouchdb-adapter-leveldb-core": "8.0.1111",
+    "pouchdb-merge": "8.0.1111",
+    "through2": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/level": "^6.0.3",
+    "@types/node": "^20.11.19"
+  }
+}

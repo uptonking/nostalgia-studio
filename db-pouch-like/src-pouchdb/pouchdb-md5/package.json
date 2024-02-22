@@ -1,0 +1,39 @@
+{
+  "name": "pouchdb-md5",
+  "version": "8.0.1111",
+  "description": "PouchDB utilities for calculating MD5 checksums.",
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pouchdb/pouchdb.git",
+    "directory": "packages/node_modules/pouchdb-md5"
+  },
+  "license": "Apache-2.0",
+  "author": "Dale Harvey <dale@arandomurl.com>",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "browser": {
+    "./lib/index.js": "./lib/index-browser.js",
+    "./src/binaryMd5.js": "./src/binaryMd5-browser.js",
+    "./src/stringMd5.js": "./src/stringMd5-browser.js"
+  },
+  "scripts": {
+    "build": "npm run build:dev",
+    "build:dev": "npm run clean && npm run build:dev-web && npm run build:dev-node",
+    "build:dev-node": "rspack build -c ./webpacker/rspack.config.dev.node.mjs",
+    "build:dev-web": "rspack build -c ./webpacker/rspack.config.dev.web.mjs",
+    "build:prod": "npm run clean && rspack build -c ./webpacker/rspack.config.prod.mjs",
+    "build:tsc": "npm run clean && tsc -p tsconfig.json -w",
+    "clean": "rimraf lib *.tsbuildinfo",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "pouchdb-binary-utils": "8.0.1111",
+    "spark-md5": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "@types/spark-md5": "^3.0.4"
+  }
+}

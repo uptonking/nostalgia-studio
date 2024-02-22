@@ -1,0 +1,28 @@
+{
+  "name": "pouchdb-collate",
+  "version": "8.0.1111",
+  "description": "Collation functions for PouchDB map/reduce",
+  "keywords": [
+    "pouchdb",
+    "pouch",
+    "couchdb"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pouchdb/pouchdb.git",
+    "directory": "packages/node_modules/pouchdb-collate"
+  },
+  "license": "Apache-2.0",
+  "main": "lib/index.js",
+  "module": "./lib/index.js",
+  "scripts": {
+    "build": "npm run build:dev",
+    "build:dev": "npm run clean && npm run build:dev-esm",
+    "build:dev-esm": "rspack build -c ./webpacker/rspack.config.dev.mjs",
+    "build:prod": "npm run clean && rspack build -c ./webpacker/rspack.config.prod.mjs",
+    "build:tsc": "npm run clean && tsc -p tsconfig.json -w",
+    "clean": "rimraf lib *.tsbuildinfo",
+    "compile": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  }
+}

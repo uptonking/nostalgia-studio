@@ -1,0 +1,19 @@
+{
+  "name": "pouchdb-errors",
+  "version": "8.0.1111",
+  "description": "Errors exposed by PouchDB.",
+  "keywords": [],
+  "license": "Apache-2.0",
+  "author": "Dale Harvey <dale@arandomurl.com>",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "scripts": {
+    "build": "npm run build:dev",
+    "build:dev": "npm run clean && npm run build:dev-esm",
+    "build:dev-esm": "rspack build -c ./webpacker/rspack.config.dev.mjs",
+    "build:dev-cjs": "npm run clean && rspack build -c ./webpacker/rspack.config.dev.cjs.mjs",
+    "build:tsc": "npm run clean && tsc -p tsconfig.json",
+    "build:prod": "npm run clean && tsc -p tsconfig.json",
+    "clean": "rimraf lib *.tsbuildinfo"
+  }
+}

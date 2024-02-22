@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    // "outDir": "dist",
+    "module": "ES2020",
+    "target": "ES2020",
+    "moduleResolution": "bundler",
+    "jsx": "react",
+    "lib": [
+      "DOM",
+      "ES2015",
+      "ES2016",
+      "ES2017",
+      "ES2018",
+      "ES2019",
+      "ES2020",
+      "ES2021",
+      "ESNext"
+    ],
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "importHelpers": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "strict": true,
+    "strictNullChecks": false,
+    "noImplicitAny": true,
+    "declaration": true,
+    "declarationMap": true,
+    "skipLibCheck": true,
+    "types": [],
+    "pretty": true,
+    "noEmit": false,
+    "paths": {
+      "@datalking/components/*": ["./packages/components/src/*"],
+      "@datalking/*": ["./packages/*/src"],
+      "sublevel-pouchdb": ["./db-pouch-like/src-pouchdb/sublevel-pouchdb/src"],
+      "pouchdb-*": [
+        "./db-pouch-like/src-pouchdb/pouchdb-*/src",
+        "./db-pouch-like/pouch-awesome/pouchdb-*/src"
+      ]
+    }
+  },
+  // "include": ["./typings.d.ts"],
+  "exclude": ["-bak/**/*", "bak/**/*", "node_modules", "dist"]
+}
