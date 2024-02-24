@@ -1,9 +1,8 @@
 // shared webpack config object for dev, build, prod, demo...
 import rspack from '@rspack/core';
 
-// import type { Configuration } from '@rspack/cli';
+const isDev = process.env.NODE_ENV === 'development';
 
-// const config: Configuration = {
 /** @type {import("@rspack/cli").Configuration} */
 export const commonConfig = {
   module: {
@@ -30,6 +29,8 @@ export const commonConfig = {
                   runtime: 'classic',
                   throwIfNamespace: true,
                   useBuiltins: false,
+                  // development: isDev,
+                  // refresh: isDev
                 },
                 // useDefineForClassFields: false,
               },
@@ -77,12 +78,7 @@ export const commonConfig = {
       },
     ],
   },
-  optimization: {
-    // Disabling minification because it takes too long on CI
-    minimize: false,
-    // removeAvailableModules: true,
-    // mergeDuplicateChunks: true,
-  },
+
   plugins: [
     // new ReactRefreshPlugin(),
     new rspack.ProgressPlugin(),
@@ -92,10 +88,16 @@ export const commonConfig = {
   },
   experiments: {
     // css: true,
-    outputModule: true,
+    // outputModule: true,
     rspackFuture: {
       newTreeshaking: true,
       // disableApplyEntryLazily: true,
     },
+  },
+  optimization: {
+    // Disabling minification because it takes too long on CI
+    minimize: false,
+    // removeAvailableModules: true,
+    // mergeDuplicateChunks: true,
   },
 };

@@ -32,6 +32,7 @@
     "pretty": true,
     "noEmit": false,
     "paths": {
+      "@datalking/toolkitjs": ["./utilities/toolkitjs/src"],
       "@datalking/components/*": ["./packages/components/src/*"],
       "@datalking/*": ["./packages/*/src"],
       "sublevel-pouchdb": ["./db-pouch-like/src-pouchdb/sublevel-pouchdb/src"],

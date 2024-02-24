@@ -13,11 +13,12 @@ const prodOutputConfig = merge(prodConfig, {
     filename: 'main.js',
     path: './dist',
     // path: path.resolve(__dirname, '../build'),
-    module: true,
-    libraryTarget: 'module',
-    chunkFormat: 'module',
+    // module: true,
+    // libraryTarget: 'module',
+    // chunkFormat: 'module',
   },
-  target: 'web',
+  // target: 'web',
+  target: ['web', 'es2020'],
   plugins: [
     new rspack.HtmlRspackPlugin({
       template: './public/react-app.html',
@@ -33,6 +34,14 @@ const prodOutputConfig = merge(prodConfig, {
   // devServer: {
   //   contentBase: path.resolve(__dirname, '../build'),
   // },
+  experiments: {
+    // outputModule: true,
+  },
+  optimization: {
+    moduleIds: 'named',
+    chunkIds: 'named',
+    minimize: false,
+  },
 });
 
 export default prodOutputConfig;

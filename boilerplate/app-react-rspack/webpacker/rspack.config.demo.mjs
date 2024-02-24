@@ -53,24 +53,25 @@ const demoConfig = merge(
         // },
       ],
     },
-    optimization: {
-      // Disabling minification because it takes too long on CI
-      minimize: false,
-    },
     plugins: [
       new rspack.HtmlRspackPlugin({
         template: './public/react-app.html',
       }),
-      new rspack.CopyRspackPlugin({
-        patterns: [
-          {
-            from: 'public',
-          },
-        ],
-      }),
+      // new rspack.CopyRspackPlugin({
+      //   patterns: [
+      //     {
+      //       from: 'public',
+      //     },
+      //   ],
+      // }),
     ],
     experiments: {
-      outputModule: false,
+      // outputModule: false,
+    },
+    optimization: {
+      moduleIds: 'named',
+      chunkIds: 'named',
+      minimize: false,
     },
   },
 );

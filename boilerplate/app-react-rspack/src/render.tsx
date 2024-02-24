@@ -7,8 +7,8 @@ import { App } from './app';
 
 const root = createRoot(document.getElementById('root')!);
 
-const render = (element: React.ReactElement) => {
+const renderREle = (element: React.ReactElement) => {
   root.render(<StrictMode>{element}</StrictMode>);
 };
 
-render(<App />);
+renderREle(<App />);

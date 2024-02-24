@@ -11,10 +11,10 @@ export const App = () => {
   return (
     <div>
       <input type='' />
-      <h1>Hello, 世界 20240222 </h1>
-      <Button />
+      <h1>Hello, 世界 202402 </h1>
       <img src={logo} className='AppLogo' alt='logo' />
       <Card size={16} />
+      <Button />
     </div>
   );
 };

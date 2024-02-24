@@ -1,0 +1,50 @@
+{
+  "name": "@datalking/playjs",
+  "version": "0.0.1111",
+  "description": "play with js",
+  "private": true,
+  "type": "module",
+  "main": "src/index",
+  "module": "src/index",
+  "scripts": {
+    "build": "rimraf dist && npm run build:prod",
+    "build:babel": "rimraf dist && BABEL_ENV=build babel src --out-dir dist --root-mode upward --ignore 'src/**/*.test.js','src/**/*.stories.js' --source-maps --verbose",
+    "build:demo": "rimraf dist && cross-env APP_ENV=react webpack --config webpack/webpack.config.demo.js",
+    "build:prod": "rimraf dist && cross-env NODE_ENV=production webpack --config webpack/webpack.config.prod.js",
+    "build:types": "",
+    "demo": "cross-env APP_ENV=reactfresh webpack serve --hot --config webpack/webpack.config.demo.js",
+    "dev:server": "cd server-node && ts-node-dev --respawn --transpile-only server.ts",
+    "start": "npm run demo",
+    "start2": "npm run dev:server",
+    "test": "npm run test:utils-vanillajs",
+    "test:log": "node index.js --name nested-a",
+    "test:utils-vanillajs": "jest",
+    "test:utils-oneoff": "jest ./src/.test.ts",
+    "test:utils1": "NODE_OPTIONS='--experimental-vm-modules --experimental-specifier-resolution=node --loader=ts-node/esm/transpile-only' jest"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^8.3.1",
+    "classnames": "^2.5.1",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "express-session": "^1.17.2",
+    "keyboardjs": "^2.6.4",
+    "lodash": "^4.17.21",
+    "mime-types": "^2.1.35",
+    "multer": "^1.4.3",
+    "pretty-bytes": "^5.6.0"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.2",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/express-session": "^1.17.4",
+    "@types/mime-types": "^2.1.1",
+    "@types/multer": "^1.4.7",
+    "ts-node": "^10.9.2"
+  },
+  "peerDependencies": {
+    "sqlite": "^4.0.23",
+    "sqlite3": "^5.0.2"
+  }
+}

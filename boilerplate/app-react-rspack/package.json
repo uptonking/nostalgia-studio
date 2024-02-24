@@ -6,19 +6,21 @@
   "type": "module",
   "main": "dist/index",
   "scripts": {
-    "build": "npm run build:prod",
+    "build": "npm run clean && npm run build:prod-cjs",
     "build2": "npm run build:types && npm run build:js",
     "build:dev": "cross-env REACT_APP_ENV=react rspack -c ./webpacker/rspack.config.demo.mjs",
-    "build:prod": "cross-env REACT_APP_ENV=react NODE_ENV=production rspack -c ./webpacker/rspack.config.prod.mjs",
-    "build:prod1": "cross-env REACT_APP_ENV=react NODE_ENV=production rspack -c ./webpacker/rspack.config.prod.mjs",
+    "build:prod-cjs": "cross-env REACT_APP_ENV=react NODE_ENV=production rspack -c ./webpacker/rspack.config.prod.cjs.mjs",
+    "build:prod-esm": "cross-env REACT_APP_ENV=react NODE_ENV=production rspack -c ./webpacker/rspack.config.prod.esm.mjs",
+    "clean": "rimraf dist *.tsbuildinfo",
     "demo": "cross-env REACT_APP_ENV=reacthot rspack serve -c ./webpacker/rspack.config.demo.mjs",
     "demo-esm": "cross-env REACT_APP_ENV=reacthot rspack serve -c ./webpacker/rspack.config.demo.esm.mjs",
     "dev": "npm run demo",
-    "start": "npm run demo",
-    "clean": "rimraf dist *.tsbuildinfo"
+    "start": "npm run demo"
   },
   "dependencies": {
-    "@datalking/components": "*"
+    "@datalking/components": "*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "rimraf": "^5.0.5",
