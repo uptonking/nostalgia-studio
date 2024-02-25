@@ -24,18 +24,15 @@ module.exports = {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly',
   },
-  plugins: ['react', 'react-hooks', '@typescript-eslint'],
+  plugins: ['react', 'react-hooks', 'import', '@typescript-eslint'],
   // ESLint extends configurations recursively
   extends: [
-    // 'alloy',
-    // 'alloy/react',
-    // 'alloy/typescript',
     'plugin:@typescript-eslint/recommended',
     'plugin:import/recommended',
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
   ],
-  // 自定义规则，可以覆盖掉extends的配置,0-off,1-warn,2-error
+  //to override extends' config, 0-off,1-warn,2-error
   rules: {
     'no-param-reassign': 1,
     'no-invalid-this': 0,
@@ -79,7 +76,7 @@ module.exports = {
     'max-depth': ['warn', 5],
     'accessor-pairs': 0,
     'import/order': 0,
-    'import/no-duplicates': 1,
+    'import/no-duplicates': ['warn', { 'prefer-inline': true }],
     'import/no-unresolved': 'off',
     '@typescript-eslint/no-explicit-any': 0,
     '@typescript-eslint/no-unused-vars': 0,
@@ -106,11 +103,13 @@ module.exports = {
     '@typescript-eslint/prefer-optional-chain': 0,
     '@typescript-eslint/prefer-function-type': 0,
     '@typescript-eslint/consistent-type-assertions': 0,
-    // '@typescript-eslint/consistent-type-imports': [
-    //   'error',
-    //   { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
-    // ],
-    'import/consistent-type-specifier-style': ['warn'],
+    '@typescript-eslint/consistent-type-imports': [
+      'warn',
+      { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
+    ],
+    '@typescript-eslint/no-import-type-side-effects': 'warn',
+    // By default the rule will use the prefer-inline
+    'import/consistent-type-specifier-style': ['off'],
     '@typescript-eslint/method-signature-style': 0,
     '@typescript-eslint/explicit-function-return-type': 0,
     '@typescript-eslint/explicit-member-accessibility': 0,
