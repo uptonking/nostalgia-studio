@@ -1,3 +1,37 @@
+.flex {
+  display: flex;
+}
+
+.flex-center-h {
+  display: flex;
+  justify-content: center;
+}
+
+.mr-xs {
+  margin-right: 0.25rem;
+}
+.mr-sm {
+  margin-right: 0.5rem;
+}
+.mr-md {
+  margin-right: 1rem;
+}
+.mr-lg {
+  margin-right: 1.5rem;
+}
+.mb-xs {
+  margin-bottom: 0.25rem;
+}
+.mb-sm {
+  margin-bottom: 0.5rem;
+}
+.mb-md {
+  margin-bottom: 1rem;
+}
+.mb-lg {
+  margin-bottom: 1.5rem;
+}
+
 code {
   font-family: source-code-pro, Consolas, 'Courier New', monospace;
 }
@@ -9,6 +43,30 @@ a:focus,
 a:hover {
   color: #1f2937;
   text-decoration: none;
+}
+
+.brand-primary {
+  color: #701a75;
+}
+.btn-brand-primary {
+  color: #fff;
+  background-color: #701a75;
+  border-color: #701a75;
+}
+.btn-brand-primary:hover {
+  color: #fff;
+  background-color: #701a75;
+  border-color: #701a75;
+}
+
+.text-content {
+  color: #1f2937;
+}
+.text-info {
+  color: #475569;
+}
+.text-muted {
+  color: #e5e7eb;
 }
 
 .navbar.navbar-light {
@@ -26,6 +84,13 @@ a:hover {
   margin-right: 1rem;
   width: 100%;
   height: 100%;
+}
+
+.navbar .navbar-nav .nav-link {
+  color: #475569;
+}
+.navbar .navbar-nav .nav-link.brand-primary {
+  color: #701a75;
 }
 
 .logo-image {
@@ -101,4 +166,39 @@ a:hover {
   cursor: default;
   background-color: #e5e7eb;
   border-color: #e5e7eb;
+}
+
+.article-page .banner {
+  margin-bottom: 0rem;
+  background-color: white;
+}
+
+.article-title {
+  display: flex;
+  justify-content: center;
+}
+.article-page .article-title h1 {
+  color: #1f2937;
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  text-shadow: none;
+}
+
+.article-page .banner .article-meta .author {
+  color: #475569;
+}
+
+.article-meta .info .date {
+  color: #475569;
+}
+
+.article-page .container.page {
+  margin-top: 0rem;
+}
+
+.login-hint-text {
+  color: #475569;
+}
+.login-hint-text:hover {
+  color: #701a75;
 }

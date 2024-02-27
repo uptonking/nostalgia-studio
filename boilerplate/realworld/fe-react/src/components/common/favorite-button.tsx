@@ -57,14 +57,13 @@ export function FavoriteButton({
 
   return (
     <button
-      style={{ height: '28px' }}
       className={cx('article-fav', 'btn', 'btn-sm', {
         'btn-primary': article.favorited,
         'btn-outline-primary': !article.favorited,
       })}
       onClick={handleClick}
       disabled={loading}
-      title='favorite count'
+      title='likes count'
     >
       <i className='ion-heart' />
       &nbsp;

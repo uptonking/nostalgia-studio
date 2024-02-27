@@ -1,23 +1,28 @@
 import * as React from 'react';
 
-import { Flex, Grid, View } from '@adobe/react-spectrum';
+import cx from 'clsx';
 
 import type { ArticleAction } from '../../reducers/article';
-import ArticleActions from './article-actions';
-import AuthorAvatar from '../common/author-avatar';
 import type { IArticle } from '../../types';
+import { AuthorAvatar } from '../common/author-avatar';
+import { ArticleActions } from './article-actions';
 
 type ArticleMetaProps = {
   article: IArticle;
   dispatch: React.Dispatch<ArticleAction>;
+  className?: string;
 };
 
-function ArticleMeta({ article, dispatch }: ArticleMetaProps) {
+export function ArticleMeta({
+  article,
+  dispatch,
+  className,
+}: ArticleMetaProps) {
   return (
-    <Flex gap='size-100' alignItems='end'>
+    <div className={cx('article-meta', className)}>
       <AuthorAvatar article={article} />
       <ArticleActions article={article} dispatch={dispatch} />
-    </Flex>
+    </div>
   );
 }
 

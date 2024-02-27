@@ -1,25 +1,19 @@
-import * as React from 'react';
+import React, { useEffect, useState } from 'react';
 
-import {
-  Button,
-  Flex,
-  Form,
-  Grid,
-  Heading,
-  Text,
-  TextField,
-  View,
-} from '@adobe/react-spectrum';
-import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 
-import { IErrors } from '../../types';
-import ListErrors from '../common/list-error';
 import { register } from '../../api/auth-api';
 import { useAuth } from '../../context/auth';
+import type { IErrors } from '../../types';
+import ListErrors from '../common/list-error';
 
-export function Register(_) {
+export function Register() {
   const navigate = useNavigate();
+
+  const {
+    state: { user },
+    dispatch,
+  } = useAuth();
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -27,10 +21,6 @@ export function Register(_) {
 
   const [loading, setLoading] = React.useState(false);
   const [errors, setErrors] = React.useState<IErrors | null>(null);
-  const {
-    state: { user },
-    dispatch,
-  } = useAuth();
 
   const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault();
@@ -43,82 +33,71 @@ export function Register(_) {
     } catch (error) {
       console.log(error);
       setLoading(false);
-      if (error.status === 422) {
+      if (error['status'] === 422) {
+        // @ts-expect-error fix-types
         setErrors(error.data.errors);
       }
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      // return <Redirect to='/' noThrow />;
-      navigate('/');
-    }
-  }, [navigate, user]);
+  if (user) {
+    return <Navigate to='/' replace={true} />;
+  }
 
   return (
-    <View UNSAFE_style={{}}>
-      <View
-        UNSAFE_style={{
-          width: `32%`,
-          margin: `0 auto`,
-          // backgroundColor: 'beige',
-        }}
-      >
-        <Grid justifyContent='center'>
-          <View>
-            <Heading level={2}>Sign up</Heading>
-          </View>
-          <View>
-            <Link to='/login'>Already have an account?</Link>
-          </View>
-        </Grid>
-
-        <View marginTop='size-200'>
-          {errors && <ListErrors errors={errors} />}
-        </View>
-        <Form
-          method='post'
-          onSubmit={handleSubmit}
-          labelPosition='top'
-          labelAlign='start'
-        >
-          <TextField
-            value={username}
-            onChange={setUsername}
-            name='username'
-            label='User Name'
-            placeholder='input name will be checked for uniqueness'
-          />
-          <TextField
-            value={email}
-            onChange={setEmail}
-            name='email'
-            label='Email'
-            placeholder='name@email.com'
-          />
-          <TextField
-            value={password}
-            onChange={setPassword}
-            name='password'
-            label='Password'
-            placeholder='length must be 8 or greater'
-          />
-          <Button
-            variant='cta'
-            type='submit'
-            minWidth='size-1200'
-            marginTop='size-400'
-            UNSAFE_style={{
-              width: '25%',
-              // marginLeft: `auto`
-            }}
-          >
-            Sign Up
-          </Button>
-        </Form>
-      </View>
-    </View>
+    <div className='auth-page'>
+      <div className='container page'>
+        <div className='row'>
+          <div className='col-md-6 offset-md-3 col-xs-12'>
+            <h1 className='text-xs-center'>Sign up</h1>
+            <p className='text-xs-center'>
+              <Link to='/login' className='login-hint-text'>
+                Already have an account? click to login
+              </Link>
+            </p>
+            {errors && <ListErrors errors={errors} />}
+            <form onSubmit={handleSubmit}>
+              <fieldset className='form-group'>
+                <input
+                  name='username'
+                  className='form-control form-control-lg'
+                  type='text'
+                  value={username}
+                  placeholder='Your Name'
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </fieldset>
+              <fieldset className='form-group'>
+                <input
+                  name='email'
+                  className='form-control form-control-lg'
+                  type='email'
+                  value={email}
+                  placeholder='Email'
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </fieldset>
+              <fieldset className='form-group'>
+                <input
+                  name='password'
+                  className='form-control form-control-lg'
+                  type='password'
+                  value={password}
+                  placeholder='Password'
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </fieldset>
+              <button
+                className='btn btn-lg btn-primary btn-brand-primary pull-xs-right'
+                disabled={loading}
+              >
+                Sign Up
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

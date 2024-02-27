@@ -19,7 +19,6 @@ export function deleteComment(slug: string, commentId: number) {
 }
 
 export function getArticleComments(slug: string) {
-  // return API.get<Comments>(`/articles/${slug}/comments`);
-
-  return mockApi.getArticleComments(slug);
+  return API.get<Comments>(`/articles/${slug}/comments`);
+  // return mockApi.getArticleComments(slug);
 }

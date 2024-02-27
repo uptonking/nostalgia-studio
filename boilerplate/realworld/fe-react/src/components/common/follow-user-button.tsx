@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import cx from 'clsx';
+
 import type { IProfile } from '../../types';
 
 type FollowUserButtonProps = {
@@ -8,32 +10,25 @@ type FollowUserButtonProps = {
   loading: boolean;
 };
 
-export default function FollowUserButton({
+export function FollowUserButton({
   profile,
   onClick,
   loading,
 }: FollowUserButtonProps) {
-  const classNames = ['btn', 'btn-sm', 'action-btn'];
-  let text = '';
-
-  if (profile.following) {
-    classNames.push('btn-secondary');
-    text += `Unfollow ${profile.username}`;
-  } else {
-    classNames.push('btn-outline-secondary');
-    text += `Follow ${profile.username}`;
-  }
-
   return (
     <button
-      style={{ height: '28px' }}
-      className={classNames.join(' ')}
+      className={cx('btn', 'btn-sm', 'action-btn', 'mr-sm', {
+        'btn-secondary': Boolean(profile.following),
+        'btn-outline-secondary': !Boolean(profile.following),
+      })}
       onClick={onClick}
       disabled={loading}
     >
       <i className='ion-plus-round' />
       &nbsp;
-      {text}
+      {profile.following ? 'Unfollow' : 'Follow'}
     </button>
   );
 }
+
+export default FollowUserButton;

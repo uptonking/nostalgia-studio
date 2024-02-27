@@ -6,15 +6,15 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 import { getCurrentUser } from './api/auth-api';
+import { Login } from './components/account/login';
+import { Register } from './components/account/register';
+import { Article } from './components/article/article';
 import { Header } from './components/header';
 import { Home } from './components/home';
-// import { Article } from './components/article';
-// import { Editor } from './components/article-editor';
-// import { Login } from './components/account/login';
-// import { PrivateRoute } from './components/private-route';
 // import { Profile } from './components/account/profile';
-// import { Register } from './components/account/register';
 // import { Settings } from './components/account/settings';
+// import { Editor } from './components/article-editor';
+// import { PrivateRoute } from './components/private-route';
 import { AuthProvider, useAuth } from './context/auth';
 
 export function App() {
@@ -34,7 +34,7 @@ export function App() {
           dispatch({ type: 'LOAD_USER', user });
         }
       } catch (error) {
-        console.log('error in getCurrentUser ', error);
+        console.log('error at getCurrentUser ', error);
       }
     }
 
@@ -48,9 +48,9 @@ export function App() {
     };
   }, [dispatch, isAuthenticated, user]);
 
-  if (!user && isAuthenticated) {
-    return null;
-  }
+  // if (!user && isAuthenticated) {
+  //   return null;
+  // }
 
   return (
     <AuthProvider>
@@ -58,10 +58,10 @@ export function App() {
         <Header />
         <Routes>
           <Route path='/' element={<Home />} />
-          {/* <Route path='article/:slug' element={<Article />} />
+          <Route path='article/:slug' element={<Article />} />
           <Route path='login' element={<Login />} />
           <Route path='register' element={<Register />} />
-          <Route path=':username' element={<Profile />} />
+          {/* <Route path=':username' element={<Profile />} />
           <PrivateRoute as={Settings} path='/settings' />
           <PrivateRoute as={Editor} path='/editor' />
           <PrivateRoute as={Editor} path='/editor/:slug' /> */}

@@ -10,11 +10,7 @@ type CommentInputProps = {
   dispatch: React.Dispatch<ArticleAction>;
 };
 
-export default function CommentInput({
-  user,
-  slug,
-  dispatch,
-}: CommentInputProps) {
+export function CommentInput({ user, slug, dispatch }: CommentInputProps) {
   const [body, setBody] = React.useState('');
   const [loading, setLoading] = React.useState(false);
 
@@ -59,3 +55,5 @@ export default function CommentInput({
     </form>
   );
 }
+
+export default CommentInput;

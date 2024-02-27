@@ -58,11 +58,7 @@ const LoggedInView = ({ user: { username, image } }: { user: IUser }) => (
 
 const LoggedOutView = () => (
   <ul className='nav navbar-nav pull-xs-right'>
-    {/* <li className='nav-item'>
-      <NaviLink to='/'>Home</NaviLink>
-    </li> */}
-
-    <li className='nav-item'>
+    <li className='nav-item text-info'>
       <NaviLink to='/login'>Sign in</NaviLink>
     </li>
 
@@ -75,6 +71,8 @@ const LoggedOutView = () => (
 const NaviLink = (props: LinkProps) => (
   <NavLink
     {...props}
-    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+    className={({ isActive }) =>
+      isActive ? 'nav-link brand-primary' : 'nav-link'
+    }
   />
 );

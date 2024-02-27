@@ -13,7 +13,7 @@ type CommentProps = {
   dispatch: React.Dispatch<ArticleAction>;
 };
 
-function Comment({ comment, slug, user, dispatch }: CommentProps) {
+export function Comment({ comment, slug, user, dispatch }: CommentProps) {
   const showDeleteButton = user && user.username === comment.author.username;
 
   const handleDelete = async () => {

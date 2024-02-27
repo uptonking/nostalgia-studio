@@ -58,9 +58,8 @@ export function getFeedArticles() {
 }
 
 export function getArticle(slug: string) {
-  // return API.get<Article>(`/articles/${slug}`);
-
-  return mockApi.getArticle(slug);
+  return API.get<Article>(`/articles/${slug}`);
+  // return mockApi.getArticle(slug);
 }
 
 export function unfavoriteArticle(slug: string) {

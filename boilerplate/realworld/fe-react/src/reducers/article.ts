@@ -1,12 +1,12 @@
 import type { IArticle, IComment } from '../types';
 
 export type ArticleAction =
-  | { type: 'FETCH_ARTICLE_BEGIN' }
+  | { type: 'FETCH_ARTICLE_START' }
   | {
       type: 'FETCH_ARTICLE_SUCCESS';
       payload: { article: IArticle; comments: IComment[] };
     }
-  | { type: 'FETCH_ARTICLE_ERROR'; error: string }
+  | { type: 'FETCH_ARTICLE_ERROR'; error: unknown }
   | { type: 'ARTICLE_FAVORITED'; payload: { article: IArticle } }
   | { type: 'ARTICLE_UNFAVORITED'; payload: { article: IArticle } }
   | { type: 'ADD_COMMENT'; payload: { comment: IComment } }
@@ -18,7 +18,7 @@ export interface ArticleState {
   article: IArticle | null;
   comments: Array<IComment>;
   loading: boolean;
-  error: string | null;
+  error: unknown;
 }
 
 export const initialState: ArticleState = {
@@ -33,7 +33,7 @@ export function articleReducer(
   action: ArticleAction,
 ): ArticleState {
   switch (action.type) {
-    case 'FETCH_ARTICLE_BEGIN':
+    case 'FETCH_ARTICLE_START':
       return {
         ...state,
         loading: true,

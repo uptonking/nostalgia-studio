@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -7,24 +6,22 @@ import { followProfile, unfollowProfile } from '../../api/profile-api';
 import { useAuth } from '../../context/auth';
 import type { ArticleAction } from '../../reducers/article';
 import type { IArticle } from '../../types';
-import FavoriteButton from '../common/favorite-button';
-import FollowUserButton from '../common/follow-user-button';
-import DeleteButton from './delete-button';
+import { FavoriteButton } from '../common/favorite-button';
+import { FollowUserButton } from '../common/follow-user-button';
+import { DeleteButton } from './delete-button';
 
 type ArticleActionsProps = {
   article: IArticle;
   dispatch: React.Dispatch<ArticleAction>;
 };
 
-export default function ArticleActions({
-  article,
-  dispatch,
-}: ArticleActionsProps) {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+export function ArticleActions({ article, dispatch }: ArticleActionsProps) {
   const {
     state: { user },
   } = useAuth();
+
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const canModifyArticle = user && user.username === article.author.username;
 
@@ -46,18 +43,18 @@ export default function ArticleActions({
   };
 
   return canModifyArticle ? (
-    // 编辑 / 删除文章
+    // 📝
     <React.Fragment>
       <Link
         to={`/editor/${article.slug}`}
         className='btn btn-outline-secondary btn-sm'
       >
-        <i className='ion-edit' /> Edit Article
+        <i className='ion-edit' /> Edit
       </Link>
       <DeleteButton article={article} />
     </React.Fragment>
   ) : (
-    // 关注作者 / 收藏文章
+    // ❤️️
     <React.Fragment>
       <FollowUserButton
         onClick={handleFollowButtonClick}
@@ -65,9 +62,11 @@ export default function ArticleActions({
         loading={loading}
       />
       <FavoriteButton article={article} dispatch={dispatch} user={user}>
-        {article.favorited ? 'Unfavorite Article' : 'Favorite Article'}
-        <span className=''>({article.favoritesCount})</span>
+        <span className='mr-xs'>{article.favorited ? 'Unlike' : 'Like'}</span>
+        {article.favoritesCount}
       </FavoriteButton>
     </React.Fragment>
   );
 }
+
+export default ArticleActions;

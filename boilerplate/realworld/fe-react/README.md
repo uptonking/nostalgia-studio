@@ -8,7 +8,9 @@ npm start
 ```
 
 - open a browser and go to http://localhost:8999
-# todo
+# roadmap
 - 书写文章时，支持多个tag
 
 - 分页的(文章)列表跳转使用router，实现前进后退
+
+- cache for recent articles and feeds

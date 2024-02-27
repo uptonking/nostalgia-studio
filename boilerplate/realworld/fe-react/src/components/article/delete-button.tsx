@@ -1,11 +1,13 @@
 import * as React from 'react';
 
-import type { IArticle } from '../../types';
-import { deleteArticle } from '../../api/article-api';
 import { useNavigate } from 'react-router-dom';
 
-export default function DeleteButton({ article }: { article: IArticle }) {
+import { deleteArticle } from '../../api/article-api';
+import type { IArticle } from '../../types';
+
+export function DeleteButton({ article }: { article: IArticle }) {
   const navigate = useNavigate();
+
   const handleDelete = async () => {
     try {
       await deleteArticle(article.slug);
@@ -17,11 +19,12 @@ export default function DeleteButton({ article }: { article: IArticle }) {
 
   return (
     <button
-      style={{ height: '28px' }}
-      className='btn btn-outline-danger btn-sm'
+      className='btn btn-outline-danger btn-sm mr-sm'
       onClick={handleDelete}
     >
       <i className='ion-trash-a' /> Delete Article
     </button>
   );
 }
+
+export default DeleteButton;

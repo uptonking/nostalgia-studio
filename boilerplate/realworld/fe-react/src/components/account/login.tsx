@@ -1,33 +1,24 @@
-import * as React from 'react';
+import React, { useEffect, useState } from 'react';
 
-import {
-  Button,
-  Flex,
-  Form,
-  Grid,
-  Heading,
-  Text,
-  TextField,
-  View,
-} from '@adobe/react-spectrum';
-import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 
-import type { IErrors } from '../../types';
-import ListErrors from '../common/list-error';
 import { login } from '../../api/auth-api';
 import { useAuth } from '../../context/auth';
+import type { IErrors } from '../../types';
+import { ListErrors } from '../common/list-error';
 
-export function Login(_) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<IErrors | null>();
+export function Login() {
+  const navigate = useNavigate();
+
   const {
     state: { user },
     dispatch,
   } = useAuth();
-  const navigate = useNavigate();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<IErrors | null>();
 
   const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault();
@@ -39,75 +30,62 @@ export function Login(_) {
     } catch (error) {
       console.log(error);
       setLoading(false);
-      if (error.status === 422) {
+      if (error['status'] === 422) {
+        // @ts-expect-error fix-types
         setErrors(error.data.errors);
       }
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      // return <Redirect to='/' noThrow />;
-      navigate('/');
-    }
-  }, [navigate, user]);
+  if (user) {
+    return <Navigate to='/' replace={true} />;
+  }
 
   return (
-    <View UNSAFE_style={{}}>
-      <View
-        UNSAFE_style={{
-          width: `32%`,
-          margin: `0 auto`,
-          // backgroundColor: 'beige',
-        }}
-      >
-        <Grid justifyContent='center'>
-          <View>
-            <Heading level={2}>Sign in</Heading>
-          </View>
-          <View>
-            <Link to='/register'>Need an account?</Link>
-          </View>
-        </Grid>
-
-        <View marginTop='size-200'>
-          {errors && <ListErrors errors={errors} />}
-        </View>
-        <Form
-          method='post'
-          onSubmit={handleSubmit}
-          labelPosition='top'
-          labelAlign='start'
-        >
-          <TextField
-            value={email}
-            onChange={setEmail}
-            name='email'
-            label='Email'
-            placeholder='name@email.com'
-          />
-          <TextField
-            value={password}
-            onChange={setPassword}
-            name='password'
-            label='Password'
-            placeholder='length must be 8 or greater'
-          />
-          <Button
-            variant='cta'
-            type='submit'
-            minWidth='size-1200'
-            marginTop='size-400'
-            UNSAFE_style={{
-              width: '25%',
-              // marginLeft: `auto`
-            }}
-          >
-            Login
-          </Button>
-        </Form>
-      </View>
-    </View>
+    <div className='auth-page'>
+      <div className='container page'>
+        <div className='row'>
+          <div className='col-md-6 offset-md-3 col-xs-12'>
+            <h1 className='text-xs-center'>Sign in</h1>
+            <p className='text-xs-center'>
+              <Link to='/register' className='login-hint-text'>
+                Need an account? click here to register
+              </Link>
+            </p>
+            {errors && <ListErrors errors={errors} />}
+            <form onSubmit={handleSubmit}>
+              <fieldset className='form-group'>
+                <input
+                  name='email'
+                  className='form-control form-control-lg'
+                  type='email'
+                  value={email}
+                  placeholder='Email'
+                  onChange={(event) => setEmail(event.target.value)}
+                />
+              </fieldset>
+              <fieldset className='form-group'>
+                <input
+                  name='password'
+                  className='form-control form-control-lg'
+                  type='password'
+                  value={password}
+                  placeholder='Password'
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+              </fieldset>
+              <button
+                className='btn btn-lg btn-primary btn-brand-primary pull-xs-right'
+                type='submit'
+                disabled={loading}
+              >
+                Sign In
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

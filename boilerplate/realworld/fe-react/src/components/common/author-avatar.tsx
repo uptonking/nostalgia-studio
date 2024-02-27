@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useMemo } from 'react';
 
 import { Link } from 'react-router-dom';
 
@@ -37,6 +37,11 @@ export function AuthorAvatar(props: ArticleAvatarProps = defaultProps) {
 
   // console.log('==aAvater, ', props);
 
+  const createdDateText = useMemo(
+    () => getDateISOStrWithTimezone(new Date(createdAt).getTime()),
+    [createdAt],
+  );
+
   if (!author) {
     return null;
   }
@@ -52,10 +57,11 @@ export function AuthorAvatar(props: ArticleAvatarProps = defaultProps) {
           {author.username}
         </Link>
         {/* <span className='date'>{new Date(createdAt).toDateString()}</span> */}
-        <span className='date'>
-          {getDateISOStrWithTimezone(new Date(createdAt).getTime())
-            .slice(0, 16)
-            .replace('T', ' ')}
+        <span
+          className='date'
+          title={createdDateText.slice(0, 16).replace('T', ' ')}
+        >
+          {createdDateText.slice(0, 10)}
         </span>
       </div>
     </React.Fragment>
