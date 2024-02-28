@@ -1,32 +1,12 @@
-import * as React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
-
-import {
-  Button,
-  Flex,
-  Form,
-  Grid,
-  Heading,
-  Text,
-  TextField,
-  View,
-} from '@adobe/react-spectrum';
 
 import { logout, updateUser } from '../../api/auth-api';
 import { userList } from '../../api/mock-data';
 import { useAuth } from '../../context/auth';
-import { IErrors } from '../../types';
-import ListErrors from '../common/list-error';
-
-type Form = {
-  username: string;
-  email: string;
-  image: string;
-  bio: string;
-  password?: string;
-};
+import type { IErrors } from '../../types';
+import { ListErrors } from '../common/list-error';
 
 export function Settings() {
   const navigate = useNavigate();
@@ -34,6 +14,7 @@ export function Settings() {
     state: { user },
     dispatch,
   } = useAuth();
+
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<IErrors | null>(null);
   const [username, setUsername] = useState('');
@@ -41,16 +22,9 @@ export function Settings() {
   const [password, setPassword] = useState('');
   const [image, setImage] = useState('');
   const [bio, setBio] = useState('');
-  // let form = {
-  //   username,
-  //   email,
-  //   password,
-  //   image,
-  //   bio,
-  // };
 
   useEffect(() => {
-    console.log('==Settings-user, ', user);
+    // console.log('==Settings-user, ', user);
 
     if (user) {
       const { username, email, image, bio } = user;
@@ -61,7 +35,7 @@ export function Settings() {
       setImage(image || '');
       setBio(bio || '');
     }
-  }, [user]);
+  }, [password, user]);
 
   const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault();
@@ -78,7 +52,8 @@ export function Settings() {
       dispatch({ type: 'LOAD_USER', user: (payload as any).data.user });
     } catch (error) {
       console.log(error);
-      if (error.status === 422) {
+      if (error['status'] === 422) {
+        // @ts-expect-error fix-types
         setErrors(error.data.errors);
       }
     }
@@ -92,91 +67,84 @@ export function Settings() {
   };
 
   return (
-    <View UNSAFE_style={{}}>
-      <View
-        UNSAFE_style={{
-          width: `36%`,
-          margin: `0 auto`,
-          // backgroundColor: 'beige',
-        }}
-      >
-        <Grid justifyContent='center'>
-          <View>
-            <Heading level={2}>Your Settings</Heading>
-          </View>
-        </Grid>
-
-        <View marginTop='size-200'>
-          {errors && <ListErrors errors={errors} />}
-        </View>
-        <Form
-          method='post'
-          onSubmit={handleSubmit}
-          labelPosition='top'
-          labelAlign='start'
-        >
-          <TextField
-            value={image}
-            onChange={setImage}
-            name='image'
-            label='Image URL'
-            placeholder='URL of profile picture'
-          />
-          <TextField
-            value={username}
-            onChange={setUsername}
-            name='username'
-            label='User Name'
-            placeholder='input name will be checked for uniqueness'
-          />
-          <TextField
-            isDisabled={true}
-            value={email}
-            onChange={setEmail}
-            name='email'
-            label='Email'
-            placeholder='name@email.com'
-          />
-          <TextField
-            value={bio}
-            onChange={setBio}
-            name='bio'
-            label='Bio'
-            placeholder='Short bio about you'
-          />
-          <TextField
-            value={password}
-            onChange={setPassword}
-            name='password'
-            label='Password'
-            placeholder='length must be 8 or greater'
-          />
-          <Button
-            variant='cta'
-            type='submit'
-            minWidth='size-2000'
-            marginTop='size-400'
-            UNSAFE_style={{
-              width: '32%',
-              // marginLeft: `auto`
-            }}
-          >
-            Update Settings
-          </Button>
-        </Form>
-        <hr />
-        <Button
-          onPress={handleLogout}
-          variant='negative'
-          minWidth='size-1200'
-          marginTop='size-200'
-          UNSAFE_style={{}}
-        >
-          Or click here to Logout
-        </Button>
-      </View>
-    </View>
+    <div className='settings-page'>
+      <div className='container page'>
+        <div className='row'>
+          <div className='col-md-6 offset-md-3 col-xs-12'>
+            <h1 className='text-xs-center'>Settings</h1>
+            {errors && <ListErrors errors={errors} />}
+            <form onSubmit={handleSubmit}>
+              <fieldset>
+                {/* <div className='form-group'>
+                  <input
+                    name='image'
+                    className='form-control'
+                    type='text'
+                    placeholder='URL of profile picture'
+                    value={image}
+                    // onChange={e=>setImage(e.target.files[0])}
+                  />
+                </div> */}
+                <div className='form-group'>
+                  <input
+                    name='username'
+                    className='form-control form-control-lg'
+                    type='text'
+                    placeholder='Username'
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                  />
+                </div>
+                <div className='form-group'>
+                  <textarea
+                    name='bio'
+                    className='form-control form-control-lg'
+                    rows={8}
+                    placeholder='Short bio about you'
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                  />
+                </div>
+                <div className='form-group'>
+                  <input
+                    name='email'
+                    className='form-control form-control-lg'
+                    type='email'
+                    placeholder='Email'
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div className='form-group'>
+                  <input
+                    name='password'
+                    className='form-control form-control-lg'
+                    type='password'
+                    placeholder='New Password'
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                <button
+                  className='btn btn-lg btn-primary btn-brand-primary pull-xs-right'
+                  type='submit'
+                  disabled={loading}
+                >
+                  Update Settings
+                </button>
+              </fieldset>
+            </form>
+            <hr />
+            <button
+              className='btn btn-outline-danger btn-brand-primary-outline'
+              onClick={handleLogout}
+            >
+              Or click here to logout.
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
-
 export default Settings;

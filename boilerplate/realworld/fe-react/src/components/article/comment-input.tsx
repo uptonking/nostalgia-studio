@@ -1,8 +1,8 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 
+import { createComment } from '../../api/comments-api';
 import type { ArticleAction } from '../../reducers/article';
 import type { IUser } from '../../types';
-import { createComment } from '../../api/comments-api';
 
 type CommentInputProps = {
   user: IUser;
@@ -11,8 +11,8 @@ type CommentInputProps = {
 };
 
 export function CommentInput({ user, slug, dispatch }: CommentInputProps) {
-  const [body, setBody] = React.useState('');
-  const [loading, setLoading] = React.useState(false);
+  const [body, setBody] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault();
@@ -45,11 +45,11 @@ export function CommentInput({ user, slug, dispatch }: CommentInputProps) {
           alt={user.username}
         />
         <button
-          className='btn btn-sm btn-primary'
+          className='btn btn-sm btn-primary btn-brand-primary'
           type='submit'
           disabled={loading}
         >
-          Post Comment
+          Comment
         </button>
       </div>
     </form>

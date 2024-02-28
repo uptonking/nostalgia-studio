@@ -2,6 +2,7 @@ import { jwtDecode } from 'jwt-decode';
 
 import { axios } from '@datalking/toolkitjs';
 
+import { getLocalStorageValue } from '../utils/common';
 import { API_MAIN_SERVER } from '../utils/constants';
 
 export const JWT_TOKEN_KEY = 'jwtTokenKey2024';
@@ -10,10 +11,13 @@ axios.defaults.baseURL = API_MAIN_SERVER;
 
 axios.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem(JWT_TOKEN_KEY);
+    const token = getLocalStorageValue(JWT_TOKEN_KEY);
+
+    // console.log(';; axios-interceptor ', token);
     if (token) {
       // config.headers['Authorization'] = token ? `Bearer ${token}` : '';
-      config.headers['Authorization'] = `Bearer ${token}`;
+      // config.headers.set('Authorization', `Bearer ${token}` )  ;
+      config.headers.set('Authorization', `Token ${token}`);
     }
     return config;
   },
@@ -54,14 +58,15 @@ type JWTPayload = {
   exp: number;
 };
 
-export function isTokenValidForTest(token: string) {
-  return token.startsWith('--test--');
-}
-
 export function isTokenValid(token: string) {
   try {
     const decoded_jwt: JWTPayload = jwtDecode(token);
     const current_time = Date.now().valueOf() / 1000;
+    // console.log(
+    //   ';; jwt/cur-time ',
+    //   new Date(decoded_jwt.exp * 1000).toISOString(),
+    //   new Date(current_time * 1000).toISOString(),
+    // );
     return decoded_jwt.exp > current_time;
   } catch (error) {
     console.error('AUTH TOKEN not valid');

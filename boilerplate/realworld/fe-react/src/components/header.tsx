@@ -36,14 +36,14 @@ const LoggedInView = ({ user: { username, image } }: { user: IUser }) => (
     <li className='nav-item'>
       <NaviLink to='/editor'>
         <i className='ion-compose' />
-        &nbsp;New Post
+        Write Article
       </NaviLink>
     </li>
 
     <li className='nav-item'>
       <NaviLink to='/settings'>
         <i className='ion-gear-a' />
-        &nbsp;Settings
+        Settings
       </NaviLink>
     </li>
 

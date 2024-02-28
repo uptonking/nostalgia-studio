@@ -302,6 +302,7 @@ class Axios {
     request: AxiosInterceptorManager<InternalAxiosRequestConfig>;
     response: AxiosInterceptorManager<AxiosResponse>;
   };
+
   constructor(defaults?: CreateAxiosDefaults) {
     this.defaults = defaults || ({} as CreateAxiosDefaults);
     this.interceptors = {
@@ -429,9 +430,11 @@ class Axios {
 
 class AxiosInterceptorManager<V> {
   handlers: Array<AxiosInterceptor<V>> = [];
+
   constructor() {
     this.handlers = [];
   }
+
   use = (
     onFulfilled?: FulfillCallback<V>,
     onRejected?: RejectCallback,

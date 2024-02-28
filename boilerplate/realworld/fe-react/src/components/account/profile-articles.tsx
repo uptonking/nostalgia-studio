@@ -1,18 +1,12 @@
-import * as React from 'react';
+import React, { useEffect, useReducer } from 'react';
 
-import {
-  type ArticleListState,
-  type ITab,
-  articlesReducer,
-} from '../../reducers/article-feed';
-import { useEffect, useReducer } from 'react';
-
-import ArticlesFeed from '../articles-feed';
 import { ArticlesFeedProvider } from '../../context/articles';
-import TabList from '../common/tab-list';
 import { useAuth } from '../../context/auth';
+import type { ITab } from '../../reducers/article-feed';
+import { ArticlesFeed } from '../articles-feed';
+import { TabList } from '../common/tab-list';
 
-function ProfileArticles({ username }: { username: string }) {
+export function ProfileArticles({ username }: { username: string }) {
   const {
     state: { user },
   } = useAuth();
@@ -30,25 +24,32 @@ function ProfileArticles({ username }: { username: string }) {
     },
   ];
 
-  const userProfileInitialState: ArticleListState = {
-    articles: [],
-    loading: false,
-    error: null,
-    articlesCount: 0,
-    page: 0,
-    pageSize: 5,
-    selectedTab: { type: 'AUTHORED', label: 'Articles', username },
-  };
-
-  const [state, dispatch] = useReducer(
-    articlesReducer,
-    userProfileInitialState,
-  );
+  // const userProfileInitialState: ArticleListState = {
+  //   articles: [],
+  //   loading: false,
+  //   error: null,
+  //   articlesCount: 0,
+  //   page: 0,
+  //   pageSize: 5,
+  //   selectedTab: { type: 'AUTHORED', label: 'Articles', username },
+  // };
+  // const [state, dispatch] = useReducer(
+  //   articlesReducer,
+  //   userProfileInitialState,
+  // );
 
   return (
-    <ArticlesFeedProvider value={{ state, dispatch }}>
-      <TabList data={tabsData} />
-      <ArticlesFeed />
+    <ArticlesFeedProvider>
+      <div className='container'>
+        <div className='row'>
+          <div className='col-xs-12 col-md-10 offset-md-1'>
+            <div className='articles-toggle'>
+              <TabList data={tabsData} />
+            </div>
+            <ArticlesFeed />
+          </div>
+        </div>
+      </div>
     </ArticlesFeedProvider>
   );
 }

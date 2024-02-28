@@ -1,4 +1,4 @@
-import { IErrors } from '../types';
+import type { IErrors } from '../types';
 
 type EditorAction =
   | { type: 'ADD_TAG'; tag: string }

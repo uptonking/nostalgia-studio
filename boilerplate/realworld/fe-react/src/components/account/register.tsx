@@ -5,7 +5,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { register } from '../../api/auth-api';
 import { useAuth } from '../../context/auth';
 import type { IErrors } from '../../types';
-import ListErrors from '../common/list-error';
+import { ListErrors } from '../common/list-error';
 
 export function Register() {
   const navigate = useNavigate();
@@ -19,8 +19,8 @@ export function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const [loading, setLoading] = React.useState(false);
-  const [errors, setErrors] = React.useState<IErrors | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<IErrors | null>(null);
 
   const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault();
@@ -63,7 +63,7 @@ export function Register() {
                   className='form-control form-control-lg'
                   type='text'
                   value={username}
-                  placeholder='Your Name'
+                  placeholder='Username'
                   onChange={(e) => setUsername(e.target.value)}
                 />
               </fieldset>

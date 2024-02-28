@@ -1,38 +1,27 @@
-import * as React from 'react';
+import React, { useEffect, useState } from 'react';
 
-import {
-  Button,
-  Flex,
-  Form,
-  Grid,
-  Heading,
-  Image,
-  Text,
-  TextField,
-  View,
-} from '@adobe/react-spectrum';
 import { Link, useParams } from 'react-router-dom';
+
 import {
   followProfile,
   getProfile,
   unfollowProfile,
 } from '../../api/profile-api';
-import { useEffect, useState } from 'react';
-
-import { ALT_IMAGE_URL } from '../../utils/constants';
-import FollowUserButton from '../common/follow-user-button';
-import type { IProfile } from '../../types';
-import ProfileArticles from './profile-articles';
 import { useAuth } from '../../context/auth';
+import type { IProfile } from '../../types';
+import { ALT_IMAGE_URL } from '../../utils/constants';
+import { FollowUserButton } from '../common/follow-user-button';
+import { ProfileArticles } from './profile-articles';
 
 export function Profile() {
   const { username } = useParams();
-  console.log('Profile-username, ', username);
-  const [profile, setProfile] = useState<IProfile | null>(null);
-  const [loading, setLoading] = useState(false);
+  // console.log(';; Profile-username, ', username);
   const {
     state: { user },
   } = useAuth();
+
+  const [profile, setProfile] = useState<IProfile | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -74,72 +63,36 @@ export function Profile() {
 
   const isUser = profile && user && profile.username === user.username;
 
-  return (
-    profile && (
-      <View UNSAFE_style={{}}>
-        <View
-          paddingTop='size-300'
-          paddingBottom='size-200'
-          backgroundColor='gray-200'
-          // UNSAFE_style={{
-          //   backgroundColor: 'beige',
-          // }}
-        >
-          <View
-            UNSAFE_style={{
-              width: `70%`,
-              margin: `0 auto`,
-              // backgroundColor: 'beige',
-            }}
-          >
-            <Grid justifyContent='center'>
-              <View
-                UNSAFE_style={{
-                  textAlign: 'center',
-                }}
-              >
-                <Image
-                  src={profile.image || ALT_IMAGE_URL}
-                  alt={profile.username}
-                  width='size-1200'
-                  UNSAFE_style={{
-                    borderRadius: '50%',
-                  }}
-                />
-                <Heading level={3} marginTop='size-100'>
-                  {profile.username}
-                </Heading>
-                <p>{profile.bio}</p>
-              </View>
-            </Grid>
-            <Flex justifyContent='end'>
-              <View>
-                {isUser ? (
-                  <EditProfileSettings />
-                ) : (
-                  <FollowUserButton
-                    profile={profile}
-                    onClick={handleClick}
-                    loading={loading}
-                  />
-                )}
-              </View>
-            </Flex>
-          </View>
-        </View>
+  if (!profile) return null;
 
-        <View
-          marginTop='size-200'
-          UNSAFE_style={{
-            width: `70%`,
-            margin: `0 auto`,
-            // backgroundColor: 'beige',
-          }}
-        >
-          <ProfileArticles username={username} />
-        </View>
-      </View>
-    )
+  return (
+    <div className='profile-page'>
+      <div className='user-info'>
+        <div className='container'>
+          <div className='row'>
+            <div className='col-xs-12 col-md-10 offset-md-1'>
+              <img
+                src={profile.image || ALT_IMAGE_URL}
+                className='user-img'
+                alt={profile.username}
+              />
+              <h4>{profile.username}</h4>
+              <p>{profile.bio}</p>
+              {isUser ? (
+                <EditProfileSettings />
+              ) : (
+                <FollowUserButton
+                  profile={profile}
+                  onClick={handleClick}
+                  loading={loading}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      <ProfileArticles username={username} />
+    </div>
   );
 }
 
@@ -149,7 +102,7 @@ function EditProfileSettings() {
       to='/settings'
       className='btn btn-sm btn-outline-secondary action-btn'
     >
-      <i className='ion-gear-a' /> Edit Profile Settings
+      <i className='ion-gear-a' /> Edit Profile
     </Link>
   );
 }

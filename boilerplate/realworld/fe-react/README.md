@@ -14,3 +14,6 @@ npm start
 - 分页的(文章)列表跳转使用router，实现前进后退
 
 - cache for recent articles and feeds
+
+- users logout automatically when refreshing the page
+  - incorrect logic for jwt-decode

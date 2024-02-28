@@ -6,11 +6,7 @@ import React, {
   useReducer,
 } from 'react';
 
-import {
-  isTokenValid,
-  isTokenValidForTest,
-  JWT_TOKEN_KEY,
-} from '../api/api-utils';
+import { isTokenValid, JWT_TOKEN_KEY } from '../api/api-utils';
 import { logout } from '../api/auth-api';
 import {
   type AuthAction,
@@ -38,15 +34,11 @@ export function AuthProvider(props: React.PropsWithChildren<object>) {
     // console.log('==AuthProvider-token, ', token);
     if (!token) return;
 
-    // if (isTokenValidForTest(token)) {
-    //   // setToken(token);
-    //   dispatch({ type: 'LOGIN' });
-    // }
-
     if (isTokenValid(token)) {
       // setToken(token);
       dispatch({ type: 'LOGIN' });
     } else {
+      console.log(';; dispatch LOGOUT, ', token);
       dispatch({ type: 'LOGOUT' });
       logout();
     }

@@ -1,7 +1,6 @@
 import type { IUser } from '../types';
 import { setLocalStorage } from '../utils/common';
 import API, { JWT_TOKEN_KEY } from './api-utils';
-import mockApi from './mock-api';
 
 type User = {
   user: IUser & { token: string };
@@ -17,40 +16,40 @@ export function getCurrentUser() {
   return API.get<User>('/user');
 }
 
-export function login(email: string, password: string) {
-  // return API.post<User>('/users/login', {
-  //   user: { email, password },
-  // }).then((user) => handleUserResponse(user.data));
+export async function login(email: string, password: string) {
+  const _user = await API.post<User>('/users/login', {
+    user: { email, password },
+  });
+  return handleUserResponse(_user.data);
 
-  return mockApi
-    .loginByEmail({
-      user: { email, password },
-    })
-    .then((resUser) => {
-      console.log(`==logging user, `, JSON.stringify(resUser));
-      return handleUserResponse((resUser as any).data);
-    });
+  // return mockApi
+  //   .loginByEmail({
+  //     user: { email, password },
+  //   })
+  //   .then((resUser) => {
+  //     console.log(`==logging user, `, JSON.stringify(resUser));
+  //     return handleUserResponse((resUser as any).data);
+  //   });
 }
 
-export function register(user: {
+export async function register(user: {
   username: string;
   email: string;
   password: string;
 }) {
-  // return API.post<User>('/users', { user }).then((user) =>
-  //   handleUserResponse(user.data),
-  // );
+  const _user = await API.post<User>('/users', { user });
+  return handleUserResponse(_user.data);
 
-  return mockApi.createUser({ user }).then((resUser) => {
-    console.log(`==registered user, `, JSON.stringify(resUser));
-    return handleUserResponse((resUser as any).data);
-  });
+  // return mockApi.createUser({ user }).then((resUser) => {
+  //   console.log(`==registered user, `, JSON.stringify(resUser));
+  //   return handleUserResponse((resUser as any).data);
+  // });
 }
 
 export function updateUser(user: IUser & Partial<{ password: string }>) {
-  // return API.put<User>('/user', { user });
+  return API.put<User>('/user', { user });
 
-  return mockApi.updateUser({ user });
+  // return mockApi.updateUser({ user });
 }
 
 export function logout() {

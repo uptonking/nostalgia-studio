@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 import { useArticlesFeed } from '../context/articles';
 import { useArticlesFeeds } from '../hooks/use-articles-feeds';

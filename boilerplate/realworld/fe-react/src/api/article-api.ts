@@ -1,6 +1,5 @@
 import type { IArticle } from '../types';
 import API from './api-utils';
-import mockApi from './mock-api';
 
 const encode = encodeURIComponent;
 
@@ -26,17 +25,17 @@ export function getArticles(page: number) {
 }
 
 export function getArticlesByAuthor(username: string, page: number) {
-  // return API.get<Articles>(
-  //   `/articles?author=${encode(username)}&${limit(5, page)}`,
-  // );
+  return API.get<Articles>(
+    `/articles?author=${encode(username)}&${limit(5, page)}`,
+  );
 
-  return mockApi.getArticlesByAuthor(username, page);
+  // return mockApi.getArticlesByAuthor(username, page);
 }
 
 export function getArticlesByTag(tag: string, page: number) {
-  // return API.get<Articles>(`/articles?tag=${encode(tag)}&${limit(10, page)}`);
+  return API.get<Articles>(`/articles?tag=${encode(tag)}&${limit(10, page)}`);
 
-  return mockApi.getArticlesByTag(tag, page);
+  // return mockApi.getArticlesByTag(tag, page);
 }
 
 export function deleteArticle(slug: string) {
@@ -73,11 +72,11 @@ export function updateArticle(article: {
   body?: string;
   tagList?: string[];
 }) {
-  // return API.put<Article>(`/articles/${article.slug}`, {
-  //   article: omitSlug(article),
-  // });
+  return API.put<Article>(`/articles/${article.slug}`, {
+    article: omitSlug(article),
+  });
 
-  return mockApi.updateArticle({ article });
+  // return mockApi.updateArticle({ article });
 }
 
 export function createArticle(article: {
@@ -86,7 +85,7 @@ export function createArticle(article: {
   body: string;
   tagList?: string[];
 }) {
-  // return API.post<Article>('/articles', { article });
+  return API.post<Article>('/articles', { article });
 
-  return mockApi.createArticle({ article });
+  // return mockApi.createArticle({ article });
 }

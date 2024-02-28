@@ -1,6 +1,5 @@
 import type { IComment } from '../types';
 import API from './api-utils';
-import mockApi from './mock-api';
 
 type Comment = {
   comment: IComment;

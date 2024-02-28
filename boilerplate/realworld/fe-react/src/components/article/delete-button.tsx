@@ -19,7 +19,7 @@ export function DeleteButton({ article }: { article: IArticle }) {
 
   return (
     <button
-      className='btn btn-outline-danger btn-sm mr-sm'
+      className='btn btn-outline-danger btn-sm mr-sm article-action-btn'
       onClick={handleDelete}
     >
       <i className='ion-trash-a' /> Delete Article

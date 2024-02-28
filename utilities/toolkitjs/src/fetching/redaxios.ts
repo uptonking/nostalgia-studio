@@ -244,10 +244,12 @@ function create(defaults?: Options | {}) {
     if (Array.isArray(opts)) {
       return opts.concat(overrides);
     }
+    // eslint-disable-next-line guard-for-in
     for (i in opts) {
       const key = lowerCase ? i.toLowerCase() : i;
       out[key] = opts[i];
     }
+    // eslint-disable-next-line guard-for-in
     for (i in overrides) {
       const key = lowerCase ? i.toLowerCase() : i;
       const value = /** @type {any} */ overrides[i];

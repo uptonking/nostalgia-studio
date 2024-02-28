@@ -47,9 +47,10 @@ export function ArticleActions({ article, dispatch }: ArticleActionsProps) {
     <React.Fragment>
       <Link
         to={`/editor/${article.slug}`}
-        className='btn btn-outline-secondary btn-sm'
+        className='btn btn-outline-secondary btn-sm mr-sm flex-center-h article-action-btn article-edit-btn'
       >
-        <i className='ion-edit' /> Edit
+        {/* <i className='ion-edit' />  */}
+        Edit Article
       </Link>
       <DeleteButton article={article} />
     </React.Fragment>

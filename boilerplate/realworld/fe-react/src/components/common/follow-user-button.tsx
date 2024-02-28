@@ -17,10 +17,17 @@ export function FollowUserButton({
 }: FollowUserButtonProps) {
   return (
     <button
-      className={cx('btn', 'btn-sm', 'action-btn', 'mr-sm', {
-        'btn-secondary': Boolean(profile.following),
-        'btn-outline-secondary': !Boolean(profile.following),
-      })}
+      className={cx(
+        'btn',
+        'btn-sm',
+        'action-btn',
+        'mr-sm',
+        'article-action-btn',
+        {
+          'btn-secondary': Boolean(profile.following),
+          'btn-outline-secondary': !Boolean(profile.following),
+        },
+      )}
       onClick={onClick}
       disabled={loading}
     >

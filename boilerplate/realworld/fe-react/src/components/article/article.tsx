@@ -86,11 +86,11 @@ export function Article() {
           </div>
         </div>
 
-        <hr />
+        {/* <hr /> */}
 
-        <div className='article-actions'>
+        {/* <div className='article-actions'>
           <ArticleMeta article={article} dispatch={dispatch} />
-        </div>
+        </div> */}
 
         <CommentContainer comments={comments} slug={slug} dispatch={dispatch} />
       </div>

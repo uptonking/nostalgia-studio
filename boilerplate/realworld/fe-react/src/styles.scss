@@ -58,6 +58,16 @@ a:hover {
   background-color: #701a75;
   border-color: #701a75;
 }
+.btn-brand-primary-outline {
+  border-color: #701a75;
+  background-color: #fff;
+  color: #701a75;
+}
+.btn-brand-primary-outline:hover {
+  border-color: #701a75;
+  background-color: #fff;
+  color: #701a75;
+}
 
 .text-content {
   color: #1f2937;
@@ -130,13 +140,14 @@ a:hover {
     rgba(0, 0, 0, 0.1) 0px 4px 6px -4px;
 }
 
-.article-fav.btn-outline-primary {
-  color: #4b5563;
-  border-color: #e5e7eb;
-}
+// .article-fav.btn-outline-primary {
+//   color: #4b5563;
+//   border-color: #e5e7eb;
+// }
 .article-fav.btn-outline-primary:hover {
-  color: #4b5563;
+  border-color: #e5e7eb;
   background-color: #e5e7eb;
+  color: #4b5563;
 }
 
 .home-page .sidebar {
@@ -201,4 +212,29 @@ a:hover {
 }
 .login-hint-text:hover {
   color: #701a75;
+}
+
+.comment-login-hint {
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+  background-color: #fdf4ff;
+}
+
+.profile-page .user-info {
+  background-color: #fdf4ff;
+}
+
+.comment-form .card-footer {
+  background-color: #fff;
+}
+
+.article-action-btn {
+  color: #475569;
+  background-color: #fff;
+  border-color: #475569;
+}
+
+.article-edit-btn {
+  padding-top: 0.5rem;
 }

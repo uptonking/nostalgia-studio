@@ -29,7 +29,7 @@ export function CommentContainer({
         {user ? (
           <CommentInput user={user} slug={slug} dispatch={dispatch} />
         ) : (
-          <div className='flex-center-h'>
+          <div className='flex-center-h comment-login-hint'>
             <p>
               <Link to='/login' className='brand-primary mr-xs'>
                 Sign in

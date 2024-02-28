@@ -4,6 +4,7 @@ export type AuthAction =
   | { type: 'LOGIN' }
   | { type: 'LOGOUT' }
   | {
+      // used to update user data in state, useful for register and login
       type: 'LOAD_USER';
       user: IUser;
     };

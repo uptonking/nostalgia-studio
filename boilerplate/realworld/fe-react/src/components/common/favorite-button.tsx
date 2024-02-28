@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 
 import cx from 'clsx';
 import { Link, useNavigate } from 'react-router-dom';
@@ -22,7 +22,7 @@ export function FavoriteButton({
   user,
 }: FavoriteButtonProps) {
   const navigate = useNavigate();
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleClick = async () => {
     if (!user) {
@@ -57,7 +57,7 @@ export function FavoriteButton({
 
   return (
     <button
-      className={cx('article-fav', 'btn', 'btn-sm', {
+      className={cx('article-fav', 'btn', 'btn-sm', 'article-action-btn', {
         'btn-primary': article.favorited,
         'btn-outline-primary': !article.favorited,
       })}

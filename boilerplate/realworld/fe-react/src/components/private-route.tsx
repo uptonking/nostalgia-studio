@@ -1,28 +1,15 @@
 import * as React from 'react';
 
-import Home from './home';
-import { Route } from 'react-router-dom';
+import { Navigate, type RouteProps } from 'react-router-dom';
+
 import { useAuth } from '../context/auth';
 
-// interface PrivateRouteProps extends RouteComponentProps {
-//   as: React.ElementType<any>;
-// }
-
-export function PrivateRoute({
-  as: Comp,
-  ...props
-  // }: PrivateRouteProps) {
-}) {
+export function PrivateRoute({ children }: RouteProps) {
   const {
     state: { user },
   } = useAuth();
 
-  // return user ? <Comp {...props} /> : <Home />;
-  return user ? (
-    <Route element={<Comp />} {...props} />
-  ) : (
-    <Route element={<Home />} {...props} />
-  );
+  return Boolean(user) ? children : <Navigate to='/login' />;
 }
 
 export default PrivateRoute;
