@@ -48,10 +48,6 @@ type TabProps = {
 };
 
 function Tab({ isSelected, onClick, children }: TabProps) {
-  // const classNames = ['nav-link'];
-  // if (isSelected) {
-  //   classNames.push('active');
-  // }
   return (
     <li className='nav-item'>
       <button

@@ -86,8 +86,6 @@ export function App() {
               </PrivateRoute>
             }
           />
-          {/* <PrivateRoute as={Editor} path='/editor' />
-          <PrivateRoute as={Editor} path='/editor/:slug' /> */}
         </Routes>
       </Router>
     </AuthProvider>

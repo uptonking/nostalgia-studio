@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { createComment } from '../../api/comments-api';
 import type { ArticleAction } from '../../reducers/article';
 import type { IUser } from '../../types';
+import { AVATAR_IMAGE_FALLBACK } from '../../utils/constants';
 
 type CommentInputProps = {
   user: IUser;
@@ -40,7 +41,7 @@ export function CommentInput({ user, slug, dispatch }: CommentInputProps) {
       </div>
       <div className='card-footer'>
         <img
-          src={user.image}
+          src={user.image || AVATAR_IMAGE_FALLBACK}
           className='comment-author-img'
           alt={user.username}
         />

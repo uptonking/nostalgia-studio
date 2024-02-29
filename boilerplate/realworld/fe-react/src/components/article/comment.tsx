@@ -1,10 +1,11 @@
-import * as React from 'react';
+import React, { useMemo } from 'react';
 
-import type { IComment, IUser } from '../../types';
-
-import type { ArticleAction } from '../../reducers/article';
 import { Link } from 'react-router-dom';
+
 import { deleteComment } from '../../api/comments-api';
+import type { ArticleAction } from '../../reducers/article';
+import type { IComment, IUser } from '../../types';
+import { getDateISOStrWithTimezone } from '../../utils/common';
 
 type CommentProps = {
   comment: IComment;
@@ -25,8 +26,13 @@ export function Comment({ comment, slug, user, dispatch }: CommentProps) {
     }
   };
 
+  const createdDateText = useMemo(
+    () => getDateISOStrWithTimezone(new Date(comment.createdAt).getTime()),
+    [comment.createdAt],
+  );
+
   return (
-    <div className='card'>
+    <div className='card comment-item'>
       <div className='card-block'>
         <p className='card-text'>{comment.body}</p>
       </div>
@@ -40,8 +46,11 @@ export function Comment({ comment, slug, user, dispatch }: CommentProps) {
           &nbsp;
           {comment.author.username}
         </Link>
-        <span className='date-posted'>
-          {new Date(comment.createdAt).toDateString()}
+        <span
+          className='date-posted'
+          title={createdDateText.slice(0, 19).replace('T', ' ')}
+        >
+          {createdDateText.slice(0, 16).replace('T', ' ')}
         </span>
         {showDeleteButton && (
           <span className='mod-options'>

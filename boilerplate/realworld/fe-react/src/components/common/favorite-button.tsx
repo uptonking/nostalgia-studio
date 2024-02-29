@@ -47,14 +47,6 @@ export function FavoriteButton({
     setLoading(false);
   };
 
-  const classNames = ['btn', 'btn-sm'];
-
-  if (article.favorited) {
-    classNames.push('btn-primary');
-  } else {
-    classNames.push('btn-outline-primary');
-  }
-
   return (
     <button
       className={cx('article-fav', 'btn', 'btn-sm', 'article-action-btn', {

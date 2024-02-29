@@ -70,7 +70,7 @@ export function Settings() {
     <div className='settings-page'>
       <div className='container page'>
         <div className='row'>
-          <div className='col-md-6 offset-md-3 col-xs-12'>
+          <div className='col-md-10 offset-md-2 col-xs-12'>
             <h1 className='text-xs-center'>Settings</h1>
             {errors && <ListErrors errors={errors} />}
             <form onSubmit={handleSubmit}>

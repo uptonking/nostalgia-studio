@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 import type { IArticle } from '../../types';
 import { getDateISOStrWithTimezone } from '../../utils/common';
-import { ALT_IMAGE_URL } from '../../utils/constants';
+import { AVATAR_IMAGE_FALLBACK } from '../../utils/constants';
 
 type ArticleAvatarProps = {
   article: IArticle;
@@ -49,7 +49,10 @@ export function AuthorAvatar(props: ArticleAvatarProps = defaultProps) {
   return (
     <React.Fragment>
       <Link to={`/${author.username}`}>
-        <img src={author.image || ALT_IMAGE_URL} alt={author.username} />
+        <img
+          src={author.image || AVATAR_IMAGE_FALLBACK}
+          alt={author.username}
+        />
       </Link>
 
       <div className='info'>

@@ -14,7 +14,7 @@ export function Header() {
 
   return (
     <nav className='navbar navbar-light'>
-      <div className='container'>
+      <div className='container logo-container'>
         <div>
           <img src={logo} className='logo-image' alt='realworld-logo' />
           <Link to='/' className='navbar-logo-text'>

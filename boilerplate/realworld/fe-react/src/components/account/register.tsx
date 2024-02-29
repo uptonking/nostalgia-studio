@@ -52,7 +52,7 @@ export function Register() {
             <h1 className='text-xs-center'>Sign up</h1>
             <p className='text-xs-center'>
               <Link to='/login' className='login-hint-text'>
-                Already have an account? click to login
+                Already have an account? click here to login
               </Link>
             </p>
             {errors && <ListErrors errors={errors} />}

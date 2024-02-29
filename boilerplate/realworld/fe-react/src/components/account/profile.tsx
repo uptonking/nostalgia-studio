@@ -9,7 +9,7 @@ import {
 } from '../../api/profile-api';
 import { useAuth } from '../../context/auth';
 import type { IProfile } from '../../types';
-import { ALT_IMAGE_URL } from '../../utils/constants';
+import { AVATAR_IMAGE_FALLBACK } from '../../utils/constants';
 import { FollowUserButton } from '../common/follow-user-button';
 import { ProfileArticles } from './profile-articles';
 
@@ -72,7 +72,7 @@ export function Profile() {
           <div className='row'>
             <div className='col-xs-12 col-md-10 offset-md-1'>
               <img
-                src={profile.image || ALT_IMAGE_URL}
+                src={profile.image || AVATAR_IMAGE_FALLBACK}
                 className='user-img'
                 alt={profile.username}
               />
