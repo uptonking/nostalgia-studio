@@ -44,7 +44,7 @@
     "through2": "^3.0.2"
   },
   "devDependencies": {
-    "@types/node": "^20.11.19",
+    "@types/node": "^20.11.24",
     "@rspack/plugin-node-polyfill": "^0.5.0"
   }
 }

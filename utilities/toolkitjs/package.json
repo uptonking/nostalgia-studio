@@ -21,9 +21,8 @@
     "test:utils-oneoff": "jest ./src/.test.ts",
     "test:utils1": "NODE_OPTIONS='--experimental-vm-modules --experimental-specifier-resolution=node --loader=ts-node/esm/transpile-only' jest"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@types/node": "^20.11.20",
+    "@types/node": "^20.11.24",
     "ts-node": "^10.9.2"
   }
 }

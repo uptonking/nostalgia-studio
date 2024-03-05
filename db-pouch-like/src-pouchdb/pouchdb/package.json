@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@types/chai-as-promised": "^7.1.8",
-    "@types/node": "^20.11.19",
+    "@types/node": "^20.11.24",
     "chai": "3.5.0",
     "chai-as-promised": "5.3.0",
     "import-sync": "^2.2.0",

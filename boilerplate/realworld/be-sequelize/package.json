@@ -1,0 +1,60 @@
+{
+  "name": "@exampleshub/realworld-be-sequelize",
+  "version": "0.0.1111",
+  "description": "simple realworld api built with sequelize.",
+  "keywords": [
+    "realworld",
+    "sequelize",
+    "boilerplate"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index",
+  "scripts": {
+    "build": "npm run clean && npm run compile",
+    "build:dev": "npm run clean && tsc -p tsconfig.json -w",
+    "build:prod": "npm run clean && tsc -p tsconfig.json -w",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "dev": "npm run dev:tsnode",
+    "dev:tsnode": "cross-env NODE_OPTIONS=\"--experimental-loader=ts-node/esm/transpile-only --experimental-specifier-resolution=node  \" node --watch ./src/server.ts",
+    "dev2": "cross-env NODE_OPTIONS=\"--experimental-loader=ts-node/esm/transpile-only --experimental-specifier-resolution=node  \" node --watch ./dist/index.js",
+    "dev3": "cross-env NODE_OPTIONS=\" \" node --watch ./dist/index.js",
+    "lint": "tsc --noEmit && eslint \"src/**/*.{js,ts}\" --quiet --fix",
+    "serve": "node dist/server.js",
+    "start": "npm run dev",
+    "test": "tsc -w"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "errorhandler": "^1.5.1",
+    "express": "^4.18.3",
+    "joi": "^17.12.2",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "nodemailer": "^6.9.11",
+    "otplib": "^12.0.1",
+    "pg": "^8.11.3",
+    "sequelize": "^6.37.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "winston": "^3.12.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/errorhandler": "^1.5.3",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/lodash": "^4.14.202",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^20.11.24",
+    "@types/nodemailer": "^6.4.14",
+    "@types/request": "^2.48.12",
+    "@types/request-promise": "^4.1.51",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.6",
+    "ts-node": "^10.9.2"
+  }
+}

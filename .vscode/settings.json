@@ -36,5 +36,8 @@
     "editor.defaultFormatter": "mervin.markdown-formatter"
   },
   "bookmarks.saveBookmarksInProject": true,
-  "editor.codeActionsOnSave": ["source.organizeImports.sortImports"]
+  "editor.codeActionsOnSave": ["source.organizeImports.sortImports"],
+  "[dotenv]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  }
 }

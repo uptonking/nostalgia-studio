@@ -1,8 +1,13 @@
 {
-  "name": "@exampleshub/realworld-react",
-  "version": "1.0.0",
-  "private": true,
-  "description": "simple react app built with rspack.",
+  "name": "@exampleshub/realworld-fe-react",
+  "version": "0.0.1111",
+  "description": "simple realworld react app built with rspack.",
+  "keywords": [
+    "realworld",
+    "react",
+    "boilerplate"
+  ],
+  "license": "MIT",
   "type": "module",
   "main": "dist/index",
   "scripts": {

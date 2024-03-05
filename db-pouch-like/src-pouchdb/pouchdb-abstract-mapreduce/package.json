@@ -36,6 +36,6 @@
     "pouchdb-binary-utils": "8.0.1111"
   },
   "devDependencies": {
-    "@types/node": "^20.11.19"
+    "@types/node": "^20.11.24"
   }
 }
