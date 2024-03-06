@@ -54,7 +54,6 @@ export default authRouter;
  *                 minLength: 8
  *                 description: At least one number and one letter
  *             example:
- *               name:  name
  *               email: name@example.com
  *               password: password1
  *     responses:

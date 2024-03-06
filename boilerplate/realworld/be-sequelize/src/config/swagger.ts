@@ -7,7 +7,7 @@ export const swaggerOption = {
     },
     servers: [
       {
-        url: `http://localhost:${process.env.PORT || 3000}/api`,
+        url: `http://localhost:${process.env.PORT || 8990}/api`,
       },
     ],
     components: {

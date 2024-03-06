@@ -1,7 +1,7 @@
 import { Op } from 'sequelize';
 
 import { User } from '../models/user';
-import { encryptSync } from '../utils/encrypt';
+import { compareSync, encryptSync } from '../utils/encrypt';
 
 export const createUser = async (payload: any) => {
   payload.password = encryptSync(payload.password);
@@ -9,7 +9,7 @@ export const createUser = async (payload: any) => {
   return user;
 };
 
-export const getUserById = async (id: number) => {
+export const findUserById = async (id: number) => {
   const user = await User.findByPk(id, {
     attributes: { exclude: ['password'] },
   });
@@ -20,10 +20,7 @@ export const getUserById = async (id: number) => {
 };
 
 export const userExists = async (
-  options: { email: string | null; mobile: string | null } = {
-    email: null,
-    mobile: null,
-  },
+  options: { email?: string; mobile?: string } = { email: null, mobile: null },
 ) => {
   if (!options.email) {
     throw new Error('Please provide either of these options: email');
@@ -56,7 +53,7 @@ export const validatePassword = async (email: string, password: string) => {
 
   const user = await User.findOne({ where });
 
-  return User.validPassword(password, user.password);
+  return compareSync(password, user.password);
 };
 
 export const findOneUser = async (options: any) => {
@@ -95,9 +92,7 @@ export const updateUserById = (user: any, userId: number) => {
       user.password = encryptSync(user.password);
     }
 
-    return User.update(user, {
-      where: { id: id },
-    });
+    return User.update(user, { where: { id } });
   }
 };
 

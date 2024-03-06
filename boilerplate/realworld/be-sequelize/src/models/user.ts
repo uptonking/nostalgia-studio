@@ -1,62 +1,83 @@
-import { DataTypes, Model } from 'sequelize';
-
-import { sequelizeConnection } from '../db/connection';
-import { compareSync } from '../utils/encrypt';
+import { DataTypes, Model, type Sequelize } from 'sequelize';
 
 export class User extends Model {
-  public id!: number;
-  public name!: string;
-  public email!: string;
-  public password!: string;
-  public mobile!: string;
+  declare id: number;
+  declare username: string;
+  declare email: string;
+  declare password: string;
+  declare mobile: string;
+  declare status: boolean;
+  declare bio?: string;
+  declare image?: string;
+  declare created_at: Date;
+  declare updated_at: Date;
 
-  public status!: boolean;
+  static associate(models) {
+    this.hasMany(models.Article, { foreignKey: 'userId', onDelete: 'CASCADE' });
 
-  // timestamps!
-  public readonly created_at!: Date;
-  public readonly last_updated!: Date;
+    this.belongsToMany(models.Article, {
+      through: 'Favorites',
+      as: 'favorites',
+      foreignKey: 'userId',
+      timestamps: false,
+    });
 
-  static validPassword: (password: string, hash: string) => boolean;
+    this.belongsToMany(User, {
+      through: 'Followers',
+      as: 'followers',
+      foreignKey: 'userId',
+      timestamps: false,
+    });
+    this.belongsToMany(User, {
+      through: 'Followers',
+      as: 'following',
+      foreignKey: 'followerId',
+      timestamps: false,
+    });
+
+    this.hasMany(models.Comment, { foreignKey: 'articleId' });
+  }
+
+  static initModel(sequelize: Sequelize) {
+    User.init(
+      {
+        id: {
+          type: DataTypes.INTEGER,
+          autoIncrement: true,
+          primaryKey: true,
+        },
+        username: {
+          type: DataTypes.STRING,
+          // allowNull: false,
+        },
+        email: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          unique: true,
+        },
+        mobile: {
+          type: DataTypes.STRING,
+        },
+        password: {
+          type: DataTypes.STRING,
+        },
+        status: {
+          type: DataTypes.INTEGER,
+          defaultValue: 1,
+        },
+        role: {
+          type: DataTypes.INTEGER,
+          defaultValue: 2,
+        },
+        bio: DataTypes.TEXT,
+        image: DataTypes.TEXT,
+      },
+      {
+        sequelize,
+        tableName: 'users',
+        createdAt: 'created_at',
+        updatedAt: 'updated_at',
+      },
+    );
+  }
 }
-
-User.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    password: {
-      type: DataTypes.STRING,
-    },
-    status: {
-      type: DataTypes.INTEGER,
-      defaultValue: 1,
-    },
-    role: {
-      type: DataTypes.INTEGER,
-      defaultValue: 2,
-    },
-  },
-  {
-    sequelize: sequelizeConnection,
-    tableName: 'users',
-    createdAt: 'created_at',
-    updatedAt: 'last_updated',
-  },
-);
-
-User.validPassword = (password: string, hash: string) => {
-  return compareSync(password, hash);
-};
-
-export default User;

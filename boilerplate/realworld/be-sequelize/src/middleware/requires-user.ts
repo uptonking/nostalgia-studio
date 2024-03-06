@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import { getUserById } from '../services/user-service';
+import { findUserById } from '../services/user-service';
 import { get } from '../utils/common';
 
 export const requireUser = async (
@@ -16,12 +16,12 @@ export const requireUser = async (
         .status(403)
         .json({ errorMsg: 'Auth token user not found', error: true });
     }
-    const data = await getUserById(user.id);
+    const data = await findUserById(user.id);
     req.user = data?.toJSON();
 
     return next();
   } catch (err) {
-    let msg = 'Internal Server Error';
+    let msg = 'Internal Server Error ' + JSON.stringify(req.user);
     if (err instanceof Error) {
       msg = err.message;
     } else if (err) {
@@ -30,4 +30,5 @@ export const requireUser = async (
     return res.status(400).json({ errorMsg: msg, error: true });
   }
 };
+
 export default requireUser;

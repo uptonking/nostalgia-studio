@@ -21,22 +21,29 @@ export const registerUser = async (
   next: NextFunction,
 ) => {
   try {
-    let user = req.body;
-    const userExist = await userExists({
+    const user = req.body;
+    const isUserExisted = await userExists({
       email: user.email,
       mobile: user.mobile,
     });
-    if (userExist) {
-      throw new ApiError(400, 'Email or Mobile is alredy used');
+    if (isUserExisted) {
+      throw new ApiError(
+        400,
+        'Email or Mobile already existed for user ' + JSON.stringify(user),
+      );
     }
-    user = await createUser(user);
-    const userData = omit(user?.toJSON(), omitData);
+    const newUser = await createUser(user);
+    const userData = omit(newUser?.toJSON(), omitData);
     const accessToken = sign({ ...userData });
 
-    return res.status(200).json({
-      data: userData,
+    // userData.dataValues['token'] = accessToken;
+    userData['token'] = accessToken;
+
+    return res.status(201).json({
+      // data: userData,
+      user: userData,
       error: false,
-      accessToken,
+      // accessToken,
       msg: 'User registered successfully',
     });
   } catch (err) {
@@ -50,23 +57,26 @@ export const loginUser = async (
   next: NextFunction,
 ) => {
   try {
-    const { email, password } = req.body;
+    const _user = req.body;
+    const { email, password } = _user;
 
     const user = await findOneUser({ email });
     if (!user) {
-      throw new ApiError(400, 'Email id is incorrect');
+      throw new ApiError(400, 'Email/id is Not Found');
     }
 
-    const validPassword = await validatePassword(user.email, password);
-    if (!validPassword) {
-      throw new ApiError(400, 'Password is incorrect');
+    const isPasswordValid = await validatePassword(user.email, password);
+    if (!isPasswordValid) {
+      throw new ApiError(400, 'Password is Incorrect');
     }
     const userData = omit(user?.toJSON(), omitData);
     const accessToken = sign({ ...userData });
+    userData.dataValues['token'] = accessToken;
 
     return res.status(200).json({
-      data: userData,
-      access_token: accessToken,
+      // data: userData,
+      user: userData,
+      // access_token: accessToken,
       error: false,
     });
   } catch (err) {

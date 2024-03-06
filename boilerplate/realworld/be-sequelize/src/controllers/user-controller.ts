@@ -20,13 +20,14 @@ export const updateUser = async (
     const user = await findOneUser({ id: userId });
 
     if (!user) {
-      throw new ApiError(400, 'User not found');
+      throw new ApiError(400, 'User Not Found');
     }
 
     const updated = await updateUserById(body, parseInt(userId, 10));
 
     return res.status(200).json({
-      updated: updated[0],
+      user: body,
+      // updated: updated[0],
       msg: updated[0] ? 'Data updated successfully' : 'failed to update',
       error: false,
     });
@@ -42,7 +43,8 @@ export const getUserData = async (
 ) => {
   try {
     return res.status(200).json({
-      data: req.user,
+      // data: req.user,
+      user: req.user,
       error: false,
     });
   } catch (err) {

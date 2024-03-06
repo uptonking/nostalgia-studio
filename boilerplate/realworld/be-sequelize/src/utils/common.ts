@@ -1,3 +1,5 @@
+export const isDev = process.env.NODE_ENV === 'development';
+
 export function omit(obj: Record<string, unknown>, props: string[]) {
   const _obj = { ...obj };
   props.forEach((prop) => delete _obj[prop]);

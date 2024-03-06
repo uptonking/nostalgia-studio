@@ -13,7 +13,7 @@ export const dbConfig = {
 };
 
 export const jwtConfig = {
-  secret: process.env.SECRET,
+  secret: process.env.JWT_SECRET,
   expiry: process.env.TOKEN_EXPIRY_HOUR,
   saltRound: 3,
 };

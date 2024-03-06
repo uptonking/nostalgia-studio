@@ -12,4 +12,7 @@ npm run dev
 
 - to view api docs, open a browser to http://localhost:8990/api/v1/docs/
 # roadmap
+
+- db query 的逻辑没有try-catch
+
 - 3rd auth

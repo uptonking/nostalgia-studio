@@ -2,17 +2,17 @@ import cors from 'cors';
 import express from 'express';
 import logger from 'morgan';
 
-import { dbSync } from './db/connection';
+import { dbSync } from './db/init';
 import { deserializeUser } from './middleware';
 import { errorHandler } from './middleware/error';
 import { appRouter } from './routes/v1';
+import { isDev } from './utils/common';
 
 const app = express();
 app.use(cors());
-// middleware to handle error
-app.use(errorHandler);
 
-app.use(logger('dev'));
+// HTTP request logger
+app.use(logger(isDev ? 'dev' : 'short'));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -23,7 +23,8 @@ app.use(deserializeUser);
  * main app routes.
  */
 
-app.use('/api/v1', appRouter);
+// app.use('/api/v1', appRouter);
+app.use('/api', appRouter);
 
 /**
  * routes to test
@@ -34,7 +35,8 @@ app.get('/api/', (req, res) => {
 });
 
 /**
- * route to sync db
+ * route to sync db, useful for db schema init/change
+ * - init db here by side-effect import
  */
 app.patch('/api/sync', async (req, res) => {
   try {
@@ -51,6 +53,10 @@ app.patch('/api/sync', async (req, res) => {
     return res.status(400).json({ errorMsg: msg, error: true });
   }
 });
+
+app.get('*', (req, res) =>
+  res.status(404).json({ errors: { body: ['API Route Not Found'] } }),
+);
 
 /**
  * @swagger
@@ -80,7 +86,9 @@ app.patch('/api/sync', async (req, res) => {
  *
  */
 
+// middleware to handle error
+app.use(errorHandler);
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 8990);
 
 export { app };
