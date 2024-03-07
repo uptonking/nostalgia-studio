@@ -6,11 +6,5 @@ export interface customRequest extends Request {
 }
 
 export interface customError extends Error {
-  statusCode: number;
+  statusCode?: number;
 }
-
-export type ControllerFunction = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => void;

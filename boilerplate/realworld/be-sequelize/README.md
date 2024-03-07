@@ -1,4 +1,4 @@
-# realworld-sequelize-api
+# realworld-be-sequelize-api
 - blog-ready realworld api boilerplate built with sequelize
 # quickstart
 
@@ -12,7 +12,6 @@ npm run dev
 
 - to view api docs, open a browser to http://localhost:8990/api/v1/docs/
 # roadmap
+- db tables id migrate from integer to uuid string
 
-- db query 的逻辑没有try-catch
-
-- 3rd auth
+- update sequelize to v7

@@ -1,10 +1,21 @@
 import { Router } from 'express';
 
-import { getAllArticles } from '../../controllers/article-controller';
+import {
+  getAllArticles,
+  getOneArticleBySlug,
+  createArticle,
+} from '../../controllers/article-controller';
+import { requireUser } from '../../middleware/requires-user';
 
 export const articleRouter = Router();
 
+// All Articles - by Author/by Tag/Favorited by user
 articleRouter.get('/', getAllArticles);
+// Create Article
+// articleRouter.post('/', requireUser, newArticle);
+articleRouter.post('/', createArticle);
+// articleRouter.get('/:slug', requireUser, getArticleBySlug);
+articleRouter.get('/:slug', getOneArticleBySlug);
 
 // articleRouter.get("/feed",  articlesFeed);
 

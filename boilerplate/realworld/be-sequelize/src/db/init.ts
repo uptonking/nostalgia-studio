@@ -48,7 +48,7 @@ export async function dbSync() {
 // todo remove effects - sync db when init
 dbSync()
   .then((res) => {
-    logger.info(`\n DB sync with status: ${res.success}`);
+    logger.info(`DB sync with status: ${res.success}`);
   })
   .catch((err) => {
     logger.error('Failed to sync DB', err);

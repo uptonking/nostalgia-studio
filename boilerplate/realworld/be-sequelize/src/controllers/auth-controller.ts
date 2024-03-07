@@ -2,13 +2,18 @@ import type { NextFunction, Request, Response } from 'express';
 
 import { sendOTP } from '../helpers/mail-helper';
 import {
-  createUser,
+  addUser,
   findOneUser,
+  ifUserExists,
   updateUserById,
-  userExists,
   validatePassword,
 } from '../services/user-service';
-import { ApiError } from '../utils/api-error';
+import {
+  AlreadyTakenError,
+  ApiError,
+  NotFoundError,
+  ValidationError,
+} from '../utils/api-error';
 import { omit } from '../utils/common';
 import { sign } from '../utils/jwt';
 import { generateOTP, verifyOTP } from '../utils/otp';
@@ -21,29 +26,24 @@ export const registerUser = async (
   next: NextFunction,
 ) => {
   try {
-    const user = req.body;
-    const isUserExisted = await userExists({
+    const user = req.body.user;
+    const exists = await ifUserExists({
       email: user.email,
       mobile: user.mobile,
     });
-    if (isUserExisted) {
-      throw new ApiError(
-        400,
-        'Email or Mobile already existed for user ' + JSON.stringify(user),
-      );
+    if (exists) {
+      throw new AlreadyTakenError('user email', JSON.stringify(user));
     }
-    const newUser = await createUser(user);
+    const newUser = await addUser(user);
     const userData = omit(newUser?.toJSON(), omitData);
     const accessToken = sign({ ...userData });
 
-    // userData.dataValues['token'] = accessToken;
     userData['token'] = accessToken;
 
-    return res.status(201).json({
+    res.status(201).json({
       // data: userData,
       user: userData,
       error: false,
-      // accessToken,
       msg: 'User registered successfully',
     });
   } catch (err) {
@@ -57,26 +57,26 @@ export const loginUser = async (
   next: NextFunction,
 ) => {
   try {
-    const _user = req.body;
+    const _user = req.body.user;
     const { email, password } = _user;
 
     const user = await findOneUser({ email });
     if (!user) {
-      throw new ApiError(400, 'Email/id is Not Found');
+      throw new NotFoundError(email, 'user email/id is Not Found');
     }
 
     const isPasswordValid = await validatePassword(user.email, password);
     if (!isPasswordValid) {
-      throw new ApiError(400, 'Password is Incorrect');
+      throw new ValidationError('Password is Incorrect');
     }
     const userData = omit(user?.toJSON(), omitData);
     const accessToken = sign({ ...userData });
-    userData.dataValues['token'] = accessToken;
+    // userData.dataValues['token'] = accessToken;
+    userData['token'] = accessToken;
 
-    return res.status(200).json({
+    res.status(200).json({
       // data: userData,
       user: userData,
-      // access_token: accessToken,
       error: false,
     });
   } catch (err) {

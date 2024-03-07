@@ -12,7 +12,7 @@ const app = express();
 app.use(cors());
 
 // HTTP request logger
-app.use(logger(isDev ? 'dev' : 'short'));
+app.use(logger(isDev ? 'dev' : 'common'));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -55,7 +55,9 @@ app.patch('/api/sync', async (req, res) => {
 });
 
 app.get('*', (req, res) =>
-  res.status(404).json({ errors: { body: ['API Route Not Found'] } }),
+  res
+    .status(404)
+    .json({ errors: { body: ['API Route Not Found ' + req.url] } }),
 );
 
 /**

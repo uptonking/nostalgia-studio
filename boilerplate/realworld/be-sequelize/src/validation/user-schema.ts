@@ -5,7 +5,8 @@ export const registerSchema = Joi.object({
   password: Joi.string().min(8).required(),
   confirm_password: Joi.string().min(8),
   username: Joi.string(),
-  mobile: Joi.string().min(10),
+  mobile: Joi.string(),
+  // mobile: Joi.string().length(11),
   country_code: Joi.string(),
 });
 

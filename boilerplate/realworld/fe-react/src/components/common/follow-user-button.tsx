@@ -18,15 +18,14 @@ export function FollowUserButton({
   return (
     <button
       className={cx('btn', 'btn-sm', 'action-btn', 'mr-sm', {
-        'btn-secondary': Boolean(profile.following),
-        'btn-outline-secondary': !Boolean(profile.following),
+        'btn-secondary': Boolean(profile?.following),
+        'btn-outline-secondary': !Boolean(profile?.following),
       })}
       onClick={onClick}
       disabled={loading}
     >
       <i className='ion-plus-round' />
-      &nbsp;
-      {profile.following ? 'Unfollow' : 'Follow'}
+      {profile?.following ? 'Unfollow' : 'Follow'}
     </button>
   );
 }

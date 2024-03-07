@@ -3,7 +3,7 @@ import { Op } from 'sequelize';
 import { User } from '../models/user';
 import { compareSync, encryptSync } from '../utils/encrypt';
 
-export const createUser = async (payload: any) => {
+export const addUser = async (payload: any) => {
   payload.password = encryptSync(payload.password);
   const user = await User.create(payload);
   return user;
@@ -17,43 +17,6 @@ export const findUserById = async (id: number) => {
     throw new Error('User not found');
   }
   return user;
-};
-
-export const userExists = async (
-  options: { email?: string; mobile?: string } = { email: null, mobile: null },
-) => {
-  if (!options.email) {
-    throw new Error('Please provide either of these options: email');
-  }
-  const where: any = {
-    [Op.or]: [],
-  };
-  if (options.email) {
-    where[Op.or].push({ email: options.email });
-  }
-  if (options.mobile) {
-    where[Op.or].push({ email: options.mobile });
-  }
-
-  const users = await User.findAll({ where: where });
-  return users.length > 0;
-};
-
-export const validatePassword = async (email: string, password: string) => {
-  if (!email && !password) {
-    throw new Error('Please provide email and password');
-  }
-  const where = {
-    [Op.or]: [] as any,
-  };
-
-  if (email) {
-    where[Op.or].push({ email: email });
-  }
-
-  const user = await User.findOne({ where });
-
-  return compareSync(password, user.password);
 };
 
 export const findOneUser = async (options: any) => {
@@ -76,6 +39,26 @@ export const findOneUser = async (options: any) => {
     attributes: { exclude: ['password'] },
   });
   return user;
+};
+
+export const ifUserExists = async (
+  options: { email?: string; mobile?: string } = { email: null, mobile: null },
+) => {
+  if (!options.email) {
+    throw new Error('Please provide either of these options: email');
+  }
+  const where: any = {
+    [Op.or]: [],
+  };
+  if (options.email) {
+    where[Op.or].push({ email: options.email });
+  }
+  if (options.mobile) {
+    where[Op.or].push({ email: options.mobile });
+  }
+
+  const users = await User.findAll({ where: where });
+  return users.length > 0;
 };
 
 export const updateUserById = (user: any, userId: number) => {
@@ -107,4 +90,21 @@ export const deleteUserById = (userId: number) => {
   return User.destroy({
     where: { id: userId },
   });
+};
+
+export const validatePassword = async (email: string, password: string) => {
+  if (!email && !password) {
+    throw new Error('Please provide email and password');
+  }
+  const where = {
+    [Op.or]: [] as any,
+  };
+
+  if (email) {
+    where[Op.or].push({ email: email });
+  }
+
+  const user = await User.findOne({ where });
+
+  return compareSync(password, user.password);
 };

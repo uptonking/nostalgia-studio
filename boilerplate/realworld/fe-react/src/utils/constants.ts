@@ -1,6 +1,7 @@
 export const APP_NAME = 'realworld-react';
 
-export const API_MAIN_SERVER = 'https://api.realworld.io/api';
+export const API_MAIN_SERVER = '/api';
+export const API_MAIN_SERVER3 = 'https://api.realworld.io/api';
 export const API_MAIN_SERVER2 =
   'https://conduit-realworld-example-app.fly.dev/api';
 

@@ -16,6 +16,7 @@ export const requireUser = async (
         .status(403)
         .json({ errorMsg: 'Auth token user not found', error: true });
     }
+
     const data = await findUserById(user.id);
     req.user = data?.toJSON();
 
@@ -30,5 +31,3 @@ export const requireUser = async (
     return res.status(400).json({ errorMsg: msg, error: true });
   }
 };
-
-export default requireUser;

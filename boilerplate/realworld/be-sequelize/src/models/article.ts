@@ -39,4 +39,13 @@ export class Article extends Model {
       },
     );
   }
+
+  toJSON() {
+    return {
+      // use this.get() to avoid error: model.get is not a function
+      ...this.get(),
+      // id: undefined,
+      // userId: undefined,
+    };
+  }
 }

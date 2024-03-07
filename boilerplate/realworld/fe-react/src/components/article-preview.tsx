@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 
 import type { ArticleListAction } from '../reducers/article-feed';
 import type { IArticle } from '../types';
-import { AuthorAvatar } from './common/author-avatar';
 import { ArticleTags } from './common/article-tags';
+import { AuthorAvatar } from './common/author-avatar';
 import { FavoriteButton } from './common/favorite-button';
 
 type ArticlePreviewProps = {
@@ -27,9 +27,11 @@ export function ArticlePreview({ article, dispatch }: ArticlePreviewProps) {
       <div className='article-meta'>
         <AuthorAvatar article={article} />
         <div className='pull-xs-right'>
-          <FavoriteButton article={article} dispatch={dispatch}>
-            {article.favoritesCount}
-          </FavoriteButton>
+          {article.favoritesCount ? (
+            <FavoriteButton article={article} dispatch={dispatch}>
+              {article.favoritesCount}
+            </FavoriteButton>
+          ) : null}
         </div>
       </div>
 

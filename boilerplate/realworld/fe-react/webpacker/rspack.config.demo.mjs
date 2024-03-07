@@ -73,6 +73,17 @@ const demoConfig = merge(
       chunkIds: 'named',
       minimize: false,
     },
+    devServer: {
+      // contentBase: path.resolve(__dirname, '../build'),
+      proxy: [
+        {
+          context: ['/api'],
+          target: 'http://localhost:8990',
+          secure: false,
+          changeOrigin: true,
+        },
+      ],
+    },
   },
 );
 

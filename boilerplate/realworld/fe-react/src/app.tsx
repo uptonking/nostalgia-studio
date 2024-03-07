@@ -73,9 +73,9 @@ export function App() {
           <Route
             path='editor'
             element={
-              <PrivateRoute>
-                <Editor />
-              </PrivateRoute>
+              <Editor />
+              // <PrivateRoute>
+              // </PrivateRoute>
             }
           />
           <Route

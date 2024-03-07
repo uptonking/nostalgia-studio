@@ -1,4 +1,4 @@
-# realworld-react-app
+# realworld-fe-react-app
 - blog-style realworld example web app built with react
 # quickstart
 
@@ -17,4 +17,3 @@ npm start
 
 - users logout automatically when refreshing the page
   - incorrect logic for jwt-decode
-

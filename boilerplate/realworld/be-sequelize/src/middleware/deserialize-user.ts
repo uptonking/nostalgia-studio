@@ -9,28 +9,36 @@ export async function deserializeUser(
   res: Response,
   next: NextFunction,
 ) {
-  const { headers } = req;
-  if (!headers.authorization) return next();
+  try {
+    const { headers } = req;
+    if (!headers.authorization) return next();
 
-  // const bearerToken = get(req, 'headers.authorization');
-  // let token = bearerToken;
-  // if (bearerToken && bearerToken.startsWith('Bearer ')) {
-  //   token = bearerToken.substring(7);
-  // }
-  const token = headers.authorization.split(' ')[1];
-  if (!token) throw new SyntaxError('Token missing or malformed');
-  // if (!token) return next();
+    // const bearerToken = get(req, 'headers.authorization');
+    // let token = bearerToken;
+    // if (bearerToken && bearerToken.startsWith('Bearer ')) {
+    //   token = bearerToken.substring(7);
+    // }
+    const token = headers.authorization.split(' ')[1];
+    if (!token) throw new SyntaxError('Token missing or malformed');
+    // if (!token) return next();
 
-  const { decoded, expired, valid, msg: errorMsg } = verify(token);
+    const { decoded, expired, valid, msg: errorMsg } = verify(token);
 
-  if (valid && !expired) {
-    req.user = decoded;
-    return next();
-  } else {
-    return res.status(403).json({
-      error: true,
-      errorMsg: errorMsg,
-    });
+    if (!valid) {
+      throw new Error('Invalid Token');
+    }
+
+    if (valid && !expired) {
+      req.user = decoded;
+      return next();
+    } else {
+      return res.status(403).json({
+        error: true,
+        errorMsg: errorMsg,
+      });
+    }
+  } catch (error) {
+    next(error);
   }
 }
 

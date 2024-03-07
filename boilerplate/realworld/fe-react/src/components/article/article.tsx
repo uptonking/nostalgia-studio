@@ -29,9 +29,10 @@ export function Article() {
 
     const fetchArticle = async () => {
       try {
-        const [articlePayload, commentsPayload] = await Promise.all([
+        // const [articlePayload, commentsPayload] = await Promise.all([
+        const [articlePayload] = await Promise.all([
           getArticle(slug),
-          getArticleComments(slug),
+          // getArticleComments(slug),
         ]);
 
         // console.log('==articlePayload, ', articlePayload.data);
@@ -40,7 +41,8 @@ export function Article() {
             type: 'FETCH_ARTICLE_SUCCESS',
             payload: {
               article: (articlePayload as any).data.article,
-              comments: (commentsPayload as any).data.comments,
+              comments: [],
+              // comments: (commentsPayload as any)?.data?.comments,
             },
           });
         }
@@ -92,7 +94,7 @@ export function Article() {
           <ArticleMeta article={article} dispatch={dispatch} />
         </div> */}
 
-        <CommentContainer comments={comments} slug={slug} dispatch={dispatch} />
+        {/* <CommentContainer comments={comments} slug={slug} dispatch={dispatch} /> */}
       </div>
     </div>
   );

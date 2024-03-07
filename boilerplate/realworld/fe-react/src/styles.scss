@@ -80,6 +80,8 @@ a:hover {
   background-color: #701a75;
   color: #fff;
 }
+.btn-brand-primary:active:focus,
+.btn-brand-primary:active,
 .btn-brand-primary:focus,
 .btn-brand-primary:hover {
   border-color: #701a75;
@@ -91,6 +93,8 @@ a:hover {
   background-color: #fff;
   color: #701a75;
 }
+.btn-brand-primary-outline:active:focus,
+.btn-brand-primary-outline:active,
 .btn-brand-primary-outline:focus,
 .btn-brand-primary-outline:hover {
   border-color: #701a75;
@@ -199,6 +203,13 @@ a:hover {
     max-width: 75%;
     margin-left: 12.5%;
     margin-right: 12.5%;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-page .page > .row {
+    flex-direction: column;
+    gap: 1rem;
   }
 }
 

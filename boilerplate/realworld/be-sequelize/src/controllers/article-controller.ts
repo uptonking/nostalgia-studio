@@ -1,8 +1,13 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import { Tag } from '../models/tag';
-import { User } from '../models/user';
-import { findAllArticles } from '../services/article-service';
+import {
+  addArticle,
+  findAllArticles,
+  findOneArticleBySlug,
+  findSlug,
+} from '../services/article-service';
+import { AlreadyTakenError, FieldRequiredError } from '../utils/api-error';
+import { convertToTagList, slugify } from '../utils/article';
 
 export const getAllArticles = async (
   req: Request,
@@ -11,25 +16,6 @@ export const getAllArticles = async (
 ) => {
   try {
     const { author, tag, favorited, limit = 5, offset = 0 } = req.query;
-    const searchOptions = {
-      include: [
-        {
-          model: Tag,
-          as: 'tagList',
-          attributes: ['name'],
-          ...(tag && { where: { name: tag } }),
-        },
-        {
-          model: User,
-          as: 'author',
-          attributes: { exclude: ['email'] },
-          ...(author && { where: { username: author } }),
-        },
-      ],
-      limit: parseInt(limit as string, 10),
-      offset: Number(offset) * Number(limit),
-      order: [['createdAt', 'DESC']],
-    };
 
     let articles = { rows: [], count: 0 };
     if (favorited) {
@@ -37,20 +23,76 @@ export const getAllArticles = async (
       // articles.rows = await user.getFavorites(searchOptions);
       // articles.count = await user.countFavorites();
     } else {
-      articles = await findAllArticles(searchOptions);
+      articles = await findAllArticles(req.query);
     }
 
-    // for (const article of articles.rows) {
-    //   const articleTags = await article.getTagList();
-    // appendTagList(articleTags, article);
-    // await appendFollowers(loggedUser, article);
-    // await appendFavorites(loggedUser, article);
-    //   delete article.dataValues.Favorites;
-    // }
+    for (const article of articles.rows) {
+      const articleTags = await article.getTagList();
+      convertToTagList(articleTags, article);
+      // await appendFollowers(loggedUser, article);
+      // await appendFavorites(loggedUser, article);
+      delete article.dataValues.Favorites;
+    }
 
-    return res
+    res
       .status(200)
       .json({ articles: articles.rows, articlesCount: articles.count });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getOneArticleBySlug = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    // const user = req.user;
+    const { slug } = req.params;
+    const article = await findOneArticleBySlug(slug);
+
+    // @ts-expect-error fix-types
+    convertToTagList(article.tagList, article);
+    // await appendFollowers(loggedUser, article);
+    // await appendFavorites(loggedUser, article);
+
+    return res.json({ article });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createArticle = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const user = req.user;
+    // if (!user) throw new UnauthorizedError();
+
+    const { title, description, body, tagList } = req.body.article;
+    if (!title) throw new FieldRequiredError('title');
+    if (!description) throw new FieldRequiredError('description');
+    if (!body) throw new FieldRequiredError('article body');
+
+    const slug = slugify(title);
+    const slugInDB = await findSlug(slug);
+    if (slugInDB) throw new AlreadyTakenError('Article with Title ' + slug);
+
+    const article = await addArticle(
+      {
+        title,
+        slug,
+        description,
+        body,
+        tagList,
+      },
+      user,
+    );
+
+    res.status(201).json({ article });
   } catch (error) {
     next(error);
   }

@@ -10,7 +10,7 @@ import { ListErrors } from './common/list-error';
 export function Editor() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  // console.log('==Editor-slug, ', slug);
+  // console.log(';; slug, ', slug);
 
   const {
     state: { user },
@@ -74,7 +74,7 @@ export function Editor() {
         title,
         description,
         body,
-        tagList: tag && tag.trim() !== '' ? [tag] : [],
+        tagList: tag && tag.trim() !== '' ? [tag.trim()] : [],
         user,
       };
       let payload;
