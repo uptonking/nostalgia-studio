@@ -14,4 +14,13 @@ npm run dev
 # roadmap
 - db tables id migrate from integer to uuid string
 
+- fix getAllArticles query string filters
+
+- make joint-table/relation-table explicit
+
 - update sequelize to v7
+
+- findAllArticles
+  - return minimal articles data, only necessary data
+
+- feat follow api

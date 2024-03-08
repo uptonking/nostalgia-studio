@@ -27,10 +27,14 @@ export const findAllArticles = async (options: any) => {
     order: [['createdAt', 'DESC']],
   };
 
-  return await Article.findAndCountAll(options);
+  // @ts-expect-error fix-types
+  return await Article.findAndCountAll(searchOptions);
 };
 
-export const findOneArticleBySlug = async (slug: string) => {
+export const findOneArticleBySlug = async (
+  slug: string,
+  enableInclude = false,
+) => {
   const includeOptions = [
     { model: Tag, as: 'tagList', attributes: ['name'] },
     { model: User, as: 'author', attributes: { exclude: ['email'] } },
@@ -38,9 +42,8 @@ export const findOneArticleBySlug = async (slug: string) => {
 
   const article = await Article.findOne({
     where: { slug },
-    include: includeOptions,
+    ...(enableInclude && { include: includeOptions }),
   });
-  if (!article) throw new NotFoundError('Article');
 
   return article;
 };

@@ -7,8 +7,8 @@ import {
   getProfile,
   unfollowProfile,
 } from '../../api/profile-api';
-import { useAuth } from '../../context/auth';
-import type { IProfile } from '../../types';
+import { useAuth } from '../../hooks/use-auth-provider';
+import type { ProfileType } from '../../types';
 import { AVATAR_IMAGE_FALLBACK } from '../../utils/constants';
 import { FollowUserButton } from '../common/follow-user-button';
 import { ProfileArticles } from './profile-articles';
@@ -20,7 +20,7 @@ export function Profile() {
     state: { user },
   } = useAuth();
 
-  const [profile, setProfile] = useState<IProfile | null>(null);
+  const [profile, setProfile] = useState<ProfileType | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

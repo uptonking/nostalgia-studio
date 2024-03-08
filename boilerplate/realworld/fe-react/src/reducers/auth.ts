@@ -1,4 +1,4 @@
-import type { IUser } from '../types';
+import type { UserType } from '../types';
 
 export type AuthAction =
   | { type: 'LOGIN' }
@@ -6,12 +6,12 @@ export type AuthAction =
   | {
       // used to update user data in state, useful for register and login
       type: 'LOAD_USER';
-      user: IUser;
+      user: UserType;
     };
 
 export interface AuthState {
   isAuthenticated: boolean;
-  user: IUser | null;
+  user: UserType | null;
 }
 
 export const initialState: AuthState = {

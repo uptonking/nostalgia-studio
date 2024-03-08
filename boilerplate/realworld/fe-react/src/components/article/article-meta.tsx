@@ -3,12 +3,12 @@ import * as React from 'react';
 import cx from 'clsx';
 
 import type { ArticleAction } from '../../reducers/article';
-import type { IArticle } from '../../types';
+import type { ArticleType } from '../../types';
 import { AuthorAvatar } from '../common/author-avatar';
 import { ArticleActions } from './article-actions';
 
 type ArticleMetaProps = {
-  article: IArticle;
+  article: ArticleType;
   dispatch: React.Dispatch<ArticleAction>;
   className?: string;
 };

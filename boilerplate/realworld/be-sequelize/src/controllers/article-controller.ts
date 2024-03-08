@@ -6,7 +6,11 @@ import {
   findOneArticleBySlug,
   findSlug,
 } from '../services/article-service';
-import { AlreadyTakenError, FieldRequiredError } from '../utils/api-error';
+import {
+  AlreadyTakenError,
+  FieldRequiredError,
+  NotFoundError,
+} from '../utils/api-error';
 import { convertToTagList, slugify } from '../utils/article';
 
 export const getAllArticles = async (
@@ -50,14 +54,15 @@ export const getOneArticleBySlug = async (
   try {
     // const user = req.user;
     const { slug } = req.params;
-    const article = await findOneArticleBySlug(slug);
+    const article = await findOneArticleBySlug(slug, true);
+    if (!article) throw new NotFoundError('Article ' + slug);
 
     // @ts-expect-error fix-types
     convertToTagList(article.tagList, article);
     // await appendFollowers(loggedUser, article);
     // await appendFavorites(loggedUser, article);
 
-    return res.json({ article });
+    res.status(200).json({ article });
   } catch (error) {
     next(error);
   }

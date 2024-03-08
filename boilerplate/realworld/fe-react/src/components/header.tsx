@@ -3,8 +3,8 @@ import * as React from 'react';
 import { Link, type LinkProps, NavLink } from 'react-router-dom';
 
 import logo from '../assets/images/realworld-logo.png';
-import { useAuth } from '../context/auth';
-import type { IUser } from '../types';
+import { useAuth } from '../hooks/use-auth-provider';
+import type { UserType } from '../types';
 import { APP_NAME } from '../utils/constants';
 
 export function Header() {
@@ -27,7 +27,7 @@ export function Header() {
   );
 }
 
-const LoggedInView = ({ user: { username, image } }: { user: IUser }) => (
+const LoggedInView = ({ user: { username, image } }: { user: UserType }) => (
   <ul className='nav navbar-nav pull-xs-right'>
     {/* <li className='nav-item'>
       <NaviLink to='/'>Home</NaviLink>

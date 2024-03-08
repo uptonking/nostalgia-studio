@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 
 import { findUserById } from '../services/user-service';
+import { UnauthorizedError } from '../utils/api-error';
 import { get } from '../utils/common';
 
 export const requireUser = async (
@@ -12,9 +13,10 @@ export const requireUser = async (
     const user: any = get(req, 'user');
 
     if (!user) {
-      return res
-        .status(403)
-        .json({ errorMsg: 'Auth token user not found', error: true });
+      // return res
+      //   .status(403)
+      //   .json({ errorMsg: 'Auth token user not found', error: true });
+      next(new UnauthorizedError());
     }
 
     const data = await findUserById(user.id);

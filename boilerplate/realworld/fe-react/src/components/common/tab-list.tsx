@@ -2,12 +2,12 @@ import * as React from 'react';
 
 import cx from 'clsx';
 
-import { useArticlesFeed } from '../../context/articles';
-import { useAuth } from '../../context/auth';
-import type { ITab } from '../../reducers/article-feed';
+import { useArticlesFeed } from '../../hooks/use-articles-provider';
+import { useAuth } from '../../hooks/use-auth-provider';
+import type { TabType } from '../../reducers/article-feed';
 
 type TabsListProps = {
-  data: ITab[];
+  data: TabType[];
 };
 
 export function TabList({ data }: TabsListProps) {
@@ -15,12 +15,14 @@ export function TabList({ data }: TabsListProps) {
     state: { user },
   } = useAuth();
 
+  const tabsData = user ? data : [data[1]];
+
   const {
     state: { selectedTab },
     dispatch,
   } = useArticlesFeed();
 
-  const tabs = data.map((tab) => (
+  const tabsRElem = tabsData.map((tab) => (
     <Tab
       key={tab.type}
       isSelected={selectedTab.type === tab.type}
@@ -31,14 +33,14 @@ export function TabList({ data }: TabsListProps) {
   ));
 
   if (selectedTab.type === 'TAG') {
-    tabs.push(
+    tabsRElem.push(
       <Tab key={selectedTab.type} isSelected={true} onClick={() => {}}>
-        #{selectedTab.label}
+        #️⃣<span className='selected-tag'>{selectedTab.label} </span>
       </Tab>,
     );
   }
 
-  return <ul className='nav nav-pills outline-active'>{tabs}</ul>;
+  return <ul className='nav nav-pills outline-active'>{tabsRElem}</ul>;
 }
 
 type TabProps = {

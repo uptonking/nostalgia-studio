@@ -1,30 +1,34 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { Link } from 'react-router-dom';
 
 import { deleteComment } from '../../api/comments-api';
 import type { ArticleAction } from '../../reducers/article';
-import type { IComment, IUser } from '../../types';
+import type { CommentType, UserType } from '../../types';
 import { getDateISOStrWithTimezone } from '../../utils/common';
+import { AVATAR_IMAGE_FALLBACK } from '../../utils/constants';
 
 type CommentProps = {
-  comment: IComment;
+  comment: CommentType;
   slug: string;
-  user: IUser | null;
+  user: UserType | null;
   dispatch: React.Dispatch<ArticleAction>;
 };
 
 export function Comment({ comment, slug, user, dispatch }: CommentProps) {
-  const showDeleteButton = user && user.username === comment.author.username;
+  const showDeleteButton = useMemo(
+    () => user && user.username === comment.author.username,
+    [comment.author.username, user],
+  );
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     try {
       await deleteComment(slug, comment.id);
       dispatch({ type: 'DELETE_COMMENT', commentId: comment.id });
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [comment.id, dispatch, slug]);
 
   const createdDateText = useMemo(
     () => getDateISOStrWithTimezone(new Date(comment.createdAt).getTime()),
@@ -37,9 +41,12 @@ export function Comment({ comment, slug, user, dispatch }: CommentProps) {
         <p className='card-text'>{comment.body}</p>
       </div>
       <div className='card-footer'>
-        <Link to={`/@${comment.author.username}`} className='comment-author'>
+        <Link
+          to={`/profile/${comment.author.username}`}
+          className='comment-author'
+        >
           <img
-            src={comment.author.image}
+            src={comment.author.image || AVATAR_IMAGE_FALLBACK}
             className='comment-author-img'
             alt={comment.author.username}
           />
@@ -53,9 +60,13 @@ export function Comment({ comment, slug, user, dispatch }: CommentProps) {
           {createdDateText.slice(0, 16).replace('T', ' ')}
         </span>
         {showDeleteButton && (
-          <span className='mod-options'>
-            <i className='ion-trash-a' onClick={handleDelete} />
-          </span>
+          <button
+            className='mod-options btn-outline-secondary'
+            onClick={handleDelete}
+            title='Delete Comment'
+          >
+            X
+          </button>
         )}
       </div>
     </div>

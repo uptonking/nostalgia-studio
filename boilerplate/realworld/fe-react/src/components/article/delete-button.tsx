@@ -3,9 +3,9 @@ import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { deleteArticle } from '../../api/article-api';
-import type { IArticle } from '../../types';
+import type { ArticleType } from '../../types';
 
-export function DeleteButton({ article }: { article: IArticle }) {
+export function DeleteButton({ article }: { article: ArticleType }) {
   const navigate = useNavigate();
 
   const handleDelete = async () => {

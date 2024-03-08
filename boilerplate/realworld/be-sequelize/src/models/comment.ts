@@ -1,6 +1,8 @@
 import { DataTypes, Model, type Sequelize } from 'sequelize';
 
 export class Comment extends Model {
+  declare userId: number;
+
   static associate(models) {
     this.belongsTo(models.Article, { foreignKey: 'articleId' });
     this.belongsTo(models.User, { as: 'author', foreignKey: 'userId' });
@@ -22,5 +24,13 @@ export class Comment extends Model {
         tableName: 'comments',
       },
     );
+  }
+
+  toJSON() {
+    return {
+      ...this.get(),
+      articleId: undefined,
+      userId: undefined,
+    };
   }
 }

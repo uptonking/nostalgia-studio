@@ -1,9 +1,9 @@
-import type { IUser } from '../types';
+import type { UserType } from '../types';
 import { setLocalStorage } from '../utils/common';
 import API, { JWT_TOKEN_KEY } from './api-utils';
 
 type User = {
-  user: IUser & { token: string };
+  user: UserType & { token: string };
 };
 
 function handleUserResponse({ user: { token, ...user } }: User) {
@@ -46,7 +46,7 @@ export async function register(user: {
   // });
 }
 
-export function updateUser(user: IUser & Partial<{ password: string }>) {
+export function updateUser(user: UserType & Partial<{ password: string }>) {
   return API.put<User>('/user', { user });
 
   // return mockApi.updateUser({ user });

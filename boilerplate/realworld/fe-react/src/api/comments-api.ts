@@ -1,12 +1,12 @@
-import type { IComment } from '../types';
+import type { CommentType } from '../types';
 import API from './api-utils';
 
 type Comment = {
-  comment: IComment;
+  comment: CommentType;
 };
 
 type Comments = {
-  comments: Array<IComment>;
+  comments: Array<CommentType>;
 };
 
 export function createComment(slug: string, comment: { body: string }) {

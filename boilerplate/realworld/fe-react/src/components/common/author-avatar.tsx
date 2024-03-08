@@ -2,12 +2,12 @@ import React, { useMemo } from 'react';
 
 import { Link } from 'react-router-dom';
 
-import type { IArticle } from '../../types';
+import type { ArticleType } from '../../types';
 import { getDateISOStrWithTimezone } from '../../utils/common';
 import { AVATAR_IMAGE_FALLBACK } from '../../utils/constants';
 
 type ArticleAvatarProps = {
-  article: IArticle;
+  article: ArticleType;
 };
 
 const defaultProps = {

@@ -8,6 +8,8 @@ npm start
 ```
 
 - open a browser and go to http://localhost:8999
+# fixme
+- refresh page for nested routes
 # roadmap
 - 书写文章时，支持多个tag
 
@@ -17,3 +19,5 @@ npm start
 
 - users logout automatically when refreshing the page
   - incorrect logic for jwt-decode
+
+- feat/home: random/换一换

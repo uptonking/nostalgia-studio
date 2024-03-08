@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { Navigate, type RouteProps } from 'react-router-dom';
 
-import { useAuth } from '../context/auth';
+import { useAuth } from '../hooks/use-auth-provider';
 
 export function PrivateRoute({ children }: RouteProps) {
   const {

@@ -2,10 +2,10 @@ import * as React from 'react';
 
 import cx from 'clsx';
 
-import type { IProfile } from '../../types';
+import type { ProfileType } from '../../types';
 
 type FollowUserButtonProps = {
-  profile: IProfile;
+  profile: ProfileType;
   onClick: () => void;
   loading: boolean;
 };

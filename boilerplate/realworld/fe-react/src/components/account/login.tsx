@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 
 import { login } from '../../api/auth-api';
-import { useAuth } from '../../context/auth';
-import type { IErrors } from '../../types';
+import { useAuth } from '../../hooks/use-auth-provider';
+import type { ErrorsType } from '../../types';
 import { ListErrors } from '../common/list-error';
 
 export function Login() {
@@ -18,7 +18,7 @@ export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<IErrors | null>();
+  const [errors, setErrors] = useState<ErrorsType | null>();
 
   const handleSubmit = async (event: React.SyntheticEvent) => {
     event.preventDefault();

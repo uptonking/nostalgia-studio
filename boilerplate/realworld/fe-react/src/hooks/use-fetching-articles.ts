@@ -7,10 +7,10 @@ import {
   getArticlesFavoritedBy,
   getFeedArticles,
 } from '../api/article-api';
-import { useArticlesFeed } from '../context/articles';
-import type { ITab } from '../reducers/article-feed';
+import type { TabType } from '../reducers/article-feed';
+import { useArticlesFeed } from './use-articles-provider';
 
-const loadArticles = (tab: ITab, page = 0) => {
+const loadArticles = (tab: TabType, page = 0) => {
   switch (tab.type) {
     case 'FEED':
       return getFeedArticles();
@@ -28,7 +28,7 @@ const loadArticles = (tab: ITab, page = 0) => {
   }
 };
 
-export const useArticlesFeeds = () => {
+export const useFetchingArticles = () => {
   const {
     state: {
       articles,

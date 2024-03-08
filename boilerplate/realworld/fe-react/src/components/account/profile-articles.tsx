@@ -1,8 +1,8 @@
 import React, { useEffect, useReducer } from 'react';
 
-import { ArticlesFeedProvider } from '../../context/articles';
-import { useAuth } from '../../context/auth';
-import type { ITab } from '../../reducers/article-feed';
+import { ArticlesFeedProvider } from '../../hooks/use-articles-provider';
+import { useAuth } from '../../hooks/use-auth-provider';
+import type { TabType } from '../../reducers/article-feed';
 import { ArticlesFeed } from '../articles-feed';
 import { TabList } from '../common/tab-list';
 
@@ -15,11 +15,11 @@ export function ProfileArticles({ username }: { username: string }) {
     user && user.username === username ? 'My ' : ''
   }Articles`;
 
-  const tabsData: Array<ITab> = [
+  const tabsData: Array<TabType> = [
     { type: 'AUTHORED', label: authorLabel, username },
     {
       type: 'FAVORITES',
-      label: 'Favorited Articles',
+      label: 'Favorited',
       username,
     },
   ];

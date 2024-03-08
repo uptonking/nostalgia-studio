@@ -1,22 +1,22 @@
-import type { IArticle, IComment } from '../types';
+import type { ArticleType, CommentType } from '../types';
 
 export type ArticleAction =
   | { type: 'FETCH_ARTICLE_START' }
   | {
       type: 'FETCH_ARTICLE_SUCCESS';
-      payload: { article: IArticle; comments: IComment[] };
+      payload: { article: ArticleType; comments: CommentType[] };
     }
   | { type: 'FETCH_ARTICLE_ERROR'; error: unknown }
-  | { type: 'ARTICLE_FAVORITED'; payload: { article: IArticle } }
-  | { type: 'ARTICLE_UNFAVORITED'; payload: { article: IArticle } }
-  | { type: 'ADD_COMMENT'; payload: { comment: IComment } }
+  | { type: 'ARTICLE_FAVORITED'; payload: { article: ArticleType } }
+  | { type: 'ARTICLE_UNFAVORITED'; payload: { article: ArticleType } }
+  | { type: 'ADD_COMMENT'; payload: { comment: CommentType } }
   | { type: 'DELETE_COMMENT'; commentId: number }
   | { type: 'FOLLOW_AUTHOR' }
   | { type: 'UNFOLLOW_AUTHOR' };
 
 export interface ArticleState {
-  article: IArticle | null;
-  comments: Array<IComment>;
+  article: ArticleType | null;
+  comments: Array<CommentType>;
   loading: boolean;
   error: unknown;
 }

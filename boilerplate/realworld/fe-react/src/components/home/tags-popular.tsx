@@ -1,10 +1,9 @@
-import * as React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { getTags } from '../../api/tags-api';
-import { useArticlesFeed } from '../../context/articles';
+import { useArticlesFeed } from '../../hooks/use-articles-provider';
 
-export function Tags() {
+export function TagsPopular() {
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const { dispatch } = useArticlesFeed();
@@ -67,4 +66,4 @@ export function Tags() {
   );
 }
 
-export default Tags;
+export default TagsPopular;

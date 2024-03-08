@@ -1,18 +1,18 @@
-import type { IArticle } from '../types';
+import type { ArticleType } from '../types';
 
 export type ArticleListAction =
   | { type: 'FETCH_ARTICLES_START' }
   | {
       type: 'FETCH_ARTICLES_SUCCESS';
-      payload: { articles: Array<IArticle>; articlesCount: number };
+      payload: { articles: Array<ArticleType>; articlesCount: number };
     }
   | { type: 'FETCH_ARTICLES_ERROR'; error: string }
-  | { type: 'ARTICLE_FAVORITED'; payload: { article: IArticle } }
-  | { type: 'ARTICLE_UNFAVORITED'; payload: { article: IArticle } }
-  | { type: 'SET_TAB'; tab: ITab }
+  | { type: 'ARTICLE_FAVORITED'; payload: { article: ArticleType } }
+  | { type: 'ARTICLE_UNFAVORITED'; payload: { article: ArticleType } }
+  | { type: 'SET_TAB'; tab: TabType }
   | { type: 'SET_PAGE'; page: number };
 
-export type ITab =
+export type TabType =
   | { type: 'ALL'; label: string }
   | { type: 'FEED'; label: string }
   | { type: 'TAG'; label: string }
@@ -20,11 +20,11 @@ export type ITab =
   | { type: 'FAVORITES'; label: string; username: string };
 
 export interface ArticleListState {
-  articles: Array<IArticle>;
+  articles: Array<ArticleType>;
   loading: boolean;
   error: string | null;
   articlesCount: number;
-  selectedTab: ITab;
+  selectedTab: TabType;
   page: number;
   pageSize?: number;
 }
@@ -36,7 +36,7 @@ export const initialState: ArticleListState = {
   articlesCount: 0,
   page: 0,
   pageSize: 10,
-  selectedTab: { type: 'ALL', label: 'Global Feed' },
+  selectedTab: { type: 'ALL', label: 'For You' },
 };
 
 export function articlesReducer(

@@ -1,6 +1,8 @@
 import { DataTypes, Model, type Sequelize } from 'sequelize';
 
 export class Article extends Model {
+  declare id: number;
+
   static associate(models) {
     this.belongsTo(models.User, { foreignKey: 'userId', as: 'author' });
 

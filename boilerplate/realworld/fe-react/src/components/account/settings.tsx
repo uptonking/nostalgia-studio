@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { logout, updateUser } from '../../api/auth-api';
 import { userList } from '../../api/mock-data';
-import { useAuth } from '../../context/auth';
-import type { IErrors } from '../../types';
+import { useAuth } from '../../hooks/use-auth-provider';
+import type { ErrorsType } from '../../types';
 import { ListErrors } from '../common/list-error';
 
 export function Settings() {
@@ -16,7 +16,7 @@ export function Settings() {
   } = useAuth();
 
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<IErrors | null>(null);
+  const [errors, setErrors] = useState<ErrorsType | null>(null);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

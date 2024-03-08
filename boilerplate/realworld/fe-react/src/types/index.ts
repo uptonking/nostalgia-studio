@@ -1,18 +1,18 @@
-export interface IUser {
+export interface UserType {
   email: string;
   username: string;
   bio: string;
   image: string;
 }
 
-export interface IProfile {
+export interface ProfileType {
   username: string;
   bio: string;
   image: string;
   following: boolean;
 }
 
-export interface IArticle {
+export interface ArticleType {
   slug: string;
   title: string;
   description: string;
@@ -22,17 +22,17 @@ export interface IArticle {
   updatedAt: Date;
   favorited: boolean;
   favoritesCount: number;
-  author: IProfile;
+  author: ProfileType;
 }
 
-export interface IComment {
+export interface CommentType {
   id: number;
   createdAt: Date;
   updatedAt: Date;
   body: string;
-  author: IProfile;
+  author: ProfileType;
 }
 
-export interface IErrors {
+export interface ErrorsType {
   [key: string]: string[];
 }

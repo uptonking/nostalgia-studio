@@ -1,8 +1,8 @@
-import type { IProfile } from '../types';
+import type { ProfileType } from '../types';
 import API from './api-utils';
 
 type Profile = {
-  profile: IProfile;
+  profile: ProfileType;
 };
 
 export function followProfile(username: string) {

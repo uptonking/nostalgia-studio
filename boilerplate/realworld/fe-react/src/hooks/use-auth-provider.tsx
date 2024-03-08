@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 
 import { isTokenValid, JWT_TOKEN_KEY } from '../api/api-utils';
-import { logout } from '../api/auth-api';
+import { getCurrentUser, logout } from '../api/auth-api';
 import {
   type AuthAction,
   authReducer,
@@ -30,19 +30,44 @@ export function AuthProvider(props: React.PropsWithChildren<object>) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   useEffect(() => {
-    const token = getLocalStorageValue(JWT_TOKEN_KEY);
-    // console.log('==AuthProvider-token, ', token);
-    if (!token) return;
+    let ignore = false;
 
-    if (isTokenValid(token)) {
-      // setToken(token);
-      dispatch({ type: 'LOGIN' });
-    } else {
-      console.log(';; dispatch LOGOUT, ', token);
-      dispatch({ type: 'LOGOUT' });
-      logout();
+    async function fetchUser() {
+      try {
+        const payload = await getCurrentUser();
+        const { token, ...user } = payload.data.user;
+        if (!ignore) {
+          dispatch({ type: 'LOAD_USER', user });
+        }
+      } catch (error) {
+        console.log('error at getCurrentUser ', error);
+      }
     }
-  }, []);
+
+    // ❓
+    if (!state.isAuthenticated) {
+      fetchUser();
+    }
+
+    return () => {
+      ignore = true;
+    };
+  }, [state.isAuthenticated]);
+
+  // useEffect(() => {
+  //   const token = getLocalStorageValue(JWT_TOKEN_KEY);
+  //   // console.log('==AuthProvider-token, ', token);
+  //   if (!token) return;
+
+  //   if (isTokenValid(token)) {
+  //     // setToken(token);
+  //     dispatch({ type: 'LOGIN' });
+  //   } else {
+  //     console.log(';; dispatch LOGOUT, ', token);
+  //     dispatch({ type: 'LOGOUT' });
+  //     logout();
+  //   }
+  // }, []);
 
   const authData = useMemo(() => ({ state, dispatch }), [state]);
 

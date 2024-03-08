@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { useArticlesFeed } from '../../context/articles';
+import { useArticlesFeed } from '../../hooks/use-articles-provider';
 
 export function ArticleTags({ tagList }: { tagList: string[] }) {
   const { dispatch } = useArticlesFeed();

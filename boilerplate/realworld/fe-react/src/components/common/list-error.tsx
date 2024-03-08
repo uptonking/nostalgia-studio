@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import type { IErrors } from '../../types';
+import type { ErrorsType } from '../../types';
 
-export function ListErrors({ errors }: { errors: IErrors }) {
+export function ListErrors({ errors }: { errors: ErrorsType }) {
   return (
     <ul className='error-messages'>
       {Object.entries(errors).map(([key, keyErrors], index) =>

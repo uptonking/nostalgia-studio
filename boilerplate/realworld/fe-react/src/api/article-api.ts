@@ -1,10 +1,10 @@
-import type { IArticle } from '../types';
+import type { ArticleType } from '../types';
 import API from './api-utils';
 
 const encode = encodeURIComponent;
 
-type Article = { article: IArticle };
-type Articles = { articles: Array<IArticle> } & { articlesCount: number };
+type Article = { article: ArticleType };
+type Articles = { articles: Array<ArticleType> } & { articlesCount: number };
 
 function limit(count: number, p: number) {
   return `limit=${count}&offset=${p ? p * count : 0}`;
@@ -34,7 +34,6 @@ export function getArticlesByAuthor(username: string, page: number) {
 
 export function getArticlesByTag(tag: string, page: number) {
   return API.get<Articles>(`/articles?tag=${encode(tag)}&${limit(10, page)}`);
-
   // return mockApi.getArticlesByTag(tag, page);
 }
 

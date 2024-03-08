@@ -3,13 +3,13 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 
 import type { ArticleListAction } from '../reducers/article-feed';
-import type { IArticle } from '../types';
+import type { ArticleType } from '../types';
 import { ArticleTags } from './common/article-tags';
 import { AuthorAvatar } from './common/author-avatar';
 import { FavoriteButton } from './common/favorite-button';
 
 type ArticlePreviewProps = {
-  article: IArticle;
+  article: ArticleType;
   dispatch: React.Dispatch<ArticleListAction>;
 };
 

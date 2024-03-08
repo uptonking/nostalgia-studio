@@ -80,4 +80,14 @@ export class User extends Model {
       },
     );
   }
+
+  toJSON() {
+    return {
+      ...this.get(),
+      // id: undefined,
+      password: undefined,
+      updatedAt: undefined,
+      createdAt: undefined,
+    };
+  }
 }

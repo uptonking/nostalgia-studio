@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { createArticle, getArticle, updateArticle } from '../api/article-api';
-import { useAuth } from '../context/auth';
-import type { IErrors } from '../types';
+import { useAuth } from '../hooks/use-auth-provider';
+import type { ErrorsType } from '../types';
 import { ListErrors } from './common/list-error';
 
 export function Editor() {
@@ -20,7 +20,7 @@ export function Editor() {
   const [description, setDescription] = useState('');
   const [body, setBody] = useState('');
   const [tag, setTag] = useState('');
-  const [errors, setErrors] = useState<IErrors | null>();
+  const [errors, setErrors] = useState<ErrorsType | null>();
 
   useEffect(() => {
     let ignore = false;

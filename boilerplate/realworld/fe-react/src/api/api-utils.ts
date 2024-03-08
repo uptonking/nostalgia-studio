@@ -52,15 +52,9 @@ axios.interceptors.response.use(
 //   }
 // }
 
-type JWTPayload = {
-  id: string;
-  username: string;
-  exp: number;
-};
-
 export function isTokenValid(token: string) {
   try {
-    const decoded_jwt: JWTPayload = jwtDecode(token);
+    const decoded_jwt = jwtDecode(token);
     const current_time = Date.now().valueOf() / 1000;
     // console.log(
     //   ';; jwt/cur-time ',
@@ -69,7 +63,7 @@ export function isTokenValid(token: string) {
     // );
     return decoded_jwt.exp > current_time;
   } catch (error) {
-    console.error('AUTH TOKEN not valid');
+    console.error(';; AUTH TOKEN not valid');
     return false;
   }
 }

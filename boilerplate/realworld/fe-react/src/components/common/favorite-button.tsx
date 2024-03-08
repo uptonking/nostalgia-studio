@@ -6,10 +6,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { favoriteArticle, unfavoriteArticle } from '../../api/article-api';
 import type { ArticleAction } from '../../reducers/article';
 import type { ArticleListAction } from '../../reducers/article-feed';
-import type { IArticle } from '../../types';
+import type { ArticleType } from '../../types';
 
 type FavoriteButtonProps = {
-  article: IArticle;
+  article: ArticleType;
   dispatch: React.Dispatch<ArticleAction & ArticleListAction>;
   children: React.ReactNode;
   user?: any;
@@ -55,7 +55,7 @@ export function FavoriteButton({
       })}
       onClick={handleClick}
       disabled={loading}
-      title='likes count'
+      // title='stars count'
     >
       <i className='ion-heart' />
       &nbsp;

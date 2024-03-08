@@ -1,23 +1,25 @@
 import { Router } from 'express';
 
 import {
+  createArticle,
   getAllArticles,
   getOneArticleBySlug,
-  createArticle,
 } from '../../controllers/article-controller';
 import { requireUser } from '../../middleware/requires-user';
+import { commentRouter } from './comment-route';
 
 export const articleRouter = Router();
 
 // All Articles - by Author/by Tag/Favorited by user
 articleRouter.get('/', getAllArticles);
-// Create Article
-// articleRouter.post('/', requireUser, newArticle);
-articleRouter.post('/', createArticle);
-// articleRouter.get('/:slug', requireUser, getArticleBySlug);
 articleRouter.get('/:slug', getOneArticleBySlug);
+// Create Article
+articleRouter.post('/', requireUser, createArticle);
 
 // articleRouter.get("/feed",  articlesFeed);
+
+// 💬 comments
+articleRouter.use('/', commentRouter);
 
 /**
  * @swagger

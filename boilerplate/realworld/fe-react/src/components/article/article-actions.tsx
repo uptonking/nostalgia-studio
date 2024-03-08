@@ -3,15 +3,15 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { followProfile, unfollowProfile } from '../../api/profile-api';
-import { useAuth } from '../../context/auth';
+import { useAuth } from '../../hooks/use-auth-provider';
 import type { ArticleAction } from '../../reducers/article';
-import type { IArticle } from '../../types';
+import type { ArticleType } from '../../types';
 import { FavoriteButton } from '../common/favorite-button';
 import { FollowUserButton } from '../common/follow-user-button';
 import { DeleteButton } from './delete-button';
 
 type ArticleActionsProps = {
-  article: IArticle;
+  article: ArticleType;
   dispatch: React.Dispatch<ArticleAction>;
 };
 
@@ -63,7 +63,7 @@ export function ArticleActions({ article, dispatch }: ArticleActionsProps) {
         loading={loading}
       />
       <FavoriteButton article={article} dispatch={dispatch} user={user}>
-        <span className='mr-xs'>{article.favorited ? 'Unlike' : 'Like'}</span>
+        <span className='mr-xs'>{article.favorited ? 'Unstar' : 'Star'}</span>
         {article.favoritesCount}
       </FavoriteButton>
     </React.Fragment>

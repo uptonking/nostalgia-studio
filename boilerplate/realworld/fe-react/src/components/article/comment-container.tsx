@@ -2,14 +2,14 @@ import * as React from 'react';
 
 import { Link } from 'react-router-dom';
 
-import { useAuth } from '../../context/auth';
+import { useAuth } from '../../hooks/use-auth-provider';
 import type { ArticleAction } from '../../reducers/article';
-import type { IComment } from '../../types';
+import type { CommentType } from '../../types';
 import { Comment } from './comment';
 import { CommentInput } from './comment-input';
 
 type CommentContainerProps = {
-  comments: Array<IComment>;
+  comments: Array<CommentType>;
   slug: string;
   dispatch: React.Dispatch<ArticleAction>;
 };

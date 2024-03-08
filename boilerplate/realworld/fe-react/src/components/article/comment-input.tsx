@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 
 import { createComment } from '../../api/comments-api';
 import type { ArticleAction } from '../../reducers/article';
-import type { IUser } from '../../types';
+import type { UserType } from '../../types';
 import { AVATAR_IMAGE_FALLBACK } from '../../utils/constants';
 
 type CommentInputProps = {
-  user: IUser;
+  user: UserType;
   slug: string;
   dispatch: React.Dispatch<ArticleAction>;
 };

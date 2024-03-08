@@ -166,6 +166,11 @@ a:hover {
   border-bottom-color: transparent !important;
 }
 
+.feed-toggle .navi-link.nav-link.active .selected-tag {
+  color: #701a75 !important;
+  margin-left: 0.25rem;
+}
+
 .article-preview {
   margin-top: 1rem;
   padding: 1.25rem;
@@ -320,4 +325,10 @@ a:hover {
   border-color: #e5e7eb;
   background-color: #e5e7eb;
   color: #1f2937;
+}
+
+.article-page .card .mod-options {
+  border-radius: 0.25rem;
+  border: 1px solid #475569;
+  color: #475569;
 }

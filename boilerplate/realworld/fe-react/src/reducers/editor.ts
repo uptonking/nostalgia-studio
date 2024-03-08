@@ -1,4 +1,4 @@
-import type { IErrors } from '../types';
+import type { ErrorsType } from '../types';
 
 type EditorAction =
   | { type: 'ADD_TAG'; tag: string }
@@ -12,7 +12,7 @@ type EditorAction =
       type: 'UPDATE_FORM';
       field: { key: string; value: string };
     }
-  | { type: 'SET_ERRORS'; errors: IErrors };
+  | { type: 'SET_ERRORS'; errors: ErrorsType };
 
 interface IForm {
   title: string;
@@ -24,7 +24,7 @@ interface IForm {
 interface EditorState {
   tagList: string[];
   form: IForm;
-  errors: IErrors;
+  errors: ErrorsType;
   loading: boolean;
 }
 

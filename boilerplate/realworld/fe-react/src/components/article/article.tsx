@@ -29,10 +29,9 @@ export function Article() {
 
     const fetchArticle = async () => {
       try {
-        // const [articlePayload, commentsPayload] = await Promise.all([
-        const [articlePayload] = await Promise.all([
+        const [articlesData, commentsData] = await Promise.all([
           getArticle(slug),
-          // getArticleComments(slug),
+          getArticleComments(slug),
         ]);
 
         // console.log('==articlePayload, ', articlePayload.data);
@@ -40,9 +39,8 @@ export function Article() {
           dispatch({
             type: 'FETCH_ARTICLE_SUCCESS',
             payload: {
-              article: (articlePayload as any).data.article,
-              comments: [],
-              // comments: (commentsPayload as any)?.data?.comments,
+              article: (articlesData as any).data.article,
+              comments: (commentsData as any)?.data?.comments,
             },
           });
         }
@@ -88,13 +86,11 @@ export function Article() {
           </div>
         </div>
 
-        {/* <hr /> */}
-
         {/* <div className='article-actions'>
           <ArticleMeta article={article} dispatch={dispatch} />
         </div> */}
 
-        {/* <CommentContainer comments={comments} slug={slug} dispatch={dispatch} /> */}
+        <CommentContainer comments={comments} slug={slug} dispatch={dispatch} />
       </div>
     </div>
   );
