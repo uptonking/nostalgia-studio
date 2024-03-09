@@ -162,8 +162,8 @@ a:hover {
 }
 
 .feed-toggle .navi-link.nav-link.active {
-  color: #1f2937 !important;
   border-bottom-color: transparent !important;
+  color: #1f2937 !important;
 }
 
 .feed-toggle .navi-link.nav-link.active .selected-tag {
@@ -331,4 +331,9 @@ a:hover {
   border-radius: 0.25rem;
   border: 1px solid #475569;
   color: #475569;
+}
+
+.articles-toggle .navi-link.nav-link.active {
+  border-bottom-color: transparent !important;
+  color: #1f2937 !important;
 }

@@ -26,6 +26,7 @@ export const getAllArticles = async (
       // const user = await User.findOne({ where: { username: favorited } });
       // articles.rows = await user.getFavorites(searchOptions);
       // articles.count = await user.countFavorites();
+      res.status(200).json({ articles: [], articlesCount: 0 });
     } else {
       articles = await findAllArticles(req.query);
     }

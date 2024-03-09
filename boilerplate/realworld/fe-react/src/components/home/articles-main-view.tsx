@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import type { TabType } from '../../reducers/article-feed';
-import { ArticlesFeed } from '../articles-feed';
+import type { TabType } from '../../reducers/articles-materials';
+import { ArticlesMaterials } from '../articles-materials';
 import { TabList } from '../common/tab-list';
 
 const tabsData: Array<TabType> = [
@@ -15,7 +15,7 @@ export function ArticlesMainView() {
       <div className='feed-toggle'>
         <TabList data={tabsData} />
       </div>
-      <ArticlesFeed />
+      <ArticlesMaterials />
     </div>
   );
 }

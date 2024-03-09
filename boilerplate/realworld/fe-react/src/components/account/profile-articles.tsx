@@ -1,22 +1,23 @@
-import React, { useEffect, useReducer } from 'react';
+import React, { useEffect, useLayoutEffect, useReducer } from 'react';
 
-import { ArticlesFeedProvider } from '../../hooks/use-articles-provider';
+import {
+  ArticlesFeedProvider,
+  useArticlesFeed,
+} from '../../hooks/use-articles-provider';
 import { useAuth } from '../../hooks/use-auth-provider';
-import type { TabType } from '../../reducers/article-feed';
-import { ArticlesFeed } from '../articles-feed';
+import type { TabType } from '../../reducers/articles-materials';
+import { ArticlesMaterials } from '../articles-materials';
 import { TabList } from '../common/tab-list';
 
 export function ProfileArticles({ username }: { username: string }) {
+  // const { state: { user }, } = useAuth();
   const {
-    state: { user },
-  } = useAuth();
-
-  const authorLabel = `${
-    user && user.username === username ? 'My ' : ''
-  }Articles`;
+    state: { selectedTab },
+    dispatch,
+  } = useArticlesFeed();
 
   const tabsData: Array<TabType> = [
-    { type: 'AUTHORED', label: authorLabel, username },
+    { type: 'AUTHORED', label: 'Articles', username },
     {
       type: 'FAVORITES',
       label: 'Favorited',
@@ -24,33 +25,26 @@ export function ProfileArticles({ username }: { username: string }) {
     },
   ];
 
-  // const userProfileInitialState: ArticleListState = {
-  //   articles: [],
-  //   loading: false,
-  //   error: null,
-  //   articlesCount: 0,
-  //   page: 0,
-  //   pageSize: 5,
-  //   selectedTab: { type: 'AUTHORED', label: 'Articles', username },
-  // };
-  // const [state, dispatch] = useReducer(
-  //   articlesReducer,
-  //   userProfileInitialState,
-  // );
+  useLayoutEffect(() => {
+    if (['ALL', 'FEED', 'TAG'].includes(selectedTab.type)) {
+      dispatch({
+        type: 'SET_TAB',
+        tab: { type: 'AUTHORED', label: 'Articles', username },
+      });
+    }
+  }, [dispatch, selectedTab.type, username]);
 
   return (
-    <ArticlesFeedProvider>
-      <div className='container'>
-        <div className='row'>
-          <div className='col-xs-12 col-md-10 offset-md-1'>
-            <div className='articles-toggle'>
-              <TabList data={tabsData} />
-            </div>
-            <ArticlesFeed />
+    <div className='container'>
+      <div className='row'>
+        <div className='col-xs-12 col-md-10 offset-md-1'>
+          <div className='articles-toggle'>
+            <TabList data={tabsData} />
           </div>
+          <ArticlesMaterials />
         </div>
       </div>
-    </ArticlesFeedProvider>
+    </div>
   );
 }
 

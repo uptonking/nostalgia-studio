@@ -7,6 +7,7 @@ import {
   getProfile,
   unfollowProfile,
 } from '../../api/profile-api';
+import { ArticlesFeedProvider } from '../../hooks/use-articles-provider';
 import { useAuth } from '../../hooks/use-auth-provider';
 import type { ProfileType } from '../../types';
 import { AVATAR_IMAGE_FALLBACK } from '../../utils/constants';
@@ -21,7 +22,7 @@ export function Profile() {
   } = useAuth();
 
   const [profile, setProfile] = useState<ProfileType | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -47,7 +48,7 @@ export function Profile() {
   const handleClick = async () => {
     if (!profile) return;
     let payload;
-    setLoading(true);
+    setIsLoading(true);
     try {
       if (profile.following) {
         payload = await unfollowProfile(profile.username);
@@ -58,10 +59,10 @@ export function Profile() {
     } catch (error) {
       console.log(error);
     }
-    setLoading(false);
+    setIsLoading(false);
   };
 
-  const isUser = profile && user && profile.username === user.username;
+  const isMyself = profile && user && profile.username === user.username;
 
   if (!profile) return null;
 
@@ -78,32 +79,28 @@ export function Profile() {
               />
               <h4>{profile.username}</h4>
               <p>{profile.bio}</p>
-              {isUser ? (
-                <EditProfileSettings />
+              {isMyself ? (
+                <Link
+                  to='/settings'
+                  className='btn btn-sm btn-outline-secondary action-btn'
+                >
+                  <i className='ion-gear-a' /> Edit Profile
+                </Link>
               ) : (
                 <FollowUserButton
                   profile={profile}
                   onClick={handleClick}
-                  loading={loading}
+                  loading={isLoading}
                 />
               )}
             </div>
           </div>
         </div>
       </div>
-      <ProfileArticles username={username} />
+      <ArticlesFeedProvider>
+        <ProfileArticles username={username} />
+      </ArticlesFeedProvider>
     </div>
-  );
-}
-
-function EditProfileSettings() {
-  return (
-    <Link
-      to='/settings'
-      className='btn btn-sm btn-outline-secondary action-btn'
-    >
-      <i className='ion-gear-a' /> Edit Profile
-    </Link>
   );
 }
 

@@ -34,7 +34,6 @@ export function AuthorAvatar(props: ArticleAvatarProps = defaultProps) {
   const {
     article: { author, createdAt },
   } = props;
-
   // console.log('==aAvater, ', props);
 
   const createdDateText = useMemo(
@@ -48,7 +47,7 @@ export function AuthorAvatar(props: ArticleAvatarProps = defaultProps) {
 
   return (
     <React.Fragment>
-      <Link to={`/${author.username}`}>
+      <Link to={`/profile/${author.username}`}>
         <img
           src={author.image || AVATAR_IMAGE_FALLBACK}
           alt={author.username}
@@ -56,7 +55,7 @@ export function AuthorAvatar(props: ArticleAvatarProps = defaultProps) {
       </Link>
 
       <div className='info'>
-        <Link className='author' to={`/${author.username}`}>
+        <Link className='author' to={`/profile/${author.username}`}>
           {author.username}
         </Link>
         {/* <span className='date'>{new Date(createdAt).toDateString()}</span> */}

@@ -48,7 +48,7 @@ const LoggedInView = ({ user: { username, image } }: { user: UserType }) => (
     </li>
 
     <li className='nav-item'>
-      <NaviLink to={`/${username}`}>
+      <NaviLink to={`/profile/${username}`}>
         {image && <img src={image} className='user-pic' alt={username} />}
         {username}
       </NaviLink>

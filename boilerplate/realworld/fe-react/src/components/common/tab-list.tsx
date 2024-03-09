@@ -4,7 +4,7 @@ import cx from 'clsx';
 
 import { useArticlesFeed } from '../../hooks/use-articles-provider';
 import { useAuth } from '../../hooks/use-auth-provider';
-import type { TabType } from '../../reducers/article-feed';
+import type { TabType } from '../../reducers/articles-materials';
 
 type TabsListProps = {
   data: TabType[];

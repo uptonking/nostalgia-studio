@@ -1,19 +1,17 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
-import { useArticlesFeed } from '../hooks/use-articles-provider';
 import { useFetchingArticles } from '../hooks/use-fetching-articles';
-import type { TabType } from '../reducers/article-feed';
 import { ArticlePreview } from './article-preview';
 import { ListPagination } from './list-pagination';
 
-export function ArticlesFeed() {
+export function ArticlesMaterials() {
   const {
     state: { articles, loading, articlesCount, page, pageSize },
     dispatch,
   } = useFetchingArticles();
 
   if (loading) {
-    return <div className='article-preview'>Loading...</div>;
+    return <div className='article-preview'>Loading articles...</div>;
   }
 
   if (articles.length === 0) {
@@ -40,4 +38,4 @@ export function ArticlesFeed() {
   );
 }
 
-export default ArticlesFeed;
+export default ArticlesMaterials;

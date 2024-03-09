@@ -7,7 +7,7 @@ import {
   getArticlesFavoritedBy,
   getFeedArticles,
 } from '../api/article-api';
-import type { TabType } from '../reducers/article-feed';
+import type { TabType } from '../reducers/articles-materials';
 import { useArticlesFeed } from './use-articles-provider';
 
 const loadArticles = (tab: TabType, page = 0) => {

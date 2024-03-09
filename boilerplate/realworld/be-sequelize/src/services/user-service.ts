@@ -20,8 +20,8 @@ export const findUserById = async (id: number) => {
 };
 
 export const findOneUser = async (options: any) => {
-  if (!options.email && !options.id) {
-    throw new Error('Please provide email or id ');
+  if (!options.email && !options.id && !options.username) {
+    throw new Error('Please provide email or id or username ');
   }
   const where = {
     [Op.or]: [] as any,
@@ -32,6 +32,9 @@ export const findOneUser = async (options: any) => {
   }
   if (options.id) {
     where[Op.or].push({ id: options.id });
+  }
+  if (options.username) {
+    where[Op.or].push({ username: options.username });
   }
 
   const user = await User.findOne({

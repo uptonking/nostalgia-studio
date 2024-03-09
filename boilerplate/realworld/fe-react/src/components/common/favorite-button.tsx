@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { favoriteArticle, unfavoriteArticle } from '../../api/article-api';
 import type { ArticleAction } from '../../reducers/article';
-import type { ArticleListAction } from '../../reducers/article-feed';
+import type { ArticleListAction } from '../../reducers/articles-materials';
 import type { ArticleType } from '../../types';
 
 type FavoriteButtonProps = {

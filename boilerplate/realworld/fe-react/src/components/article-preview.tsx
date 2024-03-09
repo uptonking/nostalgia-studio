@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { Link } from 'react-router-dom';
 
-import type { ArticleListAction } from '../reducers/article-feed';
+import type { ArticleListAction } from '../reducers/articles-materials';
 import type { ArticleType } from '../types';
 import { ArticleTags } from './common/article-tags';
 import { AuthorAvatar } from './common/author-avatar';

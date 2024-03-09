@@ -11,7 +11,7 @@ import {
   type ArticleListState,
   articlesReducer,
   initialState,
-} from '../reducers/article-feed';
+} from '../reducers/articles-materials';
 
 type ArticleListContextProps = {
   state: ArticleListState;

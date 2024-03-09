@@ -30,6 +30,9 @@ export function AuthProvider(props: React.PropsWithChildren<object>) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   useEffect(() => {
+    const token = getLocalStorageValue(JWT_TOKEN_KEY);
+    if (!token) return;
+
     let ignore = false;
 
     async function fetchUser() {
@@ -38,13 +41,13 @@ export function AuthProvider(props: React.PropsWithChildren<object>) {
         const { token, ...user } = payload.data.user;
         if (!ignore) {
           dispatch({ type: 'LOAD_USER', user });
+          dispatch({ type: 'LOGIN' });
         }
       } catch (error) {
-        console.log('error at getCurrentUser ', error);
+        console.error('error at getCurrentUser ', error);
       }
     }
 
-    // ❓
     if (!state.isAuthenticated) {
       fetchUser();
     }
@@ -53,21 +56,6 @@ export function AuthProvider(props: React.PropsWithChildren<object>) {
       ignore = true;
     };
   }, [state.isAuthenticated]);
-
-  // useEffect(() => {
-  //   const token = getLocalStorageValue(JWT_TOKEN_KEY);
-  //   // console.log('==AuthProvider-token, ', token);
-  //   if (!token) return;
-
-  //   if (isTokenValid(token)) {
-  //     // setToken(token);
-  //     dispatch({ type: 'LOGIN' });
-  //   } else {
-  //     console.log(';; dispatch LOGOUT, ', token);
-  //     dispatch({ type: 'LOGOUT' });
-  //     logout();
-  //   }
-  // }, []);
 
   const authData = useMemo(() => ({ state, dispatch }), [state]);
 

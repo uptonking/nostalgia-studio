@@ -26,7 +26,7 @@ export function App() {
           <Route path='article/:slug' element={<Article />} />
           <Route path='login' element={<Login />} />
           <Route path='register' element={<Register />} />
-          <Route path=':username' element={<Profile />} />
+          <Route path='/profile/:username' element={<Profile />} />
           <Route
             path='settings'
             element={

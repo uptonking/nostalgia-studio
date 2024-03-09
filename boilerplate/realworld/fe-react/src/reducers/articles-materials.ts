@@ -16,8 +16,8 @@ export type TabType =
   | { type: 'ALL'; label: string }
   | { type: 'FEED'; label: string }
   | { type: 'TAG'; label: string }
-  | { type: 'AUTHORED'; label: string; username: string }
-  | { type: 'FAVORITES'; label: string; username: string };
+  | { type: 'AUTHORED'; label: string; username?: string }
+  | { type: 'FAVORITES'; label: string; username?: string };
 
 export interface ArticleListState {
   articles: Array<ArticleType>;

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import type { ArticleListAction } from '../reducers/article-feed';
+import type { ArticleListAction } from '../reducers/articles-materials';
 
 type ListPaginationProps = {
   page?: number;
