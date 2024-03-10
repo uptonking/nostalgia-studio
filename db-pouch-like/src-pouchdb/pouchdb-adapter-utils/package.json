@@ -35,6 +35,6 @@
     "pouchdb-utils": "8.0.1111"
   },
   "devDependencies": {
-    "@types/node": "^20.11.24"
+    "@types/node": "^20.11.25"
   }
 }

@@ -2,7 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import logger from 'morgan';
 
-import { dbSync } from './db/init';
+import { dbSync } from './db/connection';
 import { deserializeUser } from './middleware';
 import { errorHandler } from './middleware/error';
 import { appRouter } from './routes/v1';

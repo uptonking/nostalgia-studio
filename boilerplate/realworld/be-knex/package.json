@@ -1,0 +1,62 @@
+{
+  "name": "@exampleshub/realworld-be-knex",
+  "version": "0.0.1111",
+  "description": "simple realworld api built with knex.",
+  "keywords": [
+    "realworld",
+    "knex",
+    "boilerplate"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index",
+  "scripts": {
+    "build": "npm run clean && npm run compile",
+    "build:dev": "npm run clean && tsc -p tsconfig.json -w",
+    "build:prod": "npm run clean && tsc -p tsconfig.json -w",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "dev": "npm run dev:tsnode",
+    "dev2": "cross-env NODE_OPTIONS=\"--experimental-loader=ts-node/esm/transpile-only --experimental-specifier-resolution=node  \" node --watch ./dist/index.js",
+    "dev3": "cross-env NODE_OPTIONS=\" \" node --watch ./dist/index.js",
+    "dev:tsnode": "cross-env NODE_OPTIONS=\"--experimental-loader=ts-node/esm/transpile-only --experimental-specifier-resolution=node  \" node --watch ./src/index.ts",
+    "knex": "npx ts-node ../../../node_modules/.bin/knex --knexfile src/db/knexfile.ts",
+    "knex:migrate": "npx ts-node ../../../node_modules/.bin/knex --knexfile ./knexfile.mjs migrate:latest",
+    "knex:migrate-make": "npx ts-node ../../../node_modules/.bin/knex --knexfile ./knexfile.mjs migrate:make",
+    "knex:seed": "npx knex --knexfile src/db/knexfile.ts seed:run",
+    "lint": "tsc --noEmit && eslint \"src/**/*.{js,ts}\" --quiet --fix",
+    "serve": "node dist/server.js",
+    "start": "npm run dev",
+    "test": "tsc -w"
+  },
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "helmet": "^7.1.0",
+    "joi": "^17.12.2",
+    "jsonwebtoken": "^9.0.2",
+    "knex": "^3.1.0",
+    "lodash": "^4.17.21",
+    "nanoid": "^5.0.6",
+    "nodemailer": "^6.9.12",
+    "pg": "^8.11.3",
+    "pino": "^8.19.0",
+    "pino-pretty": "^10.3.1",
+    "rate-limiter-flexible": "^5.0.0",
+    "swagger-ui-express": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^20.11.25",
+    "@types/nodemailer": "^6.4.14",
+    "@types/swagger-ui-express": "^4.1.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.2"
+  }
+}

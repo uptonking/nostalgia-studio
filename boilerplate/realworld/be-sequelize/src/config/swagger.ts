@@ -1,8 +1,9 @@
 export const swaggerOption = {
   definition: {
-    openapi: '3.0.0',
+    openapi: '3.1.0',
     info: {
-      title: 'nodejs-sequelize-starter API docs',
+      title: 'realworld api docs using nodejs/sequelize',
+      description: 'REST API for realworld app',
       version: '1.0.0',
     },
     servers: [

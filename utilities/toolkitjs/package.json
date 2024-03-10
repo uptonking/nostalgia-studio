@@ -22,7 +22,7 @@
     "test:utils1": "NODE_OPTIONS='--experimental-vm-modules --experimental-specifier-resolution=node --loader=ts-node/esm/transpile-only' jest"
   },
   "devDependencies": {
-    "@types/node": "^20.11.24",
+    "@types/node": "^20.11.25",
     "ts-node": "^10.9.2"
   }
 }
