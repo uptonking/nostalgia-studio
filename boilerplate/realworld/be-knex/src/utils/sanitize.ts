@@ -3,18 +3,7 @@ import pick from 'lodash/pick';
 const templates: {
   [key: string]: string[];
 } = {
-  users: [
-    'user_id',
-    'role',
-    'username',
-    'email',
-    'name',
-    'confirmed',
-    'blocked',
-    'image',
-    'created_at',
-    'updated_at',
-  ],
+  users: ['id', 'role', 'username', 'email', 'name', 'image'],
 };
 
 export const sanitizeEntity = (

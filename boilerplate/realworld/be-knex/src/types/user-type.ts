@@ -22,12 +22,12 @@ export type UserRegisterRequestDto = Omit<
 >;
 
 export interface UserLoginRequestDto {
-  identifier: string;
+  email: string;
   password: string;
 }
 
 export interface UserData {
-  user_id: number;
+  id: number;
   username: string;
   password: string;
   email: string;
@@ -48,6 +48,5 @@ export type SanitizedUserData = Omit<
 >;
 
 export interface AuthorizedResponse {
-  token: string;
-  user: SanitizedUserData;
+  user: SanitizedUserData & { token: string };
 }

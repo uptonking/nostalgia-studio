@@ -24,7 +24,7 @@ export function TagsPopular() {
           setTags((payload as any).data.tags);
         }
       } catch (error) {
-        console.log(error);
+        // console.log(error);
       }
       if (!ignore) {
         setLoading(false);

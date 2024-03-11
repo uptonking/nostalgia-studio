@@ -66,8 +66,8 @@
     "/users": {
       "post": {
         "tags": ["User and Authentication"],
-        "summary": "Register a new user by inserting to db",
-        "description": "Register a new user",
+        "summary": "Register a new user",
+        "description": "Register a new user by inserting to db",
         "operationId": "CreateUser",
         "requestBody": {
           "$ref": "#/components/requestBodies/NewUserRequest"

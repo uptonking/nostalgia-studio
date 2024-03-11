@@ -1,25 +1,22 @@
-import {
-  userRepository,
-  type UserRepository,
-} from '../repositories/user-repository';
+import { userRepo } from '../repositories/user-repository';
 import type { SanitizedUserData, UserUpdateDto } from '../types/user-type';
 import { sanitizeEntity } from '../utils/sanitize';
 
-export class UserService {
-  constructor(private readonly _repository: UserRepository) {}
+export const findOne = async (id: number): Promise<SanitizedUserData> => {
+  const user = await userRepo.findOne(id);
+  return sanitizeEntity(user, 'users') as SanitizedUserData;
+};
 
-  public findOne = async (id: number): Promise<SanitizedUserData> => {
-    const user = await this._repository.findOne(id);
-    return sanitizeEntity(user, 'users') as SanitizedUserData;
-  };
+export const findOneAndUpdate = async (
+  id: number,
+  dto: UserUpdateDto,
+): Promise<SanitizedUserData> => {
+  const user = await userRepo.findOneAndUpdate(id, dto);
+  return sanitizeEntity(user, 'users') as SanitizedUserData;
+};
 
-  public findOneAndUpdate = async (
-    id: number,
-    dto: UserUpdateDto,
-  ): Promise<SanitizedUserData> => {
-    const user = await this._repository.findOneAndUpdate(id, dto);
-    return sanitizeEntity(user, 'users') as SanitizedUserData;
-  };
-}
-
-export const userService = new UserService(userRepository);
+// export const userService = new UserService(userRepo);
+export const userService = {
+  findOne,
+  findOneAndUpdate,
+};

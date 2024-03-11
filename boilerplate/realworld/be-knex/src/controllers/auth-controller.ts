@@ -1,51 +1,50 @@
 import type { NextFunction, Request, Response } from 'express';
 
-import { type AuthService, authService } from '../services/auth-service';
+import { authService } from '../services/auth-service';
 import type {
   UserLoginRequestDto,
   UserRegisterRequestDto,
 } from '../types/user-type';
 
-export class AuthController {
-  constructor(private readonly _service: AuthService) {}
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { email, username, password, name, image } = req.body.user;
+    const dto: UserRegisterRequestDto = {
+      email,
+      username,
+      password,
+      name,
+      image,
+    };
 
-  public register = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      const { email, username, password, name, image } = req.body.user;
-      const dto: UserRegisterRequestDto = {
-        email,
-        username,
-        password,
-        name,
-        image,
-      };
+    const data = await authService.register(dto);
+    res.status(201).send(data);
+  } catch (err) {
+    return next(err);
+  }
+};
 
-      const data = await this._service.register(dto);
-      res.status(201).send(data);
-    } catch (err) {
-      return next(err);
-    }
-  };
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const { email, password } = req.body.user;
+    const dto: UserLoginRequestDto = { email, password };
 
-  public login = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
-    try {
-      const { identifier, password } = req.body;
-      const dto: UserLoginRequestDto = { identifier, password };
+    const data = await authService.login(dto);
+    res.status(200).send(data);
+  } catch (err) {
+    return next(err);
+  }
+};
 
-      const data = await this._service.login(dto);
-      res.status(200).send(data);
-    } catch (err) {
-      return next(err);
-    }
-  };
-}
-
-export const authController = new AuthController(authService);
+export const authController = {
+  register,
+  login,
+};

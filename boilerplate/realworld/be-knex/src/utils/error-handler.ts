@@ -17,17 +17,34 @@ export class ApiError {
     return new ApiError(400, message);
   }
 
-  public static forbidden(
-    code: 401 | 403 = 403,
-    message: Error = {
+  public static unauthorized(message?: string): ApiError {
+    logger.error(message);
+    return new ApiError(401, {
       key: 'token',
-      message: 'Forbidden',
+      message: message || 'Unauthorized',
+      type: 'err.unauthorized',
+      path: ['authentication'],
+    });
+  }
+
+  public static forbidden(message?: string): ApiError {
+    logger.error(message);
+    return new ApiError(403, {
+      key: 'token',
+      message: message || 'Forbidden',
       type: 'err.forbidden',
       path: ['authentication'],
-    },
-  ): ApiError {
+    });
+  }
+
+  public static notFound(message?: string): ApiError {
     logger.error(message);
-    return new ApiError(code, message);
+    return new ApiError(404, {
+      key: 'notFound',
+      message: message || 'Not Found',
+      type: 'err.notFound',
+      path: ['notFound'],
+    });
   }
 
   public static limited(

@@ -3,17 +3,18 @@ import { Router } from 'express';
 import {
   createArticle,
   getAllArticles,
-  getOneArticleBySlug,
+  getArticleBySlug,
 } from '../../controllers/article-controller';
 import { requireUser } from '../../middleware/requires-user';
 import { commentRouter } from './comment-route';
 
 export const articleRouter = Router();
 
-// All Articles - by Author/by Tag/Favorited by user
+// get all articles - filterable by author/tag/favorited
 articleRouter.get('/', getAllArticles);
-articleRouter.get('/:slug', getOneArticleBySlug);
-// Create Article
+// get one article
+articleRouter.get('/:slug', getArticleBySlug);
+// create one article
 articleRouter.post('/', requireUser, createArticle);
 
 // articleRouter.get("/feed",  articlesFeed);

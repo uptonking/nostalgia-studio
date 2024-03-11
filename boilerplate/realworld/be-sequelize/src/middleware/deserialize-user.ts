@@ -25,11 +25,13 @@ export async function deserializeUser(
     const { decoded, expired, valid, msg: errorMsg } = verify(token);
 
     if (!valid) {
-      throw new Error('Invalid Token');
+      throw new Error('Invalid JWT Token');
     }
 
     if (valid && !expired) {
       req.user = decoded;
+      req.user['token'] = token;
+      // console.log(';; deser-user ', decoded);
       return next();
     } else {
       return res.status(403).json({

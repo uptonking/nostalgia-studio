@@ -1,10 +1,10 @@
 import bcrypt from 'bcrypt';
 
-const saltRounds = 13;
+const SALT_ROUNDS = 13;
 
 export const hash = async (
   str: string,
-  rounds = saltRounds,
+  rounds = SALT_ROUNDS,
 ): Promise<string> => {
   const salt = await bcrypt.genSalt(rounds);
   return await bcrypt.hash(str, salt);

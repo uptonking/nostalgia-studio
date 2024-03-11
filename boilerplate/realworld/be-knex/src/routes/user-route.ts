@@ -1,28 +1,31 @@
 import { Router } from 'express';
 
+import { authController } from '../controllers/auth-controller';
 import { userController } from '../controllers/user-controller';
-import { authorize } from '../middlewares/auth';
+import { authorizeUser } from '../middlewares/auth';
+import {
+  loginValidator,
+  registerValidator,
+} from '../middlewares/validators/auth-validator';
 import { updateValidator } from '../middlewares/validators/user-validator';
 import { ROLE } from '../utils/common';
 
+/** 🔐 register/login */
+export const usersRouter = Router();
+
+usersRouter.post('/login', [loginValidator], authController.login);
+// register
+usersRouter.post('/', [registerValidator], authController.register);
+
+/** 👤 get/update user */
 export const userRouter = Router();
 
-/**
- * @route   /users/me
- * @description Returns user's object. Expects JWT token
- */
-userRouter.get(
-  '/me',
-  [authorize([ROLE.ADMIN, ROLE.AUTHENTICATED])],
-  userController.me,
-);
+// returns user's object. Expects JWT token
+userRouter.get('/', [authorizeUser()], userController.me);
 
-/**
- * @route   /users
- * @description Updates logged-in user.
- */
+// update user info
 userRouter.put(
   '/',
-  [authorize([ROLE.ADMIN, ROLE.AUTHENTICATED]), updateValidator],
+  [authorizeUser([ROLE.ADMIN, ROLE.AUTHENTICATED]), updateValidator],
   userController.update,
 );

@@ -6,4 +6,4 @@ import configs from './knexfile';
 const environment = env.string('NODE_ENV', 'development');
 const config = configs[environment];
 
-export const database = knex(config);
+export const db = knex(config);

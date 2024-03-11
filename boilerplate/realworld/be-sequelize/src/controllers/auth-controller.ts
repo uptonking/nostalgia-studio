@@ -27,11 +27,11 @@ export const registerUser = async (
 ) => {
   try {
     const user = req.body.user;
-    const exists = await ifUserExists({
+    const doesExist = await ifUserExists({
       email: user.email,
       mobile: user.mobile,
     });
-    if (exists) {
+    if (doesExist) {
       throw new AlreadyTakenError('user email', JSON.stringify(user));
     }
     const newUser = await addUser(user);
@@ -62,7 +62,7 @@ export const loginUser = async (
 
     const user = await findOneUser({ email });
     if (!user) {
-      throw new NotFoundError(email, 'user email/id is Not Found');
+      throw new NotFoundError(email, 'user email/id Not Found');
     }
 
     const isPasswordValid = await validatePassword(user.email, password);

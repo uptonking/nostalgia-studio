@@ -12,7 +12,10 @@ export const registerValidator = async (
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
-  if (isEmpty(req.body.user)) return next(ApiError.emptyBody());
+  if (isEmpty(req.body.user)) {
+    return next(ApiError.emptyBody());
+  }
+
   const schema = {
     type: 'object',
     properties: {
@@ -41,19 +44,22 @@ export const loginValidator = async (
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
-  if (isEmpty(req.body)) return next(ApiError.emptyBody());
+  if (isEmpty(req.body.user)) {
+    return next(ApiError.emptyBody());
+  }
+
   const schema = {
     type: 'object',
     properties: {
-      identifier: { type: 'string' },
+      email: { type: 'string' },
       password: { type: 'string' },
     },
-    required: ['identifier', 'password'],
+    required: ['email', 'password'],
     additionalProperties: false,
   };
   const validate = ajv.compile(schema);
 
-  const valid = validate(req.body);
+  const valid = validate(req.body.user);
 
   if (valid) {
     next();

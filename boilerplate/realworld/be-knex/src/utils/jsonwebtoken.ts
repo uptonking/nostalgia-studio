@@ -1,10 +1,12 @@
 import jsonwebtoken from 'jsonwebtoken';
+
 import { jwt } from '../config/jwt';
 
 export interface IPayload {
   id: number;
-  email?: string;
   role: string;
+  email?: string;
+  username?: string;
   iat?: number;
 }
 

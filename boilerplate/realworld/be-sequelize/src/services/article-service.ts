@@ -48,11 +48,6 @@ export const findOneArticleBySlug = async (
   return article;
 };
 
-export const findSlug = async (slug: string) => {
-  const slugInDB = await Article.findOne({ where: { slug: slug } });
-  return slugInDB;
-};
-
 export const addArticle = async (
   {
     title,

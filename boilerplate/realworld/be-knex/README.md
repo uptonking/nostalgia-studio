@@ -21,3 +21,5 @@ npm run dev
   - return minimal articles data, only necessary data
 
 - feat follow api
+
+- deprecate ajv in favor of joi
