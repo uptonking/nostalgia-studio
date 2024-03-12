@@ -15,5 +15,5 @@ export const up = async (knex) => {
  * @returns { Promise<void> }
  */
 export const down = async (knex) => {
-  return knex.schema.dropTable('roles');
+  return knex.schema.dropTableIfExists('roles');
 };

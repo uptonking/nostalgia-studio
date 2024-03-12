@@ -1,10 +1,12 @@
 import type { NextFunction, Request, Response } from 'express';
 
 import { authService } from '../services/auth-service';
+import { userService } from '../services/user-service';
 import type {
   UserLoginRequestDto,
   UserRegisterRequestDto,
 } from '../types/user-type';
+import { ApiError } from '../utils/error-handler';
 
 export const register = async (
   req: Request,
@@ -13,6 +15,19 @@ export const register = async (
 ): Promise<void> => {
   try {
     const { email, username, password, name, image } = req.body.user;
+
+    const maybeUser = await userService.findUserByIdOrEmailOrUsername({
+      email,
+      username,
+    });
+    console.log(';; maybeUser ', maybeUser);
+    if (maybeUser?.id)
+      return next(
+        ApiError.badRequest(
+          'username or email is already taken: ' + email + ' ' + username,
+        ),
+      );
+
     const dto: UserRegisterRequestDto = {
       email,
       username,

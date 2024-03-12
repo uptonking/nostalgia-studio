@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 
 import { articleService } from '../services/article-service';
 import { slugify } from '../utils/article';
+import { ApiError } from '../utils/error-handler';
 
 export const getAllArticles = async (
   req: Request,
@@ -16,7 +17,7 @@ export const getAllArticles = async (
       // const user = await User.findOne({ where: { username: favorited } });
       // articles.rows = await user.getFavorites(searchOptions);
       // articles.count = await user.countFavorites();
-      res.status(200).json({ articles: [], articlesCount: 0 });
+      // res.status(200).json({ articles: [], articlesCount: 0 });
     } else {
       articles = await articleService.findAllArticles(req.query);
     }
@@ -29,7 +30,7 @@ export const getAllArticles = async (
     //   delete article.dataValues.Favorites;
     // }
 
-    res.status(200).json({ articles });
+    res.status(200).json(articles);
   } catch (error) {
     next(error);
   }
@@ -44,7 +45,7 @@ export const getArticleBySlug = async (
     // const user = req.user;
     const { slug } = req.params;
     const article = await articleService.findOneArticleBySlug(slug, true);
-    // if (!article) throw new NotFoundError('Article ' + slug);
+    if (!article) return next(ApiError.notFound('article with slug ' + slug));
 
     // convertToTagList(article.tagList, article);
     // await appendFollowers(loggedUser, article);
@@ -63,16 +64,20 @@ export const createArticle = async (
 ) => {
   try {
     const user = req.user;
-    // if (!user) throw new UnauthorizedError();
 
     const { title, description, body, tagList } = req.body.article;
+    // console.log(';; newBlog ', title);
     // if (!title) throw new FieldRequiredError('title');
     // if (!description) throw new FieldRequiredError('description');
     // if (!body) throw new FieldRequiredError('article body');
 
     const slug = slugify(title);
-    // const slugInDB = await findSlug(slug);
-    // if (slugInDB) throw new AlreadyTakenError('Article with Title ' + slug);
+    const slugInDB = await articleService.findOneArticleBySlug(slug);
+    if (slugInDB) {
+      return next(
+        ApiError.badRequest('Article with Title ' + slug + ' is already taken'),
+      );
+    }
 
     const article = await articleService.addArticle(
       {

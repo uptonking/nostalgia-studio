@@ -75,7 +75,6 @@ export function Editor() {
         description,
         body,
         tagList: tag && tag.trim() !== '' ? [tag.trim()] : [],
-        user,
       };
       let payload;
 

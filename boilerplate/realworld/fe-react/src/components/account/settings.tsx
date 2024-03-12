@@ -139,7 +139,7 @@ export function Settings() {
               className='btn btn-outline-danger btn-brand-primary-outline'
               onClick={handleLogout}
             >
-              Or click here to logout.
+              Click here to logout
             </button>
           </div>
         </div>

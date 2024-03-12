@@ -33,7 +33,7 @@ export const authenticateUser = async (
     }
     // console.log(';; jwt-decoded ', decoded);
 
-    const _user = await userService.findOne(decoded.id);
+    const _user = await userService.findUserById(decoded.id);
     if (!_user) {
       return next(
         ApiError.notFound('User Not Found ' + JSON.stringify(decoded)),

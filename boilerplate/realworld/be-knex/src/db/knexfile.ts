@@ -8,6 +8,7 @@ interface IKnexConfig {
 
 const configs: IKnexConfig = {
   development: {
+    // debug: true,
     client: 'postgresql',
     connection: {
       host: env.string('DB_DEV_HOST', 'localhost'),

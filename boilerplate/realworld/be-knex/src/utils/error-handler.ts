@@ -12,9 +12,13 @@ export class ApiError {
     this.message = message;
   }
 
-  public static badRequest(message: Error): ApiError {
+  public static badRequest(message: string | Error = 'Bad Request'): ApiError {
     logger.error(message);
-    return new ApiError(400, message);
+    const err =
+      typeof message === 'string'
+        ? { message, type: 'err.badRequest' }
+        : message;
+    return new ApiError(400, err);
   }
 
   public static unauthorized(message?: string): ApiError {
@@ -37,11 +41,11 @@ export class ApiError {
     });
   }
 
-  public static notFound(message?: string): ApiError {
+  public static notFound(message = ''): ApiError {
     logger.error(message);
     return new ApiError(404, {
       key: 'notFound',
-      message: message || 'Not Found',
+      message: message + ' Not Found',
       type: 'err.notFound',
       path: ['notFound'],
     });
@@ -61,7 +65,7 @@ export class ApiError {
 
   public static internalError(
     message: Error = {
-      message: 'Something went wrong!',
+      message: 'Internal Server Error',
       type: 'err.internal',
       key: 'internal-server',
     },
@@ -87,10 +91,9 @@ export const errorHandler = (
   req: Request,
   res: Response,
   next: NextFunction,
-): void => {
+) => {
   if (error instanceof ApiError) {
-    res.status(error.statusCode).send(error.message);
-    return;
+    return res.status(error.statusCode).send(error.message);
   }
 
   logger.error(error);

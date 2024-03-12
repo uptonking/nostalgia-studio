@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import { userRepo } from '../repositories/user-repository';
+import { usersRepo } from '../repositories/users-repository';
 import type {
   AuthorizedResponse,
   SanitizedUserData,
@@ -20,18 +20,19 @@ export const register = async (
 ): Promise<AuthorizedResponse> => {
   const _user: UserCreateDto = {
     ...userDto,
-    role: ROLE.AUTHENTICATED, // set a default hard-coded role, for security purposes
+    // set a default hard-coded role, for security purposes
+    role: ROLE.AUTHENTICATED,
     confirmed: true,
   };
   _user.password = await hash(userDto.password);
 
   // If email_verification is enabled set confirmation token and confirmed default to false
   if (env.boolean('user.email_confirmation', false, true)) {
-    _user.confirmation_token = crypto.randomBytes(20).toString('hex');
+    // _user.confirmation_token = crypto.randomBytes(20).toString('hex');
     _user.confirmed = false;
   }
 
-  const user = await userRepo.create(_user);
+  const user = await usersRepo.insertOne(_user);
   const token = issueToken({
     id: user.id,
     role: user.role,
@@ -47,16 +48,16 @@ export const register = async (
 export const login = async (
   dto: UserLoginRequestDto,
 ): Promise<AuthorizedResponse> => {
-  // Find user by username or email
-  const user = await userRepo.findOneByIdOrEmail(dto.email);
-  if (!user) throw ApiError.notFound('user email/id Not Found');
+  const { email } = dto;
+  const user = await usersRepo.findByIdOrEmailOrUsername({ email });
+  if (!user) throw ApiError.notFound('user email ' + email);
 
   // Check if password is valid
   const validPassword = await compare(dto.password, user.password);
   if (!validPassword)
     throw ApiError.badRequest({
       key: 'email',
-      message: 'email or password invalid.',
+      message: 'email or password invalid: ' + email,
       type: 'err.invalid',
       path: ['email', 'password'],
     });

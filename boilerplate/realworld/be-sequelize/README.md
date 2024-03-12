@@ -1,5 +1,5 @@
 # realworld-be-sequelize-api
-- blog-ready realworld api boilerplate built with sequelize
+- blog-ready realworld api boilerplate built with sequelize.v6
 # quickstart
 
 ```shell
@@ -14,12 +14,11 @@ npm run dev
 # roadmap
 - db tables id: migrate from integer to uuid string
 
-- fix getAllArticles query string filters
+- getAllArticles
+  - query string filters
+  - return minimal articles data, only necessary data
 
 - make joint-table/relation-table explicit
-
-- findAllArticles
-  - return minimal articles data, only necessary data
 
 - feat follow api
 

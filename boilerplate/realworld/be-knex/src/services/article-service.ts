@@ -1,9 +1,9 @@
-import { articleRepo } from '../repositories/article-repository';
+import { articlesRepo } from '../repositories/articles-repository';
+import { articlesTagsRepo } from '../repositories/articles-tags-repository';
+import { tagsRepo } from '../repositories/tags-repository';
 
 export const findAllArticles = async (options: any) => {
-  const { author, tag, favorited, limit = 5, offset = 0 } = options;
-
-  return await articleRepo.findAndCountAll(options);
+  return await articlesRepo.findAndCountAll(options);
 };
 
 export const findOneArticleBySlug = async (
@@ -14,10 +14,7 @@ export const findOneArticleBySlug = async (
   //   { model: Tag, as: 'tagList', attributes: ['name'] },
   // ];
 
-  const article = await articleRepo.findOneBySlug({
-    where: { slug },
-    // ...(enableInclude && { include: includeOptions }),
-  });
+  const article = await articlesRepo.findOneBySlug(slug);
 
   return article;
 };
@@ -38,29 +35,41 @@ export const addArticle = async (
   },
   user,
 ) => {
-  const article = await articleRepo.createOne({
+  const article = await articlesRepo.insertOne({
     title,
     slug,
     description,
     body,
+    author: user.id,
   });
 
-  console.log(';; article ', article);
+  // console.log(';; article ', article);
 
-  // for (const tag of tagList) {
-  //   const tagInDB = await Tag.findByPk(tag.trim());
-  //   if (tagInDB) {
-  //     await article.addTagList(tagInDB);
-  //   } else if (tag.length > 2) {
-  //     const newTag = await Tag.create({ name: tag.trim() });
-  //     await article.addTagList(newTag);
-  //   }
-  // }
+  if (tagList && tagList.length > 0) {
+    const existingTags = await tagsRepo.findExistingTagsInTagList(tagList);
+    // console.log(';; tag ', existingTags);
+    const newTagsToInsert = tagList
+      .filter((tag) => !existingTags.find((t) => t.name === tag))
+      .map((tag) => ({ name: tag }));
+
+    if (newTagsToInsert.length > 0) {
+      await tagsRepo.insertNames(newTagsToInsert);
+    }
+
+    const tagsIdsToInsert = await tagsRepo.findIdsByNames(tagList);
+    // console.log(';; tagsIdsToInsert ', tagsIdsToInsert);
+    const articlesTags = tagsIdsToInsert.map((tagId) => ({
+      // @ts-expect-error fix-types
+      article: article.id,
+      tag: tagId.id,
+    }));
+    await articlesTagsRepo.insertMany(articlesTags);
+  }
 
   // article.setAuthor(_user);
-  article['author'] = user;
-  article['author']['following'] = user;
-  article['favorited'] = false;
+  // article['author'] = user.id;
+  // article['author']['following'] = user;
+  // article['favorited'] = false;
 
   return article;
 };

@@ -3,13 +3,14 @@ import type { NextFunction, Request, Response } from 'express';
 import { userService } from '../services/user-service';
 import { ApiError } from '../utils/error-handler';
 
+/** get user data */
 export const me = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
   try {
-    res.status(200).json(req.user);
+    res.status(200).json({ user: req.user });
   } catch (err) {
     return next(err);
   }

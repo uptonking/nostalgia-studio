@@ -10,7 +10,7 @@ articleRouter.get('/', articleController.getAllArticles);
 // get one article
 articleRouter.get('/:slug', articleController.getArticleBySlug);
 // create one article
-articleRouter.post('/', authorizeUser, articleController.createArticle);
+articleRouter.post('/', authorizeUser(), articleController.createArticle);
 
 // articleRouter.get("/feed",  articlesFeed);
 
