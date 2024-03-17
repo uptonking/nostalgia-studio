@@ -1,0 +1,31 @@
+{
+  "name": "@datalking/elmoid",
+  "version": "0.0.1111",
+  "description": "simple frontend framework inspired by elm and hyperapp.",
+  "type": "module",
+  "main": "src/index",
+  "module": "src/index",
+  "scripts": {
+    "build": "rimraf dist && npm run build:dev",
+    "build:dev": "rimraf dist && rspack build -c ./webpacker/rspack.config.dev.mjs",
+    "build:demo": "rimraf dist && cross-env APP_ENV=react webpack --config webpack/webpack.config.demo.js",
+    "build:prod": "rimraf dist && cross-env NODE_ENV=production webpack --config webpack/webpack.config.prod.js",
+    "build:types": "",
+    "demo": "cross-env APP_ENV=reactfresh webpack serve --hot --config webpack/webpack.config.demo.js",
+    "dev:server": "cd server-node && ts-node-dev --respawn --transpile-only server.ts",
+    "lint": "eslint src --ext .ts,.tsx --fix ",
+    "start": "npm run demo",
+    "test": "npm run test:elmoid",
+    "test1": "npm run test:elmoid-oneoff",
+    "test:elmoid": "mocha --experimental-loader=ts-node/esm/transpile-only --experimental-specifier-resolution=node --extensions ts,js 'tests/**/*.test.ts' --reporter spec --timeout 10000",
+    "test:draft": "node --experimental-specifier-resolution=node --loader=ts-node/esm/transpile-only ./tests/draft.test.ts",
+    "test:oneoff": "mocha --experimental-loader=ts-node/esm/transpile-only --experimental-specifier-resolution=node --extensions ts,js 'tests/text-search.test.ts' --reporter spec --timeout 10000",
+    "test:utils1": "NODE_OPTIONS='--experimental-vm-modules --experimental-specifier-resolution=node --loader=ts-node/esm/transpile-only' jest"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "mocha": "^10.3.0",
+    "chai": "^5.1.0"
+  }
+}

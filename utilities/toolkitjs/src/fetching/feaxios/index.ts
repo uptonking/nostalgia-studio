@@ -1,12 +1,6 @@
 import { axios } from './client';
 
-export {
-  AxiosError,
-  type AxiosInstance,
-  type AxiosStatic,
-  CanceledError,
-  isAxiosError,
-} from './client';
+export { AxiosError, CanceledError, isAxiosError } from './client';
 
 export * from './types';
 

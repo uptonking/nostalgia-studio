@@ -19,7 +19,7 @@
     "dev2": "cross-env NODE_OPTIONS=\"--experimental-loader=ts-node/esm/transpile-only --experimental-specifier-resolution=node  \" node --watch ./dist/index.js",
     "dev3": "cross-env NODE_OPTIONS=\" \" node --watch ./dist/index.js",
     "dev:tsnode": "cross-env NODE_OPTIONS=\"--experimental-loader=ts-node/esm/transpile-only --experimental-specifier-resolution=node  \" node --watch ./src/server.ts",
-    "lint": "tsc --noEmit && eslint \"src/**/*.{js,ts}\" --quiet --fix",
+    "lint": "eslint \"src/**/*.{js,ts}\" --quiet --fix",
     "serve": "node dist/server.js",
     "start": "npm run dev",
     "test": "tsc -w"

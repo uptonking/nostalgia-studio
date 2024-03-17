@@ -22,4 +22,7 @@ npm run dev
 
 - feat follow api
 
+- db
+  - support sqlite
+
 - update sequelize to v7

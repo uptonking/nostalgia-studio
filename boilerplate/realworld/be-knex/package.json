@@ -23,7 +23,7 @@
     "knex:migrate": "npx ts-node ../../../node_modules/.bin/knex --knexfile ./knexfile.mjs migrate:latest",
     "knex:migrate-make": "npx ts-node ../../../node_modules/.bin/knex --knexfile ./knexfile.mjs migrate:make",
     "knex:seed": "npx knex --knexfile src/db/knexfile.ts seed:run",
-    "lint": "tsc --noEmit && eslint \"src/**/*.{js,ts}\" --quiet --fix",
+    "lint": "eslint src --ext .ts,.tsx --fix -o eslint.log",
     "serve": "node dist/server.js",
     "start": "npm run dev",
     "test": "tsc -w"

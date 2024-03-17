@@ -3,10 +3,13 @@
 # quickstart
 
 ```shell
-# 1. configure your env
+# 1. configure your env - db/nodejs
 cp .env.example .env
 
-# 2. start api server
+# 2. init postgresql
+npm run knex:migrate
+
+# 3. start api server
 npm run dev
 ```
 
@@ -17,7 +20,9 @@ npm run dev
   - query string filters
   - return minimal articles data, only necessary data
 
-- migrate group_concat(sqlite-only) to pg
+- db
+  - migrate group_concat(sqlite-only) to pg
+  - support pg/sqlite
 
 - db tables id: migrate from uuid to nanoid
   - 手动创建的nanoid值插入uuid类型的column时会异常

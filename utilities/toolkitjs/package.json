@@ -13,14 +13,16 @@
     "build:types": "",
     "demo": "cross-env APP_ENV=reactfresh webpack serve --hot --config webpack/webpack.config.demo.js",
     "dev:server": "cd server-node && ts-node-dev --respawn --transpile-only server.ts",
+    "lint": "eslint src --ext .ts,.tsx --fix ",
     "start": "npm run demo",
     "start2": "npm run dev:server",
     "test": "npm run test:utils-vanillajs",
     "test:log": "node index.js --name nested-a",
-    "test:utils-vanillajs": "jest",
     "test:utils-oneoff": "jest ./src/.test.ts",
+    "test:utils-vanillajs": "jest",
     "test:utils1": "NODE_OPTIONS='--experimental-vm-modules --experimental-specifier-resolution=node --loader=ts-node/esm/transpile-only' jest"
   },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.11.25",
     "ts-node": "^10.9.2"
