@@ -41,7 +41,40 @@
       "pouchdb-*": [
         "./db-pouch-like/src-pouchdb/pouchdb-*/src",
         "./db-pouch-like/pouch-awesome/pouchdb-*/src"
-      ]
+      ],
+      "@dnd-kit/core": ["./utilities/dnd-kit/core/src/"],
+      "@dnd-kit/accessibility": ["./utilities/dnd-kit/accessibility/src/"],
+      "@dnd-kit/modifiers": ["./utilities/dnd-kit/modifiers/src/"],
+      "@dnd-kit/sortable": ["./utilities/dnd-kit/sortable/src/"],
+      "@dnd-kit/utilities": ["./utilities/dnd-kit/utilities/src/"],
+      "@floating-ui/core": ["./utilities/floating-ui/core/src/"],
+      "@floating-ui/dom": ["./utilities/floating-ui/dom/src/"],
+      "@floating-ui/react-dom": ["./utilities/floating-ui/react-dom/src/"],
+      "@floating-ui/react": ["./utilities/floating-ui/react/src/"],
+      "@algolia/autocomplete-core": ["./utilities/autocomplete/core/src/"],
+      "@algolia/autocomplete-js": ["./utilities/autocomplete/js/src/"],
+      "@tanstack/table-core": ["./excel-tanstack-table/src-pkgs/table-core"],
+      "@tanstack/react-table": ["./excel-tanstack-table/src-pkgs/react-table"],
+      "@tanstack/react-table-devtools": [
+        "./excel-tanstack-table/src-pkgs/react-table-devtools"
+      ],
+      "@tanstack/match-sorter-utils": [
+        "./excel-tanstack-table/src-pkgs/match-sorter-utils"
+      ],
+      "@tanstack/virtual-core": [
+        "./excel-tanstack-table/src-pkgs/virtual-core"
+      ],
+      "@tanstack/react-virtual": [
+        "./excel-tanstack-table/src-pkgs/virtual-react/"
+      ],
+      "react-window": ["./excel-tanstack-table/src-react-window/src/"],
+      "@datalking/pivot-core": ["./excel-watarble/core/src/"],
+      "@datalking/pivot-cqrs": ["./excel-watarble/cqrs/src/"],
+      "@datalking/pivot-entity": ["./excel-watarble/entity/src/"],
+      "@datalking/pivot-i18n": ["./excel-watarble/i18n/src/"],
+      "@datalking/pivot-store": ["./excel-watarble/store/src/"],
+      "@datalking/pivot-ui": ["./excel-watarble/ui/src/"],
+      "@datalking/pivot-views": ["./excel-watarble/views/src/"]
     }
   },
   // "include": ["./typings.d.ts"],

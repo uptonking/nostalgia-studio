@@ -3,6 +3,10 @@
 
 > forked from https://github.com/jorgebucaran/hyperapp /v2.0.22/20220512
 
+- features
+  - elm-like architecture: model/state, view, effects
+  - composable views functions
+  - reusable effects functions
 # overview
 
 ```js

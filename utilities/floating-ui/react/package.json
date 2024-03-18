@@ -1,0 +1,66 @@
+{
+  "name": "@floating-ui/react",
+  "version": "0.22.2111",
+  "description": "Floating UI Interactions for React DOM",
+  "keywords": [
+    "tooltip",
+    "popover",
+    "dropdown",
+    "menu",
+    "popup",
+    "positioning",
+    "react",
+    "react-dom"
+  ],
+  "homepage": "https://floating-ui.com/docs/react-dom-interactions",
+  "bugs": "https://github.com/floating-ui/floating-ui",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/floating-ui/floating-ui.git",
+    "directory": "packages/react-dom-interactions"
+  },
+  "license": "MIT",
+  "author": "atomiks",
+  "sideEffects": false,
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "files": [
+    "dist/",
+    "index.d.ts",
+    "src/**/*.d.ts"
+  ],
+  "scripts": {
+    "build": "NODE_ENV=build rollup -c",
+    "dev": "parcel test/visual/index.html",
+    "test": "jest test"
+  },
+  "browserslist": "> 0.5%, not dead, not IE 11",
+  "dependencies": {
+    "@floating-ui/react-dom": "2.0.1111",
+    "@floating-ui/utils": "0.2.1111",
+    "tabbable": "^6.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.1.6",
+    "@testing-library/react": "^14.1.2",
+    "@testing-library/react-hooks": "^7.0.2",
+    "@testing-library/user-event": "^14.4.3",
+    "@types/react": "^18.2.46",
+    "framer-motion": "^7.6.12",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-merge-refs": "^1.1.0",
+    "react-router-dom": "^6.11.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "@rollingversions": {
+    "baseVersion": [
+      0,
+      1,
+      0
+    ]
+  }
+}

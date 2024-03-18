@@ -4,6 +4,7 @@ import rspack from '@rspack/core';
 
 import { devServerConfig } from '../../../webpacker/rspack.server.mjs';
 
+/** @type {import("@rspack/cli").Configuration} */
 const demoConfig = merge(
   devServerConfig,
 

@@ -1,0 +1,26 @@
+{
+  "name": "@tanstack/react-table-devtools",
+  "version": "8.7.9111",
+  "description": "Devtools for React Table",
+  "license": "MIT",
+  "author": "Tanner Linsley",
+  "sideEffects": false,
+  "main": "src/index.tsx",
+  "module": "src/index.tsx",
+  "types": "src/index.tsx",
+  "files": [
+    "build/lib/*",
+    "build/umd/*",
+    "src"
+  ],
+  "dependencies": {
+    "@tanstack/table-core": "8.7.9111"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "engines": {
+    "node": ">=12"
+  }
+}

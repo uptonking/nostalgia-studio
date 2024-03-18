@@ -441,7 +441,7 @@ export const app = <S>({
   let busy;
   let render;
 
-  /** exec subs and trigger dom update */
+  /** exec subs and trigger rerender */
   const update = (newState) => {
     if (state !== newState) {
       state = newState;
@@ -453,14 +453,13 @@ export const app = <S>({
         subs = patchSubs(subs, subscriptions(state), dispatch);
       }
       if (view && !busy) {
-        // requestAnimationFrame(render, (busy = true));
         busy = true;
         requestAnimationFrame(render);
       }
     }
   };
 
-  /** update dom by vdom patch */
+  /** update vdom, then update dom by vdom patch */
   render = () => {
     const oldVdom = vdom;
     vdom = view(state);
@@ -469,6 +468,7 @@ export const app = <S>({
     return node;
   };
 
+  /** register events which will trigger rerender */
   const listener = function (event) {
     // @ts-expect-error fix-types
     dispatch(this.events[event.type], event);

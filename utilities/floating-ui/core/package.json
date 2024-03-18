@@ -1,0 +1,50 @@
+{
+  "name": "@floating-ui/core",
+  "version": "1.2.5111",
+  "description": "Positioning library for floating elements: tooltips, popovers, dropdowns, and more",
+  "keywords": [
+    "tooltip",
+    "popover",
+    "dropdown",
+    "menu",
+    "popup",
+    "positioning"
+  ],
+  "homepage": "https://floating-ui.com",
+  "bugs": "https://github.com/floating-ui/floating-ui",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/floating-ui/floating-ui.git",
+    "directory": "packages/core"
+  },
+  "license": "MIT",
+  "author": "atomiks",
+  "sideEffects": false,
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "files": [
+    "dist/",
+    "index.d.ts",
+    "src/**/*.d.ts"
+  ],
+  "scripts": {
+    "build": "NODE_ENV=build rollup -c",
+    "dev": "rollup -c -w",
+    "test": "jest test"
+  },
+  "browserslist": "> 0.5%, not dead, not IE 11",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@floating-ui/utils": "0.2.1111"
+  },
+  "@rollingversions": {
+    "baseVersion": [
+      0,
+      0,
+      0
+    ]
+  }
+}

@@ -3,11 +3,7 @@ import { html } from '../shared/html';
 import { eventWith } from '../utils/events';
 import { Http } from '../utils/hyperapp-fx';
 import { LogError } from '../utils/mvu';
-import {
-  ArticleList,
-  FetchArticles,
-  loadingArticles,
-} from './common/articles';
+import { ArticleList, FetchArticles, loadingArticles } from './common/articles';
 
 // Actions & Effects
 export const SetTags = (state, { tags }) => ({ ...state, tags });

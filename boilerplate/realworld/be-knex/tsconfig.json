@@ -8,5 +8,5 @@
     // "composite": true
     // "noEmit": false,
   },
-  "include": ["src/**/*", "knex/**/*", "__tests__"]
+  "include": ["./src/**/*", "knex/**/*", "__tests__"]
 }
