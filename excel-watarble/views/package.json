@@ -8,13 +8,13 @@
   "types": "src/index.ts",
   "scripts": {
     "build": "tsc && vite build",
-    "demo": "cross-env REACT_APP_ENV=reacthot rspack serve -c ./webpacker/rspack.config.demo.mjs",
-    "demo1": "cross-env APP_ENV=react webpack serve --hot --config ./webpack/webpack.config.demo.js",
-    "dev": "cross-env REACT_APP_ENV=react rspack serve -c ./webpacker/rspack.config.demo.mjs",
-    "dev1": "cross-env RUST_BACKTRACE=full REACT_APP_ENV=react rspack build -c ./webpacker/rspack.config.demo.mjs --json stats.json",
+    "demo": "cross-env REACT_APP_ENV=react rspack serve -c ./webpacker/rspack.config.demo.mjs",
+    "demo:wepack": "cross-env REACT_APP_ENV=react webpack serve --hot --config ./webpack/webpack.config.demo.js",
+    "dev": "cross-env REACT_APP_ENV=reacthot rspack serve -c ./webpacker/rspack.config.demo.mjs",
+    "dev1": "cross-env REACT_APP_ENV=react RSPACK_PROFILE=ALL rspack build -c ./webpacker/rspack.config.demo.mjs ",
     "dev2": "npm run demo",
     "preview": "vite preview",
-    "start": "npm run demo1"
+    "start": "npm run demo"
   },
   "dependencies": {
     "@datalking/pivot-core": "0.0.1",

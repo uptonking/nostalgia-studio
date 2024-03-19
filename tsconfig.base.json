@@ -77,6 +77,6 @@
       "@datalking/pivot-views": ["./excel-watarble/views/src/"]
     }
   },
-  // "include": ["./typings.d.ts"],
+  "include": ["./typings.d.ts"],
   "exclude": ["-bak/**/*", "bak/**/*", "node_modules", "dist"]
 }

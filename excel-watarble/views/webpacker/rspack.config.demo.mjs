@@ -1,3 +1,4 @@
+import NodePolyfillPlugin from 'node-polyfill-webpack-plugin';
 import { merge } from 'webpack-merge';
 
 import rspack from '@rspack/core';
@@ -61,6 +62,9 @@ const demoConfig = merge(
       ],
     },
     plugins: [
+      new NodePolyfillPlugin({
+        includeAliases: ['path'],
+      }),
       new rspack.HtmlRspackPlugin({
         template: './public/app.html',
       }),
@@ -81,10 +85,10 @@ const demoConfig = merge(
       minimize: false,
     },
     stats: {
-      preset: 'verbose',
+      preset: 'errors-only',
       timings: true,
       reasons: true,
-      logging: 'verbose',
+      logging: 'error',
       loggingTrace: true,
     },
     devServer: {

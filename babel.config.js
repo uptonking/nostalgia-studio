@@ -1,27 +1,20 @@
 export default function (api) {
-  // 若build依赖于env，就不要再指定api.cache为forever或never了
-  // api.cache(true);
-
   // api.env() returns the current NODE_ENV string.
   const env = api.env();
   const isProd = env?.toLowerCase() === 'production';
 
   function checkAppEnv(env) {
-    return (
-      process.env.APP_ENV &&
-      process.env.APP_ENV.toLowerCase().indexOf(env) !== -1
-    );
+    return process.env.REACT_APP_ENV?.toLowerCase()?.indexOf(env) > -1;
   }
 
   // 用在react应用开发调试阶段，会启用 react-refresh/babel
   const isEnvReactHotReload = checkAppEnv('reacthot');
   // 用在react项目打包阶段，不会启用react-refresh/babel
   const isEnvReact = checkAppEnv('react');
-  const isEnvReactLike = checkAppEnv('reactlike');
 
   console.log(
     ';; env.APP_ENV, isEnvReact ',
-    process.env.APP_ENV,
+    process.env.REACT_APP_ENV,
     isEnvReact,
     env,
   );

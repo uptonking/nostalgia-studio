@@ -6,11 +6,7 @@ import { merge } from 'webpack-merge';
 
 import { devServerConfig } from '../../../webpack/webpack.server.js';
 
-// const dotenv = require('dotenv');
-// dotenv.config();
-
 export const demoBuildConfig = merge(devServerConfig, {
-  // entry: path.resolve(__dirname, '../src/main.tsx'),
   entry: './src/main.tsx',
   output: {
     filename: 'main.js',

@@ -11,13 +11,6 @@ import webpack from 'webpack';
 
 const isProd = process.env.NODE_ENV === 'production';
 
-function checkAppEnv(env) {
-  return (
-    process.env.APP_ENV && process.env.APP_ENV.toLowerCase().indexOf(env) !== -1
-  );
-}
-const isEnvReact = checkAppEnv('react');
-
 export const commonConfig = {
   // mode: 'development',
   // devtool: 'eval-source-map',

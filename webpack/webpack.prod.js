@@ -1,12 +1,12 @@
 // webpack config for production
 
-const path = require('path');
-const webpack = require('webpack');
-const { merge } = require('webpack-merge');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const commonConfig = require('./webpack.common');
+import path from 'path';
+import webpack from 'webpack';
+import { merge } from 'webpack-merge';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import { commonConfig } from './webpack.common.js';
 
-module.exports = merge(commonConfig, {
+export const prodConfig = merge(commonConfig, {
   mode: 'production',
   // false 不创建map
   devtool: 'source-map',

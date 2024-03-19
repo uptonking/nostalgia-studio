@@ -10,9 +10,7 @@ import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import { commonConfig } from './webpack.common.js';
 
 function checkAppEnv(env) {
-  return (
-    process.env.APP_ENV && process.env.APP_ENV.toLowerCase().indexOf(env) !== -1
-  );
+  return process.env.REACT_APP_ENV?.toLowerCase()?.indexOf(env) > -1;
 }
 
 // 用在react项目打包阶段，会启用@babel/preset-react，不会启用react-refresh/babel
