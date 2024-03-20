@@ -1,11 +1,11 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 
-import {
-  type Field,
-  type IFieldQueryValue,
-  type IFilter,
-  type IOperator,
-  type TableSchema,
+import type {
+  Field,
+  IFieldQueryValue,
+  IFilter,
+  IOperator,
+  TableSchema,
 } from '@datalking/pivot-core';
 import {
   ActionIcon,

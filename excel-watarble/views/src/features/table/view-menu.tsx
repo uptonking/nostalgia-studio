@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import {
-  type FieldId,
-  type ICalendar,
-  type ITreeView,
-  type Kanban,
+import type {
+  FieldId,
+  ICalendar,
+  ITreeView,
+  Kanban,
 } from '@datalking/pivot-core';
 import {
   useDeleteViewMutation,
@@ -46,7 +46,7 @@ import {
   SELECT_KANBAN_FIELD_MODAL_ID,
   SELECT_TREE_VIEW_FIELD_MODAL_ID,
 } from '../../modals';
-import { type ISelectKanbanFieldProps } from '../kanban-ui/select-kanban-field.props';
+import type { ISelectKanbanFieldProps } from '../kanban-ui/select-kanban-field.props';
 import { displayTypes } from '../view/display-type';
 import {
   DisplayTypeIcon,
@@ -88,11 +88,7 @@ const StackedBy: React.FC<{ fieldId?: FieldId }> = ({ fieldId }) => {
 };
 
 const KanbanControl: React.FC<{ kanban?: Kanban }> = ({ kanban }) => {
-  return (
-    <>
-      <StackedBy fieldId={kanban?.fieldId} />
-    </>
-  );
+  return <StackedBy fieldId={kanban?.fieldId} />;
 };
 
 const UsingCalendarField: React.FC<{ fieldId?: FieldId }> = ({ fieldId }) => {

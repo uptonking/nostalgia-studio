@@ -2,10 +2,15 @@ import React, { forwardRef } from 'react';
 
 import { useParams } from 'react-router-dom';
 
-import { type ReferenceField } from '@datalking/pivot-core';
+import type { ReferenceField } from '@datalking/pivot-core';
 import { useGetForeignRecordsQuery } from '@datalking/pivot-store';
-import { type MultiSelectProps } from '@datalking/pivot-ui';
-import { Group, Loader, MultiSelect, useDisclosure } from '@datalking/pivot-ui';
+import {
+  Group,
+  Loader,
+  MultiSelect,
+  useDisclosure,
+  type MultiSelectProps,
+} from '@datalking/pivot-ui';
 
 import { useCurrentTable } from '../../hooks/use-current-table';
 import { useReferenceDisplayValues } from '../../hooks/use-reference-display-values';

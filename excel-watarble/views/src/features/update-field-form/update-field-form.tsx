@@ -4,6 +4,8 @@ import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
 import {
+  canDisplay,
+  createUpdateFieldSchema,
   type CountField,
   type DateFieldTypes,
   type IUpdateFieldSchema,
@@ -13,7 +15,6 @@ import {
   type SelectField,
   type SumField,
 } from '@datalking/pivot-core';
-import { canDisplay, createUpdateFieldSchema } from '@datalking/pivot-core';
 import { useUpdateFieldMutation } from '@datalking/pivot-store';
 import {
   Box,
@@ -35,7 +36,7 @@ import { FieldIcon } from '../field-inputs/field-Icon';
 import { FieldInputLabel } from '../field-inputs/field-input-label';
 import { DisplayFields } from '../field/display-fields';
 import { FieldVariantControl } from '../field/field-variant-control';
-import { type IUpdateFieldProps } from './update-field.props';
+import type { IUpdateFieldProps } from './update-field.props';
 
 export const UpdateFieldForm: React.FC<IUpdateFieldProps> = ({
   field,
@@ -52,7 +53,7 @@ export const UpdateFieldForm: React.FC<IUpdateFieldProps> = ({
     name: field.name.value,
     description,
     required: field.required,
-    display: !!field.display,
+    display: Boolean(field.display),
   };
 
   if (
@@ -173,7 +174,7 @@ export const UpdateFieldForm: React.FC<IUpdateFieldProps> = ({
             }
           />
 
-          {(!!description || display) && (
+          {(Boolean(description) || display) && (
             <TextInput
               {...form.register('description')}
               autoFocus
@@ -225,7 +226,7 @@ export const UpdateFieldForm: React.FC<IUpdateFieldProps> = ({
                   <HoverCard.Dropdown
                     display={displayFields.length ? 'visible' : 'none'}
                   >
-                    {!!displayFields.length && (
+                    {Boolean(displayFields.length) && (
                       <DisplayFields
                         displayFields={displayFields.map((f) => ({
                           name: f.name.value,

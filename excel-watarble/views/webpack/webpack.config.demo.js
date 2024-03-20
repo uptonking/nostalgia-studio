@@ -12,7 +12,7 @@ export const demoBuildConfig = merge(devServerConfig, {
     filename: 'main.js',
     // path: '../dist',
     // path: path.resolve(__dirname, '../dist'),
-    // publicPath: '/',
+    publicPath: '/',
   },
   plugins: [
     // new CircularDependencyPlugin({
@@ -42,7 +42,7 @@ export const demoBuildConfig = merge(devServerConfig, {
   },
   devServer: {
     // contentBase: path.resolve(__dirname, '../dist'),
-    port: 8999,
+    port: 8998,
     proxy: {
       '/api': {
         target: 'http://localhost:4000',

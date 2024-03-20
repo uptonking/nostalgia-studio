@@ -1,14 +1,17 @@
 import React from 'react';
 
-import { type IAttachmentItem } from '@datalking/pivot-core';
-import { getExtension, isImage } from '@datalking/pivot-core';
-import { type DefaultExtensionType } from '@datalking/pivot-ui';
+import {
+  getExtension,
+  isImage,
+  type IAttachmentItem,
+} from '@datalking/pivot-core';
 import {
   Box,
   defaultStyles,
   FileIcon,
   Image,
   Tooltip,
+  type DefaultExtensionType,
 } from '@datalking/pivot-ui';
 
 interface IProps {

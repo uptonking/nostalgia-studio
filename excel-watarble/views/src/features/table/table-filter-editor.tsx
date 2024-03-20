@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import { type IFilter } from '@datalking/pivot-core';
+import type { IFilter } from '@datalking/pivot-core';
 import { useSetFilterMutation } from '@datalking/pivot-store';
 import {
   Badge,
@@ -20,7 +20,7 @@ export const TableFilterEditor: React.FC = () => {
   const table = useCurrentTable();
   const view = useCurrentView();
   const filters = view.filterList as IFilter[];
-  const hasFilter = !!filters.length;
+  const hasFilter = Boolean(filters.length);
   const [opened, handler] = useDisclosure(false);
   const { t } = useTranslation();
 

@@ -2,10 +2,9 @@ import React, { forwardRef, useState } from 'react';
 
 import { useParams } from 'react-router-dom';
 
-import { type ParentField } from '@datalking/pivot-core';
+import type { ParentField } from '@datalking/pivot-core';
 import { useParentAvailableQuery } from '@datalking/pivot-store';
-import { type SelectProps } from '@datalking/pivot-ui';
-import { Group, Loader, Select } from '@datalking/pivot-ui';
+import { Group, Loader, Select, type SelectProps } from '@datalking/pivot-ui';
 
 import { useCurrentTable } from '../../hooks/use-current-table';
 import { useReferenceDisplayValues } from '../../hooks/use-reference-display-values';

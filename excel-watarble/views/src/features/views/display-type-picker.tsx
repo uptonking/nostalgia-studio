@@ -2,9 +2,14 @@ import React, { forwardRef } from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import { type IViewDisplayType } from '@datalking/pivot-core';
-import { type SelectProps } from '@datalking/pivot-ui';
-import { ActionIcon, Group, Select, Text } from '@datalking/pivot-ui';
+import type { IViewDisplayType } from '@datalking/pivot-core';
+import {
+  ActionIcon,
+  Group,
+  Select,
+  Text,
+  type SelectProps,
+} from '@datalking/pivot-ui';
 
 import { displayTypes } from '../view/display-type';
 import {

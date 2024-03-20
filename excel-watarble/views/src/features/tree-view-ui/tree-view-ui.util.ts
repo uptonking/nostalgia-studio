@@ -1,11 +1,11 @@
-import { type RecordAllValues } from '@datalking/pivot-core';
-import { type UniqueIdentifier } from '@dnd-kit/core';
+import type { RecordAllValues } from '@datalking/pivot-core';
+import type { UniqueIdentifier } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 
-import {
-  type FlattenedSortableRecord,
-  type SortableRecordItem,
-  type SortableRecordItems,
+import type {
+  FlattenedSortableRecord,
+  SortableRecordItem,
+  SortableRecordItems,
 } from './tree-view-ui.types';
 
 function flatten(

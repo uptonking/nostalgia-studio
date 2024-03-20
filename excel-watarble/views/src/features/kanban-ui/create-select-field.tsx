@@ -4,8 +4,11 @@ import { useSetAtom } from 'jotai';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { type ICreateSelectFieldSchema } from '@datalking/pivot-core';
-import { createSelectFieldSchema, FieldId } from '@datalking/pivot-core';
+import {
+  createSelectFieldSchema,
+  FieldId,
+  type ICreateSelectFieldSchema,
+} from '@datalking/pivot-core';
 import {
   useCreateFieldMutation,
   useSetKanbanFieldMutation,

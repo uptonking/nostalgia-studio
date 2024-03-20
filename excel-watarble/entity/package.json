@@ -12,6 +12,7 @@
     "build": "tsup",
     "clean": "rimraf dist",
     "coverage": "vitest run --coverage",
+    "lint": "eslint --quiet src --ext .ts,.tsx --fix ",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest"

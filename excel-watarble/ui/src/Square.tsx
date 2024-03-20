@@ -1,5 +1,6 @@
-import { type BoxProps } from '@mantine/core';
-import { Box } from '@mantine/core';
+import React from 'react';
+
+import { Box, type BoxProps } from '@mantine/core';
 
 export const Square: React.FC<BoxProps> = (props) => {
   return (
@@ -13,6 +14,6 @@ export const Square: React.FC<BoxProps> = (props) => {
           paddingBottom: '100%',
         },
       }}
-    ></Box>
+    />
   );
 };

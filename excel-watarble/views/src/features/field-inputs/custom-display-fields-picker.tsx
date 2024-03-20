@@ -7,8 +7,10 @@ import { useGetTableQuery } from '@datalking/pivot-store';
 import { Stack, Switch } from '@datalking/pivot-ui';
 
 import { DisplayFields } from '../field/display-fields';
-import { type IForeignTablePickerProps } from './foreign-fields-picker';
-import { ForeignFieldsPicker } from './foreign-fields-picker';
+import {
+  ForeignFieldsPicker,
+  type IForeignTablePickerProps,
+} from './foreign-fields-picker';
 
 export const CustomDisplayFieldsPicker: React.FC<IForeignTablePickerProps> = (
   props,
@@ -47,7 +49,7 @@ export const CustomDisplayFieldsPicker: React.FC<IForeignTablePickerProps> = (
         onChange={(e) => setCustom(e.target.checked)}
         label={t('Custom Display Fields') as string}
       />
-      {!!displayFields.length && !custom && (
+      {Boolean(displayFields.length) && !custom && (
         <DisplayFields displayFields={displayFields} />
       )}
       {custom && (

@@ -1,6 +1,8 @@
+import type { MantineTheme } from '@mantine/core';
+
+export type { MantineTheme };
 export {
   createStyles,
   rem,
   useMantineTheme as useEgoUITheme,
-  type MantineTheme,
 } from '@mantine/core';

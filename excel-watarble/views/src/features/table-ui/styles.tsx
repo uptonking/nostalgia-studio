@@ -1,5 +1,8 @@
-import { type CSSObject, type MantineTheme } from '@datalking/pivot-ui';
-import { createStyles } from '@datalking/pivot-ui';
+import {
+  createStyles,
+  type CSSObject,
+  type MantineTheme,
+} from '@datalking/pivot-ui';
 
 interface PinnedTDProps {
   left?: number;

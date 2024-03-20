@@ -4,8 +4,11 @@ import { useSetAtom } from 'jotai';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { type ICreateTreeFieldSchema } from '@datalking/pivot-core';
-import { createTreeFieldSchema, FieldId } from '@datalking/pivot-core';
+import {
+  createTreeFieldSchema,
+  FieldId,
+  type ICreateTreeFieldSchema,
+} from '@datalking/pivot-core';
 import {
   useCreateFieldMutation,
   useSetTreeFieldMutation,
@@ -83,7 +86,7 @@ export const CreateTreeField: React.FC<IProps> = ({ onSuccess }) => {
             />
             <Controller
               control={form.control}
-              name={`parentFieldName`}
+              name='parentFieldName'
               render={(props) => (
                 <TextInput
                   label={

@@ -6,7 +6,7 @@
   "module": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
-    "lint": "eslint *.ts*"
+    "lint": "eslint --quiet src --ext .ts,.tsx --fix "
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",

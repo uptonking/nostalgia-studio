@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { type Field } from '@datalking/pivot-core';
+import type { Field } from '@datalking/pivot-core';
 import { ActionIcon, IconDots, Menu } from '@datalking/pivot-ui';
-import { type Header } from '@tanstack/react-table';
+import type { Header } from '@tanstack/react-table';
 
 import { FieldMenuDropdown } from '../field/field-menu-dropdown';
-import { type TData } from '../table-ui/interface';
+import type { TData } from '../table-ui/interface';
 
 interface IProps {
   field: Field;
@@ -29,7 +29,7 @@ export const TableUIFieldMenu: React.FC<IProps> = React.memo(
           field={field}
           orientation='horizontal'
           index={index}
-          pinned={!!pinned}
+          pinned={Boolean(pinned)}
           pinLeft={() =>
             pinned ? header.column.pin(false) : header.column.pin('left')
           }

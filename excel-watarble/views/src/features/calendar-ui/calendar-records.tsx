@@ -3,8 +3,11 @@ import React, { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import { type ICalendarField, type Record } from '@datalking/pivot-core';
-import { RecordFactory } from '@datalking/pivot-core';
+import {
+  RecordFactory,
+  type ICalendarField,
+  type Record,
+} from '@datalking/pivot-core';
 import {
   ActionIcon,
   Box,

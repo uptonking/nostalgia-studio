@@ -19,7 +19,7 @@ export const EmptyTable = () => {
   const setOpened = useSetAtom(createRecordFormDrawerOpened);
 
   return (
-    <Center h='100%' mt={'-5%'}>
+    <Center h='100%' mt='-5%'>
       <Stack>
         <Center>
           <Text size='lg' fw={600}>
@@ -29,7 +29,7 @@ export const EmptyTable = () => {
         <Center>
           <Text size='sm' color='gray'>
             <Trans
-              i18nKey={'shortcut R'}
+              i18nKey='shortcut R'
               t={t}
               values={{ shortcut: 'R' }}
               // eslint-disable-next-line react/jsx-key, react/no-children-prop

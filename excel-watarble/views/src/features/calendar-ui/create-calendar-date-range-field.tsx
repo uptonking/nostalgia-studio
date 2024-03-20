@@ -4,8 +4,11 @@ import { useSetAtom } from 'jotai';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
-import { type ICreateDateRangeFieldSchema } from '@datalking/pivot-core';
-import { createDateRangeFieldSchema, FieldId } from '@datalking/pivot-core';
+import {
+  createDateRangeFieldSchema,
+  FieldId,
+  type ICreateDateRangeFieldSchema,
+} from '@datalking/pivot-core';
 import {
   useCreateFieldMutation,
   useSetCalendarFieldMutation,

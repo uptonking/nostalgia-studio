@@ -3,7 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDeepCompareEffectNoCheck } from 'use-deep-compare-effect';
 
-import { type IAttachmentItem } from '@datalking/pivot-core';
+import type { IAttachmentItem } from '@datalking/pivot-core';
 import { useUploadMutation } from '@datalking/pivot-store';
 import {
   AspectRatio,
@@ -97,7 +97,7 @@ export const AttachmentInput: React.FC<IProps> = ({ onChange, value = [] }) => {
           </div>
         </Group>
       </Dropzone>
-      {!!attachments.length && (
+      {Boolean(attachments.length) && (
         <Group h={60}>
           {attachments.map((attachment, index) => (
             <AttachmentItem

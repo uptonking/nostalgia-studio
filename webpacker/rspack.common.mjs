@@ -91,7 +91,6 @@ export const commonConfig = {
     // outputModule: true,
     rspackFuture: {
       newTreeshaking: true,
-      // disableApplyEntryLazily: true,
     },
   },
   optimization: {

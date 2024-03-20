@@ -3,8 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useGetTablesQuery } from '@datalking/pivot-store';
-import { type SelectItem, type SelectProps } from '@datalking/pivot-ui';
-import { Select } from '@datalking/pivot-ui';
+import { Select, type SelectItem, type SelectProps } from '@datalking/pivot-ui';
 
 import { FieldInputLabel } from '../field-inputs/field-input-label';
 

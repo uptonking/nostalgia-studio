@@ -4,11 +4,12 @@ import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
 import {
+  OptionColor,
+  updateOptionSchema,
   type IMutateOptionSchema,
   type IUpdateOptionSchema,
   type SelectField,
 } from '@datalking/pivot-core';
-import { OptionColor, updateOptionSchema } from '@datalking/pivot-core';
 import { useUpdateOptionMutation } from '@datalking/pivot-store';
 import {
   Button,

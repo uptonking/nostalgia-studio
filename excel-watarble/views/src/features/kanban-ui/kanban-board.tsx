@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { type IKanbanField } from '@datalking/pivot-core';
-import { RecordFactory } from '@datalking/pivot-core';
+import { RecordFactory, type IKanbanField } from '@datalking/pivot-core';
 import styled from '@emotion/styled';
 
 import { useCurrentTable } from '../../hooks/use-current-table';

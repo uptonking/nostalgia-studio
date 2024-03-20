@@ -1,9 +1,8 @@
 import React from 'react';
 
-import { type SelectProps } from '@datalking/pivot-ui';
-import { Select } from '@datalking/pivot-ui';
+import { Select, type SelectProps } from '@datalking/pivot-ui';
 
-import { type FieldBase } from './field-picker.type';
+import type { FieldBase } from './field-picker.type';
 
 interface IProps extends Omit<SelectProps, 'data'> {
   fields: FieldBase[];

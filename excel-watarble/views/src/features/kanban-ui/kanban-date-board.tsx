@@ -8,17 +8,17 @@ import {
   isTomorrow,
   isYesterday,
   startOfDay,
+  endOfDay,
 } from 'date-fns';
-import { endOfDay } from 'date-fns/esm';
 import { groupBy } from 'lodash-es';
 import { useTranslation } from 'react-i18next';
 
 import {
+  RecordFactory,
   type DateField,
   type DateFieldValue,
   type Record as CoreRecord,
 } from '@datalking/pivot-core';
-import { RecordFactory } from '@datalking/pivot-core';
 import { useUpdateRecordMutation } from '@datalking/pivot-store';
 import { Container, Group } from '@datalking/pivot-ui';
 import {
@@ -45,8 +45,11 @@ import {
   KANBAN_DATE_STACKS,
   RElAVANT_DATES,
 } from './kanban-date.utils';
-import { type IProps as KanbanLaneProps } from './kanban-lane';
-import { KanbanLane, SortableKanbanLane } from './kanban-lane';
+import {
+  KanbanLane,
+  SortableKanbanLane,
+  type IProps as KanbanLaneProps,
+} from './kanban-lane';
 import { useKanban } from './use-kanban';
 
 interface IProps {

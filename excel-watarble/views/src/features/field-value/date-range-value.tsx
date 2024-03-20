@@ -2,9 +2,9 @@ import React from 'react';
 
 import { format } from 'date-fns/fp';
 
-import {
-  type DateRangeField,
-  type IDateRangeFieldValue,
+import type {
+  DateRangeField,
+  IDateRangeFieldValue,
 } from '@datalking/pivot-core';
 
 interface IProps {

@@ -8,13 +8,13 @@ import {
   RATING_MAX,
   RATING_MAX_DEFAULT,
 } from '@datalking/pivot-core';
-import { type ICreateTableInput } from '@datalking/pivot-cqrs';
+import type { ICreateTableInput } from '@datalking/pivot-cqrs';
 import { NumberInput, Switch, TextInput } from '@datalking/pivot-ui';
 
 import { CustomDisplayFieldsPicker } from '../../field-inputs/custom-display-fields-picker';
 import { FieldInputLabel } from '../../field-inputs/field-input-label';
 import { FieldPicker } from '../../field-inputs/field-picker';
-import { type FieldBase } from '../../field-inputs/field-picker.type';
+import type { FieldBase } from '../../field-inputs/field-picker.type';
 import { ForeignFieldsPicker } from '../../field-inputs/foreign-fields-picker';
 import { SelectFieldControl } from '../../field-inputs/select-field-control';
 import { DateFormatPicker } from '../../field/date-format-picker';
@@ -94,7 +94,7 @@ export const FieldVariantControl: React.FC<IProps> = ({ index }) => {
             )}
           />
         )}
-        {type === 'reference' && !!foreignTableId && (
+        {type === 'reference' && Boolean(foreignTableId) && (
           <Switch
             label={t('Bidirectional')}
             {...form.register(`schema.${index}.bidirectional`)}
@@ -149,29 +149,27 @@ export const FieldVariantControl: React.FC<IProps> = ({ index }) => {
     // const referenceFieldId = form.watch(`schema.${index}.referenceFieldId`)
 
     return (
-      <>
-        <Controller
-          name={`schema.${index}.referenceFieldId`}
-          render={(props) => (
-            <FieldPicker
-              variant='filled'
-              label={<FieldInputLabel>{t('Reference Field')}</FieldInputLabel>}
-              fields={
-                schema
-                  .filter((f) => f.type === 'reference')
-                  .map((f) => ({
-                    id: f.id,
-                    type: f.type,
-                    name: f.name,
-                  })) as FieldBase[]
-              }
-              {...props.field}
-              placeholder={t('Select Reference Field') as string}
-              withinPortal
-            />
-          )}
-        />
-      </>
+      <Controller
+        name={`schema.${index}.referenceFieldId`}
+        render={(props) => (
+          <FieldPicker
+            variant='filled'
+            label={<FieldInputLabel>{t('Reference Field')}</FieldInputLabel>}
+            fields={
+              schema
+                .filter((f) => f.type === 'reference')
+                .map((f) => ({
+                  id: f.id,
+                  type: f.type,
+                  name: f.name,
+                })) as FieldBase[]
+            }
+            {...props.field}
+            placeholder={t('Select Reference Field') as string}
+            withinPortal
+          />
+        )}
+      />
     );
   }
   if (

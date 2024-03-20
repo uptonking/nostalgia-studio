@@ -16,6 +16,7 @@ const demoConfig = merge(
     output: {
       filename: 'main.js',
       path: './dist',
+      publicPath: '/',
       // path: path.resolve(__dirname, '../build'),
       // module: true,
       // libraryTarget: 'module',
@@ -62,9 +63,9 @@ const demoConfig = merge(
       ],
     },
     plugins: [
-      new NodePolyfillPlugin({
-        includeAliases: ['path'],
-      }),
+      // new NodePolyfillPlugin({
+      //   includeAliases: ['path'],
+      // }),
       new rspack.HtmlRspackPlugin({
         template: './public/app.html',
       }),
@@ -76,12 +77,20 @@ const demoConfig = merge(
       //   ],
       // }),
     ],
+    resolve: {
+      fallback: {
+        path: false,
+      },
+    },
     experiments: {
       // outputModule: false,
+      rspackFuture: {
+        newTreeshaking: false,
+      },
     },
     optimization: {
-      // moduleIds: 'named',
-      // chunkIds: 'named',
+      moduleIds: 'named',
+      chunkIds: 'named',
       minimize: false,
     },
     stats: {

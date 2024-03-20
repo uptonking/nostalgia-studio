@@ -1,11 +1,8 @@
 import { isEmpty, isString, unionBy } from 'lodash-es';
 
-import {
-  type IQueryRecords,
-  type ReferenceFieldTypes,
-} from '@datalking/pivot-core';
+import type { IQueryRecords, ReferenceFieldTypes } from '@datalking/pivot-core';
 import { useGetRecordQuery } from '@datalking/pivot-store';
-import { type SelectItem } from '@datalking/pivot-ui';
+import type { SelectItem } from '@datalking/pivot-ui';
 
 import { useCurrentTable } from './use-current-table';
 

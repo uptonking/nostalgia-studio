@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { css } from '@linaria/core';
 import { Loader } from '@mantine/core';
 import styled from '@emotion/styled';
 

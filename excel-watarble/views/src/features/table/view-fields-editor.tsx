@@ -3,13 +3,12 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 
-import { type Field } from '@datalking/pivot-core';
+import type { Field } from '@datalking/pivot-core';
 import {
   useMoveFieldMutation,
   useSetShowSystemFieldsMutation,
   useSetVisibilityMutation,
 } from '@datalking/pivot-store';
-import { type CheckboxProps } from '@datalking/pivot-ui';
 import {
   ActionIcon,
   Badge,
@@ -31,6 +30,7 @@ import {
   useDisclosure,
   useHover,
   useListState,
+  type CheckboxProps,
 } from '@datalking/pivot-ui';
 import { closestCenter, DndContext } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';

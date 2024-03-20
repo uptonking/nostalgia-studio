@@ -22,7 +22,7 @@ export const TableSortEditor: React.FC = () => {
   const [opened, toggle] = useDisclosure(false);
   const [setSortsReq] = useSetSortMutation();
   const sorts = view.sorts?.sorts ?? [];
-  const hasSort = !!sorts.length;
+  const hasSort = Boolean(sorts.length);
 
   const { t } = useTranslation();
 

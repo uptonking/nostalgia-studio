@@ -4,14 +4,6 @@ import { castArray } from 'lodash-es';
 import { useTranslation } from 'react-i18next';
 
 import {
-  type Field,
-  type IDateFilterOperator,
-  type IDateRangeFieldValue,
-  type IFieldQueryValue,
-  type IOperator,
-  type IRatingFieldValue,
-} from '@datalking/pivot-core';
-import {
   AutoIncrementField,
   AverageField,
   ColorField,
@@ -29,6 +21,12 @@ import {
   StringField,
   SumField,
   UpdatedAtField,
+  type Field,
+  type IDateFilterOperator,
+  type IDateRangeFieldValue,
+  type IFieldQueryValue,
+  type IOperator,
+  type IRatingFieldValue,
 } from '@datalking/pivot-core';
 import {
   ColorInput,

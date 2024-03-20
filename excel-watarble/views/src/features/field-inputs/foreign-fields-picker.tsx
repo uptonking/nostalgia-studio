@@ -2,23 +2,24 @@ import React, { forwardRef } from 'react';
 
 import { identity } from 'lodash-es';
 
-import { type Field, type IFieldType } from '@datalking/pivot-core';
-import { TableFactory } from '@datalking/pivot-core';
-import { useGetTableQuery } from '@datalking/pivot-store';
 import {
-  type MultiSelectProps,
-  type SelectItem as SelectItemType,
-} from '@datalking/pivot-ui';
+  TableFactory,
+  type Field,
+  type IFieldType,
+} from '@datalking/pivot-core';
+import { useGetTableQuery } from '@datalking/pivot-store';
 import {
   ActionIcon,
   Group,
   MultiSelect,
   Text,
   useListState,
+  type MultiSelectProps,
+  type SelectItem as SelectItemType,
 } from '@datalking/pivot-ui';
 
 import { FieldIcon } from './field-Icon';
-import { type FieldBase } from './field-picker.type';
+import type { FieldBase } from './field-picker.type';
 
 export interface IForeignTablePickerProps
   extends Omit<MultiSelectProps, 'data'> {

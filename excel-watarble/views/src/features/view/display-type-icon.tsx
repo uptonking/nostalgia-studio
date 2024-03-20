@@ -1,15 +1,13 @@
 import React from 'react';
 
-import { type IViewDisplayType } from '@datalking/pivot-core';
-import {
-  type DefaultMantineColor,
-  type TablerIconsProps,
-} from '@datalking/pivot-ui';
+import type { IViewDisplayType } from '@datalking/pivot-core';
 import {
   IconCalendar,
   IconHierarchy,
   IconLayoutKanban,
   IconTable,
+  type DefaultMantineColor,
+  type TablerIconsProps,
 } from '@datalking/pivot-ui';
 
 export interface IProps extends TablerIconsProps {

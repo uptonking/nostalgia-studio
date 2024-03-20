@@ -2,7 +2,6 @@ import React from 'react';
 
 import { useTranslation } from 'react-i18next';
 
-import { type Field, type IOperator } from '@datalking/pivot-core';
 import {
   AutoIncrementField,
   AverageField,
@@ -21,9 +20,10 @@ import {
   SumField,
   TreeField,
   UpdatedAtField,
+  type Field,
+  type IOperator,
 } from '@datalking/pivot-core';
-import { type SelectItem } from '@datalking/pivot-ui';
-import { Select } from '@datalking/pivot-ui';
+import { Select, type SelectItem } from '@datalking/pivot-ui';
 
 interface IProps {
   field: Field | null;
