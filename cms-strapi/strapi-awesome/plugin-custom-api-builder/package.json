@@ -1,0 +1,30 @@
+{
+  "name": "strapi-plugin-custom-api",
+  "version": "1.0.5111",
+  "description": "Create custom API's from within the Admin dashboard of Strapi.",
+  "keywords": [
+    "strapi",
+    "plugin",
+    "api",
+    "visual api builder",
+    "Drupal views for strapi"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.server.json",
+    "develop": "tsc -p tsconfig.server.json -w"
+  },
+  "dependencies": {
+    "@strapi/design-system": "^1.16.0",
+    "lodash": "^4.17.21"
+  },
+  "peerDependencies": {
+    "@strapi/strapi": "4.x.x"
+  },
+  "strapi": {
+    "name": "custom-api",
+    "description": "Create custom API's from within the Admin dashboard of Strapi.",
+    "kind": "plugin",
+    "displayName": "Custom Api Builder"
+  }
+}

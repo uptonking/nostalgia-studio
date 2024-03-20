@@ -28,6 +28,10 @@ bookmarks.json
 # repos/
 repos-caches/
 
+.strapi
+.tmp
+.cache
+
 # auto-generated files
 .idea/
 *.iml

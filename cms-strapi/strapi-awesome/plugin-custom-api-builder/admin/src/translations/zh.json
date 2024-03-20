@@ -1,0 +1,5 @@
+{
+  "plugin.description.long": "在admin panel通过拖拽快速生成自定义api",
+  "plugin.description.short": "通过拖拽快速生成自定义api",
+  "plugin.name": "自定义API"
+}
