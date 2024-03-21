@@ -1,0 +1,32 @@
+{
+  "name": "strapi-plugin-csv-export",
+  "version": "0.0.2111",
+  "description": "A simple plugin for exporting data in CSV format",
+  "license": "MIT",
+  "dependencies": {
+    "@strapi/design-system": "^1.6.3",
+    "@strapi/helper-plugin": "^4.21.0",
+    "@strapi/icons": "^1.6.3",
+    "prop-types": "^15.7.2",
+    "react-redux": "^8.0.5"
+  },
+  "devDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^5.3.4",
+    "styled-components": "^5.3.6"
+  },
+  "peerDependencies": {
+    "@strapi/strapi": "^4.8.0"
+  },
+  "engines": {
+    "node": ">=18.x.x",
+    "npm": ">=8.3.0"
+  },
+  "strapi": {
+    "name": "csv-export",
+    "description": "CSV Export",
+    "kind": "plugin",
+    "displayName": "CSV Export"
+  }
+}

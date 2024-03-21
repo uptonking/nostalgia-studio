@@ -1,5 +1,10 @@
 {
   "extends": "@strapi/typescript-utils/tsconfigs/admin",
+  "compilerOptions": {
+    // "outDir": "dist",
+    // "rootDir": ".",
+    "noImplicitAny": false
+  },
   "include": ["../plugins/**/admin/src/**/*", "./"],
   "exclude": ["node_modules/", "build/", "dist/", "**/*.test.ts"]
 }

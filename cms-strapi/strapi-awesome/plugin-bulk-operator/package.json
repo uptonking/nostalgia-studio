@@ -1,0 +1,33 @@
+{
+  "name": "strapi-plugin-bulk-operator",
+  "version": "0.0.5111",
+  "description": "allows to create and update multiple entries from .xls or .xlsx file",
+  "license": "MIT",
+  "author": "Matthieu Reveilleau",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@strapi/design-system": "^1.6.3",
+    "@strapi/helper-plugin": "^4.21.0",
+    "@strapi/icons": "^1.6.3",
+    "prop-types": "^15.7.2"
+  },
+  "devDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^5.3.4",
+    "styled-components": "^5.3.6"
+  },
+  "peerDependencies": {},
+  "engines": {
+    "node": ">=18.x.x",
+    "npm": ">=8.3.0"
+  },
+  "strapi": {
+    "name": "bulk-operator",
+    "description": "Make bulk operations from .xls or .xlsx file",
+    "kind": "plugin",
+    "displayName": "Bulk operator"
+  }
+}

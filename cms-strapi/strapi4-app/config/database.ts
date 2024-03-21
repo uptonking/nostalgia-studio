@@ -55,6 +55,8 @@ export default ({ env }) => {
     },
     postgres: {
       connection: {
+        charset: 'utf8mb4',
+        collation: 'utf8mb4_unicode_ci',
         connectionString: env('DATABASE_URL'),
         host: env('DATABASE_HOST', 'localhost'),
         port: env.int('DATABASE_PORT', 5432),
@@ -81,11 +83,13 @@ export default ({ env }) => {
     },
     sqlite: {
       connection: {
+        charset: 'utf8mb4',
+        collation: 'utf8mb4_unicode_ci',
         filename: path.join(
           __dirname,
           '..',
           '..',
-          env('DATABASE_FILENAME', '.tmp/data.db'),
+          env('DATABASE_FILENAME', '.tmp/data.sqlite'),
         ),
       },
       useNullAsDefault: true,

@@ -1,11 +1,9 @@
 {
-  "name": "strapi-plugin-custom-api",
+  "name": "strapi-plugin-custom-api-builder",
   "version": "1.0.5111",
   "description": "Create custom API's from within the Admin dashboard of Strapi.",
   "keywords": [
     "strapi",
-    "plugin",
-    "api",
     "visual api builder",
     "Drupal views for strapi"
   ],

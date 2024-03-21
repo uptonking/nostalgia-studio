@@ -3,7 +3,7 @@
 # quickstart
 
 ```shell
-# start demo app
+# start strapi admin webapp
 npm run develop
 ```
 
