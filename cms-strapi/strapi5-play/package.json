@@ -1,0 +1,38 @@
+{
+  "name": "strapi5-play",
+  "version": "0.0.1111",
+  "description": "code playgrounds for strapi v5",
+  "license": "MIT",
+  "author": "jinyaoo",
+  "scripts": {
+    "build": "strapi build",
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "strapi": "strapi"
+  },
+  "dependencies": {
+    "@strapi/design-system": "^1.16.0",
+    "@strapi/plugin-users-permissions": "5.0.0-beta.0",
+    "@strapi/strapi": "5.0.0-beta.0",
+    "better-sqlite3": "^9.4.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.3",
+    "strapi-plugin-test-v5": "0.0.1111",
+    "strapi-plugin-watoffice": "0.0.1111",
+    "styled-components": "^5.3.3"
+  },
+  "devDependencies": {
+    "@strapi/typescript-utils": "5.0.0-beta.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.3.0"
+  },
+  "overrides": {
+    "sharp": "0.33.2"
+  },
+  "strapi": {
+    "uuid": "3167a301-2f3c-4a4a-912d-b9f2b33321b9"
+  }
+}

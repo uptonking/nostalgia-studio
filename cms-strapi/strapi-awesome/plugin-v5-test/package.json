@@ -1,0 +1,53 @@
+{
+  "name": "strapi-plugin-test-v5",
+  "version": "0.0.1111",
+  "description": "A simple plugin for strapi v5",
+  "exports": {
+    "./strapi-admin": {
+      "source": "./admin/src/index.ts",
+      "require": "./dist/admin/src/index.js",
+      "default": "./dist/admin/src/index.js"
+    },
+    "./strapi-server": {
+      "source": "./strapi-server.js",
+      "require": "./strapi-server.js",
+      "default": "./strapi-server.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "rimraf dist && npm run build:admin && npm run build:server",
+    "postinstall": "npm run build",
+    "build1": "strapi plugin:build --force",
+    "build:admin": "tsc -p ./admin/tsconfig.build.json",
+    "build:server": "tsc -p ./server/tsconfig.build.json",
+    "test:ts:back": " tsc -p server/tsconfig.json",
+    "test:ts:front": " tsc -p admin/tsconfig.build.json",
+    "verify": "strapi plugin:verify",
+    "watch": "strapi plugin:watch",
+    "watch:link": "strapi plugin:watch:link"
+  },
+  "dependencies": {
+    "@strapi/design-system": "^1.16.0",
+    "@strapi/icons": "^1.16.0",
+    "react-intl": "^6.6.2"
+  },
+  "devDependencies": {
+    "@strapi/strapi": "^5.0.0-beta.0",
+    "@strapi/typescript-utils": "^5.0.0-beta.0",
+    "@types/react": "^18.2.67",
+    "@types/react-dom": "^18.2.22",
+    "@types/styled-components": "^5.1.34",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.3",
+    "styled-components": "^5.3.3",
+    "typescript": "^5.4.3"
+  },
+  "strapi": {
+    "name": "test-v5",
+    "displayName": "test-v5 plugin",
+    "description": "test plugin for strapi v5",
+    "kind": "plugin"
+  }
+}

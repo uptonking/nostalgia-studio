@@ -32,6 +32,7 @@ repos-caches/
 .tmp
 .cache
 **/public/uploads/
+.strapi-updater.json
 
 # auto-generated files
 .idea/

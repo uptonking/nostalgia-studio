@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "movie_tags",
+  "info": {
+    "singularName": "movie-tag",
+    "pluralName": "movie-tags",
+    "displayName": "movie-tag"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    }
+  }
+}
