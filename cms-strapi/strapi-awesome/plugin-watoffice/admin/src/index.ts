@@ -1,4 +1,4 @@
-import { ExportCSVButton } from './components/export-csv';
+import { ExportCSVButton } from './components/csv-export';
 import { Initializer } from './components/Initializer';
 import { PluginIcon } from './components/PluginIcon';
 import { PLUGIN_ID } from './pluginId';
@@ -6,19 +6,15 @@ import { prefixPluginTranslations } from './utils/prefixPluginTranslations';
 
 export default {
   register(app) {
-    app.addMenuLink({
-      to: `plugins/${PLUGIN_ID}`,
-      icon: PluginIcon,
-      intlLabel: {
-        id: `${PLUGIN_ID}.plugin.name`,
-        defaultMessage: PLUGIN_ID,
-      },
-      Component: () => import('./pages/App'),
-      // Component: async () => {
-      //   const { App } = await import('./pages/App');
-      //   return App;
-      // },
-    });
+    // app.addMenuLink({
+    //   to: `plugins/${PLUGIN_ID}`,
+    //   icon: PluginIcon,
+    //   intlLabel: {
+    //     id: `${PLUGIN_ID}.plugin.name`,
+    //     defaultMessage: PLUGIN_ID,
+    //   },
+    //   Component: () => import('./pages/App'),
+    // });
 
     app.registerPlugin({
       id: PLUGIN_ID,

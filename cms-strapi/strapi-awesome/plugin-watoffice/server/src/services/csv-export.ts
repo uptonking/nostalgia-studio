@@ -40,16 +40,16 @@ function objectToCsv(data, headers) {
     .join();
 }
 
-export const csvExport = ({ strapi }) => ({
+export const csvExport = ({ strapi }: { strapi: Strapi }) => ({
   async exportCSVData(contentType) {
-    let isFetching = true;
+    let shouldFetch = true;
     let offset = 0;
     const result = [];
 
-    while (isFetching) {
-      const data = await strapi.entityService.findMany(contentType, {
+    while (shouldFetch) {
+      const data = await strapi.documents(contentType).findMany({
         sort: {
-          id: 'ASC',
+          id: 'asc',
         },
         start: offset,
         limit: 100,
@@ -59,10 +59,12 @@ export const csvExport = ({ strapi }) => ({
       offset += 100;
 
       if (data.length === 0) {
-        isFetching = false;
+        shouldFetch = false;
         break;
       }
     }
+
+    // console.log(';; result ', result);
 
     const fields = getFieldNamesFromItems(result);
     const csv = result.map((item) => objectToCsv(item, fields)).join('\n');

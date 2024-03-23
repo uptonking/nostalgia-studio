@@ -13,10 +13,6 @@ export default {
         defaultMessage: PLUGIN_ID,
       },
       Component: () => import('./pages/App'),
-      // async () => {
-      //   const { App } = await import('./pages/App');
-      //   return App;
-      // },
     });
 
     app.registerPlugin({

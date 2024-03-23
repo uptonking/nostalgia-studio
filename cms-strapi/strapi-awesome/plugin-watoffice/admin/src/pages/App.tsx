@@ -4,7 +4,7 @@ import { Page } from '@strapi/strapi/admin';
 
 import { HomePage } from './HomePage';
 
-const App = () => {
+export const App = () => {
   return (
     <Routes>
       <Route index element={<HomePage />} />
@@ -13,4 +13,4 @@ const App = () => {
   );
 };
 
-export { App };
+export default App;

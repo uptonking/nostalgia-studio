@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 
 import { Button } from '@strapi/design-system';
-import { useFetchClient } from '@strapi/helper-plugin';
+import { useFetchClient } from '@strapi/strapi/admin';
 
 import { PLUGIN_ID } from '../pluginId';
 import { downloadFile } from '../utils/download';
@@ -23,7 +23,6 @@ export const ExportCSVButton = ({ strapi }) => {
     const {
       data: { data },
     } = await ajax(`/${PLUGIN_ID}/${contentTypeUID}`);
-    // console.log(';; csv-ajax ', data);
     downloadFile(contentTypeUID, data, 'text/csv');
     setIsLoading(false);
   };
