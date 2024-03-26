@@ -1,7 +1,7 @@
 import { pick } from 'lodash';
 import { v4 as uuid } from 'uuid';
 
-import { getService } from '../utils';
+import { getService } from '../utils/common';
 
 export const adminController = {
   async save(ctx) {
@@ -19,7 +19,7 @@ export const adminController = {
           //locale: data.locale // Clone all or only this locale ?
         },
         // @ts-expect-error fix-types
-        sort: [{ versionNumber: 'asc' }], // Incrementaly create versions
+        sort: [{ versionNumber: 'asc' }], // Incrementally create versions
       });
 
       let initialCloneVersion = null;
@@ -42,6 +42,7 @@ export const adminController = {
 
     return await createVersion(slug, data, user, ctx.request.query);
   },
+
   async updateVersion(ctx) {
     const { slug, id } = ctx.request.params;
     const { body: data } = ctx.request;

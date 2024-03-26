@@ -2,13 +2,15 @@ import type { ServiceTypes } from 'src/types/typings';
 
 import { env } from '@strapi/utils';
 
-import pluginId from '../pluginId';
+import { pluginId } from '../pluginId';
 
 export const getCoreStore = () => {
   return strapi.store({ type: 'plugin', name: pluginId });
 };
 
-// retrieve a local service
+/**
+ * retrieve a local service
+ */
 export const getService = <T extends keyof ServiceTypes>(
   name: T,
 ): ReturnType<ServiceTypes[T]> => {

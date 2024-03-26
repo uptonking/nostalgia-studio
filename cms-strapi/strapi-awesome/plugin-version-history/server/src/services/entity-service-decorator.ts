@@ -7,7 +7,7 @@ import {
   getLatestValueByDB,
   getService,
   isLocalizedContentType,
-} from '../utils';
+} from '../utils/common';
 
 const VERSIONS_QUERY_FILTER = 'versions';
 
@@ -56,7 +56,11 @@ const findLatestInLocale = async (model, fields) => {
 
 /**
  * Decorates the entity service with Content Versioning logic
- * As decorator API passes into official Strapi support, could move most logic here
+ * - As decorator API passes into official Strapi support, could move most logic here
+ * - We wanted to provide users with the ability to create a new version of the content every time the save button is clicked
+ * - To achieve this we needed to create a patch for the Strapi Admin package and change the url of the API call
+ *   when the save button is clicked to the url exposed by our plugin.
+ * - However, patching the package was not convenient so we later solved this by using Strapi's internal API - entity service decorator.
  * @param {object} service - entity service
  */
 const decorator = (service) => ({
@@ -92,16 +96,17 @@ const decorator = (service) => ({
    * @param {string} uid - Model uid
    * @param {object} opts - Query options object (params, data, files, populate)
    */
-  async create(uid, opts = {}) {
+  async create(uid, opts: { data?: any } = {}) {
     const { isVersionedContentType } = getService('content-types');
     const model = strapi.getModel(uid);
     const isLocalized = isLocalizedContentType(model);
-    // @ts-expect-error fix-types
-    const { data } = opts;
-    if (!isVersionedContentType(model)) {
+    const isVersioned = isVersionedContentType(model);
+    console.log(';; deco-isVer ', isVersioned, model, uid, opts);
+    if (!isVersioned) {
       return service.create.call(this, uid, opts);
     }
-    if (isLocalized && data.localizations.length) {
+    const { data } = opts;
+    if (isLocalized && data?.localizations?.length) {
       const relatedLocaleItem = await strapi.db.query(uid).findOne({
         where: {
           id: data.localizations[0],
@@ -118,8 +123,11 @@ const decorator = (service) => ({
     }
 
     const entry = await service.create.call(this, uid, opts);
+    console.log(';; deco-created ', entry);
+
     return entry;
   },
+
   /**
    * Updates an entry & update related versions
    * @param {string} uid
@@ -141,9 +149,12 @@ const decorator = (service) => ({
       },
     });
 
-    if (!isVersionedContentType(model) || data.hasOwnProperty('publishedAt')) {
-      //Is not versioned content or is just publishing/unpublishing
-      if (data.publishedAt && isVersionedContentType(model)) {
+    const isVersioned = isVersionedContentType(model);
+    console.log(';; deco-isVer ', isVersioned, model, uid, opts);
+
+    if (!isVersioned || data.hasOwnProperty('publishedAt')) {
+      // /Is not versioned content or is just publishing/unpublishing
+      if (data.publishedAt && isVersioned) {
         const item = prevVersion;
 
         await strapi.db.query(uid).update({
@@ -163,7 +174,6 @@ const decorator = (service) => ({
         };
         // @ts-expect-error fix-types
         if (isLocalized) where.locale = item.locale;
-
         await strapi.db.query(uid).updateMany({
           where,
           data: {
@@ -222,9 +232,11 @@ const decorator = (service) => ({
           }
         }
       }
+
       return service.update.call(this, uid, entityId, opts);
     }
 
+    // /if isVersioned and no publishedAt
     data.locale = prevVersion.locale;
     let hasPublishedVersion = false;
     let olderVersions = [];
@@ -247,7 +259,7 @@ const decorator = (service) => ({
 
     try {
       if (olderVersions && olderVersions.length > 0) {
-        // use relatedEntity data insted of olderVers ?!
+        // use relatedEntity data instead of olderVers ?!
         data.createdBy = olderVersions[0].createdBy.id;
       }
     } catch (e) {
@@ -260,8 +272,8 @@ const decorator = (service) => ({
 
     for (const latest of getLatestValueByDB(latestInLocales)) {
       // Is version the new latest in locale?
-      if (!isLocalized || data.locale == latest.locale) {
-        hasPublishedVersion = !!latest.published_at;
+      if (!isLocalized || data.locale === latest.locale) {
+        hasPublishedVersion = Boolean(latest.published_at);
       }
       latestByLocale[latest.locale] = latest.id;
     }
@@ -457,6 +469,8 @@ const decorator = (service) => ({
   },
 });
 
-export default () => ({
+export const entityServiceDecorator = () => ({
   decorator,
 });
+
+export default entityServiceDecorator;

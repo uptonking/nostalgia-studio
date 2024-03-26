@@ -3,33 +3,17 @@ import _ from 'lodash';
 import type { Strapi } from '@strapi/strapi';
 
 import { relationUpdateMiddleware } from './middlewares';
-import disableContentType from './migrations/content-type/disable';
-import enableContentType from './migrations/content-type/enable';
-import { getService } from './utils';
+import { disableContentType } from './migrations/content-type/disable';
+import { enableContentType } from './migrations/content-type/enable';
+import { getService } from './utils/common';
 
-const register = ({ strapi }: { strapi: Strapi }) => {
+export const register = ({ strapi }: { strapi: Strapi }) => {
   extendVersionedContentTypes(strapi);
   addStrapiVersioningMiddleware(strapi);
   addContentTypeSyncHooks(strapi);
 };
 
 export default register;
-
-/**
- * Adds middlewares on CM publish routes
- */
-const addStrapiVersioningMiddleware = (strapi: Strapi) => {
-  strapi.server.router.use(
-    '/content-manager/collection-types/:model/:id/actions/publish',
-    (ctx, next) => {
-      if (ctx.method === 'POST') {
-        return relationUpdateMiddleware(ctx, next);
-      }
-
-      return next();
-    },
-  );
-};
 
 /**
  * Adds version fields to versioned content types
@@ -41,6 +25,7 @@ const extendVersionedContentTypes = (strapi: Strapi) => {
     if (contentTypeService.isVersionedContentType(contentType)) {
       const { attributes } = contentType;
 
+      // versions is a standalone foreign table
       _.set(attributes, 'versions', {
         writable: true,
         private: false,
@@ -86,6 +71,22 @@ const extendVersionedContentTypes = (strapi: Strapi) => {
       });
     }
   });
+};
+
+/**
+ * Adds middlewares on CM publish routes
+ */
+const addStrapiVersioningMiddleware = (strapi: Strapi) => {
+  strapi.server.router.use(
+    '/content-manager/collection-types/:model/:id/actions/publish',
+    (ctx, next) => {
+      if (ctx.method === 'POST') {
+        return relationUpdateMiddleware(ctx, next);
+      }
+
+      return next();
+    },
+  );
 };
 
 /**

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { getService } from '../utils';
+import { getService } from '../utils/common';
 
 /**
  * relation update middleware

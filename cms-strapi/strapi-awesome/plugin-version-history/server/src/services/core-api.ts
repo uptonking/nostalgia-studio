@@ -1,15 +1,17 @@
 import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 
+import type { Strapi } from '@strapi/strapi';
+
 import {
   getLatestRawQuery,
   getLatestValueByDB,
   getService,
   isLocalizedContentType,
-} from '../utils';
+} from '../utils/common';
 
-export const coreApi = {
-  async createVersion(slug, data, user, options) {
+export const coreApi = ({ strapi }: { strapi: Strapi }) => ({
+  async createVersion(slug, data, user, options?) {
     const { createNewVersion } = getService('content-types');
 
     const model = await strapi.getModel(slug);
@@ -168,6 +170,6 @@ export const coreApi = {
 
     return allItems;
   },
-};
+});
 
 export default coreApi;

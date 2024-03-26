@@ -2,12 +2,14 @@ import _ from 'lodash';
 import { cloneDeep, has, isArray, isNil, pick, pipe, prop } from 'lodash/fp';
 import get from 'lodash/get';
 
-import {
+import { contentTypes } from '@strapi/utils';
+
+const {
   getVisibleAttributes,
   isMediaAttribute,
   isRelationalAttribute,
   isTypedAttribute,
-} from '@strapi/utils';
+} = contentTypes;
 
 const hasVersionedOption = (modelOrAttribute) => {
   return prop('pluginOptions.versions.versioned', modelOrAttribute) === true;
@@ -15,8 +17,6 @@ const hasVersionedOption = (modelOrAttribute) => {
 
 /**
  * Returns whether an attribute is versioned or not
- * @param {*} attribute
- * @returns
  */
 const isVersionedAttribute = (model, attributeName) => {
   const attribute = model.attributes[attributeName];
@@ -192,10 +192,12 @@ const createNewVersion = async (modelUid, oldVersion, model) => {
   );
 };
 
-export default () => ({
+export const contentTypesSrv = () => ({
   isVersionedContentType,
   createNewVersion,
   getVersionedAttributes,
   getNonVersionedAttributes,
   copyNonVersionedAttributes,
 });
+
+export default contentTypesSrv;

@@ -1,14 +1,14 @@
-import permissions from './permissions';
+import { contentTypesSrv } from './content-types';
 import { coreApi } from './core-api';
-import contentTypes from './content-types';
+import { entityServiceDecorator } from './entity-service-decorator';
 import { lifecycles } from './lifecycles';
-import entityServiceDecorator from './entity-service-decorator';
+import { permissions } from './permissions';
 
 export const services = {
   permissions,
   'core-api': coreApi,
-  'content-types': contentTypes,
-  lifecycles: lifecycles,
+  'content-types': contentTypesSrv,
+  lifecycles,
   'entity-service-decorator': entityServiceDecorator,
 };
 

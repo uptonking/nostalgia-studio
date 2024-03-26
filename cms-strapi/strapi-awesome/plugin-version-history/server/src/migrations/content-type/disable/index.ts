@@ -1,7 +1,9 @@
-import { getLatestRawQuery, getService } from '../../../utils';
+import { getLatestRawQuery, getService } from '../../../utils/common';
 
-// Disable versioning on CT -> Delete all older versions of entities
-export default async ({ oldContentTypes, contentTypes }) => {
+/**
+ * Disable versioning on CT -> Delete all older versions of entities
+ */
+export const disableContentType = async ({ oldContentTypes, contentTypes }) => {
   const { isVersionedContentType } = getService('content-types');
 
   if (!oldContentTypes) {
@@ -39,3 +41,5 @@ export default async ({ oldContentTypes, contentTypes }) => {
     }
   }
 };
+
+export default disableContentType;

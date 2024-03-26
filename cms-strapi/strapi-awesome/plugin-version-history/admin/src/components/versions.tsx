@@ -156,7 +156,7 @@ export const Versions = () => {
 
   const handleUpdateShowedVersion = () => {
     put(
-      `/content-versioning/${slug}/${initialData.id}/update-version`,
+      `/version-history/${slug}/${initialData.id}/update-version`,
       modifiedData,
     );
   };

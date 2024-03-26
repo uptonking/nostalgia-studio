@@ -1,9 +1,11 @@
 import { v4 as uuid } from 'uuid';
 
-import { getService } from '../../../utils';
+import { getService } from '../../../utils/common';
 
-// if versioning is enabled set default version and vuid
-export default async ({ oldContentTypes, contentTypes }) => {
+/**
+ * if versioning is enabled, set default version and vuid
+ */
+export const enableContentType = async ({ oldContentTypes, contentTypes }) => {
   const { isVersionedContentType } = getService('content-types');
 
   if (!oldContentTypes) {
@@ -51,3 +53,5 @@ export default async ({ oldContentTypes, contentTypes }) => {
     }
   }
 };
+
+export default enableContentType;

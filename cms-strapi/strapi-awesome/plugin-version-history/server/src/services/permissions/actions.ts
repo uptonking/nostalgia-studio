@@ -3,7 +3,7 @@ const actions = [
     section: 'plugins',
     displayName: 'Save version',
     uid: 'save',
-    pluginName: 'content-versioning',
+    pluginName: 'version-history',
   },
 ];
 

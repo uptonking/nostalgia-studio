@@ -1,8 +1,8 @@
 import type { Strapi } from '@strapi/strapi';
 
-import { getService } from './utils';
+import { getService } from './utils/common';
 
-const bootstrap = async ({ strapi }: { strapi: Strapi }) => {
+export const bootstrap = async ({ strapi }: { strapi: Strapi }) => {
   // const { actions } = strapi.plugin(pluginId).service("permissions");
   const { actions } = getService('permissions');
   const { decorator } = getService('entity-service-decorator');
@@ -55,6 +55,7 @@ const registerModelsHooks = () => {
   if (versionedModelUIDs.length > 0) {
     strapi.db.lifecycles.subscribe({
       models: versionedModelUIDs,
+      // / do nothing actually
       async beforeCreate(event) {
         await getService('lifecycles').beforeCreate(event);
       },

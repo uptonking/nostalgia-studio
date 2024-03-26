@@ -1,4 +1,4 @@
-import { getService } from '../utils';
+import { getService } from '../utils/common';
 
 export const clientController = {
   async create(ctx) {

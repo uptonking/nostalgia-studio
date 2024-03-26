@@ -6,6 +6,7 @@
   "author": "jinyaoo",
   "scripts": {
     "build": "strapi build",
+    "dev1": "strapi develop --debug",
     "develop": "strapi develop",
     "start": "strapi start",
     "strapi": "strapi"
@@ -19,6 +20,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3",
     "strapi-plugin-test-v5": "0.0.1111",
+    "strapi-plugin-version-history": "0.0.1111",
     "strapi-plugin-watoffice": "0.0.1111",
     "styled-components": "^5.3.3"
   },

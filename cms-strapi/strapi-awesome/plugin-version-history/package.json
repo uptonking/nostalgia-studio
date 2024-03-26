@@ -8,7 +8,7 @@
       "require": "./dist/admin/src/index.js",
       "default": "./dist/admin/src/index.js"
     },
-    "./strapi-server1": {
+    "./strapi-server": {
       "source": "./strapi-server.js",
       "require": "./strapi-server.js",
       "default": "./strapi-server.js"
@@ -21,7 +21,7 @@
     "build:admin": "tsc -p ./admin/tsconfig.build.json",
     "build:server": "tsc -p ./server/tsconfig.build.json",
     "dev": "",
-    "postinstall1": "npm run build",
+    "postinstall": "npm run build",
     "test:ts:back": " tsc -p server/tsconfig.json",
     "test:ts:front": " tsc -p admin/tsconfig.build.json",
     "watch": "strapi plugin:watch",
