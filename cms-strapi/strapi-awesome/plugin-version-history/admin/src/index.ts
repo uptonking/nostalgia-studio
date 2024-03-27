@@ -1,3 +1,5 @@
+import * as yup from 'yup';
+
 import pluginPkg from '../../package.json';
 import { CheckboxConfirmation } from './components/checkbox-confirmation';
 import { Initializer } from './components/initializer';
@@ -36,44 +38,44 @@ export default {
     );
 
     const ctbPlugin = app.getPlugin('content-type-builder');
-    // if (ctbPlugin) {
-    const ctbFormsAPI = ctbPlugin.apis.forms;
-    ctbFormsAPI.addContentTypeSchemaMutation(mutateCTBContentTypeSchema);
-    ctbFormsAPI.components.add({
-      id: 'checkboxConfirmation',
-      component: CheckboxConfirmation,
-    });
+    if (ctbPlugin) {
+      const ctbFormsAPI = ctbPlugin.apis.forms;
+      ctbFormsAPI.addContentTypeSchemaMutation(mutateCTBContentTypeSchema);
+      ctbFormsAPI.components.add({
+        id: 'checkboxConfirmation',
+        component: CheckboxConfirmation,
+      });
 
-    ctbFormsAPI.extendContentType({
-      // validator: () => ({
-      //   versions: yup.object().shape({
-      //     versioned: yup.bool(),
-      //   }),
-      // }),
-      form: {
-        advanced() {
-          return [
-            {
-              name: 'pluginOptions.versions.versioned',
-              type: 'checkboxConfirmation',
-              intlLabel: {
-                id: getTrad(
-                  'plugin.schema.versions.versioned.label-content-type',
-                ),
-                defaultMessage: 'Enable versioning for this Content-Type',
+      ctbFormsAPI.extendContentType({
+        validator: () => ({
+          versions: yup.object().shape({
+            versioned: yup.bool(),
+          }),
+        }),
+        form: {
+          advanced() {
+            return [
+              {
+                name: 'pluginOptions.versions.versioned',
+                type: 'checkboxConfirmation',
+                intlLabel: {
+                  id: getTrad(
+                    'plugin.schema.versions.versioned.label-content-type',
+                  ),
+                  defaultMessage: 'Enable versioning for this Content-Type',
+                },
+                description: {
+                  id: getTrad(
+                    'plugin.schema.versions.versioned.description-content-type',
+                  ),
+                  defaultMessage: 'Allow you to keep older versions of content',
+                },
               },
-              description: {
-                id: getTrad(
-                  'plugin.schema.versions.versioned.description-content-type',
-                ),
-                defaultMessage: 'Allow you to keep older versions of content',
-              },
-            },
-          ];
+            ];
+          },
         },
-      },
-    });
-    // }
+      });
+    }
   },
   async registerTrads({ locales }) {
     const importedTrads = await Promise.all(

@@ -32,16 +32,20 @@ import { getTrad } from '../utils';
 // import { TableLabel } from "@strapi/design-system/Text";
 // import { useCMEditViewDataManager } from '@strapi/helper-plugin';
 
+/** version info card for content entry */
 export const Versions = () => {
   const { formatMessage } = useIntl();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { id, model, collectionType, slug } = useParams<{
+  const {
+    id,
+    slug: model,
+    collectionType,
+  } = useParams<{
     id: string;
-    model: string;
-    collectionType: string;
     slug: string;
+    collectionType: string;
   }>();
 
   // const {
@@ -136,7 +140,7 @@ export const Versions = () => {
       // //   });
       // }
     }
-  }, [location.pathname, location.search, modifiedData.id, slug]);
+  }, [location.pathname, modifiedData.id]);
 
   const handleChange = useCallback((value) => {
     // if (!value) {
@@ -156,7 +160,7 @@ export const Versions = () => {
 
   const handleUpdateShowedVersion = () => {
     put(
-      `/version-history/${slug}/${initialData.id}/update-version`,
+      `/version-history/${model}/${initialData.id}/update-version`,
       modifiedData,
     );
   };

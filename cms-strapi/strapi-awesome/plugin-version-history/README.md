@@ -6,6 +6,8 @@
 
 # roadmap
 
+- migrate
+  - Injecting components into editView.right-links is deprecated. Please use the `addEditViewSidePanel` API instead
 # notes
 - limitation: 
 # references

@@ -30,4 +30,5 @@ export const mutateCTBContentTypeSchema = (nextSchema, prevSchema) => {
 
   return nextSchema;
 };
+
 export default mutateCTBContentTypeSchema;

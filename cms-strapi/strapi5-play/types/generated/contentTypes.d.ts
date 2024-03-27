@@ -742,6 +742,47 @@ export interface ApiMovieTagMovieTag extends Schema.CollectionType {
   };
 }
 
+export interface ApiTestVersion12TestVersion12 extends Schema.CollectionType {
+  collectionName: 'test_version12s';
+  info: {
+    singularName: 'test-version12';
+    pluralName: 'test-version12s';
+    displayName: 'test-version12';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  pluginOptions: {
+    versions: {
+      versioned: true;
+    };
+  };
+  attributes: {
+    title11: Attribute.String &
+      Attribute.SetPluginOptions<{
+        versions: {
+          versioned: true;
+        };
+      }>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    locale: Attribute.String;
+    versions: Attribute.Relation<
+      'manyToMany',
+      'api::test-version12.test-version12'
+    >;
+    vuid: Attribute.String;
+    versionNumber: Attribute.Integer & Attribute.DefaultTo<1>;
+    versionComment: Attribute.String;
+    isVisibleInListView: Attribute.Boolean & Attribute.DefaultTo<true>;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
@@ -762,6 +803,7 @@ declare module '@strapi/types' {
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::movie.movie': ApiMovieMovie;
       'api::movie-tag.movie-tag': ApiMovieTagMovieTag;
+      'api::test-version12.test-version12': ApiTestVersion12TestVersion12;
     }
   }
 }

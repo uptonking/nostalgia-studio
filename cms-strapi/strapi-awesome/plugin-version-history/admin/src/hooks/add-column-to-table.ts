@@ -1,11 +1,7 @@
-import get from 'lodash/get';
-
 export const addColumnToTableHook = ({ displayedHeaders, layout }) => {
-  const isVersioned = get(
-    layout,
-    'contentType.pluginOptions.versions.versioned',
-    false,
-  );
+  const { options } = layout;
+  const isVersioned = options?.versions?.versioned;
+  // console.log(';; isVersioned, layout ', isVersioned, layout);
 
   if (!isVersioned) {
     return { displayedHeaders, layout };
@@ -15,11 +11,24 @@ export const addColumnToTableHook = ({ displayedHeaders, layout }) => {
     displayedHeaders: [
       ...displayedHeaders,
       {
-        key: '__version_key__',
-        fieldSchema: { type: 'integer' },
-        metadatas: { label: 'Version', searchable: true, sortable: true },
+        attribute: { type: 'string' },
+        label: {
+          id: 'list-view.table.header.label',
+          defaultMessage: 'Ver.',
+        },
+        searchable: false,
+        sortable: false,
         name: 'versionNumber',
-        cellFormatter: (props) => props.versionNumber,
+        // @ ts-expect-error – ID is seen as number | string; this will change when we move the type over.
+        // cellFormatter: (props, _header, meta) => <LocaleListCell {...props} {...meta} />,
+        // key: '__version_key__',
+        // fieldSchema: { type: 'integer' },
+        // metadatas: { label: 'Version', searchable: true, sortable: true },
+        // name: 'versionNumber',
+        cellFormatter: (props) => {
+          console.log(';; cell-props ', props);
+          return props.versionNumber;
+        },
       },
     ],
     layout,
