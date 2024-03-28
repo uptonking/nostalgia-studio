@@ -6,6 +6,12 @@
 
 # roadmap
 
+- pagination not working
+
+- 似乎没用到，待移除
+  - isVisibleInListView 
+  - collectionName_versions_links 
+
 - migrate
   - Injecting components into editView.right-links is deprecated. Please use the `addEditViewSidePanel` API instead
 # notes

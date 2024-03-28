@@ -68,15 +68,20 @@ export const Versions = () => {
     (state: any) => state['content-manager_app'] || {},
   );
 
-  // const { model, id, collectionType } = unstable_useDocument( {documentId: id,
-  //   model,
-  //   collectionType,});
+  const { document } = unstable_useDocument({
+    documentId: id,
+    model: model!,
+    collectionType: collectionType!,
+  });
 
   const isCreatingEntry = id === 'create';
 
   const {
     edit: { layout },
   } = unstable_useDocumentLayout(model!);
+
+  // console.log(';; ver-doc ', id, model, collectionType, document);
+
   const { put } = useFetchClient();
 
   // const [hasComment, setHasComment] = useState(!!initialData?.versionComment);
@@ -123,9 +128,9 @@ export const Versions = () => {
     [hasDraftAndPublish, setData, setPublishedVersion],
   );
 
-  useEffect(() => {
-    processVersions(modifiedData);
-  }, [modifiedData, processVersions]);
+  // useEffect(() => {
+  //   processVersions(modifiedData);
+  // }, [modifiedData, processVersions]);
 
   useEffect(() => {
     if (modifiedData.id) {
@@ -167,7 +172,13 @@ export const Versions = () => {
 
   if (!model || !collectionType) return null;
 
-  if (!_.get(layout, 'pluginOptions.versions.versioned', false)) {
+  // layout?.[0]?.[0]?.['attribute']?.['pluginOptions']?.['versions']?.['versioned']
+  // if (!_.get(layout, 'pluginOptions.versions.versioned', false)) {
+  const isVersionedDoc = layout?.[0]?.[0]?.[0]?.['attribute']?.['pluginOptions']?.['versions']?.['versioned']
+
+  // console.log(';; isVersionedDoc', isVersionedDoc, layout)
+
+  if (!isVersionedDoc) {
     return null;
   }
 
@@ -227,9 +238,10 @@ export const Versions = () => {
               })}
             </Typography>
             <div>
-              <Typography variant='pi'>v{initialData.versionNumber}</Typography>{' '}
+              {/* <Typography variant='pi'>v{initialData.versionNumber}</Typography>{' '} */}
+              <Typography variant='pi'>v{document?.versionNumber || 1}</Typography>{' '}
               <Typography variant='pi' textColor='neutral600'>
-                {format(parseISO(initialData.createdAt), 'MMM d, yyyy HH:mm')}
+                {/* {format(parseISO(initialData.createdAt), 'MMM d, yyyy HH:mm')} */}
               </Typography>
             </div>
             <Button marginTop={4} onClick={handleUpdateShowedVersion}>

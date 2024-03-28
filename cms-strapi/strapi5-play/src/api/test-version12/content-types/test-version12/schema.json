@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "test_version12s",
+  "info": {
+    "singularName": "test-version12",
+    "pluralName": "test-version12s",
+    "displayName": "test-version12"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "versions": {
+      "versioned": true
+    }
+  },
+  "attributes": {
+    "title11": {
+      "pluginOptions": {
+        "versions": {
+          "versioned": true
+        }
+      },
+      "type": "string"
+    }
+  }
+}

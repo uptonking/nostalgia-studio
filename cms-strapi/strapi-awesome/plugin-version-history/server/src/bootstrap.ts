@@ -13,8 +13,11 @@ export const bootstrap = async ({ strapi }: { strapi: Strapi }) => {
       if (ctx.method === 'GET') {
         const { model } = ctx.params;
         const modelDef = strapi.getModel(model);
+        const isVersioned =
+          getService('content-types').isVersionedContentType(modelDef);
+        console.log(';; modelDef ', isVersioned, modelDef.uid);
 
-        if (!getService('content-types').isVersionedContentType(modelDef)) {
+        if (!isVersioned) {
           return next();
         }
 
@@ -34,7 +37,7 @@ export const bootstrap = async ({ strapi }: { strapi: Strapi }) => {
     },
   );
 
-  // Entity Service
+  // decorate Entity Service, v5 handled in the document service or via document service middlewares
   // @ts-expect-error fix-types
   strapi.entityService.decorate(decorator);
 
@@ -42,25 +45,30 @@ export const bootstrap = async ({ strapi }: { strapi: Strapi }) => {
   await actions.registerVersionsActions();
 
   // Hooks & Models
-  registerModelsHooks();
+  registerModelsHooks(strapi);
 };
 
-const registerModelsHooks = () => {
+const registerModelsHooks = (strapi: Strapi) => {
   const versionedModelUIDs = Object.values(strapi.contentTypes)
     .filter((contentType) =>
       getService('content-types').isVersionedContentType(contentType),
     )
     .map((contentType) => contentType.uid);
 
+  console.log(';; ver-types-uid ', versionedModelUIDs);
+
   if (versionedModelUIDs.length > 0) {
     strapi.db.lifecycles.subscribe({
       models: versionedModelUIDs,
       // / do nothing actually
       async beforeCreate(event) {
-        await getService('lifecycles').beforeCreate(event);
+        await getService('lifecycles').beforeCreate(event, strapi);
       },
       async beforeUpdate(event) {
-        await getService('lifecycles').beforeUpdate(event);
+        await getService('lifecycles').beforeUpdate(event, strapi);
+      },
+      async afterUpdate(event) {
+        await getService('lifecycles').afterUpdate(event, strapi);
       },
       async beforeDelete(event) {
         await getService('lifecycles').beforeDelete(event);

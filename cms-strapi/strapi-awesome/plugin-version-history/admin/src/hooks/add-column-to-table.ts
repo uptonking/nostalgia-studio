@@ -26,7 +26,6 @@ export const addColumnToTableHook = ({ displayedHeaders, layout }) => {
         // metadatas: { label: 'Version', searchable: true, sortable: true },
         // name: 'versionNumber',
         cellFormatter: (props) => {
-          console.log(';; cell-props ', props);
           return props.versionNumber;
         },
       },

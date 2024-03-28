@@ -150,7 +150,7 @@ const decorator = (service) => ({
     });
 
     const isVersioned = isVersionedContentType(model);
-    console.log(';; deco-isVer ', isVersioned, model, uid, opts);
+    console.log(';; deco-up-isVer ', isVersioned, model, uid, opts);
 
     if (!isVersioned || data.hasOwnProperty('publishedAt')) {
       // /Is not versioned content or is just publishing/unpublishing
@@ -253,6 +253,8 @@ const decorator = (service) => ({
       },
     });
 
+    console.log(';; up-old-ver ', olderVersions);
+
     const latestVersion = _.maxBy(olderVersions, (v) => v.versionNumber);
     const latestVersionNumber = latestVersion && latestVersion.versionNumber;
     data.versionNumber = (latestVersionNumber || 0) + 1;
@@ -284,7 +286,7 @@ const decorator = (service) => ({
       data.isVisibleInListView = true;
 
       const where = { vuid: data.vuid };
-      //   if (isLocalized) where.locale = data.locale;
+      // if (isLocalized) where.locale = data.locale;
 
       await strapi.db.query(uid).updateMany({
         where,
@@ -309,6 +311,9 @@ const decorator = (service) => ({
       ...opts,
       data: newData,
     });
+
+    console.log(';; create-ver ', result);
+
     // Relink all versions from other locales if result is The latest(published)!
     if (result.isVisibleInListView && isLocalized) {
       // !set the current as latest in locale
