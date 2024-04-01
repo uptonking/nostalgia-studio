@@ -1,8 +1,8 @@
-import type { Strapi } from '@strapi/strapi';
+import type { Core } from '@strapi/types';
 
 import { getService } from './utils/common';
 
-export const bootstrap = async ({ strapi }: { strapi: Strapi }) => {
+export const bootstrap = async ({ strapi }: { strapi: Core.Strapi }) => {
   // const { actions } = strapi.plugin(pluginId).service("permissions");
   const { actions } = getService('permissions');
   const { decorator } = getService('entity-service-decorator');
@@ -48,7 +48,7 @@ export const bootstrap = async ({ strapi }: { strapi: Strapi }) => {
   registerModelsHooks(strapi);
 };
 
-const registerModelsHooks = (strapi: Strapi) => {
+const registerModelsHooks = (strapi: Core.Strapi) => {
   const versionedModelUIDs = Object.values(strapi.contentTypes)
     .filter((contentType) =>
       getService('content-types').isVersionedContentType(contentType),

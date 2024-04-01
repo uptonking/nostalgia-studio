@@ -1,6 +1,6 @@
-import type { Strapi } from '@strapi/strapi';
+import type { Core } from '@strapi/types';
 
-export const exportController = ({ strapi }: { strapi: Strapi }) => ({
+export const exportController = ({ strapi }: { strapi: Core.Strapi }) => ({
   async exportCSV(ctx) {
     const { contentType } = ctx.params;
 

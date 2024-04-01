@@ -1,13 +1,13 @@
 import _ from 'lodash';
 
-import type { Strapi } from '@strapi/strapi';
+import type { Core } from '@strapi/types';
 
 import { relationUpdateMiddleware } from './middlewares';
 import { disableContentType } from './migrations/content-type/disable';
 import { enableContentType } from './migrations/content-type/enable';
 import { getService } from './utils/common';
 
-export const register = ({ strapi }: { strapi: Strapi }) => {
+export const register = ({ strapi }: { strapi: Core.Strapi }) => {
   extendVersionedContentTypes(strapi);
   addStrapiVersioningMiddleware(strapi);
   addContentTypeSyncHooks(strapi);
@@ -18,7 +18,7 @@ export default register;
 /**
  * Adds version fields to versioned content types
  */
-const extendVersionedContentTypes = (strapi: Strapi) => {
+const extendVersionedContentTypes = (strapi: Core.Strapi) => {
   const contentTypeService = getService('content-types');
 
   Object.values(strapi.contentTypes).forEach((contentType) => {
@@ -76,7 +76,7 @@ const extendVersionedContentTypes = (strapi: Strapi) => {
 /**
  * Adds middlewares on CM publish routes
  */
-const addStrapiVersioningMiddleware = (strapi: Strapi) => {
+const addStrapiVersioningMiddleware = (strapi: Core.Strapi) => {
   strapi.server.router.use(
     '/content-manager/collection-types/:model/:id/actions/publish',
     (ctx, next) => {
@@ -92,7 +92,7 @@ const addStrapiVersioningMiddleware = (strapi: Strapi) => {
 /**
  * Adds hooks to migration content types versions on enable/disable of versioning
  */
-const addContentTypeSyncHooks = (strapi: Strapi) => {
+const addContentTypeSyncHooks = (strapi: Core.Strapi) => {
   strapi.hook('strapi::content-types.beforeSync').register(disableContentType);
   strapi.hook('strapi::content-types.afterSync').register(enableContentType);
 };

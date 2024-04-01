@@ -1,6 +1,6 @@
-import type { Strapi } from '@strapi/strapi';
+import type { Core } from '@strapi/types';
 
-const destroy = ({ strapi }: { strapi: Strapi }) => {
+const destroy = ({ strapi }: { strapi: Core.Strapi }) => {
   // destroy phase
 };
 

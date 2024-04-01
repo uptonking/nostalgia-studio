@@ -1,6 +1,6 @@
-import type { Strapi } from '@strapi/strapi';
+import type { Core } from '@strapi/types';
 
-const controller = ({ strapi }: { strapi: Strapi }) => ({
+const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
   index(ctx) {
     ctx.body = strapi
       .plugin('my-plugin')

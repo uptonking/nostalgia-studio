@@ -174,7 +174,10 @@ export const Versions = () => {
 
   // layout?.[0]?.[0]?.['attribute']?.['pluginOptions']?.['versions']?.['versioned']
   // if (!_.get(layout, 'pluginOptions.versions.versioned', false)) {
-  const isVersionedDoc = layout?.[0]?.[0]?.[0]?.['attribute']?.['pluginOptions']?.['versions']?.['versioned']
+  const isVersionedDoc =
+    layout?.[0]?.[0]?.[0]?.['attribute']?.['pluginOptions']?.['versions']?.[
+      'versioned'
+    ];
 
   // console.log(';; isVersionedDoc', isVersionedDoc, layout)
 
@@ -239,7 +242,9 @@ export const Versions = () => {
             </Typography>
             <div>
               {/* <Typography variant='pi'>v{initialData.versionNumber}</Typography>{' '} */}
-              <Typography variant='pi'>v{document?.versionNumber || 1}</Typography>{' '}
+              <Typography variant='pi'>
+                v{document?.versionNumber || 1}
+              </Typography>{' '}
               <Typography variant='pi' textColor='neutral600'>
                 {/* {format(parseISO(initialData.createdAt), 'MMM d, yyyy HH:mm')} */}
               </Typography>

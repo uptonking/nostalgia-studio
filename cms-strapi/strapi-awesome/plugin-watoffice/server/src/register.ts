@@ -1,6 +1,6 @@
-import type { Strapi } from '@strapi/strapi';
+import type { Core } from '@strapi/types';
 
-const register = ({ strapi }: { strapi: Strapi }) => {
+const register = ({ strapi }: { strapi: Core.Strapi }) => {
   // register phase
 };
 

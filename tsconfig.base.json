@@ -42,6 +42,7 @@
         "./db-pouch-like/src-pouchdb/pouchdb-*/src",
         "./db-pouch-like/pouch-awesome/pouchdb-*/src"
       ],
+      "strapi-plugin-*": ["./cms-strapi/strapi-awesome/plugin-*/"],
       "@dnd-kit/core": ["./utilities/dnd-kit/core/src/"],
       "@dnd-kit/accessibility": ["./utilities/dnd-kit/accessibility/src/"],
       "@dnd-kit/modifiers": ["./utilities/dnd-kit/modifiers/src/"],

@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "i18n_recipes",
+  "info": {
+    "singularName": "i18n-recipe",
+    "pluralName": "i18n-recipes",
+    "displayName": "i18n-recipe"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "title": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string"
+    }
+  }
+}

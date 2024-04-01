@@ -17,10 +17,10 @@
   },
   "scripts": {
     "build": "rimraf dist && npm run build:admin && npm run build:server",
-    "postinstall": "npm run build",
     "build1": "strapi plugin:build --force",
     "build:admin": "tsc -p ./admin/tsconfig.build.json",
     "build:server": "tsc -p ./server/tsconfig.build.json",
+    "postinstall": "npm run build",
     "test:ts:back": " tsc -p server/tsconfig.json",
     "test:ts:front": " tsc -p admin/tsconfig.build.json",
     "verify": "strapi plugin:verify",
@@ -30,11 +30,12 @@
   "dependencies": {
     "@strapi/design-system": "^1.16.0",
     "@strapi/icons": "^1.16.0",
-    "react-intl": "^6.6.2"
+    "react-intl": "6.6.2"
   },
   "devDependencies": {
-    "@strapi/strapi": "^5.0.0-beta.0",
-    "@strapi/typescript-utils": "^5.0.0-beta.0",
+    "@strapi/strapi": "^5.0.0-beta.1",
+    "@strapi/types": "^5.0.0-beta.1",
+    "@strapi/typescript-utils": "^5.0.0-beta.1",
     "@types/react": "^18.2.67",
     "@types/react-dom": "^18.2.22",
     "@types/styled-components": "^5.1.34",

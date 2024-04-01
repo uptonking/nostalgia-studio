@@ -1,8 +1,9 @@
 import _ from 'lodash';
 
-import type { Strapi } from '@strapi/strapi';
+// import type { Strapi } from '@strapi/strapi';
+import type { Core } from '@strapi/types';
 
-export const beforeUpdate = async (event, strapi: Strapi) => {
+export const beforeUpdate = async (event, strapi: Core.Strapi) => {
   const { action, params, model } = event;
   const { data, where, select, populate } = params;
 

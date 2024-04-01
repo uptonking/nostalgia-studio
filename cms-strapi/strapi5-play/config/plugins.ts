@@ -2,7 +2,7 @@ export default () => ({
   watoffice: {
     enabled: true,
   },
-  'version-history': {
+  'version-trail': {
     // enabled: false,
     enabled: true,
   },

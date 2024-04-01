@@ -1,6 +1,6 @@
-import type { Strapi } from '@strapi/strapi';
+// import type { Strapi } from '@strapi/strapi';
 
-export const afterUpdate = async (event, strapi: Strapi) => {
+export const afterUpdate = async (event, strapi) => {
   const { action, model, result, params } = event;
   const { data, where, select, populate } = params;
 

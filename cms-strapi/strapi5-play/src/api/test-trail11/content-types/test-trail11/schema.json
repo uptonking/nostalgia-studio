@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "test_trail11s",
+  "info": {
+    "singularName": "test-trail11",
+    "pluralName": "test-trail11s",
+    "displayName": "test-trail11"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "versionTrail": {
+      "enabled": true
+    }
+  },
+  "attributes": {
+    "title11": {
+      "type": "string"
+    },
+    "rich11": {
+      "type": "blocks"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { v4 as uuid } from 'uuid';
 
-import type { Strapi } from '@strapi/strapi';
+import type { Core } from '@strapi/types';
 
 import {
   getLatestRawQuery,
@@ -10,7 +10,7 @@ import {
   isLocalizedContentType,
 } from '../utils/common';
 
-export const coreApi = ({ strapi }: { strapi: Strapi }) => ({
+export const coreApi = ({ strapi }: { strapi: Core.Strapi }) => ({
   async createVersion(slug, data, user, options?) {
     const { createNewVersion } = getService('content-types');
 

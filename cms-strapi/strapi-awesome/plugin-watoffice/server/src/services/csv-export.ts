@@ -1,4 +1,4 @@
-import type { Strapi } from '@strapi/strapi';
+import type { Core } from '@strapi/types';
 
 function getFieldNamesFromItems(items: Array<{ string: unknown }>) {
   const fieldNames = new Set();
@@ -40,7 +40,7 @@ function objectToCsv(data, headers) {
     .join();
 }
 
-export const csvExport = ({ strapi }: { strapi: Strapi }) => ({
+export const csvExport = ({ strapi }: { strapi: Core.Strapi }) => ({
   async exportCSVData(contentType) {
     let shouldFetch = true;
     let offset = 0;

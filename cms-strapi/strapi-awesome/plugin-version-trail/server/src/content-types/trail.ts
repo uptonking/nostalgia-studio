@@ -1,0 +1,46 @@
+export const trailSchema = {
+  schema: {
+    kind: 'collectionType',
+    collectionName: 'plugin_version_trail_trails',
+    info: {
+      singularName: 'trail',
+      pluralName: 'trails',
+      displayName: 'Trail',
+    },
+    options: {
+      draftAndPublish: false,
+      comment: '',
+    },
+    pluginOptions: {
+      'content-manager': {
+        visible: true,
+      },
+      'content-type-builder': {
+        visible: false,
+      },
+    },
+    attributes: {
+      recordId: {
+        type: 'biginteger',
+        required: true,
+      },
+      contentType: {
+        type: 'string',
+      },
+      version: {
+        type: 'integer',
+      },
+      change: {
+        type: 'string',
+      },
+      content: {
+        type: 'json',
+      },
+      admin_user: {
+        type: 'relation',
+        relation: 'oneToOne',
+        target: 'admin::user',
+      },
+    },
+  },
+};
