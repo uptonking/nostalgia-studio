@@ -28,13 +28,12 @@ type MediaCardProps = {
 export function MediaCard(props: MediaCardProps) {
   const { id } = props;
 
+  const { formatMessage } = useIntl();
+  const request = useFetchClient();
+
   const [media, setMedia] = useState<Record<string, unknown> | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<Record<string, unknown> | boolean>(false);
-
-  const { formatMessage } = useIntl();
-
-  const request = useFetchClient();
 
   useEffect(() => {
     async function fetchData() {

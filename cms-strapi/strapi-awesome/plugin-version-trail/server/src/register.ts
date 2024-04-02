@@ -2,16 +2,17 @@ import type { Core } from '@strapi/types';
 
 import { userPermissionSchema } from './content-types/trail-user-permissions';
 import { middlewares } from './middlewares';
-import { entityName } from './utils/plugin-entity-name';
+import {
+  usersPermModelName,
+  versionTrailModelName,
+} from './utils/plugin-getter-names';
 
 export const register = ({ strapi }: { strapi: Core.Strapi }) => {
-  const userPermissionsContentType = strapi.contentType(
-    'plugin::users-permissions.user',
-  );
+  const userPermContentType = strapi.contentType(usersPermModelName);
 
-  if (userPermissionsContentType) {
-    // if the user permissions plugin is installed, bind the trails directly to the user
-    const trailContentType = strapi.contentType(entityName);
+  if (userPermContentType) {
+    // if user permissions plugin is installed, bind the trails directly to the user
+    const trailContentType = strapi.contentType(versionTrailModelName);
 
     // @ts-expect-error fix-types
     trailContentType.attributes = {

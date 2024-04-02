@@ -36,5 +36,3 @@ export const versionTrailMiddleware = async (ctx: Context, next: Next) => {
     console.error('version-trail: ', verMidErr);
   }
 };
-
-export default versionTrailMiddleware;

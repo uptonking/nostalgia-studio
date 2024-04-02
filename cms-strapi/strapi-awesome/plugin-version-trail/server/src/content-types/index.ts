@@ -1,7 +1,7 @@
 import { trailSchema } from './trail';
 
 export const contentTypes = {
-  trail: trailSchema,
+  trail: { schema: trailSchema },
 };
 
 export default contentTypes;

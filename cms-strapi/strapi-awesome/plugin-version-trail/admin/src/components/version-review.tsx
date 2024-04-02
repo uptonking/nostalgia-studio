@@ -15,10 +15,10 @@ import {
 } from '@strapi/design-system';
 import { ArrowLeft } from '@strapi/icons';
 
-import { prepareTrailFromSchema } from '../utils/prepare-trail-from-schema';
 import type { Trail } from '../types/trail';
 import { buildPayload } from '../utils/build-payload';
 import { getTrad } from '../utils/get-trad';
+import { prepareTrailFromSchema } from '../utils/prepare-trail-from-schema';
 import { RenderField } from './render-field';
 
 type VersionReviewProps = {
@@ -31,6 +31,9 @@ type VersionReviewProps = {
 export function VersionReview(props: VersionReviewProps) {
   const { trail, revisedFields, setShowReviewStep, layout } = props;
   const { content } = trail;
+
+  const { formatMessage } = useIntl();
+
   const [expanded, setExpanded] = useState(false);
   const [changePayload, setChangePayload] = useState({});
 
@@ -39,8 +42,6 @@ export function VersionReview(props: VersionReviewProps) {
   const { trail: trimmedContent } = useMemo(() => {
     return prepareTrailFromSchema(content, layout);
   }, [content, layout]);
-
-  const { formatMessage } = useIntl();
 
   useEffect(() => {
     const changePayloadObj = buildPayload(trimmedContent, revisedFields);

@@ -17,7 +17,6 @@ export const checkContext = (context: Context) => {
    * - POST | PUT | DELETE methods
    * - Routes that match a regex (admin content type endpoint or content type generated endpoint)
    */
-
   const allowedStatusCheck = allowedStatuses.includes(status);
   const allowedMethodsCheck = allowedMethods.includes(method);
   const adminMatchCheck = Boolean(matchAdminPath(url));

@@ -11,9 +11,9 @@ import {
   Typography,
 } from '@strapi/design-system';
 
-import { prepareTrailFromSchema } from '../utils/prepare-trail-from-schema';
 import type { Trail } from '../types/trail';
 import { getTrad } from '../utils/get-trad';
+import { prepareTrailFromSchema } from '../utils/prepare-trail-from-schema';
 import { RenderField } from './render-field';
 
 type RevisionFormProps = {
@@ -24,12 +24,12 @@ type RevisionFormProps = {
 
 export function RevisionForm(props: RevisionFormProps) {
   const { trail, setRevisedFields, layout } = props;
-
   const { content } = trail;
+
+  const { formatMessage } = useIntl();
 
   // const { layout } = useCMEditViewDataManager();
 
-  const { formatMessage } = useIntl();
   const [expanded, setExpanded] = useState(false);
 
   /**

@@ -1,8 +1,10 @@
 import React, { Fragment, useCallback, useEffect, useState } from 'react';
 
 import { format, parseISO } from 'date-fns';
+import { isEqual } from 'lodash';
 import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
+import type { Trail } from 'src/types/trail';
 
 import {
   Box,
@@ -23,8 +25,9 @@ import { VersionTrailViewer } from './version-trail-viewer';
 
 export function VersionTrailPanel() {
   const { formatMessage } = useIntl();
+  const request = useFetchClient();
 
-  // params works for collection types but not single types
+  // * params works for collection types but not single types
   const {
     id,
     slug: model,
@@ -36,42 +39,42 @@ export function VersionTrailPanel() {
   }>();
 
   const { document: doc, schema: layout } = unstable_useDocument({
-    documentId: id,
+    documentId: id === 'create' ? undefined : id,
     model: model!,
     collectionType: collectionType!,
   });
   const { uid, pluginOptions = {} } = layout!;
+  const [lastData] = useState(doc);
 
-  const [recordId, setRecordId] = useState(id);
+  const [recordId, setRecordId] = useState<string | undefined>(
+    doc?.id as unknown as string,
+  );
 
   const isVerEnabled = pluginOptions?.versionTrail?.['enabled'];
+  // console.log(';; isVer, layout ', isVerEnabled, layout, doc);
 
-  console.log(';; isVer, layout ', isVerEnabled, layout, doc);
   // TODO: add this to config/plugins.ts, needs a custom endpoint
   // https://forum.strapi.io/t/custom-field-settings/23068
-  const pageSize = 15;
+  const pageSize = 3;
 
-  const request = useFetchClient();
-
-  const [trails, setTrails] = useState([]);
+  const [trails, setTrails] = useState<Trail[]>([]);
+  const [currentVer, setCurrentVer] = useState<Trail | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [initialLoad, setInitialLoad] = useState(false);
-  const [currentVer, setCurrentVer] = useState<object | null>(null);
   const [error, setError] = useState<object | boolean>(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
   const [pageCount, setPageCount] = useState(1);
+  const [total, setTotal] = useState(0);
 
-  // if collectionType is single then fetch the ID (if exists) from the server and set `1` if nothing.
-
+  /** if collectionType is single then fetch the ID (if exists) from the server
+   * and set `1` if nothing.
+   */
   const getSingleTypeId = useCallback(async () => {
-    const requestUri = `/content-manager/single-types/${uid}/`;
+    const reqSingleUrl = `/content-manager/single-types/${uid}/`;
     try {
-      const result = await request.get(requestUri);
-
+      const result = await request.get(reqSingleUrl);
       const { data = {} } = result;
-
       const { id } = data;
 
       setRecordId(id);
@@ -94,8 +97,8 @@ export function VersionTrailPanel() {
     }
   }, [collectionType, getSingleTypeId]);
 
-  useEffect(() => {
-    async function getTrails(page, pageSize) {
+  const getTrails = useCallback(
+    async (page, pageSize) => {
       const params = new URLSearchParams({
         page,
         pageSize,
@@ -108,9 +111,8 @@ export function VersionTrailPanel() {
 
       try {
         const result = await request.get(reqTrailsUrl);
-
+        // console.log(';; reqTrails ', result);
         const { data = {} } = result;
-
         const { results = [], pagination } = data;
 
         const { total, pageCount } = pagination;
@@ -129,19 +131,28 @@ export function VersionTrailPanel() {
         console.error('version-trail: ', reqTrailsErr);
         setError(reqTrailsErr as object);
       }
-    }
+    },
+    [recordId, request, uid],
+  );
 
+  useEffect(() => {
+    // /initialize versions data if it is initial load
     if (!loaded && isVerEnabled && recordId) {
       getTrails(page, pageSize);
     } else {
       setInitialLoad(true);
     }
-  }, [loaded, uid, recordId, page, isVerEnabled, request]);
+  }, [loaded, uid, recordId, page, isVerEnabled, request, getTrails]);
 
-  /**
-   * event listener for submit button
-   */
-  const handler = useCallback(async () => {
+  useEffect(() => {
+    // /try to update versions data if it is not initial load
+    if (loaded && isVerEnabled && !isEqual(lastData, doc)) {
+      getTrails(page, pageSize);
+    }
+  }, [doc, getTrails, isVerEnabled, lastData, loaded, page]);
+
+  const handleGetSingleType = useCallback(async () => {
+    // fixme - replace timeout
     setTimeout(async () => {
       if (collectionType === 'single-types') {
         await getSingleTypeId();
@@ -152,11 +163,6 @@ export function VersionTrailPanel() {
     }, 1000);
   }, [getSingleTypeId, collectionType]);
 
-  const handleSetPage = useCallback((newPage) => {
-    setPage(newPage);
-    setLoaded(false);
-  }, []);
-
   /**
    * TODO: this event listener is not working properly 100% of the time needs a better solution
    */
@@ -166,17 +172,21 @@ export function VersionTrailPanel() {
     );
     if (buttons[0]) {
       const button = buttons[0];
-
-      button.addEventListener('click', handler);
+      button.addEventListener('click', handleGetSingleType);
 
       return () => {
-        button.removeEventListener('click', handler);
+        button.removeEventListener('click', handleGetSingleType);
       };
     }
-  }, [handler]);
+  }, [handleGetSingleType]);
+
+  const handleSetPage = useCallback((newPage) => {
+    setPage(newPage);
+    setLoaded(false);
+  }, []);
 
   if (!isVerEnabled) {
-    return <Fragment />;
+    return null;
   }
 
   // TODO: Add diff comparison
@@ -203,7 +213,7 @@ export function VersionTrailPanel() {
         >
           {formatMessage({
             id: getTrad('plugin.admin.versionTrail.title'),
-            defaultMessage: 'Version Trail',
+            defaultMessage: 'Version History',
           })}
         </Typography>
         <Box paddingTop={2} paddingBottom={4}>
@@ -215,7 +225,7 @@ export function VersionTrailPanel() {
               <Typography fontWeight='bold'>
                 {formatMessage({
                   id: getTrad('plugin.admin.versionTrail.noTrails'),
-                  defaultMessage: 'No versions (yet)',
+                  defaultMessage: 'No versions yet',
                 })}
               </Typography>
             )}
@@ -234,14 +244,11 @@ export function VersionTrailPanel() {
                   <Typography variant='pi' fontWeight='bold' color='Neutral600'>
                     {formatMessage({
                       id: getTrad('plugin.admin.versionTrail.created'),
-                      defaultMessage: 'Created:',
+                      defaultMessage: 'Created At:',
                     })}{' '}
                   </Typography>
                   <Typography variant='pi' color='Neutral600'>
-                    {format(
-                      parseISO(currentVer['createdAt']),
-                      'MMM d, yyyy HH:mm',
-                    )}
+                    {format(parseISO(currentVer.createdAt), 'yyyy-MM-dd HH:mm')}
                   </Typography>
                 </p>
                 <p>

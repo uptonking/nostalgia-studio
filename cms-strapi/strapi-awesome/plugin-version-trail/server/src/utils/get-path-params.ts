@@ -11,8 +11,10 @@ export const getPathParams = (path, isAdmin) => {
 
   const matches = matchFn(path);
 
-  // @ts-ignore
-  const { params } = matches;
+  let params: Record<string, any> = {};
+  if (typeof matches !== 'boolean') {
+    params = matches.params;
+  }
 
   return { ...params };
 };

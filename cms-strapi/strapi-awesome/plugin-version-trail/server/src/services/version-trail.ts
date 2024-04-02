@@ -1,7 +1,7 @@
 import type { Core } from '@strapi/types';
 
+import { versionTrailModelName } from '../utils/plugin-getter-names';
 import { prepareTrailFromSchema } from '../utils/prepare-trail-from-schema';
-import { entityName } from '../utils/plugin-entity-name';
 
 export const versionTrailService = ({ strapi }: { strapi: Core.Strapi }) => ({
   async createVersionTrail(context, schema, uid, change, isAdmin) {
@@ -12,6 +12,7 @@ export const versionTrailService = ({ strapi }: { strapi: Core.Strapi }) => ({
       ? context.response.body
       : context.response.body.data;
 
+    console.log(';; createTrail ', context.request.body, context.response.body);
     const id = resBody.id || resBody?.data?.id;
 
     if (!id) {
@@ -19,19 +20,19 @@ export const versionTrailService = ({ strapi }: { strapi: Core.Strapi }) => ({
       return;
     }
 
-    const { trail } = prepareTrailFromSchema(body, schema);
-
     /**
-     * Get all trails belonging to this record so we can increment a version number
+     * Get all trails of this record so we can increment a version number
      */
-    const trails = await strapi.entityService.findMany(entityName, {
+    const trails = await strapi.entityService.findMany(versionTrailModelName, {
       fields: ['version'],
       filters: { contentType: uid, recordId: id },
       // @ts-expect-error fix-types
       sort: { version: 'DESC' },
     });
-
     const version = trails[0] ? trails[0].version + 1 : 1;
+
+    const { trail } = prepareTrailFromSchema(body, schema);
+    console.log(';; trail-existing ', uid, trail, trails);
 
     const newTrail = {
       admin_user: {
@@ -42,6 +43,7 @@ export const versionTrailService = ({ strapi }: { strapi: Core.Strapi }) => ({
       content: trail,
       contentType: uid,
       recordId: id,
+      documentId: resBody.documentId || resBody?.data?.documentId,
       users_permissions_user: {
         connect: !isAdmin && userId ? [{ id: userId }] : [],
         disconnect: [],
@@ -49,17 +51,14 @@ export const versionTrailService = ({ strapi }: { strapi: Core.Strapi }) => ({
       version,
     };
 
-    /**
-     * Save it
-     */
     try {
-      const entity = await strapi.entityService.create(entityName, {
+      const entity = await strapi.entityService.create(versionTrailModelName, {
         data: newTrail,
       });
 
       return entity;
     } catch (createErr) {
-      console.error('version-trail: ', createErr);
+      console.error('create-ver-trail: ', createErr);
     }
 
     return trail;

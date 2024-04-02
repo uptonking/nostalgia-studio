@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import { useIntl } from 'react-intl';
 
@@ -31,34 +31,50 @@ export function CheckboxVersioned({
 }: CheckboxPTProps) {
   const { formatMessage } = useIntl();
 
-  const handleChange = (value) => {
-    if (isCreating || value) {
-      return onChange({ target: { name, value, type: 'checkbox' } });
-    }
+  const handleCheckboxChange = useCallback(
+    (value) => {
+      if (isCreating || value) {
+        return onChange({ target: { name, value, type: 'checkbox' } });
+      }
+      return onChange({ target: { name, value: false, type: 'checkbox' } });
+    },
+    [isCreating, name, onChange],
+  );
 
-    return onChange({ target: { name, value: false, type: 'checkbox' } });
-  };
+  const label = useMemo(
+    () =>
+      intlLabel.id
+        ? formatMessage(
+            { id: intlLabel.id, defaultMessage: intlLabel.defaultMessage },
+            { ...intlLabel.values },
+          )
+        : name,
+    [
+      formatMessage,
+      intlLabel.defaultMessage,
+      intlLabel.id,
+      intlLabel.values,
+      name,
+    ],
+  );
 
-  const label = intlLabel.id
-    ? formatMessage(
-        { id: intlLabel.id, defaultMessage: intlLabel.defaultMessage },
-        { ...intlLabel.values },
-      )
-    : name;
-
-  const hint = description
-    ? formatMessage(
-        { id: description.id, defaultMessage: description.defaultMessage },
-        { ...description.values },
-      )
-    : '';
+  const hint = useMemo(
+    () =>
+      description
+        ? formatMessage(
+            { id: description.id, defaultMessage: description.defaultMessage },
+            { ...description.values },
+          )
+        : '',
+    [description, formatMessage],
+  );
 
   return (
     <Checkbox
       hint={hint}
       id={name}
       name={name}
-      onValueChange={handleChange}
+      onValueChange={handleCheckboxChange}
       value={value}
       type='checkbox'
     >

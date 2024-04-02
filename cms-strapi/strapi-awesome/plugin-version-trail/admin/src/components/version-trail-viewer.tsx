@@ -40,7 +40,7 @@ type VersionTrailProps = {
   pageCount: number;
   collectionType: string;
   model: string;
-  trails: Array<Trail>;
+  trails: Trail[];
   layout: any;
 };
 
@@ -61,11 +61,12 @@ export function VersionTrailViewer(props: VersionTrailProps) {
     layout,
   } = props;
 
+  const { formatMessage } = useIntl();
+  const request = useFetchClient();
+
   const [viewRevision, setViewRevision] = useState<Trail | null>(null);
   const [revisedFields, setRevisedFields] = useState<string[]>([]);
   const [showReviewStep, setShowReviewStep] = useState(false);
-
-  const { formatMessage } = useIntl();
 
   const handleClose = useCallback(() => {
     setVisible(!visible);
@@ -107,12 +108,11 @@ export function VersionTrailViewer(props: VersionTrailProps) {
     }
   }, []);
 
-  const request = useFetchClient();
   // const { layout } = useCMEditViewDataManager();
   // const { edit: { layout } } = unstable_useDocumentLayout(model!);
-  // console.log(';; layout ', layout);
+  // log null false
+  // console.log(';; ver-viewer ', viewRevision, showReviewStep);
 
-  /**  Submission handler for restoring */
   const handleRestoreSubmission = useCallback(async () => {
     /**
      * Gather the final payload
@@ -127,13 +127,14 @@ export function VersionTrailViewer(props: VersionTrailProps) {
     const payload = buildPayload(trimmedContent, revisedFields);
 
     try {
-      const reqModelUrl =
+      const reqRecordUrl =
         collectionType === 'single-types'
           ? `/content-manager/${collectionType}/${contentType}`
           : `/content-manager/${collectionType}/${contentType}/${recordId}`;
+      const result = await request.put(reqRecordUrl, payload);
+      console.log(';; reqRecord ', result);
 
-      await request.put(reqModelUrl, payload);
-
+      // fixme reload
       window.location.reload();
     } catch (reqModelErr) {
       setError(reqModelErr);
@@ -143,7 +144,7 @@ export function VersionTrailViewer(props: VersionTrailProps) {
 
   return (
     visible && (
-      <ModalLayout onClose={() => handleClose()} labelledBy='title'>
+      <ModalLayout onClose={handleClose} labelledBy='title'>
         <ModalHeader>
           <Typography
             fontWeight='bold'
