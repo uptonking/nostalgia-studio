@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useMemo, useState } from 'react';
 
 import { useIntl } from 'react-intl';
 
@@ -35,24 +35,18 @@ export function RenderField(props: RenderFieldProps) {
 
   const { formatMessage } = useIntl();
 
-  // const { layout } = useCMEditViewDataManager();
-
   const { attributes } = layout;
 
-  /**
-   * get the schema attributes and handle unknown types as strings
-   */
+  /** get the schema attributes and handle unknown types as strings */
   const fieldAttr = attributes[name];
-
   const { type } = fieldAttr;
-
   const validType = returnFieldType(type);
 
   const [expanded, setExpanded] = useState(true);
   const [selected, setSelected] = useState(false);
 
-  const renderFields = () => {
-    return (
+  const fieldsElements = useMemo(
+    () => (
       <Box padding={3}>
         {hideAccordion && (
           <Box paddingBottom={2}>
@@ -134,8 +128,9 @@ export function RenderField(props: RenderFieldProps) {
           <RelationField relation={value} attributes={fieldAttr} />
         )}
       </Box>
-    );
-  };
+    ),
+    [fieldAttr, formatMessage, hideAccordion, name, validType, value],
+  );
 
   return (
     <Box padding={4} background='neutral100'>
@@ -171,10 +166,10 @@ export function RenderField(props: RenderFieldProps) {
               />
             }
           />
-          <AccordionContent>{renderFields()}</AccordionContent>
+          <AccordionContent>{fieldsElements}</AccordionContent>
         </Accordion>
       )}
-      {hideAccordion && renderFields()}
+      {hideAccordion && fieldsElements}
     </Box>
   );
 }

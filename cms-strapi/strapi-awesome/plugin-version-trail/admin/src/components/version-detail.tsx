@@ -13,13 +13,13 @@ import { RevisionForm } from './revision-form';
 
 type VersionRestoreViewProps = {
   setViewRevision: (...args: any[]) => any;
-  setRevisedFields: (...args: any[]) => any;
+  setChangedFields: (...args: any[]) => any;
   trail: Trail;
   layout: any;
 };
 
-export function VersionRestoreView(props: VersionRestoreViewProps) {
-  const { trail, setViewRevision, setRevisedFields, layout } = props;
+export function VersionDetail(props: VersionRestoreViewProps) {
+  const { trail, setViewRevision, setChangedFields, layout } = props;
 
   const { formatMessage } = useIntl();
 
@@ -51,7 +51,7 @@ export function VersionRestoreView(props: VersionRestoreViewProps) {
             defaultMessage: 'ID',
           })}: ${trail.recordId} | ${trail.change} | ${format(
             parseISO(trail.createdAt),
-            'MMM d, yyyy HH:mm',
+            'yyyy-MM-dd HH:mm',
           )} ${formatMessage({
             id: getTrad('plugin.admin.versionTrail.by'),
             defaultMessage: 'by',
@@ -73,7 +73,7 @@ export function VersionRestoreView(props: VersionRestoreViewProps) {
       >
         <RevisionForm
           trail={trail}
-          setRevisedFields={setRevisedFields}
+          setRevisedFields={setChangedFields}
           layout={layout}
         />
       </Box>

@@ -7,6 +7,7 @@ import { VersionTrailPanel } from './components/version-trail-panel';
 import { pluginId } from './pluginId';
 import { getTrad } from './utils/get-trad';
 import { prefixPluginTranslations } from './utils/prefix-plugin-translations';
+import { reducer } from './store/reducers';
 
 const name = pluginPkg.strapi.name;
 
@@ -17,6 +18,10 @@ const App = {
       name,
       initializer: Initializer,
       isReady: false,
+    });
+
+    app.addReducers({
+      [pluginId]: reducer,
     });
   },
 

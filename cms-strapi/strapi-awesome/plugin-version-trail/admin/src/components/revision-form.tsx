@@ -28,14 +28,9 @@ export function RevisionForm(props: RevisionFormProps) {
 
   const { formatMessage } = useIntl();
 
-  // const { layout } = useCMEditViewDataManager();
-
   const [expanded, setExpanded] = useState(false);
 
-  /**
-   * trim ignored props and anything not in the current schema
-   */
-
+  //  * trim ignored props and anything not in the current schema
   const { trail: trimmedContent } = prepareTrailFromSchema(content, layout);
 
   return (
@@ -45,7 +40,7 @@ export function RevisionForm(props: RevisionFormProps) {
           {formatMessage({
             id: getTrad('plugin.admin.versionTrail.revisionExplanation'),
             defaultMessage:
-              'Select properties from the below list to restore from this revision. You will have the chance to review before committing.',
+              'Select fields from the below list to restore from this revision. You will have the chance to review before committing.',
           })}
         </Typography>
       </Box>

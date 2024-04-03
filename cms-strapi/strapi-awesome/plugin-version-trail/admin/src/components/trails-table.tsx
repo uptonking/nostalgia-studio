@@ -23,8 +23,8 @@ import { getTrad } from '../utils/get-trad';
 import { getUser } from '../utils/get-user';
 import { TrailsTablePagination } from './trails-table-pagination';
 
-type TrailTableProps = {
-  setViewRevision: (...args: any[]) => any;
+type TrailsTableProps = {
+  setViewVerDetail: (...args: any[]) => any;
   page: number;
   total: number;
   pageSize: number;
@@ -33,9 +33,16 @@ type TrailTableProps = {
   trails: Array<Trail>;
 };
 
-export function TrailsTable(props: TrailTableProps) {
-  const { trails, setViewRevision, page, pageSize, total, pageCount, setPage } =
-    props;
+export function TrailsTable(props: TrailsTableProps) {
+  const {
+    trails,
+    setViewVerDetail,
+    page,
+    pageSize,
+    total,
+    pageCount,
+    setPage,
+  } = props;
 
   const { formatMessage } = useIntl();
 
@@ -63,19 +70,19 @@ export function TrailsTable(props: TrailTableProps) {
                     })}
                   </Typography>
                 </Th>
-                <Th>
+                {/* <Th>
                   <Typography variant='sigma'>
                     {formatMessage({
                       id: getTrad('plugin.admin.versionTrail.changeType'),
                       defaultMessage: 'Change Type',
                     })}
                   </Typography>
-                </Th>
+                </Th> */}
                 <Th>
                   <Typography variant='sigma'>
                     {formatMessage({
                       id: getTrad('plugin.admin.versionTrail.createdNaked'),
-                      defaultMessage: 'Created',
+                      defaultMessage: 'Created At',
                     })}
                   </Typography>
                 </Th>
@@ -105,14 +112,14 @@ export function TrailsTable(props: TrailTableProps) {
                       {trail.version}
                     </Typography>
                   </Td>
-                  <Td>
+                  {/* <Td>
                     <Typography textColor='neutral800'>
                       {trail.change}
                     </Typography>
-                  </Td>
+                  </Td> */}
                   <Td>
                     <Typography textColor='neutral800'>
-                      {format(parseISO(trail.createdAt), 'MMM d, yyyy HH:mm')}
+                      {format(parseISO(trail.createdAt), 'yyyy-MM-dd HH:mm')}
                     </Typography>
                   </Td>
                   <Td>
@@ -122,15 +129,21 @@ export function TrailsTable(props: TrailTableProps) {
                   </Td>
                   <Td>
                     <Flex>
-                      <IconButton
-                        onClick={() => setViewRevision(trail)}
-                        label={`${formatMessage({
-                          id: getTrad('plugin.admin.versionTrail.viewVersion'),
-                          defaultMessage: 'View version',
-                        })} ${trail.version}`}
-                        noBorder
-                        icon={<Eye />}
-                      />
+                      {trail.version === total ? (
+                        'Current'
+                      ) : (
+                        <IconButton
+                          onClick={() => setViewVerDetail(trail)}
+                          label={`${formatMessage({
+                            id: getTrad(
+                              'plugin.admin.versionTrail.viewVersion',
+                            ),
+                            defaultMessage: 'View version',
+                          })} ${trail.version}`}
+                          noBorder
+                          icon={<Eye />}
+                        />
+                      )}
                     </Flex>
                   </Td>
                 </Tr>

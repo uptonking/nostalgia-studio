@@ -23,13 +23,13 @@ import { RenderField } from './render-field';
 
 type VersionReviewProps = {
   trail: Trail;
-  revisedFields: string[];
-  setShowReviewStep: (...args: any[]) => any;
+  changedFields: string[];
+  setShowReviewDiff: (...args: any[]) => any;
   layout: any;
 };
 
 export function VersionReview(props: VersionReviewProps) {
-  const { trail, revisedFields, setShowReviewStep, layout } = props;
+  const { trail, changedFields, setShowReviewDiff, layout } = props;
   const { content } = trail;
 
   const { formatMessage } = useIntl();
@@ -37,17 +37,14 @@ export function VersionReview(props: VersionReviewProps) {
   const [expanded, setExpanded] = useState(false);
   const [changePayload, setChangePayload] = useState({});
 
-  // const { layout } = useCMEditViewDataManager();
-
   const { trail: trimmedContent } = useMemo(() => {
     return prepareTrailFromSchema(content, layout);
   }, [content, layout]);
 
   useEffect(() => {
-    const changePayloadObj = buildPayload(trimmedContent, revisedFields);
-
+    const changePayloadObj = buildPayload(trimmedContent, changedFields);
     setChangePayload(changePayloadObj);
-  }, [trimmedContent, revisedFields]);
+  }, [trimmedContent, changedFields]);
 
   return (
     <Fragment>
@@ -59,7 +56,7 @@ export function VersionReview(props: VersionReviewProps) {
               startIcon={<ArrowLeft />}
               onClick={(event) => {
                 event.preventDefault();
-                setShowReviewStep(false);
+                setShowReviewDiff(false);
               }}
             >
               {formatMessage({

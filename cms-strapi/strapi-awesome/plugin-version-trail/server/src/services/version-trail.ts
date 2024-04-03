@@ -12,7 +12,7 @@ export const versionTrailService = ({ strapi }: { strapi: Core.Strapi }) => ({
       ? context.response.body
       : context.response.body.data;
 
-    console.log(';; createTrail ', context.request.body, context.response.body);
+    // console.log(';; createTrail ', context.request.body, context.response.body);
     const id = resBody.id || resBody?.data?.id;
 
     if (!id) {
@@ -32,7 +32,7 @@ export const versionTrailService = ({ strapi }: { strapi: Core.Strapi }) => ({
     const version = trails[0] ? trails[0].version + 1 : 1;
 
     const { trail } = prepareTrailFromSchema(body, schema);
-    console.log(';; trail-existing ', uid, trail, trails);
+    // console.log(';; trail-existing ', uid, trail, trails);
 
     const newTrail = {
       admin_user: {

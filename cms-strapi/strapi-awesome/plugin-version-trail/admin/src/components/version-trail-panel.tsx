@@ -2,6 +2,7 @@ import React, { Fragment, useCallback, useEffect, useState } from 'react';
 
 import { format, parseISO } from 'date-fns';
 import { isEqual } from 'lodash';
+import * as qs from 'qs';
 import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
 import type { Trail } from 'src/types/trail';
@@ -19,6 +20,7 @@ import {
   useFetchClient,
 } from '@strapi/strapi/admin';
 
+import { useTypedSelector } from '../hooks/use-selector-dispatch';
 import { getTrad } from '../utils/get-trad';
 import { getUser } from '../utils/get-user';
 import { VersionTrailViewer } from './version-trail-viewer';
@@ -38,24 +40,32 @@ export function VersionTrailPanel() {
     collectionType: string;
   }>();
 
-  const { document: doc, schema: layout } = unstable_useDocument({
-    documentId: id === 'create' ? undefined : id,
-    model: model!,
-    collectionType: collectionType!,
-  });
+  const { document: doc, schema: layout } = unstable_useDocument(
+    {
+      documentId: id === 'create' ? undefined : id,
+      model: model!,
+      collectionType: collectionType!,
+    },
+    {
+      skip: id === 'create',
+    },
+  );
   const { uid, pluginOptions = {} } = layout!;
   const [lastData] = useState(doc);
 
-  const [recordId, setRecordId] = useState<string | undefined>(
-    doc?.id as unknown as string,
+  const [recordId, setRecordId] = useState<string | number | undefined>(
+    doc?.id,
   );
 
   const isVerEnabled = pluginOptions?.versionTrail?.['enabled'];
-  // console.log(';; isVer, layout ', isVerEnabled, layout, doc);
 
   // TODO: add this to config/plugins.ts, needs a custom endpoint
   // https://forum.strapi.io/t/custom-field-settings/23068
-  const pageSize = 3;
+  const pageSize = useTypedSelector(
+    (state) => state['version-trail'].app.versionsList.pageSize,
+  );
+
+  // console.log(';; isVer, layout ', isVerEnabled, pageSize, layout, doc);
 
   const [trails, setTrails] = useState<Trail[]>([]);
   const [currentVer, setCurrentVer] = useState<Trail | null>(null);
@@ -99,16 +109,42 @@ export function VersionTrailPanel() {
 
   const getTrails = useCallback(
     async (page, pageSize) => {
-      const params = new URLSearchParams({
-        page,
-        pageSize,
-        sort: 'version:DESC',
-        'filters[$and][0][contentType][$eq]': uid,
-        'filters[$and][1][recordId][$eq]': recordId,
-      } as Record<string, string>).toString();
+      // const params = new URLSearchParams({
+      //   page,
+      //   pageSize,
+      //   sort: 'version:desc',
+      //   'filters[$and][0][contentType][$eq]': uid,
+      //   'filters[$and][1][recordId][$eq]': recordId,
+      // } as Record<string, string>).toString();
 
-      const reqTrailsUrl = `/content-manager/collection-types/plugin::version-trail.trail?${params}`;
+      const reqParams = qs.stringify(
+        {
+          filters: {
+            $and: [
+              {
+                contentType: {
+                  $eq: uid,
+                },
+              },
+              {
+                recordId: {
+                  $eq: recordId,
+                },
+              },
+            ],
+          },
+          sort: ['version:desc'],
+          // pagination: {
+          page,
+          pageSize,
+          // },
+        },
+        {
+          encodeValuesOnly: true,
+        },
+      );
 
+      const reqTrailsUrl = `/content-manager/collection-types/plugin::version-trail.trail?${reqParams}`;
       try {
         const result = await request.get(reqTrailsUrl);
         // console.log(';; reqTrails ', result);
@@ -142,48 +178,24 @@ export function VersionTrailPanel() {
     } else {
       setInitialLoad(true);
     }
-  }, [loaded, uid, recordId, page, isVerEnabled, request, getTrails]);
+  }, [loaded, uid, recordId, page, isVerEnabled, request, getTrails, pageSize]);
 
   useEffect(() => {
     // /try to update versions data if it is not initial load
     if (loaded && isVerEnabled && !isEqual(lastData, doc)) {
       getTrails(page, pageSize);
     }
-  }, [doc, getTrails, isVerEnabled, lastData, loaded, page]);
-
-  const handleGetSingleType = useCallback(async () => {
-    // fixme - replace timeout
-    setTimeout(async () => {
-      if (collectionType === 'single-types') {
-        await getSingleTypeId();
-      }
-      setPage(1);
-      setLoaded(false);
-      setInitialLoad(false);
-    }, 1000);
-  }, [getSingleTypeId, collectionType]);
-
-  /**
-   * TODO: this event listener is not working properly 100% of the time needs a better solution
-   */
-  useEffect(() => {
-    const buttons = window.document.querySelectorAll(
-      'main button[type=submit]',
-    );
-    if (buttons[0]) {
-      const button = buttons[0];
-      button.addEventListener('click', handleGetSingleType);
-
-      return () => {
-        button.removeEventListener('click', handleGetSingleType);
-      };
-    }
-  }, [handleGetSingleType]);
+  }, [doc, getTrails, isVerEnabled, lastData, loaded, page, pageSize]);
 
   const handleSetPage = useCallback((newPage) => {
     setPage(newPage);
     setLoaded(false);
   }, []);
+
+  const toggleVersionsDataModal = useCallback(
+    () => setModalVisible((v) => !v),
+    [],
+  );
 
   if (!isVerEnabled) {
     return null;
@@ -263,7 +275,7 @@ export function VersionTrailPanel() {
                   </Typography>
                 </p>
                 <Box paddingTop={4}>
-                  <Button onClick={() => setModalVisible(!modalVisible)}>
+                  <Button onClick={toggleVersionsDataModal}>
                     {formatMessage({
                       id: getTrad('plugin.admin.versionTrail.viewAll'),
                       defaultMessage: 'View all',
@@ -280,6 +292,7 @@ export function VersionTrailPanel() {
       <VersionTrailViewer
         visible={modalVisible}
         setVisible={setModalVisible}
+        setLoaded={setLoaded}
         model={model!}
         trails={trails}
         error={error as Record<string, unknown>}

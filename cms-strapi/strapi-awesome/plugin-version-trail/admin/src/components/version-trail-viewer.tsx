@@ -1,6 +1,7 @@
 import React, { Fragment, useCallback, useState } from 'react';
 
 import { useIntl } from 'react-intl';
+import { useNavigate } from 'react-router-dom';
 
 import {
   Button,
@@ -25,7 +26,7 @@ import { buildPayload } from '../utils/build-payload';
 import { getTrad } from '../utils/get-trad';
 import { prepareTrailFromSchema } from '../utils/prepare-trail-from-schema';
 import { TrailsTable } from './trails-table';
-import { VersionRestoreView } from './version-restore-view';
+import { VersionDetail } from './version-detail';
 import { VersionReview } from './version-review';
 
 type VersionTrailProps = {
@@ -35,6 +36,8 @@ type VersionTrailProps = {
   setError: (...args: any[]) => any;
   page: number;
   setPage: (...args: any[]) => any;
+  /** used to trigger parent rerender */
+  setLoaded: (...args: any[]) => any;
   total: number;
   pageSize: number;
   pageCount: number;
@@ -48,7 +51,6 @@ export function VersionTrailViewer(props: VersionTrailProps) {
   const {
     visible,
     setVisible,
-    model,
     trails,
     setError,
     error,
@@ -57,90 +59,92 @@ export function VersionTrailViewer(props: VersionTrailProps) {
     total,
     pageCount,
     setPage,
+    setLoaded,
     collectionType,
     layout,
   } = props;
 
   const { formatMessage } = useIntl();
+  const navigate = useNavigate();
+
   const request = useFetchClient();
 
-  const [viewRevision, setViewRevision] = useState<Trail | null>(null);
-  const [revisedFields, setRevisedFields] = useState<string[]>([]);
-  const [showReviewStep, setShowReviewStep] = useState(false);
+  const [viewVerDetail, setViewVerDetail] = useState<Trail | null>(null);
+  const [changedFields, setChangedFields] = useState<string[]>([]);
+  const [showReviewDiff, setShowReviewDiff] = useState(false);
 
   const handleClose = useCallback(() => {
-    setVisible(!visible);
-    setViewRevision(null);
-    setRevisedFields([]);
-    setShowReviewStep(false);
-  }, [visible, setVisible]);
+    setVisible((v) => !v);
+    setViewVerDetail(null);
+    setChangedFields([]);
+    setShowReviewDiff(false);
+  }, [setVisible]);
 
-  const handleSetViewRevision = useCallback((viewRevisionState) => {
-    setRevisedFields([]);
-    setViewRevision(viewRevisionState);
-    setShowReviewStep(false);
+  const handleSetViewVerDetail = useCallback((verDetail) => {
+    setChangedFields([]);
+    setViewVerDetail(verDetail);
+    setShowReviewDiff(false);
   }, []);
 
-  const handleSetRevisedFields = useCallback(
+  const handleSetChangedFields = useCallback(
     (name, checked) => {
-      /**
-       * if checked, add the name to the array otherwise splice
-       */
-      if (checked && !revisedFields.includes(name)) {
-        setRevisedFields([...revisedFields, name]);
+      // if checked, add the name to the array otherwise splice
+      if (checked && !changedFields.includes(name)) {
+        setChangedFields([...changedFields, name]);
       }
 
-      if (!checked && revisedFields.includes(name)) {
-        const index = revisedFields.indexOf(name);
-        const newArr = [...revisedFields];
+      if (!checked && changedFields.includes(name)) {
+        const index = changedFields.indexOf(name);
+        const newArr = [...changedFields];
         newArr.splice(index, 1);
 
-        setRevisedFields(newArr);
+        setChangedFields(newArr);
       }
     },
-    [revisedFields],
+    [changedFields],
   );
 
-  const handleSetShowReviewStep = useCallback((bool) => {
-    setShowReviewStep(bool);
+  const handleSetShowReviewDiff = useCallback((bool) => {
+    setShowReviewDiff(bool);
     if (!bool) {
-      setRevisedFields([]);
+      setChangedFields([]);
     }
   }, []);
 
-  // const { layout } = useCMEditViewDataManager();
-  // const { edit: { layout } } = unstable_useDocumentLayout(model!);
-  // log null false
-  // console.log(';; ver-viewer ', viewRevision, showReviewStep);
-
-  const handleRestoreSubmission = useCallback(async () => {
-    /**
-     * Gather the final payload
-     */
-
+  const handleRestoreVersion = useCallback(async () => {
+    // /Gather the final payload
     // TODO: Warning about changing content type/UID dropping trails from the admin panel / killing relationship
 
-    const { recordId, content, contentType } = viewRevision!;
-
+    const { documentId, content, contentType } = viewVerDetail!;
     const { trail: trimmedContent } = prepareTrailFromSchema(content, layout);
 
-    const payload = buildPayload(trimmedContent, revisedFields);
+    const payload = buildPayload(trimmedContent, changedFields);
 
     try {
       const reqRecordUrl =
         collectionType === 'single-types'
           ? `/content-manager/${collectionType}/${contentType}`
-          : `/content-manager/${collectionType}/${contentType}/${recordId}`;
+          : `/content-manager/${collectionType}/${contentType}/${documentId}`;
       const result = await request.put(reqRecordUrl, payload);
-      console.log(';; reqRecord ', result);
-
-      // fixme reload
-      window.location.reload();
+      // console.log(';; reqRecord ', payload, result);
+      handleClose();
+      // todo find a better way to reload the page to rerender edit view form
+      navigate(0);
+      // window.location.reload();
     } catch (reqModelErr) {
       setError(reqModelErr);
-      console.error('version-trail:', reqModelErr);
+      console.error('restore-version:', reqModelErr);
     }
-  }, [layout, viewRevision, revisedFields, request, setError, collectionType]);
+  }, [
+    viewVerDetail,
+    layout,
+    changedFields,
+    collectionType,
+    request,
+    handleClose,
+    navigate,
+    setError,
+  ]);
 
   return (
     visible && (
@@ -154,15 +158,15 @@ export function VersionTrailViewer(props: VersionTrailProps) {
           >
             {formatMessage({
               id: getTrad('plugin.admin.versionTrail.revisionHistory'),
-              defaultMessage: 'Revision History',
+              defaultMessage: 'Versions History',
             })}
           </Typography>
         </ModalHeader>
         <ModalBody>
-          {!viewRevision && (
+          {!viewVerDetail && (
             <TrailsTable
               trails={trails}
-              setViewRevision={handleSetViewRevision}
+              setViewVerDetail={handleSetViewVerDetail}
               page={page}
               pageSize={pageSize}
               total={total}
@@ -170,23 +174,22 @@ export function VersionTrailViewer(props: VersionTrailProps) {
               setPage={setPage}
             />
           )}
-          {viewRevision && !showReviewStep && (
-            <VersionRestoreView
-              trail={viewRevision}
-              setViewRevision={handleSetViewRevision}
-              setRevisedFields={handleSetRevisedFields}
+          {viewVerDetail && !showReviewDiff && (
+            <VersionDetail
+              trail={viewVerDetail}
+              setViewRevision={handleSetViewVerDetail}
+              setChangedFields={handleSetChangedFields}
               layout={layout}
             />
           )}
-          {viewRevision && showReviewStep && (
+          {viewVerDetail && showReviewDiff && (
             <VersionReview
-              trail={viewRevision}
-              setShowReviewStep={handleSetShowReviewStep}
-              revisedFields={revisedFields}
+              trail={viewVerDetail}
+              setShowReviewDiff={handleSetShowReviewDiff}
+              changedFields={changedFields}
               layout={layout}
             />
           )}
-          {/* error alert */}
           {error && (
             <Dialog
               onClose={() => setError(null)}
@@ -219,10 +222,10 @@ export function VersionTrailViewer(props: VersionTrailProps) {
         <ModalFooter
           endActions={
             <Fragment>
-              {!showReviewStep && revisedFields && revisedFields.length > 0 && (
+              {!showReviewDiff && changedFields && changedFields.length > 0 && (
                 <Button
                   variant='success-light'
-                  onClick={() => handleSetShowReviewStep(true)}
+                  onClick={() => handleSetShowReviewDiff(true)}
                 >
                   {formatMessage({
                     id: getTrad('plugin.admin.versionTrail.review'),
@@ -230,18 +233,15 @@ export function VersionTrailViewer(props: VersionTrailProps) {
                   })}
                 </Button>
               )}
-              {showReviewStep && revisedFields && revisedFields.length > 0 && (
-                <Button
-                  variant='danger'
-                  onClick={() => handleRestoreSubmission()}
-                >
+              {showReviewDiff && changedFields && changedFields.length > 0 && (
+                <Button variant='danger' onClick={handleRestoreVersion}>
                   {formatMessage({
                     id: getTrad('plugin.admin.versionTrail.restore'),
                     defaultMessage: 'Restore',
                   })}
                 </Button>
               )}
-              <Button onClick={() => handleClose()} variant='tertiary'>
+              <Button onClick={handleClose} variant='tertiary'>
                 {formatMessage({
                   id: getTrad('plugin.admin.versionTrail.close'),
                   defaultMessage: 'Close',

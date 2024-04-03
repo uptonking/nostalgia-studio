@@ -1,5 +1,6 @@
 export type Trail = {
   id: number;
+  documentId: string;
   recordId: string;
   version: number;
   change: string;
