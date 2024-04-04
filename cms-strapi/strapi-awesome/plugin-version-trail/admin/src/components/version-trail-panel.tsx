@@ -7,6 +7,7 @@ import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
 import type { Trail } from 'src/types/trail';
 
+import { useFetchClient } from '@strapi/admin/strapi-admin';
 import {
   Box,
   Button,
@@ -14,11 +15,7 @@ import {
   Loader,
   Typography,
 } from '@strapi/design-system';
-import {
-  unstable_useDocument,
-  unstable_useDocumentLayout,
-  useFetchClient,
-} from '@strapi/strapi/admin';
+import { unstable_useDocument } from '@strapi/plugin-content-manager/strapi-admin';
 
 import { useTypedSelector } from '../hooks/use-selector-dispatch';
 import { getTrad } from '../utils/get-trad';
@@ -207,18 +204,14 @@ export function VersionTrailPanel() {
   return (
     <Fragment>
       <Box
-        as='aside'
         aria-labelledby='version-trail-records'
-        background='neutral0'
-        borderColor='neutral150'
-        hasRadius
         paddingBottom={4}
-        paddingLeft={4}
-        paddingRight={4}
-        paddingTop={6}
-        shadow='tableShadow'
+        // paddingLeft={4}
+        paddingRight={1}
+        paddingTop={1}
+        borderWidth={0}
       >
-        <Typography
+        {/* <Typography
           variant='sigma'
           textColor='neutral600'
           id='version-trail-records'
@@ -230,7 +223,7 @@ export function VersionTrailPanel() {
         </Typography>
         <Box paddingTop={2} paddingBottom={4}>
           <Divider />
-        </Box>
+        </Box> */}
         {initialLoad ? (
           <Fragment>
             {total === 0 && (
@@ -249,7 +242,7 @@ export function VersionTrailPanel() {
                       id: getTrad('plugin.admin.versionTrail.currentVersion'),
                       defaultMessage: 'Current version:',
                     })}{' '}
-                    {total}
+                    {total === 1 ? '1 (Latest)' : total}
                   </Typography>
                 </p>
                 <p>
@@ -274,14 +267,16 @@ export function VersionTrailPanel() {
                     {getUser(currentVer)}
                   </Typography>
                 </p>
-                <Box paddingTop={4}>
-                  <Button onClick={toggleVersionsDataModal}>
-                    {formatMessage({
-                      id: getTrad('plugin.admin.versionTrail.viewAll'),
-                      defaultMessage: 'View all',
-                    })}
-                  </Button>
-                </Box>
+                {total > 1 ? (
+                  <Box paddingTop={4}>
+                    <Button onClick={toggleVersionsDataModal}>
+                      {formatMessage({
+                        id: getTrad('plugin.admin.versionTrail.viewAll'),
+                        defaultMessage: 'View all',
+                      })}
+                    </Button>
+                  </Box>
+                ) : null}
               </Fragment>
             )}
           </Fragment>

@@ -25,10 +25,10 @@ export default {
   },
 
   bootstrap(app) {
-    app.injectContentManagerComponent('listView', 'actions', {
-      name: 'csv-export',
-      Component: ExportCSVButton,
-    });
+    // app.injectContentManagerComponent('listView', 'actions', {
+    //   name: 'csv-export',
+    //   Component: ExportCSVButton,
+    // });
   },
 
   async registerTrads(app: any) {

@@ -3,6 +3,7 @@ import React, { Fragment, useCallback, useState } from 'react';
 import { useIntl } from 'react-intl';
 import { useNavigate } from 'react-router-dom';
 
+import { useFetchClient } from '@strapi/admin/strapi-admin';
 import {
   Button,
   Dialog,
@@ -16,10 +17,6 @@ import {
   Typography,
 } from '@strapi/design-system';
 import { ExclamationMarkCircle } from '@strapi/icons';
-import {
-  unstable_useDocumentLayout,
-  useFetchClient,
-} from '@strapi/strapi/admin';
 
 import type { Trail } from '../types/trail';
 import { buildPayload } from '../utils/build-payload';
