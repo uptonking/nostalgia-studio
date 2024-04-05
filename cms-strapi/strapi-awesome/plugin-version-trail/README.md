@@ -15,6 +15,7 @@
 - versions pagination not working: 🐛 v5 bug
   - make pagination configurable
 
+- highlight changed fields
 - show version number in list view
 
 - test non-admin user
@@ -26,6 +27,7 @@
 
 - preserve versions history after disabling plugin
 
+- how to deal with version history when deleting an entry
 - restore a delete field
   - Restoration for records deleted by DELETE event.
 

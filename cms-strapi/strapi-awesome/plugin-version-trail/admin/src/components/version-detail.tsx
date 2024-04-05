@@ -3,7 +3,13 @@ import React, { Fragment } from 'react';
 import { format, parseISO } from 'date-fns';
 import { useIntl } from 'react-intl';
 
-import { BaseHeaderLayout, Box, Divider, Link } from '@strapi/design-system';
+import {
+  BaseHeaderLayout,
+  Box,
+  Divider,
+  Link,
+  Typography,
+} from '@strapi/design-system';
 import { ArrowLeft } from '@strapi/icons';
 
 import type { Trail } from '../types/trail';
@@ -59,8 +65,14 @@ export function VersionDetail(props: VersionRestoreViewProps) {
           as='h3'
         />
       </Box>
-      <Box paddingBottom={6} paddingTop={6}>
-        <Divider />
+      <Box paddingBottom={4} paddingLeft={1} paddingRight={1}>
+        <Typography variant='beta'>
+          {formatMessage({
+            id: getTrad('plugin.admin.versionTrail.revisionExplanation'),
+            defaultMessage:
+              'Select fields below to restore to your selected version. You will have the chance to review again to confirm the restore.',
+          })}
+        </Typography>
       </Box>
       <Box
         background='neutral0'

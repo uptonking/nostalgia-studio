@@ -48,7 +48,7 @@ export function TrailsTable(props: TrailsTableProps) {
 
   return (
     <Fragment>
-      {trails && trails.length > 0 && (
+      {trails?.length > 0 && (
         <Fragment>
           <Box paddingBottom={4}>
             <TrailsTablePagination

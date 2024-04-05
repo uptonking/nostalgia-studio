@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "test_fields",
+  "info": {
+    "singularName": "test-field",
+    "pluralName": "test-fields",
+    "displayName": "test-field"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "versionTrail": {
+      "enabled": true
+    }
+  },
+  "attributes": {
+    "text11": {
+      "type": "string"
+    },
+    "boolean11": {
+      "type": "boolean"
+    },
+    "rich11": {
+      "type": "blocks"
+    },
+    "json11": {
+      "type": "json"
+    },
+    "number11": {
+      "type": "integer"
+    },
+    "date11": {
+      "type": "date"
+    }
+  }
+}

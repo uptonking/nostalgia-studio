@@ -1,6 +1,6 @@
-export function returnFieldType(type) {
+export function getFieldType(type) {
   const validTypes = [
-    'datetime',
+    'date',
     'enumeration',
     'email',
     'integer',

@@ -4,12 +4,18 @@ export interface VersionsState {
   versionsList: {
     pageSize: number;
   };
+  previewVersion: {
+    verNumber: number;
+  };
   isLoading: boolean;
 }
 
 const initialState: VersionsState = {
   versionsList: {
     pageSize: 3,
+  },
+  previewVersion: {
+    verNumber: -1,
   },
   isLoading: false,
 };
@@ -27,10 +33,13 @@ const versionsSlice = createSlice({
       const { versionsList } = action.payload;
       state.versionsList.pageSize = versionsList.pageSize;
     },
+    setPreviewVersion(state, action: PayloadAction<number>) {
+      state.previewVersion.verNumber = action.payload;
+    },
   },
 });
 
 const { actions, reducer } = versionsSlice;
-const { setPageSize } = actions;
+const { setPageSize, setPreviewVersion } = actions;
 
-export { reducer, setPageSize };
+export { reducer, setPageSize, setPreviewVersion };

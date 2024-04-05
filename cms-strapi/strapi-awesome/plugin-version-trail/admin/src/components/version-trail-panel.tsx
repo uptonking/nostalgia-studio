@@ -12,19 +12,26 @@ import {
   Box,
   Button,
   Divider,
+  Flex,
   Loader,
   Typography,
 } from '@strapi/design-system';
 import { unstable_useDocument } from '@strapi/plugin-content-manager/strapi-admin';
 
-import { useTypedSelector } from '../hooks/use-selector-dispatch';
+import {
+  useTypedDispatch,
+  useTypedSelector,
+} from '../hooks/use-selector-dispatch';
+import { setPreviewVersion } from '../store/versions';
 import { getTrad } from '../utils/get-trad';
 import { getUser } from '../utils/get-user';
+import { PortaledRecentVersion } from './recent-version-preview';
 import { VersionTrailViewer } from './version-trail-viewer';
 
 export function VersionTrailPanel() {
   const { formatMessage } = useIntl();
   const request = useFetchClient();
+  const dispatch = useTypedDispatch();
 
   // * params works for collection types but not single types
   const {
@@ -61,8 +68,9 @@ export function VersionTrailPanel() {
   const pageSize = useTypedSelector(
     (state) => state['version-trail'].app.versionsList.pageSize,
   );
-
-  // console.log(';; isVer, layout ', isVerEnabled, pageSize, layout, doc);
+  const previewVerNumber = useTypedSelector(
+    (state) => state['version-trail'].app.previewVersion.verNumber,
+  );
 
   const [trails, setTrails] = useState<Trail[]>([]);
   const [currentVer, setCurrentVer] = useState<Trail | null>(null);
@@ -73,6 +81,8 @@ export function VersionTrailPanel() {
   const [page, setPage] = useState(1);
   const [pageCount, setPageCount] = useState(1);
   const [total, setTotal] = useState(0);
+
+  console.log(';; isVer, layout ', isVerEnabled, recordId, doc, layout);
 
   /** if collectionType is single then fetch the ID (if exists) from the server
    * and set `1` if nothing.
@@ -160,12 +170,13 @@ export function VersionTrailPanel() {
 
         setLoaded(true);
         setInitialLoad(true);
+        dispatch(setPreviewVersion(-1));
       } catch (reqTrailsErr) {
         console.error('version-trail: ', reqTrailsErr);
         setError(reqTrailsErr as object);
       }
     },
-    [recordId, request, uid],
+    [dispatch, recordId, request, uid],
   );
 
   useEffect(() => {
@@ -195,7 +206,16 @@ export function VersionTrailPanel() {
   );
 
   if (!isVerEnabled) {
-    return null;
+    return (
+      <>
+        <Typography as='p' variant='pi' color='Neutral600'>
+          Version history is not enabled.
+        </Typography>
+        <Typography as='p' variant='pi' color='Neutral600'>
+          It can be enabled from content type builder
+        </Typography>
+      </>
+    );
   }
 
   // TODO: Add diff comparison
@@ -206,24 +226,10 @@ export function VersionTrailPanel() {
       <Box
         aria-labelledby='version-trail-records'
         paddingBottom={4}
-        // paddingLeft={4}
         paddingRight={1}
         paddingTop={1}
         borderWidth={0}
       >
-        {/* <Typography
-          variant='sigma'
-          textColor='neutral600'
-          id='version-trail-records'
-        >
-          {formatMessage({
-            id: getTrad('plugin.admin.versionTrail.title'),
-            defaultMessage: 'Version History',
-          })}
-        </Typography>
-        <Box paddingTop={2} paddingBottom={4}>
-          <Divider />
-        </Box> */}
         {initialLoad ? (
           <Fragment>
             {total === 0 && (
@@ -249,7 +255,7 @@ export function VersionTrailPanel() {
                   <Typography variant='pi' fontWeight='bold' color='Neutral600'>
                     {formatMessage({
                       id: getTrad('plugin.admin.versionTrail.created'),
-                      defaultMessage: 'Created At:',
+                      defaultMessage: 'Updated At:',
                     })}{' '}
                   </Typography>
                   <Typography variant='pi' color='Neutral600'>
@@ -260,7 +266,7 @@ export function VersionTrailPanel() {
                   <Typography variant='pi' fontWeight='bold' color='Neutral600'>
                     {formatMessage({
                       id: getTrad('plugin.admin.versionTrail.createdBy'),
-                      defaultMessage: 'Created by:',
+                      defaultMessage: 'Updated by:',
                     })}{' '}
                   </Typography>
                   <Typography variant='pi' color='Neutral600'>
@@ -268,11 +274,42 @@ export function VersionTrailPanel() {
                   </Typography>
                 </p>
                 {total > 1 ? (
-                  <Box paddingTop={4}>
+                  <div>
+                    {trails.slice(0, 5).map((trail) => {
+                      return (
+                        <Button
+                          key={trail.version}
+                          variant='ghost'
+                          onClick={() => {
+                            if (trail.version === previewVerNumber) {
+                              dispatch(setPreviewVersion(-1));
+                            } else {
+                              dispatch(setPreviewVersion(trail.version));
+                            }
+                          }}
+                        >
+                          <span>{trail.version}</span>{' '}
+                          <span>
+                            {format(
+                              parseISO(trail.createdAt),
+                              'yyyy-MM-dd HH:mm',
+                            )}
+                          </span>
+                        </Button>
+                      );
+                    })}
+                    {previewVerNumber > -1 &&
+                    previewVerNumber !== currentVer.version ? (
+                      <PortaledRecentVersion layout={layout} trails={trails} />
+                    ) : null}
+                  </div>
+                ) : null}
+                {total > 1 ? (
+                  <Box paddingTop={4} variant='tertiary'>
                     <Button onClick={toggleVersionsDataModal}>
                       {formatMessage({
                         id: getTrad('plugin.admin.versionTrail.viewAll'),
-                        defaultMessage: 'View all',
+                        defaultMessage: 'View all  OR  Restore',
                       })}
                     </Button>
                   </Box>

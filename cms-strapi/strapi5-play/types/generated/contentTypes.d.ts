@@ -829,6 +829,39 @@ export interface ApiMovieTagMovieTag extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiTestFieldTestField extends Struct.CollectionTypeSchema {
+  collectionName: 'test_fields';
+  info: {
+    singularName: 'test-field';
+    pluralName: 'test-fields';
+    displayName: 'test-field';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  pluginOptions: {
+    versionTrail: {
+      enabled: true;
+    };
+  };
+  attributes: {
+    text11: Schema.Attribute.String;
+    boolean11: Schema.Attribute.Boolean;
+    rich11: Schema.Attribute.Blocks;
+    json11: Schema.Attribute.JSON;
+    number11: Schema.Attribute.Integer;
+    date11: Schema.Attribute.Date;
+    createdAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String;
+  };
+}
+
 export interface ApiTestTrail11TestTrail11 extends Struct.CollectionTypeSchema {
   collectionName: 'test_trail11s';
   info: {
@@ -914,6 +947,7 @@ declare module '@strapi/strapi' {
       'api::i18n-recipe.i18n-recipe': ApiI18NRecipeI18NRecipe;
       'api::movie.movie': ApiMovieMovie;
       'api::movie-tag.movie-tag': ApiMovieTagMovieTag;
+      'api::test-field.test-field': ApiTestFieldTestField;
       'api::test-trail11.test-trail11': ApiTestTrail11TestTrail11;
       'api::test-version12.test-version12': ApiTestVersion12TestVersion12;
     }

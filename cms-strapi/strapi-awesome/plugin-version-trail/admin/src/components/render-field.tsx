@@ -18,7 +18,7 @@ import {
 } from '@strapi/design-system';
 
 import { getTrad } from '../utils/get-trad';
-import { returnFieldType } from '../utils/return-field-type';
+import { getFieldType } from '../utils/get-field-type';
 import { MediaField } from './common/media-field';
 import { RelationField } from './relation-field';
 
@@ -40,7 +40,7 @@ export function RenderField(props: RenderFieldProps) {
   /** get the schema attributes and handle unknown types as strings */
   const fieldAttr = attributes[name];
   const { type } = fieldAttr;
-  const validType = returnFieldType(type);
+  const validType = getFieldType(type);
 
   const [expanded, setExpanded] = useState(true);
   const [selected, setSelected] = useState(false);
