@@ -1,0 +1,27 @@
+{
+  "name": "nosontable",
+  "version": "0.0.1111",
+  "description": "nosontable is a fork of Handsontable 6, a JavaScript Spreadsheet Component available for React, Angular and Vue.",
+  "keywords": [
+    "data-grid",
+    "data-table",
+    "spreadsheet",
+    "excel"
+  ],
+  "license": "MIT",
+  "main": "./src/index.js",
+  "types": "./nosontable.d.ts",
+  "scripts": {
+    "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
+    "copy-css": "copyfiles -u 1 \"src/**/*.css\" dist/",
+    "lint": "eslint src/ test/",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "dependencies": {
+    "moment": "2.29.1",
+    "numbro": "^2.3.6",
+    "pikaday": "1.8.2"
+  },
+  "devDependencies": {}
+}

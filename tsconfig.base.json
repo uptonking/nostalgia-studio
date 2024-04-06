@@ -42,7 +42,11 @@
         "./db-pouch-like/src-pouchdb/pouchdb-*/src",
         "./db-pouch-like/pouch-awesome/pouchdb-*/src"
       ],
-      "strapi-plugin-*": ["./cms-strapi/strapi-awesome/plugin-*/"],
+      "lib0": ["./collab-yjs/src-pkgs/yjs-lib0/"],
+      "yjs": ["./collab-yjs/src-pkgs/yjs/"],
+      "y-protocols": ["./collab-yjs/src-pkgs/y-protocols/"],
+      "y-websocket": ["./collab-yjs/src-pkgs/y-websocket/"],
+      "y-quill": ["./collab-yjs/src-pkgs/y-quill/"],
       "@dnd-kit/core": ["./utilities/dnd-kit/core/src/"],
       "@dnd-kit/accessibility": ["./utilities/dnd-kit/accessibility/src/"],
       "@dnd-kit/modifiers": ["./utilities/dnd-kit/modifiers/src/"],
@@ -69,6 +73,10 @@
         "./excel-tanstack-table/src-pkgs/virtual-react/"
       ],
       "react-window": ["./excel-tanstack-table/src-react-window/src/"],
+      "quill-delta": ["./editor-quill/src-pkgs/delta/src/"],
+      "parchment": ["./editor-quill/src-pkgs/parchment/src/"],
+      "quill": ["./editor-quill/src-pkgs/quill/"],
+      "strapi-plugin-*": ["./cms-strapi/strapi-awesome/plugin-*/"],
       "@datalking/pivot-core": ["./excel-watarble/core/src/"],
       "@datalking/pivot-cqrs": ["./excel-watarble/cqrs/src/"],
       "@datalking/pivot-entity": ["./excel-watarble/entity/src/"],

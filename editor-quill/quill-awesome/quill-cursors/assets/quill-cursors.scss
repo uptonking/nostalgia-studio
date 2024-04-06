@@ -1,0 +1,136 @@
+/********
+ * VARS *
+ ********/
+
+$spacing-xs: 5px;
+$spacing-sm: 9px;
+
+$border-width-base: 2px;
+$border-width-lg:   3px;
+
+$transition-func: cubic-bezier(0.250, 0.460, 0.450, 0.940);
+
+
+/**********
+ * MIXINS *
+ **********/
+
+
+@mixin whenScreen   { @media screen { @content; } }
+
+//
+@function buildTransition($properties, $speed, $delay) {
+  $transitions: ();
+
+  @each $property in $properties {
+    $transitions: append($transitions
+      , $property $speed $transition-func $delay, comma);
+  }
+
+  @return $transitions;
+}
+
+//
+@mixin transition($properties, $speed: 0ms, $delay: 0ms) {
+  @include whenScreen {
+    transition: buildTransition($properties, $speed, $delay);
+  }
+}
+
+
+/***********
+ * CURSORS *
+ ***********/
+
+.ql-container {
+  // We technically shouldn't need this, because Quill includes this styling
+  // by default, but if it ever gets removed from the core library, or if
+  // consumers aren't using the default styling, then our positioning will break,
+  // so let's add it again just to be sure.
+  position: relative;
+  // Make sure we don't show cursors/selection rectangles outside the editor
+  overflow: hidden;
+}
+
+@media (pointer: coarse) {
+  .ql-cursor-caret-container {
+    z-index: -1;
+  }
+}
+
+.ql-cursor {
+
+  &.hidden {
+    display: none;
+  }
+
+  .ql-cursor-caret-container,
+  .ql-cursor-flag {
+    position: absolute;
+  }
+
+  .ql-cursor-flag {
+    z-index: 1;
+    transform: translate3d(-$border-width-base * 0.5, -100%, 0);
+    opacity: 0;
+    visibility: hidden;
+    color: white;
+    padding-bottom: 2px;
+    border-radius: 0 $border-width-lg $border-width-lg 0;
+
+    &.flag-flipped {
+      border-radius: $border-width-lg 0 0 $border-width-lg;
+      transform: translate3d(calc(-100% + #{$border-width-base * 0.5} ), -100%, 0);
+    }
+
+    @include transition((
+      opacity,
+      visibility
+    ));
+
+    .ql-cursor-name {
+      margin-left: $spacing-xs;
+      margin-right: $spacing-xs;
+      display: inline-block;
+      margin-top: -2px;
+      white-space: nowrap;
+    }
+  }
+
+  .ql-cursor-flag.no-delay[style] {
+    transition-delay: unset !important;
+  }
+
+  .ql-cursor-caret-container {
+    cursor: text;
+    margin-left: -$spacing-sm;
+    padding: 0 $spacing-sm;
+
+    &.hover {
+      + .ql-cursor-flag {
+        opacity: 1;
+        visibility: visible;
+        transition: none;
+      }
+    }
+
+    &.no-pointer {
+      pointer-events: none;
+    }
+
+    .ql-cursor-caret {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: $border-width-base;
+      margin-left: -($border-width-base * 0.5);
+
+      background-color: attr(data-color);
+    }
+  }
+
+  .ql-cursor-selection-block {
+    position: absolute;
+    pointer-events: none;
+  }
+}

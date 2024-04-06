@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "dom"],
+    "module": "NodeNext",
+    "allowJs": true,
+    "checkJs": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "rootDir": "./",
+    "emitDeclarationOnly": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "moduleResolution": "NodeNext",
+    "paths": {
+      "lib0/*": ["./*"],
+      "lib0/webcrypto": ["./webcrypto.js"],
+      "lib0/performance": ["./performance.node.js"],
+      "lib0/logging": ["./logging.node.js"]
+    }
+  },
+  "include": ["./*.js", "./hash/*.js", "./crypto/*.js", "./bin/*.js"],
+  "exclude": ["./dist/**/*"]
+}

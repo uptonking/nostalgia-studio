@@ -1,0 +1,77 @@
+{
+  "name": "y-indexeddb",
+  "version": "9.0.1211",
+  "description": "IndexedDB database adapter for Yjs",
+  "keywords": [
+    "Yjs",
+    "CRDT",
+    "offline",
+    "shared editing",
+    "collaboration",
+    "concurrency"
+  ],
+  "homepage": "https://yjs.dev",
+  "bugs": {
+    "url": "https://github.com/yjs/y-indexeddb/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yjs/y-indexeddb.git"
+  },
+  "funding": {
+    "type": "GitHub Sponsors ❤",
+    "url": "https://github.com/sponsors/dmonad"
+  },
+  "license": "MIT",
+  "author": "Kevin Jahns <kevin.jahns@protonmail.com>",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/src/y-indexeddb.d.ts",
+      "module": "./src/y-indexeddb.js",
+      "import": "./src/y-indexeddb.js",
+      "require": "./dist/y-indexeddb.cjs",
+      "default": "./src/y-indexeddb.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/y-indexeddb.cjs",
+  "module": "./src/y-indexeddb.js",
+  "types": "./dist/src/y-indexeddb.d.ts",
+  "files": [
+    "dist/*",
+    "src/*"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "debug": "concurrently 'rollup -wc' 'http-server -o .'",
+    "dist": "rollup -c",
+    "lint": "markdownlint README.md && standard && tsc",
+    "test": "npm run lint",
+    "preversion": "npm run clean && npm run lint && npm run dist"
+  },
+  "dependencies": {
+    "lib0": "0.2.9311"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^11.1.0",
+    "@rollup/plugin-node-resolve": "^7.1.3",
+    "concurrently": "^3.6.1",
+    "jsdoc": "^3.6.6",
+    "rollup": "^1.32.1",
+    "y-protocols": "1.0.6111",
+    "yjs": "13.6.1411"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "standard": {
+    "ignore": [
+      "/dist",
+      "/node_modules",
+      "/docs"
+    ]
+  }
+}

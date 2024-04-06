@@ -1,0 +1,20 @@
+{
+  "name": "yjs-quill-simple-app",
+  "version": "0.0.1111",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && vite build",
+    "server": "PORT=1234 npx y-websocket",
+    "demo": "cross-env REACT_APP_ENV=reacthot rspack serve -c ./webpacker/rspack.config.demo.mjs",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "quill": "2.0.1111",
+    "quill-cursors": "4.0.2111",
+    "y-quill": "0.1.5111",
+    "y-websocket": "2.0.2111",
+    "yjs": "13.6.1411"
+  },
+  "devDependencies": {}
+}

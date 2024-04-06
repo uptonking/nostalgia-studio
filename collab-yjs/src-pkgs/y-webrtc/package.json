@@ -1,0 +1,81 @@
+{
+  "name": "y-webrtc",
+  "version": "10.3.1111",
+  "description": "WebRTC provider for Yjs",
+  "keywords": [
+    "Yjs"
+  ],
+  "homepage": "https://github.com/yjs/y-webrtc#readme",
+  "bugs": {
+    "url": "https://github.com/yjs/y-webrtc/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yjs/y-webrtc.git"
+  },
+  "funding": {
+    "type": "GitHub Sponsors ❤",
+    "url": "https://github.com/sponsors/dmonad"
+  },
+  "license": "MIT",
+  "author": "Kevin Jahns <kevin.jahns@protonmail.com>",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    "module": "./src/y-webrtc.js",
+    "import": "./src/y-webrtc.js",
+    "require": "./dist/y-webrtc.cjs",
+    "types": "./dist/src/y-webrtc.d.ts"
+  },
+  "main": "./dist/y-webrtc.cjs",
+  "unpkg": "./src/y-webrtc.mjs",
+  "module": "./src/y-webrtc.js",
+  "types": "./dist/src/y-webrtc.d.ts",
+  "bin": {
+    "y-webrtc-signaling": "./bin/server.js"
+  },
+  "files": [
+    "dist/*",
+    "bin/*",
+    "src/*"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "debug": "concurrently 'http-server -o index.html' 'npm run watch'",
+    "demo": "concurrently 'http-server -o demo/index.html' 'npm run watch'",
+    "dist": "rollup -c",
+    "lint": "standard && tsc",
+    "start": "node ./bin/server.js",
+    "test": "npm run lint",
+    "types": "tsc",
+    "preversion": "npm run clean && npm run lint && npm run dist && npm run types",
+    "watch": "rollup -wc"
+  },
+  "dependencies": {
+    "lib0": "0.2.9311",
+    "simple-peer": "^9.11.1",
+    "y-protocols": "1.0.6111"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^11.1.0",
+    "@rollup/plugin-node-resolve": "^7.1.3",
+    "@types/simple-peer": "^9.11.3",
+    "concurrently": "^5.3.0",
+    "rollup": "^1.32.1",
+    "rollup-cli": "^1.0.9",
+    "rollup-plugin-terser": "^5.3.1",
+    "yjs": "13.6.1411"
+  },
+  "optionalDependencies": {
+    "ws": "^8.14.2"
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "standard": {
+    "ignore": [
+      "/dist",
+      "/node_modules"
+    ]
+  }
+}

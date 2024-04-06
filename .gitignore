@@ -34,6 +34,9 @@ repos-caches/
 **/public/uploads/
 .strapi-updater.json
 
+# .d.ts
+*.d.ts.map
+
 # auto-generated files
 .idea/
 *.iml

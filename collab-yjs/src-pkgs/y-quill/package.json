@@ -1,0 +1,64 @@
+{
+  "name": "y-quill",
+  "version": "0.1.5111",
+  "description": "QuillJs bindings for Yjs",
+  "keywords": [
+    "Yjs"
+  ],
+  "homepage": "https://github.com/y-js/y-quill#readme",
+  "bugs": {
+    "url": "https://github.com/y-js/y-quill/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/y-js/y-quill.git"
+  },
+  "funding": {
+    "type": "GitHub Sponsors ❤",
+    "url": "https://github.com/sponsors/dmonad"
+  },
+  "license": "MIT",
+  "author": "Kevin Jahns <kevin.jahns@protonmail.com>",
+  "sideEffects": false,
+  "main": "./dist/y-quill.cjs",
+  "module": "./src/y-quill.js",
+  "types": "./y-quill.d.ts",
+  "files": [
+    "dist/*",
+    "src/*"
+  ],
+  "scripts": {
+    "debug": "concurrently 'live-server --port=3443 --entry-file=test.html' 'npm run watch'",
+    "demo": "concurrently 'live-server --port=3443 --entry-file=demo/index.html' 'npm run watch'",
+    "clean": "rm -rf dist",
+    "dist": "rm -rf dist && rollup -c",
+    "lint": "standard && tsc",
+    "postinstall": "npm run clean && npm run dist ",
+    "start": "npm run demo",
+    "test": "rollup -c && node test/test.cjs",
+    "preversion": "npm run dist && npm run lint && npm run test && test -e ./dist/src/y-quill.d.ts && test -e ./dist/y-quill.cjs && test -e ./dist/y-quill.cjs.map",
+    "watch": "rollup -wc"
+  },
+  "dependencies": {
+    "lib0": "0.2.9311",
+    "y-protocols": "1.0.6111"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-node-resolve": "^11.2.1",
+    "concurrently": "^4.1.2",
+    "quill": "2.0.1111",
+    "quill-cursors": "4.0.2111",
+    "rollup": "^2.59.0",
+    "y-webrtc": "10.3.1111",
+    "yjs": "13.6.1411"
+  },
+  "peerDependencies": {},
+  "standard": {
+    "ignore": [
+      "/dist",
+      "/node_modules",
+      "/docs"
+    ]
+  }
+}

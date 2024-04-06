@@ -1,0 +1,32 @@
+{
+  "name": "parchment",
+  "version": "3.0.1111",
+  "description": "A document model for rich text editors",
+  "homepage": "http://quilljs.com/docs/parchment",
+  "bugs": {
+    "url": "https://github.com/quilljs/parchment/issues"
+  },
+  "repository": "github:quilljs/parchment",
+  "license": "BSD-3-Clause",
+  "author": "Jason Chen <jhchen7@gmail.com>",
+  "sideEffects": false,
+  "type": "module",
+  "main": "./src/parchment.ts",
+  "types": "./src/parchment.ts",
+  "files": [
+    "tsconfig.json",
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "npm run build:bundle && npm run build:types",
+    "build:bundle": "vite build",
+    "build:types": "tsc --emitDeclarationOnly && api-extractor run && del-cli dist/typings",
+    "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'",
+    "prepare1": "npm run build",
+    "test": "npm run test:unit",
+    "test:pkg": "attw $(npm pack)",
+    "test:unit": "vitest --typecheck"
+  },
+  "devDependencies": {}
+}

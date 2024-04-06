@@ -1,0 +1,70 @@
+{
+  "name": "y-utility",
+  "version": "0.1.3111",
+  "description": "Utility features for Yjs",
+  "homepage": "https://github.com/yjs/y-utility#readme",
+  "bugs": {
+    "url": "https://github.com/yjs/y-utility/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yjs/y-utility.git"
+  },
+  "funding": {
+    "type": "GitHub Sponsors ❤",
+    "url": "https://github.com/sponsors/dmonad"
+  },
+  "license": "MIT",
+  "author": "Kevin Jahns <kevin.jahns@protonmail.com>",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    "./y-keyvalue": {
+      "import": "./y-keyvalue.js",
+      "require": "./dist/y-keyvalue.cjs"
+    },
+    "./y-multidoc-undomanager": {
+      "import": "./y-multidoc-undomanager.js",
+      "require": "./dist/y-multidoc-undomanager.cjs"
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf dist *.d.ts */*.d.ts *.d.ts.map */*.d.ts.map",
+    "debug": "rollup -c && concurrently 'rollup -wc' 'http-server -o test.html'",
+    "dist": "rollup -c",
+    "lint": "standard && tsc",
+    "postpublish": "npm run clean",
+    "test": "c8 --check-coverage --lines 100 --branches 100 --functions 100 --statements 100 node --unhandled-rejections=strict ./test.js --repetition-time 50 --production",
+    "test-extensive": "node test.js && npm test -- --repetition-time 30000 --extensive",
+    "test-inspect": "node --inspect-brk --unhandled-rejections=strict ./test.js --repetition-time 50 --production",
+    "trace-deopt": "clear && rollup -c  && node --trace-deopt dist/test.cjs",
+    "trace-opt": "clear && rollup -c  && node --trace-opt dist/test.cjs",
+    "types": "tsc --outDir .",
+    "preversion": "npm run clean && npm run test && npm run types && npm run dist && git add README.md"
+  },
+  "dependencies": {
+    "lib0": "0.2.9311"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.5",
+    "concurrently": "^5.3.0",
+    "http-server": "^0.12.3",
+    "jsdoc-api": "^5.0.4",
+    "jsdoc-plugin-typescript": "^2.0.6",
+    "rollup": "^2.79.1"
+  },
+  "peerDependencies": {
+    "yjs": "13.6.1411"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "standard": {
+    "ignore": [
+      "/dist",
+      "/node_modules",
+      "/docs"
+    ]
+  }
+}

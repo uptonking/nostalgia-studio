@@ -1,0 +1,81 @@
+{
+  "name": "y-websocket",
+  "version": "2.0.2111",
+  "description": "Websockets provider for Yjs",
+  "keywords": [
+    "Yjs"
+  ],
+  "homepage": "https://github.com/yjs/y-websocket#readme",
+  "bugs": {
+    "url": "https://github.com/yjs/y-websocket/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yjs/y-websocket.git"
+  },
+  "funding": {
+    "type": "GitHub Sponsors ❤",
+    "url": "https://github.com/sponsors/dmonad"
+  },
+  "license": "MIT",
+  "author": "Kevin Jahns <kevin.jahns@protonmail.com>",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    "./bin/utils": "./bin/utils.cjs",
+    "./bin/callback": "./bin/callback.cjs",
+    ".": {
+      "module": "./src/y-websocket.js",
+      "import": "./src/y-websocket.js",
+      "require": "./dist/y-websocket.cjs",
+      "types": "./dist/src/y-websocket.d.ts",
+      "default": "./dist/y-websocket.js"
+    }
+  },
+  "main": "./dist/y-websocket.cjs",
+  "module": "./src/y-websocket.js",
+  "types": "./y-websocket.d.ts",
+  "bin": {
+    "y-websocket": "./bin/server.cjs",
+    "y-websocket-server": "./bin/server.cjs"
+  },
+  "files": [
+    "dist/*",
+    "bin/*",
+    "src/*"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist  *.d.ts.map */*.d.ts.map",
+    "dist": "rm -rf dist && rollup -c && tsc",
+    "postinstall": "npm run clean && rm -rf dist && rollup -c ",
+    "lint": "standard && tsc",
+    "start": "node ./bin/server.cjs",
+    "test": "npm run lint",
+    "preversion": "npm run lint && npm run dist && test -e dist/src/y-websocket.d.ts && test -e dist/y-websocket.cjs"
+  },
+  "dependencies": {
+    "lib0": "0.2.9311",
+    "lodash.debounce": "^4.0.8",
+    "y-protocols": "1.0.6111"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.5",
+    "@types/ws": "^8.5.10",
+    "rollup": "^3.19.1",
+    "yjs": "13.6.1411"
+  },
+  "optionalDependencies": {
+    "ws": "^6.2.1"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "standard": {
+    "ignore": [
+      "/dist",
+      "/node_modules"
+    ]
+  }
+}
