@@ -7,10 +7,10 @@ import {
 import { rangeEach, valueAccordingPercent } from '../helpers/number';
 import { hasOwnProperty, isObject } from '../helpers/object';
 import { isPercentValue } from '../helpers/string';
+import { registerPlugin } from '../plugins';
 import GhostTable from '../utils/ghost-table';
 import SamplesGenerator from '../utils/samples-generator';
 import BasePlugin from './base';
-import { registerPlugin } from './index';
 
 /**
  * @plugin AutoRowSize
@@ -203,7 +203,7 @@ class AutoRowSize extends BasePlugin {
     rangeEach(rowsRange.from, rowsRange.to, (row) => {
       // For rows we must calculate row height even when user had set height value manually.
       // We can shrink column but cannot shrink rows!
-      if (force || this.heights[row] === void 0) {
+      if (force || this.heights[row] === undefined) {
         const samples = this.samplesGenerator.generateRowSamples(
           row,
           columnsRange,
@@ -294,11 +294,11 @@ class AutoRowSize extends BasePlugin {
     const samplingRatio =
       setting && hasOwnProperty(setting, 'samplingRatio')
         ? this.hot.getSettings().autoRowSize.samplingRatio
-        : void 0;
+        : undefined;
     const allowSampleDuplicates =
       setting && hasOwnProperty(setting, 'allowSampleDuplicates')
         ? this.hot.getSettings().autoRowSize.allowSampleDuplicates
-        : void 0;
+        : undefined;
 
     if (samplingRatio && !isNaN(samplingRatio)) {
       this.samplesGenerator.setSampleCount(parseInt(samplingRatio, 10));
@@ -351,11 +351,11 @@ class AutoRowSize extends BasePlugin {
    * @param {Number} [defaultHeight] Default row height. It will be picked up if no calculated height found.
    * @returns {Number}
    */
-  getRowHeight(row, defaultHeight = void 0) {
+  getRowHeight(row, defaultHeight = undefined) {
     let height = defaultHeight;
 
     if (
-      this.heights[row] !== void 0 &&
+      this.heights[row] !== undefined &&
       this.heights[row] > (defaultHeight || 0)
     ) {
       height = this.heights[row];
@@ -414,7 +414,7 @@ class AutoRowSize extends BasePlugin {
    */
   clearCache() {
     this.heights.length = 0;
-    this.heights[-1] = void 0;
+    this.heights[-1] = undefined;
   }
 
   /**
@@ -427,7 +427,7 @@ class AutoRowSize extends BasePlugin {
       typeof range === 'number' ? { from: range, to: range } : range;
 
     rangeEach(Math.min(from, to), Math.max(from, to), (row) => {
-      this.heights[row] = void 0;
+      this.heights[row] = undefined;
     });
   }
 
@@ -437,7 +437,7 @@ class AutoRowSize extends BasePlugin {
    * @returns {Boolean}
    */
   isNeedRecalculate() {
-    return !!arrayFilter(this.heights, (item) => item === void 0).length;
+    return !!arrayFilter(this.heights, (item) => item === undefined).length;
   }
 
   /**
@@ -457,7 +457,7 @@ class AutoRowSize extends BasePlugin {
 
     this.calculateRowsHeight(
       { from: firstVisibleRow, to: lastVisibleRow },
-      void 0,
+      undefined,
       force,
     );
 
@@ -500,7 +500,7 @@ class AutoRowSize extends BasePlugin {
     let newSize = size;
 
     if (isDblClick) {
-      this.calculateRowsHeight(row, void 0, true);
+      this.calculateRowsHeight(row, undefined, true);
 
       newSize = this.getRowHeight(row);
     }

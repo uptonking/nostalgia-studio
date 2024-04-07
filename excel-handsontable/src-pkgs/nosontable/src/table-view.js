@@ -589,7 +589,7 @@ TableView.prototype.isTextSelectionAllowed = function (el) {
 TableView.prototype.isSelectedOnlyCell = function () {
   const [row, col, rowEnd, colEnd] = this.instance.getSelectedLast() || [];
 
-  return row !== void 0 && row === rowEnd && col === colEnd;
+  return row !== undefined && row === rowEnd && col === colEnd;
 };
 
 TableView.prototype.isCellEdited = function () {

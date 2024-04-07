@@ -109,7 +109,7 @@
             } else {
               str += val;
             }
-          } else if (val === null || val === void 0) {
+          } else if (val === null || val === undefined) {
             // void 0 resolves to undefined
             str += '';
           } else {

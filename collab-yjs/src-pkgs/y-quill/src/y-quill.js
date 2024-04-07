@@ -2,8 +2,8 @@
  * @module bindings/quill
  */
 
-import * as Y from 'yjs'; // eslint-disable-line
-import { Awareness } from 'y-protocols/awareness.js'; // eslint-disable-line
+import { Awareness } from 'y-protocols/awareness.js';
+import * as Y from 'yjs';
 
 /**
  * Removes the pending '\n's if it has no attributes.
@@ -64,10 +64,16 @@ const updateCursor = (quillCursors, aw, clientId, doc, type) => {
   }
 };
 
+/** maps a Y.Text to a Quill instance.
+ * - two way binding
+ */
 export class QuillBinding {
+  /** @type {import('quill').default} */
+  quill;
+
   /**
    * @param {Y.Text} type
-   * @param {any} quill
+   * @param {import('quill').default} quill
    * @param {Awareness} [awareness]
    */
   constructor(type, quill, awareness) {
@@ -89,7 +95,8 @@ export class QuillBinding {
         updateCursor(quillCursors, states.get(id), id, doc, type);
       });
       removed.forEach((id) => {
-        quillCursors.removeCursor(id.toString());
+        // @ts-expect-error fix-types
+        quillCursors?.removeCursor(id.toString());
       });
     };
     /**
@@ -118,7 +125,9 @@ export class QuillBinding {
             delta.push(d);
           }
         }
+        // @ts-expect-error fix-types
         quill.updateContents(delta, this);
+        // quill.updateContents(delta, 'silent');
       }
     };
     type.observe(this._typeObserver);
@@ -128,7 +137,7 @@ export class QuillBinding {
         const ops = delta.ops;
         ops.forEach((op) => {
           if (op.attributes !== undefined) {
-            for (let key in op.attributes) {
+            for (const key in op.attributes) {
               if (this._negatedUsedFormats[key] === undefined) {
                 this._negatedUsedFormats[key] = false;
               }
@@ -176,7 +185,9 @@ export class QuillBinding {
     quill.on('editor-change', this._quillObserver);
     // This indirectly initializes _negatedUsedFormats.
     // Make sure that this call this after the _quillObserver is set.
+    // @ts-expect-error fix-types
     quill.setContents(type.toDelta(), this);
+    // quill.setContents(type.toDelta(), 'silent');
     // init remote cursors
     if (quillCursors !== null && awareness) {
       awareness.getStates().forEach((aw, clientId) => {

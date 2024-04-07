@@ -675,9 +675,11 @@ class Table {
     let height = this.wot.wtSettings.settings.rowHeight(sourceRow);
     const oversizedHeight = this.wot.wtViewport.oversizedRows[sourceRow];
 
-    if (oversizedHeight !== void 0) {
+    if (oversizedHeight !== undefined) {
       height =
-        height === void 0 ? oversizedHeight : Math.max(height, oversizedHeight);
+        height === undefined
+          ? oversizedHeight
+          : Math.max(height, oversizedHeight);
     }
 
     return height;
@@ -687,7 +689,7 @@ class Table {
     let height = this.wot.wtSettings.settings.defaultRowHeight;
     const oversizedHeight = this.wot.wtViewport.oversizedColumnHeaders[level];
 
-    if (oversizedHeight !== void 0) {
+    if (oversizedHeight !== undefined) {
       height = height ? Math.max(height, oversizedHeight) : oversizedHeight;
     }
 
@@ -719,7 +721,7 @@ class Table {
   getStretchedColumnWidth(sourceColumn) {
     const columnWidth = this.getColumnWidth(sourceColumn);
     let width =
-      columnWidth === null || columnWidth === void 0
+      columnWidth === null || columnWidth === undefined
         ? this.instance.wtSettings.settings.defaultColumnWidth
         : columnWidth;
     const calculator = this.wot.wtViewport.columnsRenderCalculator;

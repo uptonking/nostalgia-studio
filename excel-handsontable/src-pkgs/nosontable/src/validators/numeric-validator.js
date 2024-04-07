@@ -12,7 +12,7 @@ import { isNumeric } from '../helpers/number';
 export default function numericValidator(value, callback) {
   let valueToValidate = value;
 
-  if (valueToValidate === null || valueToValidate === void 0) {
+  if (valueToValidate === null || valueToValidate === undefined) {
     valueToValidate = '';
   }
   if (this.allowEmpty && valueToValidate === '') {

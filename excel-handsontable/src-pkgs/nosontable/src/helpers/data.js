@@ -163,7 +163,7 @@ export function cellMethodLookupFactory(methodName, allowUndefined) {
         return; // method not found
       } else if (
         hasOwnProperty(properties, methodName) &&
-        properties[methodName] !== void 0
+        properties[methodName] !== undefined
       ) {
         // check if it is own and is not empty
         return properties[methodName]; // method defined directly

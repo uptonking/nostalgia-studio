@@ -63,7 +63,7 @@ HandsontableEditor.prototype.prepare = function (
       const sourceValue = this.getSourceData(coords.row, coords.col);
 
       // if the value is undefined then it means we don't want to set the value
-      if (sourceValue !== void 0) {
+      if (sourceValue !== undefined) {
         parent.setValue(sourceValue);
       }
       parent.instance.destroyEditor();
@@ -113,7 +113,7 @@ const onBeforeKeyDown = function (event) {
     }
   }
 
-  if (rowToSelect !== void 0) {
+  if (rowToSelect !== undefined) {
     if (
       rowToSelect < 0 ||
       (innerHOT.flipped && rowToSelect > innerHOT.countRows() - 1)
@@ -190,7 +190,7 @@ HandsontableEditor.prototype.finishEditing = function (...args) {
   if (this.htEditor && this.htEditor.getSelectedLast()) {
     const value = this.htEditor.getInstance().getValue();
 
-    if (value !== void 0) {
+    if (value !== undefined) {
       // if the value is undefined then it means we don't want to set the value
       this.setValue(value);
     }

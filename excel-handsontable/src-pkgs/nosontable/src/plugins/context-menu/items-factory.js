@@ -34,7 +34,7 @@ class ItemsFactory {
 
         // Menu item added as a property to array
       } else if (isNaN(parseInt(key, 10))) {
-        value.key = value.key === void 0 ? key : value.key;
+        value.key = value.key === undefined ? key : value.key;
         items[key] = value;
         menuItemKey = value.key;
       } else {
@@ -79,7 +79,7 @@ function getItems(itemsPattern = null, defaultPattern = [], items = {}) {
       } else if (typeof item === 'string') {
         item = { name: item };
       }
-      if (item.key === void 0) {
+      if (item.key === undefined) {
         item.key = key;
       }
       result.push(item);
@@ -98,7 +98,7 @@ function getItems(itemsPattern = null, defaultPattern = [], items = {}) {
       if (isObject(name)) {
         extend(item, name);
       }
-      if (item.key === void 0) {
+      if (item.key === undefined) {
         item.key = key;
       }
       result.push(item);

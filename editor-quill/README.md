@@ -8,7 +8,8 @@
     "quill": "2.0.1111", 
     "parchment": "3.0.1111", 
     "quill-delta": "5.1.1111", 
-    "quill-cursors": "4.0.2111",
+    "quill-cursors": "4.0.2111", 
+    "y-quill": "0.1.5111", 
     "quill-react": "2.0.1111"
 
 }

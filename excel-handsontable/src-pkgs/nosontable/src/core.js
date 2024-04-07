@@ -1,69 +1,71 @@
+import './utils/set-immediate';
+
+import { getCellType } from './cell-types';
+import DataMap from './data-map';
+import DataSource from './data-source';
+import DefaultSettings from './default-settings';
+import EditorManager from './editor-manager';
+import EventManager from './event-manager';
+import {
+  arrayEach,
+  arrayFlatten,
+  arrayMap,
+  arrayReduce,
+} from './helpers/array';
+import { isMobileBrowser } from './helpers/browser';
+import { warn } from './helpers/console';
+import {
+  cellMethodLookupFactory,
+  spreadsheetColumnLabel,
+  translateRowsToColumns,
+} from './helpers/data';
 import {
   addClass,
   empty,
   isChildOfWebComponentTable,
   removeClass,
 } from './helpers/dom/element';
-import { columnFactory } from './helpers/setting';
 import { isFunction } from './helpers/function';
-import { warn } from './helpers/console';
-import { isDefined, isUndefined, isRegExp, isEmpty } from './helpers/mixed';
-import { isMobileBrowser } from './helpers/browser';
-import DataMap from './data-map';
-import EditorManager from './editor-manager';
-import EventManager from './event-manager';
+import { isDefined, isEmpty, isRegExp, isUndefined } from './helpers/mixed';
+import { rangeEach, rangeEachReverse } from './helpers/number';
 import {
+  createObjectPropListener,
   deepClone,
+  deepObjectSize,
   duckSchema,
   extend,
+  hasOwnProperty,
   isObject,
   isObjectEqual,
-  deepObjectSize,
-  hasOwnProperty,
-  createObjectPropListener,
   objectEach,
 } from './helpers/object';
-import {
-  arrayFlatten,
-  arrayMap,
-  arrayEach,
-  arrayReduce,
-} from './helpers/array';
-import { toSingleLine } from './helpers/template-literal-tag';
-import { getPlugin } from './plugins';
-import { getRenderer } from './renderers';
-import { getValidator } from './validators';
+import { columnFactory } from './helpers/setting';
 import { randomString } from './helpers/string';
-import { rangeEach, rangeEachReverse } from './helpers/number';
-import TableView from './table-view';
-import DataSource from './data-source';
-import {
-  translateRowsToColumns,
-  cellMethodLookupFactory,
-  spreadsheetColumnLabel,
-} from './helpers/data';
-import { getTranslator } from './utils/record-translator';
-import {
-  registerAsRootInstance,
-  hasValidParameter,
-  isRootInstance,
-} from './utils/root-instance';
-import { CellCoords, ViewportColumnsCalculator } from './walkontable';
-import Hooks from './plugin-hooks';
-import DefaultSettings from './default-settings';
-import { getCellType } from './cell-types';
+import { toSingleLine } from './helpers/template-literal-tag';
 import { getTranslatedPhrase } from './i18n';
 import { hasLanguageDictionary } from './i18n/dictionaries-manager';
 import {
-  warnUserAboutLanguageRegistration,
   applyLanguageSetting,
   normalizeLanguageCode,
+  warnUserAboutLanguageRegistration,
 } from './i18n/utils';
+import Hooks from './plugin-hooks';
+import { getPlugin } from './plugins';
+import { getRenderer } from './renderers';
+import { Selection } from './selection';
+import TableView from './table-view';
 import {
   startObserving as keyStateStartObserving,
   stopObserving as keyStateStopObserving,
 } from './utils/key-state-observer';
-import { Selection } from './selection';
+import { getTranslator } from './utils/record-translator';
+import {
+  hasValidParameter,
+  isRootInstance,
+  registerAsRootInstance,
+} from './utils/root-instance';
+import { getValidator } from './validators';
+import { CellCoords, ViewportColumnsCalculator } from './walkontable';
 
 let activeGuid = null;
 
@@ -86,7 +88,7 @@ let activeGuid = null;
  * const hot = new Handsontable(document.getElementById('example1'), options);
  *
  * // now, to use setDataAtCell method, you can either:
- * ht.setDataAtCell(0, 0, 'new value');
+ * hot.setDataAtCell(0, 0, 'new value');
  * ```
  *
  * Alternatively, you can call the method using jQuery wrapper (__obsolete__, requires initialization using our jQuery guide
@@ -110,8 +112,10 @@ export default function Core(
   let grid;
   let editorManager;
 
-  extend(GridSettings.prototype, DefaultSettings.prototype); // create grid settings as a copy of default settings
-  extend(GridSettings.prototype, userSettings); // overwrite defaults with user settings
+  // create grid settings as a copy of default settings
+  extend(GridSettings.prototype, DefaultSettings.prototype);
+  // overwrite defaults with user settings
+  extend(GridSettings.prototype, userSettings);
   extend(GridSettings.prototype, expandType(userSettings));
 
   applyLanguageSetting(GridSettings.prototype, userSettings.language);
@@ -132,7 +136,8 @@ export default function Core(
 
   rootElement.insertBefore(this.container, rootElement.firstChild);
 
-  this.guid = `ht_${randomString()}`; // this is the namespace for global events
+  // this is the namespace for global events
+  this.guid = `ht_${randomString()}`;
 
   const recordTranslator = getTranslator(instance);
 
@@ -238,9 +243,10 @@ export default function Core(
       }
     }
 
-    // @TODO: These CSS classes are no longer needed anymore. They are used only as a indicator of the selected
-    // rows/columns in the MergedCells plugin (via border.js#L520 in the walkontable module). After fixing
-    // the Border class this should be removed.
+    // @TODO: These CSS classes are no longer needed anymore.
+    // They are used only as a indicator of the selected
+    // rows/columns in the MergedCells plugin (via border.js#L520 in the walkontable module).
+    // After fixing the Border class this should be removed.
     if (isSelectedByRowHeader && isSelectedByColumnHeader) {
       addClass(this.rootElement, [
         'ht__selection--rows',
@@ -1017,7 +1023,8 @@ export default function Core(
       datamap,
     );
 
-    this.forceFullRender = true; // used when data was changed
+    // used when data was changed
+    this.forceFullRender = true;
 
     instance.runHooks('init');
     this.view.render();
@@ -1186,8 +1193,8 @@ export default function Core(
       }
 
       if (
-        (changes[i][2] === null || changes[i][2] === void 0) &&
-        (changes[i][3] === null || changes[i][3] === void 0)
+        (changes[i][2] === null || changes[i][2] === undefined) &&
+        (changes[i][3] === null || changes[i][3] === undefined)
       ) {
         /* eslint-disable no-continue */
         continue;
@@ -1195,7 +1202,11 @@ export default function Core(
 
       if (priv.settings.allowInsertRow) {
         while (changes[i][0] > instance.countRows() - 1) {
-          const numberOfCreatedRows = datamap.createRow(void 0, void 0, source);
+          const numberOfCreatedRows = datamap.createRow(
+            undefined,
+            undefined,
+            source,
+          );
 
           if (numberOfCreatedRows === 0) {
             skipThisChange = true;
@@ -1215,7 +1226,7 @@ export default function Core(
         priv.settings.allowInsertColumn
       ) {
         while (datamap.propToCol(changes[i][1]) > instance.countCols() - 1) {
-          datamap.createCol(void 0, void 0, source);
+          datamap.createCol(undefined, undefined, source);
         }
       }
 
@@ -1441,7 +1452,8 @@ export default function Core(
     if (modifyDocumentFocus) {
       const invalidActiveElement =
         !document.activeElement ||
-        (document.activeElement && document.activeElement.nodeName === void 0);
+        (document.activeElement &&
+          document.activeElement.nodeName === undefined);
 
       if (
         document.activeElement &&
@@ -1925,15 +1937,11 @@ export default function Core(
       );
     }
 
-    // eslint-disable-next-line no-restricted-syntax
     for (i in settings) {
       if (i === 'data') {
-        /* eslint-disable-next-line no-continue */
         continue; // loadData will be triggered later
       } else if (i === 'language') {
         setLanguage(settings.language);
-
-        /* eslint-disable-next-line no-continue */
         continue;
       } else if (Hooks.getSingleton().getRegistered().indexOf(i) > -1) {
         if (isFunction(settings[i]) || Array.isArray(settings[i])) {
@@ -1947,11 +1955,11 @@ export default function Core(
     }
 
     // Load data or create data map
-    if (settings.data === void 0 && priv.settings.data === void 0) {
+    if (settings.data === undefined && priv.settings.data === undefined) {
       instance.loadData(null); // data source created just now
-    } else if (settings.data !== void 0) {
+    } else if (settings.data !== undefined) {
       instance.loadData(settings.data); // data source given as option
-    } else if (settings.columns !== void 0) {
+    } else if (settings.columns !== undefined) {
       datamap.createMap();
     }
 
@@ -1967,9 +1975,9 @@ export default function Core(
 
     // Clear cellSettings cache
     if (
-      settings.cell !== void 0 ||
-      settings.cells !== void 0 ||
-      settings.columns !== void 0
+      settings.cell !== undefined ||
+      settings.cells !== undefined ||
+      settings.columns !== undefined
     ) {
       priv.cellSettings.length = 0;
     }
@@ -2061,7 +2069,7 @@ export default function Core(
         instance.rootElement.style.height = '';
         instance.rootElement.style.overflow = '';
       }
-    } else if (height !== void 0) {
+    } else if (height !== undefined) {
       instance.rootElement.style.height = `${height}px`;
       instance.rootElement.style.overflow = 'hidden';
     }
@@ -2097,7 +2105,7 @@ export default function Core(
     if (
       !init &&
       instance.view &&
-      (currentHeight === '' || height === '' || height === void 0) &&
+      (currentHeight === '' || height === '' || height === undefined) &&
       currentHeight !== height
     ) {
       instance.view.wt.wtOverlays.updateMainScrollableElements();
@@ -2404,7 +2412,7 @@ export default function Core(
   this.getSourceData = function (row, column, row2, column2) {
     let data;
 
-    if (row === void 0) {
+    if (row === undefined) {
       data = dataSource.getData();
     } else {
       data = dataSource.getByRange(
@@ -2435,7 +2443,7 @@ export default function Core(
   this.getSourceDataArray = function (row, column, row2, column2) {
     let data;
 
-    if (row === void 0) {
+    if (row === undefined) {
       data = dataSource.getData(true);
     } else {
       data = dataSource.getByRange(
@@ -2528,7 +2536,7 @@ export default function Core(
    */
   this.getDataType = function (rowFrom, columnFrom, rowTo, columnTo) {
     const coords =
-      rowFrom === void 0
+      rowFrom === undefined
         ? [0, 0, this.countRows(), this.countCols()]
         : [rowFrom, columnFrom, rowTo, columnTo];
     const [rowStart, columnStart] = coords;
@@ -2536,10 +2544,10 @@ export default function Core(
     let previousType = null;
     let currentType = null;
 
-    if (rowEnd === void 0) {
+    if (rowEnd === undefined) {
       rowEnd = rowStart;
     }
-    if (columnEnd === void 0) {
+    if (columnEnd === undefined) {
       columnEnd = columnStart;
     }
     let type = 'mixed';
@@ -2990,15 +2998,18 @@ export default function Core(
     let rowHeader = priv.settings.rowHeaders;
     let physicalRow = row;
 
-    if (physicalRow !== void 0) {
+    if (physicalRow !== undefined) {
       physicalRow = instance.runHooks('modifyRowHeader', physicalRow);
     }
-    if (physicalRow === void 0) {
+    if (physicalRow === undefined) {
       rowHeader = [];
       rangeEach(instance.countRows() - 1, (i) => {
         rowHeader.push(instance.getRowHeader(i));
       });
-    } else if (Array.isArray(rowHeader) && rowHeader[physicalRow] !== void 0) {
+    } else if (
+      Array.isArray(rowHeader) &&
+      rowHeader[physicalRow] !== undefined
+    ) {
       rowHeader = rowHeader[physicalRow];
     } else if (isFunction(rowHeader)) {
       rowHeader = rowHeader(physicalRow);
@@ -3021,7 +3032,7 @@ export default function Core(
    * @returns {Boolean} `true` if the instance has the row headers enabled, `false` otherwise.
    */
   this.hasRowHeaders = function () {
-    return !!priv.settings.rowHeaders;
+    return Boolean(priv.settings.rowHeaders);
   };
 
   /**
@@ -3033,11 +3044,11 @@ export default function Core(
    */
   this.hasColHeaders = function () {
     if (
-      priv.settings.colHeaders !== void 0 &&
+      priv.settings.colHeaders !== undefined &&
       priv.settings.colHeaders !== null
     ) {
       // Polymer has empty value = null
-      return !!priv.settings.colHeaders;
+      return Boolean(priv.settings.colHeaders);
     }
     for (let i = 0, ilen = instance.countCols(); i < ilen; i++) {
       if (instance.getColHeader(i)) {
@@ -3064,7 +3075,7 @@ export default function Core(
     const columnIndex = instance.runHooks('modifyColHeader', column);
     let result = priv.settings.colHeaders;
 
-    if (columnIndex === void 0) {
+    if (columnIndex === undefined) {
       const out = [];
       const ilen = columnsAsFunc
         ? instance.countSourceCols()
@@ -3114,7 +3125,7 @@ export default function Core(
         result = priv.settings.columns[physicalColumn].title;
       } else if (
         Array.isArray(priv.settings.colHeaders) &&
-        priv.settings.colHeaders[physicalColumn] !== void 0
+        priv.settings.colHeaders[physicalColumn] !== undefined
       ) {
         result = priv.settings.colHeaders[physicalColumn];
       } else if (isFunction(priv.settings.colHeaders)) {
@@ -3144,10 +3155,10 @@ export default function Core(
     const cellProperties = instance.getCellMeta(0, col);
     let width = cellProperties.width;
 
-    if (width === void 0 || width === priv.settings.width) {
+    if (width === undefined || width === priv.settings.width) {
       width = cellProperties.colWidths;
     }
-    if (width !== void 0 && width !== null) {
+    if (width !== undefined && width !== null) {
       switch (typeof width) {
         case 'object': // array
           width = width[col];
@@ -3181,7 +3192,7 @@ export default function Core(
 
     width = instance.runHooks('modifyColWidth', width, column);
 
-    if (width === void 0) {
+    if (width === undefined) {
       width = ViewportColumnsCalculator.DEFAULT_WIDTH;
     }
 
@@ -3201,12 +3212,12 @@ export default function Core(
     // let cellProperties = instance.getCellMeta(row, 0);
     // let height = cellProperties.height;
     //
-    // if (height === void 0 || height === priv.settings.height) {
+    // if (height === undefined || height === priv.settings.height) {
     //  height = cellProperties.rowHeights;
     // }
     let height = priv.settings.rowHeights;
 
-    if (height !== void 0 && height !== null) {
+    if (height !== undefined && height !== null) {
       switch (typeof height) {
         case 'object': // array
           height = height[row];
@@ -3725,7 +3736,7 @@ export default function Core(
     const snapToLeft = !snapToRight;
     let result = false;
 
-    if (row !== void 0 && column !== void 0) {
+    if (row !== undefined && column !== undefined) {
       result = instance.view.scrollViewport(
         new CellCoords(row, column),
         snapToTop,
@@ -3774,16 +3785,16 @@ export default function Core(
 
     keyStateStopObserving();
 
-    if (
-      process.env.HOT_PACKAGE_TYPE !== '\x63\x65' &&
-      isRootInstance(instance)
-    ) {
-      const licenseInfo = document.querySelector('#hot-display-license-info');
+    // if (
+    //   process.env.HOT_PACKAGE_TYPE !== '\x63\x65' &&
+    //   isRootInstance(instance)
+    // ) {
+    //   const licenseInfo = document.querySelector('#hot-display-license-info');
 
-      if (licenseInfo) {
-        licenseInfo.parentNode.removeChild(licenseInfo);
-      }
-    }
+    //   if (licenseInfo) {
+    //     licenseInfo.parentNode.removeChild(licenseInfo);
+    //   }
+    // }
     empty(instance.rootElement);
     eventManager.destroy();
 
@@ -3822,7 +3833,7 @@ export default function Core(
   };
 
   /**
-   * Replacement for all methods after Handsotnable was destroyed.
+   * Replacement for all methods after Handsontable was destroyed.
    *
    * @private
    */

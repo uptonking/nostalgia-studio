@@ -115,7 +115,7 @@ class ViewportColumnsCalculator {
         sum >= scrollOffset &&
         sum + columnWidth <= scrollOffset + compensatedViewportWidth
       ) {
-        if (this.startColumn === null || this.startColumn === void 0) {
+        if (this.startColumn === null || this.startColumn === undefined) {
           this.startColumn = i;
         }
         this.endColumn = i;
@@ -155,7 +155,7 @@ class ViewportColumnsCalculator {
     }
     this.startPosition = startPositions[this.startColumn];
 
-    if (this.startPosition === void 0) {
+    if (this.startPosition === undefined) {
       this.startPosition = null;
     }
     if (this.startColumn !== null) {
@@ -181,7 +181,7 @@ class ViewportColumnsCalculator {
 
     for (let i = 0; i < totalColumns; i++) {
       const columnWidth = this._getColumnWidth(i);
-      const permanentColumnWidth = priv.stretchingColumnWidthFn(void 0, i);
+      const permanentColumnWidth = priv.stretchingColumnWidthFn(undefined, i);
 
       if (typeof permanentColumnWidth === 'number') {
         totalColumnsWidth -= permanentColumnWidth;
@@ -241,7 +241,7 @@ class ViewportColumnsCalculator {
         column,
       );
 
-      if (newStretchedWidth === void 0) {
+      if (newStretchedWidth === undefined) {
         this.stretchAllColumnsWidth[column] = stretchedWidth;
       } else {
         this.stretchAllColumnsWidth[column] = isNaN(newStretchedWidth)

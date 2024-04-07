@@ -10,7 +10,7 @@ export class SettingsMapper {
   }
 
   /**
-   * Parse component settings into Opentable-compatible settings.
+   * Parse component settings into nosontable-compatible settings.
    *
    * @param {Object} properties Object containing properties from the HotTable object.
    * @returns {Object} Handsontable-compatible settings object.

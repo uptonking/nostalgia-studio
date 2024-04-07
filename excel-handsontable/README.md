@@ -10,3 +10,6 @@
 
 }
 ```
+
+# notes
+- revert `setImmediate = window.setTimeout`

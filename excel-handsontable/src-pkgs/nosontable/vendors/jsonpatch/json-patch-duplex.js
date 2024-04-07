@@ -276,7 +276,7 @@ var jsonpatch;
       observer.callback = callback;
       observer.next = null;
       var intervals = this.intervals || [100, 1000, 10000, 60000];
-      if (intervals.push === void 0) {
+      if (intervals.push === undefined) {
         throw new OriginalError('jsonpatch.intervals must be an array');
       }
       var currentInterval = 0;

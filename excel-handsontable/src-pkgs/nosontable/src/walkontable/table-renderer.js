@@ -143,7 +143,7 @@ class TableRenderer {
 
         if (
           rowHeaderWidthSetting !== null &&
-          rowHeaderWidthSetting !== void 0
+          rowHeaderWidthSetting !== undefined
         ) {
           for (let i = 0; i < this.rowHeaderCount; i++) {
             let width = Array.isArray(rowHeaderWidthSetting)
@@ -151,7 +151,9 @@ class TableRenderer {
               : rowHeaderWidthSetting;
 
             width =
-              width === null || width === void 0 ? defaultColumnWidth : width;
+              width === null || width === undefined
+                ? defaultColumnWidth
+                : width;
 
             this.COLGROUP.childNodes[i].style.width = `${width}px`;
           }
@@ -200,7 +202,7 @@ class TableRenderer {
         warn(toSingleLine`Performance tip: Handsontable rendered more than 1000 visible rows. Consider limiting the number 
           of rendered rows by specifying the table height and/or turning off the "renderAllRows" option.`);
       }
-      if (rowsToRender !== void 0 && visibleRowIndex === rowsToRender) {
+      if (rowsToRender !== undefined && visibleRowIndex === rowsToRender) {
         // We have as much rows as needed for this clone
         break;
       }
@@ -253,7 +255,7 @@ class TableRenderer {
       this.wot.wtViewport.oversizedRows &&
       this.wot.wtViewport.oversizedRows[sourceRow]
     ) {
-      this.wot.wtViewport.oversizedRows[sourceRow] = void 0;
+      this.wot.wtViewport.oversizedRows[sourceRow] = undefined;
     }
   }
 
@@ -391,7 +393,7 @@ class TableRenderer {
       if (Array.isArray(columnHeaderHeightSetting)) {
         if (
           columnHeaderHeightSetting[level] !== null &&
-          columnHeaderHeightSetting[level] !== void 0
+          columnHeaderHeightSetting[level] !== undefined
         ) {
           this.wot.wtViewport.oversizedColumnHeaders[level] =
             columnHeaderHeightSetting[level];
@@ -480,13 +482,14 @@ class TableRenderer {
       rowHeaderWidthSetting,
     );
 
-    if (rowHeaderWidthSetting !== null && rowHeaderWidthSetting !== void 0) {
+    if (rowHeaderWidthSetting !== null && rowHeaderWidthSetting !== undefined) {
       for (let i = 0; i < this.rowHeaderCount; i++) {
         let width = Array.isArray(rowHeaderWidthSetting)
           ? rowHeaderWidthSetting[i]
           : rowHeaderWidthSetting;
 
-        width = width === null || width === void 0 ? defaultColumnWidth : width;
+        width =
+          width === null || width === undefined ? defaultColumnWidth : width;
 
         this.COLGROUP.childNodes[i].style.width = `${width}px`;
       }

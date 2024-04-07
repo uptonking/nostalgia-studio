@@ -14,7 +14,7 @@ export function columnFactory(GridSettings, conflictList) {
 
   // Clear conflict settings
   for (let i = 0, len = conflictList.length; i < len; i++) {
-    ColumnSettings.prototype[conflictList[i]] = void 0;
+    ColumnSettings.prototype[conflictList[i]] = undefined;
   }
 
   return ColumnSettings;

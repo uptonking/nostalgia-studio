@@ -19,13 +19,13 @@ import * as domHelpers from './helpers/dom/element';
 import * as domEventHelpers from './helpers/dom/event';
 import * as featureHelpers from './helpers/feature';
 import * as functionHelpers from './helpers/function';
+import jQueryWrapper from './helpers/jquery-wrapper';
 import * as mixedHelpers from './helpers/mixed';
 import * as numberHelpers from './helpers/number';
 import * as objectHelpers from './helpers/object';
 import * as settingHelpers from './helpers/setting';
 import * as stringHelpers from './helpers/string';
 import * as unicodeHelpers from './helpers/unicode';
-import jQueryWrapper from './helpers/jquery-wrapper';
 import { getTranslatedPhrase } from './i18n';
 import * as constants from './i18n/constants';
 import {
@@ -34,8 +34,8 @@ import {
   registerLanguageDictionary,
 } from './i18n/dictionaries-manager';
 import Hooks from './plugin-hooks';
-import * as plugins from './plugins';
 import { registerPlugin } from './plugins';
+import * as plugins from './plugins/index';
 import {
   getRegisteredRendererNames,
   getRenderer,
@@ -69,21 +69,21 @@ Handsontable.EventManager = EventManager;
 Handsontable._getListenersCounter = getListenersCounter; // For MemoryLeak tests
 
 Handsontable.buildDate = process.env.HOT_BUILD_DATE;
-Handsontable.packageName = process.env.HOT_PACKAGE_NAME;
-Handsontable.version = process.env.HOT_VERSION;
+// Handsontable.packageName = process.env.HOT_PACKAGE_NAME;
+Handsontable.packageName = 'nosontable';
+// Handsontable.version = process.env.HOT_VERSION;
+Handsontable.version = '0.0.1111';
 
-const baseVersion = process.env.HOT_BASE_VERSION;
-
-if (baseVersion) {
-  Handsontable.baseVersion = baseVersion;
-}
+// const baseVersion = process.env.HOT_BASE_VERSION;
+// if (baseVersion) {
+//   Handsontable.baseVersion = baseVersion;
+// }
 
 // Export Hooks singleton
 Handsontable.hooks = Hooks.getSingleton();
 
 // TODO: Remove this exports after rewrite tests about this module
 Handsontable.__GhostTable = GhostTable;
-//
 
 // Export all helpers to the Handsontable object
 const HELPERS = [
@@ -177,7 +177,7 @@ Handsontable.validators.getValidator = getValidator;
 Handsontable.plugins = {};
 
 arrayHelpers.arrayEach(Object.getOwnPropertyNames(plugins), (pluginName) => {
-  // @ts-ignore
+  // eslint-disable-next-line import/namespace
   const plugin = plugins[pluginName];
 
   if (pluginName === 'Base') {
@@ -200,3 +200,5 @@ Handsontable.languages.getTranslatedPhrase = (...args) =>
   getTranslatedPhrase(...args);
 
 export default Handsontable;
+
+window['hotc'] = Handsontable;

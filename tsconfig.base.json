@@ -73,6 +73,8 @@
         "./excel-tanstack-table/src-pkgs/virtual-react/"
       ],
       "react-window": ["./excel-tanstack-table/src-react-window/src/"],
+      "nosontable": ["./excel-handsontable/src-pkgs/nosontable/"],
+      "nosontable-react": ["./excel-handsontable/src-pkgs/nosontable-react/"],
       "quill-delta": ["./editor-quill/src-pkgs/delta/src/"],
       "parchment": ["./editor-quill/src-pkgs/parchment/src/"],
       "quill": ["./editor-quill/src-pkgs/quill/"],

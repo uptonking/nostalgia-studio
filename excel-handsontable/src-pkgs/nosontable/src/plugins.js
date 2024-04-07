@@ -1,9 +1,9 @@
+import { objectEach } from './helpers/object';
+import { toUpperCaseFirst } from './helpers/string';
 /**
  * Utility to register plugins and common namespace for keeping reference to all plugins classes
  */
 import Hooks from './plugin-hooks';
-import { objectEach } from './helpers/object';
-import { toUpperCaseFirst } from './helpers/string';
 
 const registeredPlugins = new WeakMap();
 
@@ -15,6 +15,7 @@ const registeredPlugins = new WeakMap();
  */
 function registerPlugin(pluginName, PluginClass) {
   const correctedPluginName = toUpperCaseFirst(pluginName);
+  console.log(';; registerPlugin ', correctedPluginName);
 
   Hooks.getSingleton().add('construct', function () {
     if (!registeredPlugins.has(this)) {
@@ -52,19 +53,19 @@ function getPlugin(instance, pluginName) {
     !registeredPlugins.has(instance) ||
     !registeredPlugins.get(instance)[_pluginName]
   ) {
-    return void 0;
+    return undefined;
   }
 
   return registeredPlugins.get(instance)[_pluginName];
 }
 
 /**
- * Get all registred plugins names for concrete Handsontable instance.
+ * Get all registered plugins names for concrete Handsontable instance.
  *
  * @param {Object} hotInstance
  * @returns {Array}
  */
-function getRegistredPluginNames(hotInstance) {
+function getRegisteredPluginNames(hotInstance) {
   return registeredPlugins.has(hotInstance)
     ? Object.keys(registeredPlugins.get(hotInstance))
     : [];
@@ -91,4 +92,4 @@ function getPluginName(hotInstance, plugin) {
   return pluginName;
 }
 
-export { registerPlugin, getPlugin, getRegistredPluginNames, getPluginName };
+export { registerPlugin, getPlugin, getRegisteredPluginNames, getPluginName };

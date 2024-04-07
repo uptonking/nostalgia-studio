@@ -10,10 +10,9 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
-    "skipLibCheck": true,
-    "composite": true
+    "declaration": false,
+    "declarationMap": false,
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

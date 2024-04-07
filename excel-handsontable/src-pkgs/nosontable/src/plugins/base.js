@@ -1,7 +1,7 @@
 import { defineGetter, objectEach } from '../helpers/object';
 import { arrayEach } from '../helpers/array';
 import { getTranslator } from '../utils/record-translator';
-import { getRegistredPluginNames, getPluginName } from './index';
+import { getRegisteredPluginNames, getPluginName } from '../plugins';
 
 const privatePool = new WeakMap();
 let initializedPlugins = null;
@@ -51,7 +51,7 @@ class BasePlugin {
       this.enablePlugin();
     }
     if (!initializedPlugins) {
-      initializedPlugins = getRegistredPluginNames(this.hot);
+      initializedPlugins = getRegisteredPluginNames(this.hot);
     }
     if (initializedPlugins.indexOf(this.pluginName) >= 0) {
       initializedPlugins.splice(initializedPlugins.indexOf(this.pluginName), 1);

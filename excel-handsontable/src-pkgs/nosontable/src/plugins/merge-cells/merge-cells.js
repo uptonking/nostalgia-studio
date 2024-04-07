@@ -1,19 +1,20 @@
-import BasePlugin from '../base';
-import Hooks from '../../plugin-hooks';
-import { registerPlugin } from '../index';
+import './merge-cells.css';
+
+import { arrayEach } from '../../helpers/array';
+import { warn } from '../../helpers/console';
 import { stopImmediatePropagation } from '../../helpers/dom/event';
+import { rangeEach } from '../../helpers/number';
+import { clone } from '../../helpers/object';
+import Hooks from '../../plugin-hooks';
+import { registerPlugin } from '../../plugins';
 import { CellCoords, CellRange } from '../../walkontable';
-import MergedCellsCollection from './cells-collection';
-import MergedCellCoords from './cell-coords';
+import BasePlugin from '../base';
 import AutofillCalculations from './calculations/autofill';
 import SelectionCalculations from './calculations/selection';
+import MergedCellCoords from './cell-coords';
+import MergedCellsCollection from './cells-collection';
 import toggleMergeItem from './context-menu-item/toggle-merge';
-import { arrayEach } from '../../helpers/array';
-import { clone } from '../../helpers/object';
-import { warn } from '../../helpers/console';
-import { rangeEach } from '../../helpers/number';
 import { applySpanProperties } from './utils';
-import './mergeCells.css';
 
 Hooks.getSingleton().register('beforeMergeCells');
 Hooks.getSingleton().register('afterMergeCells');
@@ -452,8 +453,8 @@ class MergeCells extends BasePlugin {
           mergeParent.row,
           mergeParent.col,
           clearedData,
-          void 0,
-          void 0,
+          undefined,
+          undefined,
           this.pluginName,
         );
       }
@@ -791,7 +792,7 @@ class MergeCells extends BasePlugin {
           mergeParent.row + mergeParent.rowspan - 1,
           mergeParent.col + mergeParent.colspan - 1,
         ]
-      : void 0;
+      : undefined;
   }
 
   /**

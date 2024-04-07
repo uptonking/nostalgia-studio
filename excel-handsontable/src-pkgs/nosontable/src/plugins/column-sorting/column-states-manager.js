@@ -48,7 +48,7 @@ export class ColumnStatesManager {
     /**
      * Determines compare function factory. Method get as parameters `sortOder` and `columnMeta` and return compare function.
      */
-    this.compareFunctionFactory = void 0;
+    this.compareFunctionFactory = undefined;
   }
 
   /**

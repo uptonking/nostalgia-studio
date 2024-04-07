@@ -5,8 +5,8 @@ import {
   getWindowScrollTop,
   hasClass,
 } from '../helpers/dom/element';
-import BasePlugin from '../plugins/base';
-import { registerPlugin } from '../plugins/index';
+import BasePlugin from './base';
+import { registerPlugin } from '../plugins';
 import { CellCoords } from '../walkontable';
 
 /**
@@ -129,7 +129,7 @@ class MultipleSelectionHandles extends BasePlugin {
         if (hasClass(event.target, 'topLeftSelectionHandle-HitArea')) {
           removeFromDragged.call(_this, 'topLeft');
 
-          _this.touchStartRange = void 0;
+          _this.touchStartRange = undefined;
 
           event.preventDefault();
           return false;
@@ -138,7 +138,7 @@ class MultipleSelectionHandles extends BasePlugin {
         ) {
           removeFromDragged.call(_this, 'bottomRight');
 
-          _this.touchStartRange = void 0;
+          _this.touchStartRange = undefined;
 
           event.preventDefault();
           return false;

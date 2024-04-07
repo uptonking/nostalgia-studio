@@ -23,7 +23,7 @@ function htmlRenderer(instance, TD, row, col, prop, value, ...args) {
     ...args,
   ]);
 
-  fastInnerHTML(TD, value === null || value === void 0 ? '' : value);
+  fastInnerHTML(TD, value === null || value === undefined ? '' : value);
 }
 
 export default htmlRenderer;

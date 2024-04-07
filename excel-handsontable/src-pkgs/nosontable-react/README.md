@@ -1,16 +1,13 @@
 # nosontable-react
 
-## About
-
-This is a fork of @handsontable/react to and is designed to work with nosontable, a fork of the last MIT release of Handsontable
-
-This fork was created to address the lack of security updates to version 6.2.2 of Handsontable, no new features are planned here, just dependency updates and some performance improvements.
+This is a fork of `@handsontable/react.v2.1.0` to and is designed to work with nosontable, a fork of the last MIT release of Handsontable
 
 ## Installation
 
 Use npm to install this wrapper together with Handsontable.
+
 ```
-npm install opentable opentable-react
+npm install nosontable nosontable-react
 ```
 
 ## Usage
@@ -18,15 +15,17 @@ npm install opentable opentable-react
 Use this data grid as you would any other component in your application. [Options](//handsontable.com/docs/Options.html) can be set as `HotTable` props.
 
 **Styles**
+
 ```css
-@import '~opentable/dist/handsontable.full.css';
+@import '~nosontable/dist/handsontable.css';
 ```
 
 **React Component**
+
 ```js
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { HotTable } from 'opentable-react';
+import { HotTable } from 'nosontable-react';
 
 class HotApp extends React.Component {
   constructor(props) {
@@ -74,20 +73,14 @@ A list of some of the most popular features:
 
 ## Support and contribution
 
-We provide support for all users through [GitHub issues](//github.com/swsvindland/opentable-react). If you have a commercial license then you can add a new ticket through the [contact form](//handsontable.com/contact?category=technical_support).
+We provide support for all users through [GitHub issues](//github.com/swsvindland/nosontable-react). If you have a commercial license then you can add a new ticket through the [contact form](//handsontable.com/contact?category=technical_support).
 
-If you would like to contribute to this project, make sure you first read the [guide for contributors](//github.com/swsvindland/opentable-react/blob/master/CONTRIBUTING.md).
+If you would like to contribute to this project, make sure you first read the [guide for contributors](//github.com/swsvindland/nosontable-react/blob/master/CONTRIBUTING.md).
 
 ## Browser compatibility
 
-Opentable is compatible with modern browsers such as Chrome, Firefox, Safari, Opera, and Edge. It also supports Internet Explorer 11 but with limited performance.
-
-### IE11 Support
-Note: IE 11 will not be supported past June 15th, 2022 as per [Microsoft](//docs.microsoft.com/en-us/lifecycle/faq/internet-explorer-microsoft-edge)
+nosontable is compatible with modern browsers such as Chrome, Firefox, Safari, Opera, and Edge. It also supports Internet Explorer 11 but with limited performance.
 
 ## License
 
-This wrapper is released under [the MIT license](//github.com/swsvindland/opentable-react/blob/master/LICENSE) but under the hood it uses [Handsontable](//github.com/swsvindland/opentable), which is also MIT licensed.
-
-Created by [Handsoncode](//handsoncode.net) with ❤ and ☕ in [Tricity](//en.wikipedia.org/wiki/Tricity,_Poland).
-Updated and maintained by [Sam Svindland](//svindland.dev)
+This wrapper is released under the MIT license

@@ -197,7 +197,7 @@ export function arrayMax(array) {
   return arrayReduce(
     array,
     (a, b) => (a > b ? a : b),
-    Array.isArray(array) ? array[0] : void 0,
+    Array.isArray(array) ? array[0] : undefined,
   );
 }
 
@@ -212,7 +212,7 @@ export function arrayMin(array) {
   return arrayReduce(
     array,
     (a, b) => (a < b ? a : b),
-    Array.isArray(array) ? array[0] : void 0,
+    Array.isArray(array) ? array[0] : undefined,
   );
 }
 

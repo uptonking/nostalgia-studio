@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
-import * as stories from './stories/tanstack-table';
+import * as stories from './stories/nosontable';
+
+// import * as stories from './stories/tanstack-table';
 // import * as stories from './stories/autocomplete';
 // import * as stories from './stories/tanstack-virtual';
 // import * as stories from './stories/dnd-kit';
@@ -19,12 +21,11 @@ export function ExamplesApp() {
 
   const CurrentExampleComponent = currentStory
     ? stories[currentStory]
-    : () => <h4>未选择示例</h4>;
+    : () => <h3>No story is selected</h3>;
 
   return (
     <div>
-      <h1>examples for react stories</h1>
-      <h2>当前示例: {currentStory}</h2>
+      <h1>examples for react stories {currentStory}</h1>
       <div style={{ display: 'flex' }}>
         <div
           style={{

@@ -10,10 +10,9 @@
     "esModuleInterop": true,
     "allowJs": true,
     "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
-    "skipLibCheck": true,
-    "composite": true
+    "declaration": false,
+    "declarationMap": false,
+    "skipLibCheck": true
   },
   "include": ["src/**/*", "./nosontable.d.ts"],
   "exclude": ["node_modules"]

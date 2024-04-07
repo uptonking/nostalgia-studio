@@ -2,7 +2,7 @@ import { arrayEach } from '../helpers/array';
 import { addClass, removeClass } from '../helpers/dom/element';
 import { isTouchSupported } from '../helpers/feature';
 import BasePlugin from './base';
-import { registerPlugin } from './index';
+import { registerPlugin } from '../plugins';
 
 /**
  * @private

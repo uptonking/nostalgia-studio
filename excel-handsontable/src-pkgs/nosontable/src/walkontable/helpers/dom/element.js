@@ -264,7 +264,7 @@ if (classListSupport) {
 
   _hasClass = function (element, className) {
     if (
-      element.classList === void 0 ||
+      element.classList === undefined ||
       typeof className !== 'string' ||
       className === ''
     ) {
@@ -327,7 +327,7 @@ if (classListSupport) {
   _hasClass = function (element, className) {
     // http://snipplr.com/view/3561/addclass-removeclass-hasclass/
     return (
-      element.className !== void 0 &&
+      element.className !== undefined &&
       createClassNameRegExp(className).test(element.className)
     );
   };
@@ -585,7 +585,7 @@ export function offset(elem) {
 export function getWindowScrollTop() {
   let res = window.scrollY;
 
-  if (res === void 0) {
+  if (res === undefined) {
     // IE8-11
     res = document.documentElement.scrollTop;
   }
@@ -601,7 +601,7 @@ export function getWindowScrollTop() {
 export function getWindowScrollLeft() {
   let res = window.scrollX;
 
-  if (res === void 0) {
+  if (res === undefined) {
     // IE8-11
     res = document.documentElement.scrollLeft;
   }
@@ -761,12 +761,12 @@ export function getStyle(element, prop) {
   var styleProp = element.style[prop],
     computedStyle;
 
-  if (styleProp !== '' && styleProp !== void 0) {
+  if (styleProp !== '' && styleProp !== undefined) {
     return styleProp;
   } else {
     computedStyle = getComputedStyle(element);
 
-    if (computedStyle[prop] !== '' && computedStyle[prop] !== void 0) {
+    if (computedStyle[prop] !== '' && computedStyle[prop] !== undefined) {
       return computedStyle[prop];
     }
   }
@@ -932,7 +932,7 @@ export function getSelectionText() {
  * @param {Number} endPos
  */
 export function setCaretPosition(element, pos, endPos) {
-  if (endPos === void 0) {
+  if (endPos === undefined) {
     endPos = pos;
   }
   if (element.setSelectionRange) {
@@ -995,7 +995,7 @@ function walkontableCalculateScrollbarWidth() {
  * @return {Number} width
  */
 export function getScrollbarWidth() {
-  if (cachedScrollbarWidth === void 0) {
+  if (cachedScrollbarWidth === undefined) {
     cachedScrollbarWidth = walkontableCalculateScrollbarWidth();
   }
 

@@ -104,7 +104,7 @@ class Overlay {
    * @returns {Boolean}
    */
   static hasOverlay(type) {
-    return registeredOverlays[type] !== void 0;
+    return registeredOverlays[type] !== undefined;
   }
 
   /**

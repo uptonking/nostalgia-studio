@@ -208,7 +208,7 @@ function checkboxRenderer(
               cachedCellProperties.uncheckedTemplate,
               cachedCellProperties.uncheckedTemplate.toString(),
               null,
-              void 0,
+              undefined,
             ].includes(dataAtCell)
           ) {
             changes.push([
@@ -268,7 +268,7 @@ function checkboxRenderer(
 
         const cell = instance.getCell(visualRow, visualColumn);
 
-        if (cell === null || cell === void 0) {
+        if (cell === null || cell === undefined) {
           callback(visualRow, visualColumn, cachedCellProperties);
         } else {
           const checkboxes = cell.querySelectorAll('input[type=checkbox]');
@@ -396,12 +396,12 @@ function onChange(event, instance) {
 
     if (event.target.checked) {
       newCheckboxValue =
-        cellProperties.uncheckedTemplate === void 0
+        cellProperties.uncheckedTemplate === undefined
           ? true
           : cellProperties.checkedTemplate;
     } else {
       newCheckboxValue =
-        cellProperties.uncheckedTemplate === void 0
+        cellProperties.uncheckedTemplate === undefined
           ? false
           : cellProperties.uncheckedTemplate;
     }

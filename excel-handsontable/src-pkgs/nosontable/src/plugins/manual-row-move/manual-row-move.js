@@ -1,15 +1,15 @@
-import BasePlugin from '../base';
-import Hooks from '../../plugin-hooks';
-import { arrayEach } from '../../helpers/array';
-import { addClass, removeClass, offset } from '../../helpers/dom/element';
-import { rangeEach } from '../../helpers/number';
+import './manual-row-move.css';
+
 import EventManager from '../../event-manager';
-import { registerPlugin } from '../index';
+import { arrayEach } from '../../helpers/array';
+import { addClass, offset, removeClass } from '../../helpers/dom/element';
+import { rangeEach } from '../../helpers/number';
+import Hooks from '../../plugin-hooks';
+import { registerPlugin } from '../../plugins';
+import BasePlugin from '../base';
 import RowsMapper from './rows-mapper';
 import BacklightUI from './ui/backlight';
 import GuidelineUI from './ui/guideline';
-
-import './manualRowMove.css';
 
 Hooks.getSingleton().register('beforeRowMove');
 Hooks.getSingleton().register('afterRowMove');
@@ -50,13 +50,13 @@ class ManualRowMove extends BasePlugin {
      */
     privatePool.set(this, {
       rowsToMove: [],
-      pressed: void 0,
-      disallowMoving: void 0,
+      pressed: undefined,
+      disallowMoving: undefined,
       target: {
-        eventPageY: void 0,
-        coords: void 0,
-        TD: void 0,
-        row: void 0,
+        eventPageY: undefined,
+        coords: undefined,
+        TD: undefined,
+        row: undefined,
       },
     });
 
@@ -276,7 +276,7 @@ class ManualRowMove extends BasePlugin {
 
     if (Array.isArray(pluginSettings)) {
       this.moveRows(pluginSettings, 0);
-    } else if (pluginSettings !== void 0) {
+    } else if (pluginSettings !== undefined) {
       const persistentState = this.persistentStateLoad();
 
       if (persistentState.length) {
@@ -518,7 +518,7 @@ class ManualRowMove extends BasePlugin {
   onBeforeColumnSort(column, order) {
     const priv = privatePool.get(this);
 
-    priv.disallowMoving = order !== void 0;
+    priv.disallowMoving = order !== undefined;
   }
 
   /**
@@ -676,7 +676,7 @@ class ManualRowMove extends BasePlugin {
 
     if (
       rowsLen < 1 ||
-      target === void 0 ||
+      target === undefined ||
       priv.rowsToMove.indexOf(target) > -1 ||
       priv.rowsToMove[rowsLen - 1] === target - 1
     ) {

@@ -1,10 +1,10 @@
-import BasePlugin from '../base';
-import { registerPlugin } from '../index';
+import './manual-column-freeze.css';
+
 import { arrayEach } from '../../helpers/array';
+import { registerPlugin } from '../../plugins';
+import BasePlugin from '../base';
 import freezeColumnItem from './context-menu-tem/freeze-column';
 import unfreezeColumnItem from './context-menu-tem/unfreeze-column';
-
-import './manualColumnFreeze.css';
 
 const privatePool = new WeakMap();
 /**
@@ -41,7 +41,7 @@ class ManualColumnFreeze extends BasePlugin {
      * @private
      * @type {ManualColumnMove}
      */
-    this.manualColumnMovePlugin = void 0;
+    this.manualColumnMovePlugin = undefined;
   }
 
   /**
@@ -183,7 +183,7 @@ class ManualColumnFreeze extends BasePlugin {
 
     if (
       this.frozenColumnsBasePositions[column] === null ||
-      this.frozenColumnsBasePositions[column] === void 0
+      this.frozenColumnsBasePositions[column] === undefined
     ) {
       initialCol = movePlugin.columnsMapper.getValueByIndex(column);
 
@@ -193,7 +193,7 @@ class ManualColumnFreeze extends BasePlugin {
       }
     } else {
       initialCol = this.frozenColumnsBasePositions[column];
-      this.frozenColumnsBasePositions[column] = void 0;
+      this.frozenColumnsBasePositions[column] = undefined;
 
       while (j !== null && j <= initialCol) {
         i += 1;

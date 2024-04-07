@@ -1,17 +1,17 @@
-import BasePlugin from '../base';
-import Hooks from '../../plugin-hooks';
+import './copy-paste.css';
+
 import SheetClip from '../../../vendors/SheetClip/SheetClip';
 import { arrayEach } from '../../helpers/array';
-import { rangeEach } from '../../helpers/number';
 import { getSelectionText } from '../../helpers/dom/element';
-import { registerPlugin } from '../index';
+import { rangeEach } from '../../helpers/number';
+import Hooks from '../../plugin-hooks';
+import { registerPlugin } from '../../plugins';
+import BasePlugin from '../base';
 import copyItem from './context-menu-item/copy';
 import cutItem from './context-menu-item/cut';
-import PasteEvent from './paste-event';
 import { createElement, destroyElement } from './focusable-element';
+import PasteEvent from './paste-event';
 import { arrayToTable, tableToArray } from './utils';
-
-import './copyPaste.css';
 
 Hooks.getSingleton().register('afterCopyLimit');
 Hooks.getSingleton().register('modifyCopyableRange');
@@ -338,7 +338,7 @@ class CopyPaste extends BasePlugin {
    */
   getOrCreateFocusableElement() {
     const editor = this.hot.getActiveEditor();
-    const editableElement = editor ? editor.TEXTAREA : void 0;
+    const editableElement = editor ? editor.TEXTAREA : undefined;
 
     if (editableElement) {
       this.focusableElement.setFocusableElement(editableElement);
@@ -411,8 +411,8 @@ class CopyPaste extends BasePlugin {
       startRow,
       startColumn,
       newValues,
-      void 0,
-      void 0,
+      undefined,
+      undefined,
       'CopyPaste.paste',
       this.pasteMode,
     );

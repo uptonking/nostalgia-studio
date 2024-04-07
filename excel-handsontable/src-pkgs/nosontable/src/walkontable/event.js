@@ -35,7 +35,7 @@ class Event {
     this.eventManager = new EventManager(instance);
 
     privatePool.set(this, {
-      selectedCellBeforeTouchEnd: void 0,
+      selectedCellBeforeTouchEnd: undefined,
       dblClickTimeout: [null, null],
       dblClickOrigin: [null, null],
     });

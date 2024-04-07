@@ -86,7 +86,7 @@ class GhostTable {
   addColumnHeadersRow(samples) {
     const colHeader = this.hot.getColHeader(0);
 
-    if (colHeader !== null && colHeader !== void 0) {
+    if (colHeader !== null && colHeader !== undefined) {
       const rowObject = { row: -1 };
 
       this.rows.push(rowObject);
@@ -345,7 +345,7 @@ class GhostTable {
    */
   clean() {
     this.rows.length = 0;
-    this.rows[-1] = void 0;
+    this.rows[-1] = undefined;
     this.columns.length = 0;
 
     if (this.samples) {

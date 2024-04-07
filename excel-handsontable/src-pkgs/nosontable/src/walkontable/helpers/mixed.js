@@ -87,7 +87,8 @@ const _ignored = () =>
   );
 let _notified = false;
 
-export function _injectProductInfo(key, element) {
+export function _injectProductInfo(key, element) {}
+export function _injectProductInfo_BAK(key, element) {
   key = _norm(key || '');
 
   let warningMessage = '';
@@ -98,26 +99,24 @@ export function _injectProductInfo(key, element) {
 
   if (trial || schemaValidity) {
     if (schemaValidity) {
-      const releaseTime = Math.floor(
-        moment(process.env.HOT_RELEASE_DATE, 'DD/MM/YYYY').toDate().getTime() /
-          8.64e7,
-      );
-      const keyGenTime = _extractTime(key);
-
-      if (keyGenTime > 45000 || keyGenTime !== parseInt(keyGenTime, 10)) {
-        warningMessage =
-          'The license key provided to Handsontable Pro is invalid. Make sure you pass it correctly.';
-      }
-
-      if (!warningMessage) {
-        if (releaseTime > keyGenTime + 1) {
-          warningMessage = toSingleLine`
-          Your license key of Handsontable Pro has expired.‌‌‌‌ 
-          Renew your maintenance plan at https://handsontable.com or downgrade to the previous version of the software.
-          `;
-        }
-        showDomMessage = releaseTime > keyGenTime + 15;
-      }
+      // const releaseTime = Math.floor(
+      //   moment(process.env.HOT_RELEASE_DATE, 'DD/MM/YYYY').toDate().getTime() /
+      //     8.64e7,
+      // );
+      // const keyGenTime = _extractTime(key);
+      // if (keyGenTime > 45000 || keyGenTime !== parseInt(keyGenTime, 10)) {
+      //   warningMessage =
+      //     'The license key provided to Handsontable Pro is invalid. Make sure you pass it correctly.';
+      // }
+      // if (!warningMessage) {
+      //   if (releaseTime > keyGenTime + 1) {
+      //     warningMessage = toSingleLine`
+      //     Your license key of Handsontable Pro has expired.‌‌‌‌
+      //     Renew your maintenance plan at https://handsontable.com or downgrade to the previous version of the software.
+      //     `;
+      //   }
+      //   showDomMessage = releaseTime > keyGenTime + 15;
+      // }
     } else {
       warningMessage =
         'Evaluation version of Handsontable Pro. Not licensed for use in a production environment.';

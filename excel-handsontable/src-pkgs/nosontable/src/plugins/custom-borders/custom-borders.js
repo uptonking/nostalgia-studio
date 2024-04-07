@@ -1,22 +1,22 @@
-import BasePlugin from '../base';
-import { registerPlugin } from '../index';
-import { hasOwnProperty, objectEach } from '../../helpers/object';
+import { arrayEach, arrayMap, arrayReduce } from '../../helpers/array';
 import { rangeEach } from '../../helpers/number';
-import { arrayEach, arrayReduce, arrayMap } from '../../helpers/array';
-import { CellRange } from '../../walkontable';
+import { hasOwnProperty, objectEach } from '../../helpers/object';
 import * as C from '../../i18n/constants';
-import { bottom, left, noBorders, right, top } from './context-menu-item';
-import {
-  createId,
-  createDefaultCustomBorder,
-  createSingleEmptyBorder,
-  createEmptyBorders,
-  extendDefaultBorder,
-} from './utils';
+import { registerPlugin } from '../../plugins';
 import {
   detectSelectionType,
   normalizeSelectionFactory,
 } from '../../selection';
+import { CellRange } from '../../walkontable';
+import BasePlugin from '../base';
+import { bottom, left, noBorders, right, top } from './context-menu-item';
+import {
+  createDefaultCustomBorder,
+  createEmptyBorders,
+  createId,
+  createSingleEmptyBorder,
+  extendDefaultBorder,
+} from './utils';
 
 /**
  * @class CustomBorders
@@ -398,7 +398,7 @@ class CustomBorders extends BasePlugin {
   setBorder(row, column, place, remove) {
     let bordersMeta = this.hot.getCellMeta(row, column).borders;
 
-    if (!bordersMeta || bordersMeta.border === void 0) {
+    if (!bordersMeta || bordersMeta.border === undefined) {
       bordersMeta = createEmptyBorders(row, column);
     }
 
@@ -719,7 +719,7 @@ class CustomBorders extends BasePlugin {
       }
 
       this.createCustomBorders(customBorders);
-    } else if (customBorders !== void 0) {
+    } else if (customBorders !== undefined) {
       this.createCustomBorders(this.savedBorders);
     }
   }

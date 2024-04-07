@@ -15,7 +15,7 @@ export default function dateValidator(value, callback) {
   let valueToValidate = value;
   let valid = true;
 
-  if (valueToValidate === null || valueToValidate === void 0) {
+  if (valueToValidate === null || valueToValidate === undefined) {
     valueToValidate = '';
   }
   let isValidDate =

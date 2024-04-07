@@ -1,27 +1,27 @@
+import './comments.css';
+
+import EventManager from '../../event-manager';
 import {
   addClass,
   closest,
-  isChildOf,
-  hasClass,
-  offset,
-  outerWidth,
-  outerHeight,
   getScrollableElement,
+  hasClass,
+  isChildOf,
+  offset,
+  outerHeight,
+  outerWidth,
 } from '../../helpers/dom/element';
 import { deepClone, deepExtend, isObject } from '../../helpers/object';
-import EventManager from '../../event-manager';
+import * as C from '../../i18n/constants';
+import { registerPlugin } from '../../plugins';
 import { CellCoords } from '../../walkontable';
-import { registerPlugin } from '../index';
 import BasePlugin from '../base';
-import CommentEditor from './commentEditor';
 import {
   checkSelectionConsistency,
   markLabelAsSelected,
 } from '../context-menu/utils';
+import CommentEditor from './comment-editor';
 import DisplaySwitch from './display-switch';
-import * as C from '../../i18n/constants';
-
-import './comments.css';
 
 const privatePool = new WeakMap();
 const META_COMMENT = 'comment';
@@ -288,9 +288,9 @@ class Comments extends BasePlugin {
     const editorValue = this.editor.getValue();
     let comment = '';
 
-    if (value !== null && value !== void 0) {
+    if (value !== null && value !== undefined) {
       comment = value;
-    } else if (editorValue !== null && editorValue !== void 0) {
+    } else if (editorValue !== null && editorValue !== undefined) {
       comment = editorValue;
     }
 
@@ -331,7 +331,7 @@ class Comments extends BasePlugin {
       this.range.from.row,
       this.range.from.col,
       META_COMMENT,
-      void 0,
+      undefined,
     );
 
     if (forceRender) {
@@ -536,7 +536,7 @@ class Comments extends BasePlugin {
     const cellMeta = this.hot.getCellMeta(row, column);
 
     if (!cellMeta[META_COMMENT]) {
-      return void 0;
+      return undefined;
     }
 
     return cellMeta[META_COMMENT][property];
@@ -832,7 +832,7 @@ class Comments extends BasePlugin {
       return commentSetting.displayDelay;
     }
 
-    return void 0;
+    return undefined;
   }
 
   /**

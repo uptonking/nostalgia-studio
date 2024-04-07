@@ -1,8 +1,9 @@
 import { Scope } from 'parchment';
 import type Delta from 'quill-delta';
+
+import type Scroll from '../blots/scroll';
 import Module from '../core/module';
 import Quill from '../core/quill';
-import type Scroll from '../blots/scroll';
 import type { Range } from '../core/selection';
 
 export interface HistoryOptions {

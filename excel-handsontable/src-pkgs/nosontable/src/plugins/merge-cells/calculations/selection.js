@@ -119,7 +119,7 @@ class SelectionCalculations {
   ) {
     const [startRow, startColumn, endRow, endColumn] = cornersOfSelection;
 
-    if (layerLevel === void 0) {
+    if (layerLevel === undefined) {
       return;
     }
 

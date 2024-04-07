@@ -14,7 +14,7 @@ import ManualColumnResize from './manual-column-resize';
 import ManualRowMove from './manual-row-move/manual-row-move';
 import ManualRowResize from './manual-row-resize';
 import MergeCells from './merge-cells/merge-cells';
-import MultipleSelectionHandles from '../renderers/multiple-selection-handles';
+import MultipleSelectionHandles from './multiple-selection-handles';
 import ObserveChanges from './observe-changes/observe-changes';
 import Search from './search';
 import TouchScroll from './touch-scroll';

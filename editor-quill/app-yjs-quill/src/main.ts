@@ -27,8 +27,10 @@ const quill = new Quill(rootElem, {
   theme: 'snow',
 });
 
-const ydoc = new Y.Doc(); // y 文档对象，保存需要共享的数据
-const ytext = ydoc.getText('quill'); // 创建名为 quill 的 Text 对象
+/** 需要共享的数据容器 */
+const ydoc = new Y.Doc();
+// 创建名为 quill 的 Text 对象
+const ytext = ydoc.getText('quill');
 
 // 连接到 websocket 服务端
 const provider = new WebsocketProvider(

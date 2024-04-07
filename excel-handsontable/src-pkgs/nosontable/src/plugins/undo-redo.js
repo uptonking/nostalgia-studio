@@ -2,13 +2,11 @@ import { arrayEach, arrayMap } from '../helpers/array';
 import { stopImmediatePropagation } from '../helpers/dom/event';
 import { rangeEach } from '../helpers/number';
 import { deepClone, inherit } from '../helpers/object';
-/**
- * Handsontable UndoRedo class
- */
 import Hooks from '../plugin-hooks';
 import { align } from './context-menu/utils';
 
 /**
+ * Handsontable UndoRedo class
  * @description
  * Handsontable UndoRedo plugin allows to undo and redo certain actions done in the table.
  *
@@ -399,8 +397,8 @@ UndoRedo.RemoveRowAction.prototype.undo = function (instance, undoneCallback) {
     this.index,
     0,
     this.data,
-    void 0,
-    void 0,
+    undefined,
+    undefined,
     'UndoRedo.undo',
   );
 };
@@ -639,8 +637,8 @@ class MergeCellsAction extends UndoRedo.Action {
       this.cellRange.from.row,
       this.cellRange.from.col,
       this.rangeData,
-      void 0,
-      void 0,
+      undefined,
+      undefined,
       'MergeCells',
     );
   }

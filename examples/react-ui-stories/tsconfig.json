@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.base",
   "compilerOptions": {
     "outDir": "dist",
-    "module": "esnext"
+    "module": "esnext",
+    "noImplicitAny": false
   },
   "include": ["./src/"]
 }

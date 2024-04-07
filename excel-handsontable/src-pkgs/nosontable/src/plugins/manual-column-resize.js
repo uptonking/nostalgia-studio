@@ -8,8 +8,8 @@ import {
 } from '../helpers/dom/element';
 import { pageX } from '../helpers/dom/event';
 import { rangeEach } from '../helpers/number';
+import { registerPlugin } from '../plugins';
 import BasePlugin from './base';
-import { registerPlugin } from './index';
 
 // Developer note! Whenever you make a change in this file, make an analogous change in manualRowResize.js
 
@@ -335,7 +335,7 @@ class ManualColumnResize extends BasePlugin {
         true,
       );
 
-      if (hookNewSize !== void 0) {
+      if (hookNewSize !== undefined) {
         this.newSize = hookNewSize;
       }
 
@@ -515,7 +515,7 @@ class ManualColumnResize extends BasePlugin {
   clearManualSize(column) {
     const physicalColumn = this.hot.runHooks('modifyCol', column);
 
-    this.manualColumnWidths[physicalColumn] = void 0;
+    this.manualColumnWidths[physicalColumn] = undefined;
   }
 
   /**
@@ -552,7 +552,7 @@ class ManualColumnResize extends BasePlugin {
   onBeforeStretchingColumnWidth(stretchedWidth, column) {
     let width = this.manualColumnWidths[column];
 
-    if (width === void 0) {
+    if (width === undefined) {
       width = stretchedWidth;
     }
 

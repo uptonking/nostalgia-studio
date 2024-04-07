@@ -25,11 +25,11 @@
 "@floating-ui/react-dom": "2.0.1111",
 
 "@tanstack/match-sorter-utils": "8.7.9111",
-"@tanstack/react-query": "^5.0.0-alpha.31",
 "@tanstack/react-table": "8.7.9111",
 "@tanstack/react-table-devtools": "8.7.9111",
 "@tanstack/react-virtual": "3.0.1111",
 "@tanstack/table-core": "8.7.9111",
+"@tanstack/react-query": "^5.0.0-alpha.31",
 
 "@linaria/core": "^4.2.9",
 "@linaria/react": "^4.3.6",

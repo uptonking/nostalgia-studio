@@ -4,8 +4,8 @@
 
 ```sh
 # start server
-PORT=1234 npx y-websocket
+npm run server
 
-# start react app
-npm run dev
+# start web app
+npm run demo
 ```

@@ -1,11 +1,13 @@
+import 'pikaday/css/pikaday.css';
+
 import moment from 'moment';
 import Pikaday from 'pikaday';
-import 'pikaday/css/pikaday.css';
-import { addClass, outerHeight } from '../helpers/dom/element';
-import { deepExtend } from '../helpers/object';
+
 import EventManager from '../event-manager';
-import { isMetaKey } from '../helpers/unicode';
+import { addClass, outerHeight } from '../helpers/dom/element';
 import { stopPropagation } from '../helpers/dom/event';
+import { deepExtend } from '../helpers/object';
+import { isMetaKey } from '../helpers/unicode';
 import TextEditor from './text-editor';
 
 /**
@@ -124,7 +126,7 @@ class DateEditor extends TextEditor {
       // var value = this.instance.getDataAtCell(this.row, this.col);
       const value = this.originalValue;
 
-      if (value !== void 0) {
+      if (value !== undefined) {
         this.setValue(value);
       }
     }

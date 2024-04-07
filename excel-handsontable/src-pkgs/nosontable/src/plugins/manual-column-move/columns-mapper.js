@@ -23,7 +23,7 @@ class ColumnsMapper {
    * @param {Number} [length] Custom generated map length.
    */
   createMap(length) {
-    const originLength = length === void 0 ? this._arrayMap.length : length;
+    const originLength = length === undefined ? this._arrayMap.length : length;
 
     this._arrayMap.length = 0;
 

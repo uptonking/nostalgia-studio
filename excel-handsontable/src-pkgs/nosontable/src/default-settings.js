@@ -116,7 +116,7 @@ DefaultSettings.prototype = {
    * ]
    * ```
    */
-  data: void 0,
+  data: undefined,
 
   /**
    * @description
@@ -143,7 +143,7 @@ DefaultSettings.prototype = {
    * minSpareRows: 1
    * ```
    */
-  dataSchema: void 0,
+  dataSchema: undefined,
 
   /**
    * Width of the grid. Can be a value or a function that returns a value.
@@ -162,7 +162,7 @@ DefaultSettings.prototype = {
    * },
    * ```
    */
-  width: void 0,
+  width: undefined,
 
   /**
    * Height of the grid. Can be a number or a function that returns a number.
@@ -181,7 +181,7 @@ DefaultSettings.prototype = {
    * },
    * ```
    */
-  height: void 0,
+  height: undefined,
 
   /**
    * @description
@@ -239,7 +239,7 @@ DefaultSettings.prototype = {
    * },
    * ```
    */
-  rowHeaders: void 0,
+  rowHeaders: undefined,
 
   /**
    * Setting `true` or `false` will enable or disable the default column headers (A, B, C).
@@ -290,7 +290,7 @@ DefaultSettings.prototype = {
    * },
    * ```
    */
-  colWidths: void 0,
+  colWidths: undefined,
 
   /**
    * Defines row heights in pixels. Accepts numbers, strings (that will be converted into a number), array of numbers
@@ -322,7 +322,7 @@ DefaultSettings.prototype = {
    * },
    * ```
    */
-  rowHeights: void 0,
+  rowHeights: undefined,
 
   /**
    * @description
@@ -363,7 +363,7 @@ DefaultSettings.prototype = {
    * }
    * ```
    */
-  columns: void 0,
+  columns: undefined,
 
   /**
    * @description
@@ -395,7 +395,7 @@ DefaultSettings.prototype = {
    * },
    * ```
    */
-  cells: void 0,
+  cells: undefined,
 
   /**
    * Any constructor or column option may be overwritten for a particular cell (row/column combination), using `cell`
@@ -902,7 +902,7 @@ DefaultSettings.prototype = {
    * persistentState: true,
    * ```
    */
-  persistentState: void 0,
+  persistentState: undefined,
 
   /**
    * Class name for all visible rows in the current selection.
@@ -916,7 +916,7 @@ DefaultSettings.prototype = {
    * currentRowClassName: 'currentRow',
    * ```
    */
-  currentRowClassName: void 0,
+  currentRowClassName: undefined,
 
   /**
    * Class name for all visible columns in the current selection.
@@ -930,7 +930,7 @@ DefaultSettings.prototype = {
    * currentColClassName: 'currentColumn',
    * ```
    */
-  currentColClassName: void 0,
+  currentColClassName: undefined,
 
   /**
    * Class name for all visible headers in current selection.
@@ -977,7 +977,7 @@ DefaultSettings.prototype = {
    * className: ['first-class-name', 'second-class-name'],
    * ```
    */
-  className: void 0,
+  className: undefined,
 
   /**
    * Class name for all tables inside container element.
@@ -994,7 +994,7 @@ DefaultSettings.prototype = {
    * tableClassName: ['first-class-name', 'second-class-name'],
    * ```
    */
-  tableClassName: void 0,
+  tableClassName: undefined,
 
   /**
    * @description
@@ -1166,7 +1166,7 @@ DefaultSettings.prototype = {
    * placeholder: 'Empty Cell',
    * ```
    */
-  placeholder: void 0,
+  placeholder: undefined,
 
   /**
    * CSS class name for cells that have a placeholder in use.
@@ -1247,7 +1247,7 @@ DefaultSettings.prototype = {
    * ],
    * ```
    */
-  renderer: void 0,
+  renderer: undefined,
 
   /**
    * CSS class name added to the commented cells.
@@ -1454,7 +1454,7 @@ DefaultSettings.prototype = {
    * ],
    * ```
    */
-  editor: void 0,
+  editor: undefined,
 
   /**
    * Control number of choices for the autocomplete (or dropdown) typed cells. After exceeding it, a scrollbar for the
@@ -1592,7 +1592,7 @@ DefaultSettings.prototype = {
    * },
    * ```
    */
-  contextMenu: void 0,
+  contextMenu: undefined,
 
   /**
    * Disables or enables the copy/paste functionality.
@@ -1620,7 +1620,7 @@ DefaultSettings.prototype = {
    * undo: true,
    * ```
    */
-  undo: void 0,
+  undo: undefined,
 
   /**
    * @description
@@ -1669,7 +1669,7 @@ DefaultSettings.prototype = {
    *   }
    * }```
    */
-  columnSorting: void 0,
+  columnSorting: undefined,
 
   /**
    * Turns on [Manual column move](https://docs.handsontable.com/demo-moving-rows-and-columns.html), if set to a boolean or define initial column order (as an array of column indexes).
@@ -1687,7 +1687,7 @@ DefaultSettings.prototype = {
    * manualColumnMove: [1, 4],
    * ```
    */
-  manualColumnMove: void 0,
+  manualColumnMove: undefined,
 
   /**
    * @description
@@ -1706,7 +1706,7 @@ DefaultSettings.prototype = {
    * manualColumnResize: [40, 50],
    * ```
    */
-  manualColumnResize: void 0,
+  manualColumnResize: undefined,
 
   /**
    * @description
@@ -1725,7 +1725,7 @@ DefaultSettings.prototype = {
    * manualRowMove: [1, 4],
    * ```
    */
-  manualRowMove: void 0,
+  manualRowMove: undefined,
 
   /**
    * @description
@@ -1744,7 +1744,7 @@ DefaultSettings.prototype = {
    * manualRowResize: [40, 50],
    * ```
    */
-  manualRowResize: void 0,
+  manualRowResize: undefined,
 
   /**
    * @description
@@ -1821,7 +1821,7 @@ DefaultSettings.prototype = {
    *   }
    * }```
    */
-  multiColumnSorting: void 0,
+  multiColumnSorting: undefined,
   /**
    * @description
    * Number of rows to be rendered outside of the visible part of the table. By default, it's set to `'auto'`, which
@@ -1898,7 +1898,7 @@ DefaultSettings.prototype = {
    * ],
    * ```
    */
-  validator: void 0,
+  validator: undefined,
 
   /**
    * @description
@@ -1940,7 +1940,7 @@ DefaultSettings.prototype = {
    * manualColumnFreeze: true,
    * ```
    */
-  manualColumnFreeze: void 0,
+  manualColumnFreeze: undefined,
 
   /**
    * Defines whether Handsontable should trim the whitespace at the beginning and the end of the cell contents.
@@ -1985,7 +1985,7 @@ DefaultSettings.prototype = {
    * }],
    * ```
    */
-  source: void 0,
+  source: undefined,
 
   /**
    * @description
@@ -2009,7 +2009,7 @@ DefaultSettings.prototype = {
    * ],
    * ```
    */
-  title: void 0,
+  title: undefined,
 
   /**
    * Data template for `'checkbox'` type when checkbox is checked.
@@ -2025,7 +2025,7 @@ DefaultSettings.prototype = {
    * // where x and y are the coordinates of the cell will return 'good'.
    * ```
    */
-  checkedTemplate: void 0,
+  checkedTemplate: undefined,
 
   /**
    * Data template for `'checkbox'` type when checkbox is unchecked.
@@ -2041,7 +2041,7 @@ DefaultSettings.prototype = {
    * // where x and y are the coordinates of the cell will return 'bad'.
    * ```
    */
-  uncheckedTemplate: void 0,
+  uncheckedTemplate: undefined,
 
   /**
    * @description
@@ -2070,7 +2070,7 @@ DefaultSettings.prototype = {
    * }],
    * ```
    */
-  label: void 0,
+  label: undefined,
 
   /**
    * Display format for numeric typed renderers.
@@ -2103,7 +2103,7 @@ DefaultSettings.prototype = {
    * ],
    * ```
    */
-  numericFormat: void 0,
+  numericFormat: undefined,
 
   /**
    * Language for Handsontable translation. Possible language codes are [listed here](https://docs.handsontable.com/tutorial-internationalization.html#available-languages).
@@ -2138,7 +2138,7 @@ DefaultSettings.prototype = {
    * ],
    * ```
    */
-  selectOptions: void 0,
+  selectOptions: undefined,
 
   /**
    * Enables or disables the {@link AutoColumnSize} plugin. Default value is `undefined`, which has the same effect as `true`.
@@ -2167,7 +2167,7 @@ DefaultSettings.prototype = {
    * autoColumnSize: {useHeaders: true},
    * ```
    */
-  autoColumnSize: void 0,
+  autoColumnSize: undefined,
 
   /**
    * Enables or disables {@link AutoRowSize} plugin. Default value is `undefined`, which has the same effect as `false`
@@ -2191,7 +2191,7 @@ DefaultSettings.prototype = {
    * autoRowSize: {syncLimit: '40%'},
    * ```
    */
-  autoRowSize: void 0,
+  autoRowSize: undefined,
 
   /**
    * Date validation format.
@@ -2251,7 +2251,7 @@ DefaultSettings.prototype = {
    * ],
    * ```
    */
-  defaultDate: void 0,
+  defaultDate: undefined,
 
   /**
    * If set to `true`, the value entered into the cell must match (case-sensitive) the autocomplete source.
@@ -2273,7 +2273,7 @@ DefaultSettings.prototype = {
    * }],
    * ```
    */
-  strict: void 0,
+  strict: undefined,
 
   /**
    * If set to `true`, data defined in `source` of the autocomplete or dropdown cell will be treated as HTML.
@@ -2309,7 +2309,7 @@ DefaultSettings.prototype = {
    * renderAllRows: true,
    * ```
    */
-  renderAllRows: void 0,
+  renderAllRows: undefined,
 
   /**
    * Prevents table to overlap outside the parent element. If `'horizontal'` option is chosen then table will show
@@ -2346,7 +2346,7 @@ DefaultSettings.prototype = {
    * bindRowsWithHeaders: true
    * ```
    */
-  bindRowsWithHeaders: void 0,
+  bindRowsWithHeaders: undefined,
 
   /**
    * @description
@@ -2378,7 +2378,7 @@ DefaultSettings.prototype = {
    * ],
    * ```
    */
-  collapsibleColumns: void 0,
+  collapsibleColumns: undefined,
 
   /**
    * @description
@@ -2417,7 +2417,7 @@ DefaultSettings.prototype = {
    * ],
    * ```
    */
-  columnSummary: void 0,
+  columnSummary: undefined,
 
   /**
    * This plugin allows adding a configurable dropdown menu to the table's column headers. The dropdown menu acts like
@@ -2437,7 +2437,7 @@ DefaultSettings.prototype = {
    * dropdownMenu: ['remove_col', '---------', 'make_read_only', 'alignment']
    * ```
    */
-  dropdownMenu: void 0,
+  dropdownMenu: undefined,
 
   /**
    * The {@link Filters} plugin allows filtering the table data either by the built-in component or with the API.
@@ -2452,7 +2452,7 @@ DefaultSettings.prototype = {
    * filters: true,
    * ```
    */
-  filters: void 0,
+  filters: undefined,
 
   /**
    * The {@link Formulas} plugin allows Handsontable to process formula expressions defined in the provided data.
@@ -2475,7 +2475,7 @@ DefaultSettings.prototype = {
    * },
    * ```
    */
-  formulas: void 0,
+  formulas: undefined,
 
   /**
    * @description
@@ -2486,7 +2486,7 @@ DefaultSettings.prototype = {
    * @type {Object}
    * @default undefined
    */
-  ganttChart: void 0,
+  ganttChart: undefined,
 
   /**
    * @description
@@ -2514,7 +2514,7 @@ DefaultSettings.prototype = {
    * }
    * ```
    */
-  headerTooltips: void 0,
+  headerTooltips: undefined,
 
   /**
    * The {@link HiddenColumns} plugin allows hiding of certain columns. You can pass additional configuration with an
@@ -2540,7 +2540,7 @@ DefaultSettings.prototype = {
    * }
    * ```
    */
-  hiddenColumns: void 0,
+  hiddenColumns: undefined,
 
   /**
    * The {@link HiddenRows} plugin allows hiding of certain rows. You can pass additional configuration with an
@@ -2566,7 +2566,7 @@ DefaultSettings.prototype = {
    * }
    * ```
    */
-  hiddenRows: void 0,
+  hiddenRows: undefined,
 
   /**
    * @description
@@ -2585,7 +2585,7 @@ DefaultSettings.prototype = {
    * ],
    * ```
    */
-  nestedHeaders: void 0,
+  nestedHeaders: undefined,
 
   /**
    * @description
@@ -2605,7 +2605,7 @@ DefaultSettings.prototype = {
    * trimRows: [5, 10, 15],
    * ```
    */
-  trimRows: void 0,
+  trimRows: undefined,
 
   /**
    * @description
@@ -2625,7 +2625,7 @@ DefaultSettings.prototype = {
    * rowHeaderWidth: [25, 30, 55],
    * ```
    */
-  rowHeaderWidth: void 0,
+  rowHeaderWidth: undefined,
 
   /**
    * @description
@@ -2649,7 +2649,7 @@ DefaultSettings.prototype = {
    * columnHeaderHeight: [35, undefined, 55],
    * ```
    */
-  columnHeaderHeight: void 0,
+  columnHeaderHeight: undefined,
 
   /**
    * @description
@@ -2666,7 +2666,7 @@ DefaultSettings.prototype = {
    * observeChanges: true,
    * ```
    */
-  observeChanges: void 0,
+  observeChanges: undefined,
 
   /**
    * If defined as `true`, the Autocomplete's suggestion list would be sorted by relevance (the closer to the left the
@@ -2766,7 +2766,7 @@ DefaultSettings.prototype = {
    * @type {Boolean}
    * @default false
    */
-  nestedRows: void 0,
+  nestedRows: undefined,
 };
 
 export default DefaultSettings;

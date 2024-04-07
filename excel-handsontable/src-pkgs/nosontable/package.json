@@ -14,7 +14,7 @@
   "scripts": {
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
     "copy-css": "copyfiles -u 1 \"src/**/*.css\" dist/",
-    "lint": "eslint src/ test/",
+    "lint": "eslint --ext .ts,.tsx,.js  --quiet src",
     "test": "jest",
     "test:watch": "jest --watch"
   },

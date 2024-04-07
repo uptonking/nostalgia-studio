@@ -4,7 +4,6 @@
   "description": "Format for representing rich text documents and changes.",
   "keywords": [
     "rich text",
-    "ot",
     "operational transform",
     "delta"
   ],

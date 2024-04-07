@@ -395,7 +395,7 @@ function EditorManager(instance, priv, selection) {
       activeEditor = getEditorInstance(editorClass, instance);
       activeEditor.prepare(row, col, prop, td, originalValue, cellProperties);
     } else {
-      activeEditor = void 0;
+      activeEditor = undefined;
     }
   };
 

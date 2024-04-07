@@ -2,7 +2,7 @@ import BasePlugin from '../base';
 import Hooks from '../../plugin-hooks';
 import { offset, outerHeight, outerWidth } from '../../helpers/dom/element';
 import EventManager from '../../event-manager';
-import { registerPlugin } from '../index';
+import { registerPlugin } from '../../plugins';
 import { CellCoords } from '../../walkontable';
 import {
   getDeltas,
@@ -336,7 +336,7 @@ class Autofill extends BasePlugin {
       setTimeout(() => {
         this.hot.alter(
           INSERT_ROW_ALTER_ACTION_NAME,
-          void 0,
+          undefined,
           1,
           `${this.pluginName}.fill`,
         );
@@ -465,7 +465,7 @@ class Autofill extends BasePlugin {
       cornersOfSelectedCells,
     );
 
-    if (lastFilledInRowIndex === -1 || lastFilledInRowIndex === void 0) {
+    if (lastFilledInRowIndex === -1 || lastFilledInRowIndex === undefined) {
       return false;
     }
 

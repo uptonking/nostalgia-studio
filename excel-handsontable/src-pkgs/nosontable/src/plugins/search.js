@@ -2,7 +2,7 @@ import { isUndefined } from '../helpers/mixed';
 import { rangeEach } from '../helpers/number';
 import { isObject } from '../helpers/object';
 import BasePlugin from './base';
-import { registerPlugin } from './index';
+import { registerPlugin } from '../plugins';
 
 const DEFAULT_SEARCH_RESULT_CLASS = 'htSearchResult';
 

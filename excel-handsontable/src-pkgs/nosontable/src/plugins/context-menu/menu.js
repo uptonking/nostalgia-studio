@@ -547,7 +547,7 @@ class Menu {
         );
       } else {
         this.eventManager.addEventListener(TD, 'mouseenter', () =>
-          hot.selectCell(row, col, void 0, void 0, false, false),
+          hot.selectCell(row, col, undefined, undefined, false, false),
         );
       }
     } else {
@@ -560,7 +560,7 @@ class Menu {
         );
       } else {
         this.eventManager.addEventListener(TD, 'mouseenter', () =>
-          hot.selectCell(row, col, void 0, void 0, false, false),
+          hot.selectCell(row, col, undefined, undefined, false, false),
         );
       }
     }

@@ -1867,7 +1867,7 @@ class Hooks {
   has(key, context = null) {
     const bucket = this.getBucket(context);
 
-    return !!(bucket[key] !== void 0 && bucket[key].length);
+    return !!(bucket[key] !== undefined && bucket[key].length);
   }
 
   /**
@@ -1915,7 +1915,7 @@ class Hooks {
             p6,
           );
 
-          if (res !== void 0) {
+          if (res !== undefined) {
             // eslint-disable-next-line no-param-reassign
             p1 = res;
           }
@@ -1951,7 +1951,7 @@ class Hooks {
             p6,
           );
 
-          if (res !== void 0) {
+          if (res !== undefined) {
             // eslint-disable-next-line no-param-reassign
             p1 = res;
           }

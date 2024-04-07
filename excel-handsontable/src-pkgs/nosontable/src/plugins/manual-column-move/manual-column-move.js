@@ -1,15 +1,15 @@
-import BasePlugin from '../base';
-import Hooks from '../../plugin-hooks';
-import { arrayEach } from '../../helpers/array';
-import { addClass, removeClass, offset } from '../../helpers/dom/element';
-import { rangeEach } from '../../helpers/number';
+import './manual-column-move.css';
+
 import EventManager from '../../event-manager';
-import { registerPlugin } from '../index';
+import { arrayEach } from '../../helpers/array';
+import { addClass, offset, removeClass } from '../../helpers/dom/element';
+import { rangeEach } from '../../helpers/number';
+import Hooks from '../../plugin-hooks';
+import { registerPlugin } from '../../plugins';
+import BasePlugin from '../base';
 import ColumnsMapper from './columns-mapper';
 import BacklightUI from './ui/backlight';
 import GuidelineUI from './ui/guideline';
-
-import './manualColumnMove.css';
 
 Hooks.getSingleton().register('beforeColumnMove');
 Hooks.getSingleton().register('afterColumnMove');
@@ -52,13 +52,13 @@ class ManualColumnMove extends BasePlugin {
       columnsToMove: [],
       countCols: 0,
       fixedColumns: 0,
-      pressed: void 0,
-      disallowMoving: void 0,
+      pressed: undefined,
+      disallowMoving: undefined,
       target: {
-        eventPageX: void 0,
-        coords: void 0,
-        TD: void 0,
-        col: void 0,
+        eventPageX: undefined,
+        coords: undefined,
+        TD: undefined,
+        col: undefined,
       },
     });
 
@@ -279,7 +279,7 @@ class ManualColumnMove extends BasePlugin {
 
     if (Array.isArray(pluginSettings)) {
       this.moveColumns(pluginSettings, 0);
-    } else if (pluginSettings !== void 0) {
+    } else if (pluginSettings !== undefined) {
       this.persistentStateLoad();
     }
   }
@@ -356,7 +356,7 @@ class ManualColumnMove extends BasePlugin {
     const mouseOffsetLeft =
       priv.target.eventPageX -
       (priv.rootElementOffset -
-        (scrollableElement.scrollX === void 0 ? scrollLeft : 0));
+        (scrollableElement.scrollX === undefined ? scrollLeft : 0));
     const hiderWidth = wtTable.hider.offsetWidth;
     const tbodyOffsetLeft = wtTable.TBODY.offsetLeft;
     const backlightElemMarginLeft = this.backlight.getOffset().left;
@@ -404,7 +404,7 @@ class ManualColumnMove extends BasePlugin {
       tdOffsetLeft += priv.target.TD.offsetWidth;
 
       if (priv.target.col > lastVisible && lastVisible < priv.countCols) {
-        this.hot.scrollViewportTo(void 0, lastVisible + 1, void 0, true);
+        this.hot.scrollViewportTo(undefined, lastVisible + 1, undefined, true);
       }
     } else {
       // elsewhere on table
@@ -415,7 +415,7 @@ class ManualColumnMove extends BasePlugin {
         priv.target.col >= priv.fixedColumns &&
         firstVisible > 0
       ) {
-        this.hot.scrollViewportTo(void 0, firstVisible - 1);
+        this.hot.scrollViewportTo(undefined, firstVisible - 1);
       }
     }
 
@@ -424,7 +424,7 @@ class ManualColumnMove extends BasePlugin {
       priv.target.col >= priv.fixedColumns &&
       firstVisible > 0
     ) {
-      this.hot.scrollViewportTo(void 0, firstVisible - 1);
+      this.hot.scrollViewportTo(undefined, firstVisible - 1);
     }
 
     let backlightLeft = mouseOffsetLeft;
@@ -452,7 +452,7 @@ class ManualColumnMove extends BasePlugin {
       // guideline has got `margin-left: -1px` as default
       guidelineLeft = 1;
     } else if (
-      scrollableElement.scrollX !== void 0 &&
+      scrollableElement.scrollX !== undefined &&
       priv.coordsColumn < priv.fixedColumns
     ) {
       guidelineLeft -=
@@ -678,7 +678,7 @@ class ManualColumnMove extends BasePlugin {
   onMouseUp() {
     const priv = privatePool.get(this);
 
-    priv.coordsColumn = void 0;
+    priv.coordsColumn = undefined;
     priv.pressed = false;
     priv.backlightWidth = 0;
 
@@ -693,7 +693,7 @@ class ManualColumnMove extends BasePlugin {
     }
     if (
       priv.columnsToMove.length < 1 ||
-      priv.target.col === void 0 ||
+      priv.target.col === undefined ||
       priv.columnsToMove.indexOf(priv.target.col) > -1
     ) {
       return;

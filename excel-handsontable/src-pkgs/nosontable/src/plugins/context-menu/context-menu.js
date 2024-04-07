@@ -1,32 +1,32 @@
-import BasePlugin from '../base';
-import Hooks from '../../plugin-hooks';
-import { arrayEach } from '../../helpers/array';
-import CommandExecutor from './command-executor';
+import './context-menu.css';
+
 import EventManager from '../../event-manager';
-import ItemsFactory from './items-factory';
-import Menu from './menu';
-import { registerPlugin } from '../index';
-import { stopPropagation, pageX, pageY } from '../../helpers/dom/event';
+import { arrayEach } from '../../helpers/array';
 import {
   getWindowScrollLeft,
   getWindowScrollTop,
   hasClass,
 } from '../../helpers/dom/element';
+import { pageX, pageY, stopPropagation } from '../../helpers/dom/event';
+import Hooks from '../../plugin-hooks';
+import { registerPlugin } from '../../plugins';
+import BasePlugin from '../base';
+import CommandExecutor from './command-executor';
+import ItemsFactory from './items-factory';
+import Menu from './menu';
 import {
-  ROW_ABOVE,
-  ROW_BELOW,
+  ALIGNMENT,
   COLUMN_LEFT,
   COLUMN_RIGHT,
-  REMOVE_ROW,
-  REMOVE_COLUMN,
-  UNDO,
-  REDO,
   READ_ONLY,
-  ALIGNMENT,
+  REDO,
+  REMOVE_COLUMN,
+  REMOVE_ROW,
+  ROW_ABOVE,
+  ROW_BELOW,
   SEPARATOR,
+  UNDO,
 } from './predefined-items';
-
-import './contextMenu.css';
 
 Hooks.getSingleton().register('afterContextMenuDefaultOptions');
 Hooks.getSingleton().register('beforeContextMenuShow');

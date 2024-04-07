@@ -2,8 +2,7 @@
 
 > [Quill Editor](https://quilljs.com/) binding for [Yjs](https://github.com/y-js/yjs) - [Demo](https://demos.yjs.dev/quill/quill.html)
 
-This binding maps a Y.Text to a Quill instance. It optionally supports shared cursors via
-the [quill-cursors](https://github.com/reedsy/quill-cursors) module.
+This binding maps a Y. Text to a Quill instance. It optionally supports shared cursors via the [quill-cursors](https://github.com/reedsy/quill-cursors) module.
 
 ## Example
 
@@ -42,7 +41,6 @@ provider.awareness.setLocalStateField('user', {
   color: 'blue'
 })
 */
-
 ```
 
 Also look [here](https://github.com/y-js/yjs-demos/tree/master/quill) for a working example.

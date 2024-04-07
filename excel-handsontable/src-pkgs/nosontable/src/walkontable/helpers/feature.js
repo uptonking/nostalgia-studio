@@ -92,7 +92,7 @@ function detectCaptionProblem() {
 }
 
 export function hasCaptionProblem() {
-  if (_hasCaptionProblem === void 0) {
+  if (_hasCaptionProblem === undefined) {
     detectCaptionProblem();
   }
 

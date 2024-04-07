@@ -1,4 +1,4 @@
-import { Component, type CSSProperties, type ReactNode } from 'react';
+import React, { Component, type CSSProperties, type ReactNode } from 'react';
 
 import Handsontable from 'nosontable';
 
@@ -97,6 +97,7 @@ export class HotTable extends Component<HotTableProps, {}> {
   componentDidMount(): void {
     const newSettings = this.settingsMapper.getSettings(this.props);
     this.hotInstance = new Handsontable(this.hotElementRef, newSettings);
+    window['hot'] = this.hotInstance;
   }
 
   /**

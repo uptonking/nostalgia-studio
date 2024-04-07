@@ -6,7 +6,7 @@ import { isObject } from '../../helpers/object';
 import Hooks from '../../plugin-hooks';
 import { isPressedCtrlKey } from '../../utils/key-state-observer';
 import BasePlugin from '../base';
-import { registerPlugin } from '../index';
+import { registerPlugin } from '../../plugins';
 import { ColumnStatesManager } from './column-states-manager';
 import { getClassedToRemove, getClassesToAdd } from './dom-helpers';
 import { rootComparator } from './root-comparator';

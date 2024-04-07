@@ -1,7 +1,7 @@
-import BasePlugin from '../base';
-import { registerPlugin } from '../index';
-import Storage from './storage';
 import Hooks from '../../plugin-hooks';
+import { registerPlugin } from '../../plugins';
+import BasePlugin from '../base';
+import Storage from './storage';
 
 Hooks.getSingleton().register('persistentStateSave');
 Hooks.getSingleton().register('persistentStateLoad');
@@ -32,7 +32,7 @@ class PersistentState extends BasePlugin {
      * @private
      * @type {Storage}
      */
-    this.storage = void 0;
+    this.storage = undefined;
   }
 
   /**
@@ -72,7 +72,7 @@ class PersistentState extends BasePlugin {
    * Disables the plugin functionality for this Handsontable instance.
    */
   disablePlugin() {
-    this.storage = void 0;
+    this.storage = undefined;
 
     super.disablePlugin();
   }

@@ -6,6 +6,6 @@ export default class ClipboardData {
     this.data[type] = value;
   }
   getData(type) {
-    return this.data[type] || void 0;
+    return this.data[type] || undefined;
   }
 }

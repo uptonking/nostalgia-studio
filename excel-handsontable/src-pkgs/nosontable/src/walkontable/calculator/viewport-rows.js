@@ -156,7 +156,7 @@ class ViewportRowsCalculator {
     }
     this.startPosition = startPositions[this.startRow];
 
-    if (this.startPosition === void 0) {
+    if (this.startPosition === undefined) {
       this.startPosition = null;
     }
     if (this.startRow !== null) {

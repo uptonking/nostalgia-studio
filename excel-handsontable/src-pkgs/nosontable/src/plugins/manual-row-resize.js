@@ -9,7 +9,7 @@ import {
 import { pageY } from '../helpers/dom/event';
 import { rangeEach } from '../helpers/number';
 import BasePlugin from './base';
-import { registerPlugin } from './index';
+import { registerPlugin } from '../plugins';
 
 // Developer note! Whenever you make a change in this file, make an analogous change in manualRowResize.js
 
@@ -316,7 +316,7 @@ class ManualRowResize extends BasePlugin {
         true,
       );
 
-      if (hookNewSize !== void 0) {
+      if (hookNewSize !== undefined) {
         this.newSize = hookNewSize;
       }
 
@@ -497,7 +497,7 @@ class ManualRowResize extends BasePlugin {
       const manualRowHeight = this.manualRowHeights[physicalRow];
 
       if (
-        manualRowHeight !== void 0 &&
+        manualRowHeight !== undefined &&
         (manualRowHeight === autoRowHeightResult ||
           manualRowHeight > (height || 0))
       ) {

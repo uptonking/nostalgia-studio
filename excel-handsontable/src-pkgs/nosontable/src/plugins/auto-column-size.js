@@ -16,7 +16,7 @@ import GhostTable from '../utils/ghost-table';
 import SamplesGenerator from '../utils/samples-generator';
 import { ViewportColumnsCalculator } from '../walkontable';
 import BasePlugin from './base';
-import { registerPlugin } from './index';
+import { registerPlugin } from '../plugins';
 
 const privatePool = new WeakMap();
 
@@ -176,7 +176,7 @@ class AutoColumnSize extends BasePlugin {
     if (
       setting &&
       setting.useHeaders !== null &&
-      setting.useHeaders !== void 0
+      setting.useHeaders !== undefined
     ) {
       this.ghostTable.setSetting('useHeaders', setting.useHeaders);
     }
@@ -236,7 +236,8 @@ class AutoColumnSize extends BasePlugin {
     rangeEach(columnsRange.from, columnsRange.to, (col) => {
       if (
         force ||
-        (this.widths[col] === void 0 && !this.hot._getColWidthFromSettings(col))
+        (this.widths[col] === undefined &&
+          !this.hot._getColWidthFromSettings(col))
       ) {
         const samples = this.samplesGenerator.generateColumnSamples(
           col,
@@ -332,11 +333,11 @@ class AutoColumnSize extends BasePlugin {
     const samplingRatio =
       setting && hasOwnProperty(setting, 'samplingRatio')
         ? this.hot.getSettings().autoColumnSize.samplingRatio
-        : void 0;
+        : undefined;
     const allowSampleDuplicates =
       setting && hasOwnProperty(setting, 'allowSampleDuplicates')
         ? this.hot.getSettings().autoColumnSize.allowSampleDuplicates
-        : void 0;
+        : undefined;
 
     if (samplingRatio && !isNaN(samplingRatio)) {
       this.samplesGenerator.setSampleCount(parseInt(samplingRatio, 10));
@@ -390,10 +391,10 @@ class AutoColumnSize extends BasePlugin {
    * @param {Boolean} [keepMinimum=true] If `true` then returned value won't be smaller then 50 (default column width).
    * @returns {Number}
    */
-  getColumnWidth(column, defaultWidth = void 0, keepMinimum = true) {
+  getColumnWidth(column, defaultWidth = undefined, keepMinimum = true) {
     let width = defaultWidth;
 
-    if (width === void 0) {
+    if (width === undefined) {
       width = this.widths[column];
 
       if (keepMinimum && typeof width === 'number') {
@@ -484,7 +485,7 @@ class AutoColumnSize extends BasePlugin {
   clearCache(columns = []) {
     if (columns.length) {
       arrayEach(columns, (physicalIndex) => {
-        this.widths[physicalIndex] = void 0;
+        this.widths[physicalIndex] = undefined;
       });
     } else {
       this.widths.length = 0;
@@ -497,7 +498,7 @@ class AutoColumnSize extends BasePlugin {
    * @returns {Boolean}
    */
   isNeedRecalculate() {
-    return !!arrayFilter(this.widths, (item) => item === void 0).length;
+    return !!arrayFilter(this.widths, (item) => item === undefined).length;
   }
 
   /**
@@ -522,7 +523,7 @@ class AutoColumnSize extends BasePlugin {
 
     this.calculateColumnsWidth(
       { from: firstVisibleColumn, to: lastVisibleColumn },
-      void 0,
+      undefined,
       force,
     );
 
@@ -576,9 +577,9 @@ class AutoColumnSize extends BasePlugin {
     let newSize = size;
 
     if (isDblClick) {
-      this.calculateColumnsWidth(col, void 0, true);
+      this.calculateColumnsWidth(col, undefined, true);
 
-      newSize = this.getColumnWidth(col, void 0, false);
+      newSize = this.getColumnWidth(col, undefined, false);
     }
 
     return newSize;

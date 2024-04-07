@@ -68,7 +68,7 @@ const stateSaver = {
    * @returns Boolean
    */
   hasSavedState(stateId) {
-    return getState(this, stateId) !== void 0;
+    return getState(this, stateId) !== undefined;
   },
 
   /**

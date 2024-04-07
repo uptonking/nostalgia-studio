@@ -272,7 +272,7 @@ SelectEditor.prototype.getEditedCell = function () {
       break;
   }
 
-  return editedCell !== -1 && editedCell !== -2 ? editedCell : void 0;
+  return editedCell !== -1 && editedCell !== -2 ? editedCell : undefined;
 };
 
 export default SelectEditor;

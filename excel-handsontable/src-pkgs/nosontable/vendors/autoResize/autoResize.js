@@ -31,7 +31,7 @@ function autoResize() {
         newChar = '.';
       }
 
-      if (text.textContent !== void 0) {
+      if (text.textContent !== undefined) {
         text.textContent = el.value + newChar;
       } else {
         text.data = el.value + newChar; //IE8

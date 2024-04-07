@@ -144,7 +144,7 @@ export function mixin(Base, ...mixins) {
     Base.MIXINS.push(mixinItem.MIXIN_NAME);
 
     objectEach(mixinItem, (value, key) => {
-      if (Base.prototype[key] !== void 0) {
+      if (Base.prototype[key] !== undefined) {
         throw new Error(
           `Mixin conflict. Property '${key}' already exist and cannot be overwritten.`,
         );
@@ -166,7 +166,7 @@ export function mixin(Base, ...mixins) {
           };
 
           return function () {
-            if (this[propertyName] === void 0) {
+            if (this[propertyName] === undefined) {
               this[propertyName] = initValue(initialValue);
             }
 
@@ -260,8 +260,8 @@ export function getProperty(object, name) {
   objectEach(names, (nameItem) => {
     result = result[nameItem];
 
-    if (result === void 0) {
-      result = void 0;
+    if (result === undefined) {
+      result = undefined;
 
       return false;
     }

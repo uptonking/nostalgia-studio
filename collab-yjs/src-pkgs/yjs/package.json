@@ -7,10 +7,6 @@
   "types": "./dist/src/index.d.ts",
   "type": "module",
   "sideEffects": false,
-  "funding": {
-    "type": "GitHub Sponsors ❤",
-    "url": "https://github.com/sponsors/dmonad"
-  },
   "scripts": {
     "clean": "rm -rf dist docs",
     "test": "npm run dist && node ./dist/tests.cjs --repetition-time 50",

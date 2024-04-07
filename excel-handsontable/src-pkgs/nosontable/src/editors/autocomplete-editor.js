@@ -98,7 +98,7 @@ AutocompleteEditor.prototype.open = function (...args) {
   const choicesListHot = this.htEditor.getInstance();
   const _this = this;
   const trimDropdown =
-    this.cellProperties.trimDropdown === void 0
+    this.cellProperties.trimDropdown === undefined
       ? true
       : this.cellProperties.trimDropdown;
 
@@ -106,10 +106,10 @@ AutocompleteEditor.prototype.open = function (...args) {
   this.focus();
 
   choicesListHot.updateSettings({
-    colWidths: trimDropdown ? [outerWidth(this.TEXTAREA) - 2] : void 0,
+    colWidths: trimDropdown ? [outerWidth(this.TEXTAREA) - 2] : undefined,
     width: trimDropdown
       ? outerWidth(this.TEXTAREA) + getScrollbarWidth() + 2
-      : void 0,
+      : undefined,
     afterRenderer(TD, row, col, prop, value) {
       const { filteringCaseSensitive, allowHtml } = _this.cellProperties;
       let cellValue = stringify(value);
@@ -228,7 +228,7 @@ AutocompleteEditor.prototype.updateChoicesList = function (choicesList) {
 
   this.instance.listen(false);
 
-  setCaretPosition(this.TEXTAREA, pos, pos === endPos ? void 0 : endPos);
+  setCaretPosition(this.TEXTAREA, pos, pos === endPos ? undefined : endPos);
 };
 
 AutocompleteEditor.prototype.flipDropdownIfNeeded = function () {
@@ -320,7 +320,7 @@ AutocompleteEditor.prototype.unflipDropdown = function () {
     dropdownStyle.top = '';
   }
 
-  this.htEditor.flipped = void 0;
+  this.htEditor.flipped = undefined;
 };
 
 AutocompleteEditor.prototype.updateDropdownHeight = function () {
@@ -330,7 +330,7 @@ AutocompleteEditor.prototype.updateDropdownHeight = function () {
 
   this.htEditor.updateSettings({
     height: this.getDropdownHeight(),
-    width: trimDropdown ? void 0 : currentDropdownWidth,
+    width: trimDropdown ? undefined : currentDropdownWidth,
   });
 
   this.htEditor.view.wt.wtTable.alignOverlaysWithTrimmingContainer();
@@ -354,7 +354,7 @@ AutocompleteEditor.prototype.finishEditing = function (
 
 AutocompleteEditor.prototype.highlightBestMatchingChoice = function (index) {
   if (typeof index === 'number') {
-    this.htEditor.selectCell(index, 0, void 0, void 0, void 0, false);
+    this.htEditor.selectCell(index, 0, undefined, undefined, undefined, false);
   } else {
     this.htEditor.deselectCell();
   }

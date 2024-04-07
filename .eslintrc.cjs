@@ -65,7 +65,7 @@ module.exports = {
     'prefer-const': 1,
     'prefer-spread': 1,
     'prefer-rest-params': 1,
-    'prefer-object-spread': 1,
+    'prefer-object-spread': 0,
     'prefer-arrow-callback': 0,
     'prefer-promise-reject-errors': 1,
     'prefer-object-has-own': 1,

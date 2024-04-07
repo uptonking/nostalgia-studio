@@ -15,9 +15,9 @@ class Settings {
     // legacy support
     this.instance = wotInstance;
 
-    // default settings. void 0 means it is required, null means it can be empty
+    // default settings. undefined means it is required, null means it can be empty
     this.defaults = {
-      table: void 0,
+      table: undefined,
       debug: false, // shows WalkontableDebugOverlay
 
       // presentation mode
@@ -30,7 +30,7 @@ class Settings {
       },
 
       // data source
-      data: void 0,
+      data: undefined,
       freezeOverlays: false,
       fixedColumnsLeft: 0,
       fixedRowsTop: 0,
@@ -46,14 +46,14 @@ class Settings {
       columnHeaders() {
         return [];
       },
-      totalRows: void 0,
-      totalColumns: void 0,
+      totalRows: undefined,
+      totalColumns: undefined,
       cellRenderer: (row, column, TD) => {
         const cellData = this.getSetting('data', row, column);
 
         fastInnerText(
           TD,
-          cellData === void 0 || cellData === null ? '' : cellData,
+          cellData === undefined || cellData === null ? '' : cellData,
         );
       },
 
@@ -110,9 +110,9 @@ class Settings {
     this.settings = {};
 
     objectEach(this.defaults, (value, key) => {
-      if (settings[key] !== void 0) {
+      if (settings[key] !== undefined) {
         this.settings[key] = settings[key];
-      } else if (value === void 0) {
+      } else if (value === undefined) {
         throw new Error(`A required setting "${key}" was not provided`);
       } else {
         this.settings[key] = value;
@@ -128,7 +128,7 @@ class Settings {
    * @returns {Walkontable}
    */
   update(settings, value) {
-    if (value === void 0) {
+    if (value === undefined) {
       // settings is object
       objectEach(settings, (settingValue, key) => {
         this.settings[key] = settingValue;
@@ -154,7 +154,7 @@ class Settings {
     if (typeof this.settings[key] === 'function') {
       // this is faster than .apply - https://github.com/handsontable/handsontable/wiki/JavaScript-&-DOM-performance-tips
       return this.settings[key](param1, param2, param3, param4);
-    } else if (param1 !== void 0 && Array.isArray(this.settings[key])) {
+    } else if (param1 !== undefined && Array.isArray(this.settings[key])) {
       // perhaps this can be removed, it is only used in tests
       return this.settings[key][param1];
     }
