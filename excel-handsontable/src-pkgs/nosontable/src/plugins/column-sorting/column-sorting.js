@@ -4,9 +4,9 @@ import { isDefined, isUndefined } from '../../helpers/mixed';
 import { rangeEach } from '../../helpers/number';
 import { isObject } from '../../helpers/object';
 import Hooks from '../../plugin-hooks';
+import { registerPlugin } from '../../plugins';
 import { isPressedCtrlKey } from '../../utils/key-state-observer';
 import BasePlugin from '../base';
-import { registerPlugin } from '../../plugins';
 import { ColumnStatesManager } from './column-states-manager';
 import { getClassedToRemove, getClassesToAdd } from './dom-helpers';
 import { rootComparator } from './root-comparator';
@@ -259,7 +259,7 @@ class ColumnSorting extends BasePlugin {
       this.saveAllSortSettings();
 
       this.hot.render();
-      this.hot.view.wt.draw(true); // TODO: Workaround? One test won't pass after removal. It should be refactored / described.
+      this.hot.view.wt.draw(true); // TODO: Workaround? One test won't pass after removal. It should be refactored/described.
     }
 
     this.hot.runHooks(

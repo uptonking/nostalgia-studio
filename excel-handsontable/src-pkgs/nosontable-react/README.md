@@ -1,13 +1,14 @@
 # nosontable-react
+- React wrapper for nosontable, a JavaScript data grid component with a spreadsheet look & feel
 
-This is a fork of `@handsontable/react.v2.1.0` to and is designed to work with nosontable, a fork of the last MIT release of Handsontable
+> This is a fork of `@handsontable/react.v2.1.0` and is designed to work with nosontable, a fork of the last MIT release of Handsontable
 
 ## Installation
 
 Use npm to install this wrapper together with Handsontable.
 
 ```
-npm install nosontable nosontable-react
+npm install nosontable-react
 ```
 
 ## Usage
@@ -17,7 +18,7 @@ Use this data grid as you would any other component in your application. [Option
 **Styles**
 
 ```css
-@import '~nosontable/dist/handsontable.css';
+/* @import '~nosontable/dist/handsontable.css'; */
 ```
 
 **React Component**
@@ -27,20 +28,24 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { HotTable } from 'nosontable-react';
 
-class HotApp extends React.Component {
-  constructor(props) {
-    super(props);
-    this.data = [
-      ['', 'Tesla', 'Mercedes', 'Toyota', 'Volvo'],
-      ['2019', 10, 11, 12, 13],
-      ['2020', 20, 11, 14, 13],
-      ['2021', 30, 15, 12, 13]
-    ];
-  }
+const data = [
+  ['', 'Tesla', 'Mercedes', 'Toyota', 'Volvo'],
+  ['2019', 10, 11, 12, 13],
+  ['2020', 20, 11, 14, 13],
+  ['2021', 30, 15, 12, 13]
+];
 
-  render() {
-    return (<HotTable data={this.data} colHeaders={true} rowHeaders={true} width="600" height="300" />);
-  }
+function HotApp() {
+
+  return (
+    <HotTable
+        data={data}
+        colHeaders={true}
+        rowHeaders={true}
+        width='600'
+        height='300'
+      />
+  );
 }
 ```
 
@@ -70,12 +75,6 @@ A list of some of the most popular features:
 - [API Reference](//handsontable.com/docs/Core.html)
 - [Release notes](//handsontable.com/docs/tutorial-release-notes.html)
 - [Twitter](//twitter.com/handsontable) (News and updates)
-
-## Support and contribution
-
-We provide support for all users through [GitHub issues](//github.com/swsvindland/nosontable-react). If you have a commercial license then you can add a new ticket through the [contact form](//handsontable.com/contact?category=technical_support).
-
-If you would like to contribute to this project, make sure you first read the [guide for contributors](//github.com/swsvindland/nosontable-react/blob/master/CONTRIBUTING.md).
 
 ## Browser compatibility
 

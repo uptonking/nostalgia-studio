@@ -1,12 +1,12 @@
-import { empty, addClass } from '../helpers/dom/element';
-import { equalsIgnoreCase } from '../helpers/string';
 import EventManager from '../event-manager';
-import { isKey } from '../helpers/unicode';
-import { partial } from '../helpers/function';
+import { addClass, empty } from '../helpers/dom/element';
 import {
-  stopImmediatePropagation,
   isImmediatePropagationStopped,
+  stopImmediatePropagation,
 } from '../helpers/dom/event';
+import { partial } from '../helpers/function';
+import { equalsIgnoreCase } from '../helpers/string';
+import { isKey } from '../helpers/unicode';
 import { getRenderer } from './index';
 
 const isListeningKeyDownEvent = new WeakMap();
@@ -177,7 +177,7 @@ function checkboxRenderer(
           return;
         }
 
-        /* eslint-disable no-continue */
+        
         if (cachedCellProperties.readOnly === true) {
           continue;
         }

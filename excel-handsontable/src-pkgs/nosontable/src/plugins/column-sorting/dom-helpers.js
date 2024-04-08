@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { ASC_SORT_STATE, DESC_SORT_STATE } from './utils';
 
 const HEADER_CLASS_ASC_SORT = 'ascending';

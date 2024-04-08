@@ -1,18 +1,14 @@
-/*
-
- Handsontable Mobile Text Editor stylesheet
-
- */
+/* Handsontable Mobile Text Editor stylesheet */
 
 .handsontable.mobile,
 .handsontable.mobile .wtHolder {
-  -webkit-touch-callout:none;
-  -webkit-user-select:none;
-  -khtml-user-select:none;
-  -moz-user-select:none;
-  -ms-user-select:none;
-  user-select:none;
-  -webkit-tap-highlight-color:rgba(0,0,0,0);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -32,7 +28,9 @@
 }
 
 .topLeftSelectionHandle:not(.ht_master .topLeftSelectionHandle),
-.topLeftSelectionHandle-HitArea:not(.ht_master .topLeftSelectionHandle-HitArea) {
+.topLeftSelectionHandle-HitArea:not(
+    .ht_master .topLeftSelectionHandle-HitArea
+  ) {
   z-index: 9999;
 }
 
@@ -114,7 +112,7 @@
 }
 
 .htMobileEditorContainer .moveHandle:after {
-  content: "..\a..\a..\a..";
+  content: '..\a..\a..\a..';
   white-space: pre;
   line-height: 10px;
   font-size: 20pt;
@@ -138,7 +136,7 @@
 }
 
 .htMobileEditorContainer .positionControls > div:after {
-  content: " ";
+  content: ' ';
   display: block;
   width: 15pt;
   height: 15pt;

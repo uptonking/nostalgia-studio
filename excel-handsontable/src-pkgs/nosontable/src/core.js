@@ -102,16 +102,19 @@ export default function Core(
   userSettings,
   rootInstanceSymbol = false,
 ) {
-  let preventScrollingToCell = false;
   let instance = this;
-  let GridSettings = function () {};
   const eventManager = new EventManager(instance);
+  let GridSettings = function () {};
+  let preventScrollingToCell = false;
   let priv;
+  /** @type {DataMap} */
   let datamap;
+  /** @type {DataSource} */
   let dataSource;
-  let grid;
+  /** @type {EditorManager} */
   let editorManager;
-
+  let grid;
+  
   // create grid settings as a copy of default settings
   extend(GridSettings.prototype, DefaultSettings.prototype);
   // overwrite defaults with user settings
@@ -350,6 +353,7 @@ export default function Core(
     this.alter('insert_col', totalCols, 1, 'auto');
   });
 
+  /** 💡 data source update utilities */
   grid = {
     /**
      * Inserts or removes rows and columns.
@@ -893,7 +897,7 @@ export default function Core(
               skippedRow += 1;
               current.row += 1;
               rlen += 1;
-              /* eslint-disable no-continue */
+              
               continue;
             }
             skippedColumn = 0;
@@ -922,7 +926,7 @@ export default function Core(
               }
               if (cellMeta.readOnly) {
                 current.col += 1;
-                /* eslint-disable no-continue */
+                
                 continue;
               }
               const visualColumn = c - skippedColumn;
@@ -1188,7 +1192,6 @@ export default function Core(
 
       if (changes[i] === null) {
         changes.splice(i, 1);
-        /* eslint-disable no-continue */
         continue;
       }
 
@@ -1196,7 +1199,6 @@ export default function Core(
         (changes[i][2] === null || changes[i][2] === undefined) &&
         (changes[i][3] === null || changes[i][3] === undefined)
       ) {
-        /* eslint-disable no-continue */
         continue;
       }
 
@@ -1216,7 +1218,6 @@ export default function Core(
       }
 
       if (skipThisChange) {
-        /* eslint-disable no-continue */
         continue;
       }
 
@@ -1704,7 +1705,7 @@ export default function Core(
   };
 
   /**
-   * Rerender the table. Calling this method starts the process of recalculating, redrawing and applying the changes
+   * 🎨 Rerender the table. Calling this method starts the process of recalculating, redrawing and applying the changes
    * to the DOM. While rendering the table all cell renderers are recalled.
    *
    * Calling this method manually is not recommended. Handsontable tries to render itself by choosing the most
@@ -1988,7 +1989,7 @@ export default function Core(
 
       for (i = 0, j = 0; i < clen; i++) {
         if (columnsAsFunc && !columnSetting(i)) {
-          /* eslint-disable no-continue */
+          
           continue;
         }
         priv.columnSettings[j] = columnFactory(

@@ -73,7 +73,6 @@ Handsontable.buildDate = process.env.HOT_BUILD_DATE;
 Handsontable.packageName = 'nosontable';
 // Handsontable.version = process.env.HOT_VERSION;
 Handsontable.version = '0.0.1111';
-
 // const baseVersion = process.env.HOT_BASE_VERSION;
 // if (baseVersion) {
 //   Handsontable.baseVersion = baseVersion;
@@ -149,7 +148,6 @@ Handsontable.renderers = {};
 
 arrayHelpers.arrayEach(getRegisteredRendererNames(), (rendererName) => {
   const renderer = getRenderer(rendererName);
-
   if (rendererName === 'base') {
     Handsontable.renderers.cellDecorator = renderer;
   }
@@ -161,7 +159,7 @@ arrayHelpers.arrayEach(getRegisteredRendererNames(), (rendererName) => {
 Handsontable.renderers.registerRenderer = registerRenderer;
 Handsontable.renderers.getRenderer = getRenderer;
 
-// Export all registered validators from the Handsontable.
+// Export all registered validators from the Handsontable
 Handsontable.validators = {};
 
 arrayHelpers.arrayEach(getRegisteredValidatorNames(), (validatorName) => {
@@ -195,7 +193,7 @@ Handsontable.languages.getLanguageDictionary = getLanguageDictionary;
 Handsontable.languages.getLanguagesDictionaries = getLanguagesDictionaries;
 Handsontable.languages.registerLanguageDictionary = registerLanguageDictionary;
 
-// Alias to `getTranslatedPhrase` function, for more information check it API.
+// Alias to `getTranslatedPhrase` function, for more information check its API.
 Handsontable.languages.getTranslatedPhrase = (...args) =>
   getTranslatedPhrase(...args);
 

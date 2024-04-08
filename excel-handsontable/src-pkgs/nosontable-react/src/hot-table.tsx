@@ -35,50 +35,30 @@ export interface HotTableProps extends Handsontable.DefaultSettings {
  * });
  *
  * ```
- *
- * @class HotTable
  */
 export class HotTable extends Component<HotTableProps, {}> {
   /**
    * Reference to the `SettingsMapper` instance.
-   *
-   * @type {SettingsMapper}
    */
-  private settingsMapper: SettingsMapper = new SettingsMapper();
-  /**
-   * Component props.
-   *
-   * @type {HotTableProps}
-   */
-  declare props: HotTableProps;
+  private settingsMapper = new SettingsMapper();
   /**
    * The `id` of the main Handsontable DOM element.
-   *
-   * @type {String}
    */
   id: string = null;
   /**
    * Reference to the Handsontable instance.
-   *
-   * @type {Object}
    */
   hotInstance: Handsontable = null;
   /**
    * Reference to the main Handsontable DOM element.
-   *
-   * @type {HTMLElement}
    */
   hotElementRef: HTMLElement = null;
   /**
    * Class name added to the component DOM element.
-   *
-   * @type {String}
    */
   className: string;
   /**
    * Style object passed to the component.
-   *
-   * @type {React.CSSProperties}
    */
   style: React.CSSProperties;
 
@@ -97,19 +77,15 @@ export class HotTable extends Component<HotTableProps, {}> {
   componentDidMount(): void {
     const newSettings = this.settingsMapper.getSettings(this.props);
     this.hotInstance = new Handsontable(this.hotElementRef, newSettings);
+    // todo remove log
     window['hot'] = this.hotInstance;
   }
 
   /**
    * Call the `updateHot` method and prevent the component from re-rendering the instance.
-   *
-   * @param {Object} nextProps
-   * @param {Object} nextState
-   * @returns {Boolean}
    */
-  shouldComponentUpdate(nextProps: HotTableProps, nextState: {}): boolean {
+  shouldComponentUpdate(nextProps: HotTableProps, nextState): boolean {
     this.updateHot(this.settingsMapper.getSettings(nextProps));
-
     return false;
   }
 
@@ -123,7 +99,7 @@ export class HotTable extends Component<HotTableProps, {}> {
   /**
    * Render the table.
    */
-  render(): ReactNode {
+  render() {
     this.id = this.props.id || 'hot-' + Math.random().toString(36).substring(5);
     this.className = this.props.className || '';
     this.style = this.props.style || {};
@@ -140,8 +116,6 @@ export class HotTable extends Component<HotTableProps, {}> {
 
   /**
    * Call the `updateSettings` method for the Handsontable instance.
-   *
-   * @param {Object} newSettings The settings object.
    */
   private updateHot(newSettings: Handsontable.DefaultSettings): void {
     this.hotInstance.updateSettings(newSettings, false);

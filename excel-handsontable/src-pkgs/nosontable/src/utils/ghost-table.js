@@ -394,10 +394,10 @@ class GhostTable {
   }
 
   /**
-   * Create table element.
+   * Create table element
    *
    * @param {String} className
-   * @returns {Object}
+   * @returns {Object} table, tHead, tBody, colGroup
    */
   createTable(className = '') {
     const d = document;

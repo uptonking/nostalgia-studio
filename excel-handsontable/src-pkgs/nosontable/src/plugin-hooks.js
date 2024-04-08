@@ -48,7 +48,7 @@ import { objectEach } from './helpers/object';
  * ...
  */
 
-// @TODO: Move plugin description hooks to plugin?
+/** @TODO: Move plugin description hooks to plugin? */
 const REGISTERED_HOOKS = [
   /**
    * Fired after resetting a cell's meta. This happens when the {@link Core#updateSettings} method is called.
@@ -323,10 +323,9 @@ const REGISTERED_HOOKS = [
   'afterOnCellCornerDblClick',
 
   /**
-   * Fired after clicking on a cell or row/column header. In case the row/column header was clicked, the coordinate
-   * indexes are negative.
-   *
-   * For example clicking on the row header of cell (0, 0) results with `afterOnCellMouseDown` called
+   * Fired after clicking on a cell or row/column header. 
+   * - In case row/column header was clicked, the coordinate indexes are negative.
+   * - For example clicking on the row header of cell (0, 0) results with `afterOnCellMouseDown` called
    * with coordinates `{row: 0, col: -1}`.
    *
    * @event Hooks#afterOnCellMouseDown
@@ -1717,10 +1716,7 @@ class Hooks {
    */
   createEmptyBucket() {
     const bucket = Object.create(null);
-
-    // eslint-disable-next-line no-return-assign
     arrayEach(REGISTERED_HOOKS, (hook) => (bucket[hook] = []));
-
     return bucket;
   }
 
@@ -1901,7 +1897,7 @@ class Hooks {
         while (index < length) {
           if (!globalHandlers[index] || globalHandlers[index].skip) {
             index += 1;
-            /* eslint-disable no-continue */
+            
             continue;
           }
           // performance considerations - http://jsperf.com/call-vs-apply-for-a-plugin-architecture
@@ -1937,7 +1933,7 @@ class Hooks {
         while (index < length) {
           if (!localHandlers[index] || localHandlers[index].skip) {
             index += 1;
-            /* eslint-disable no-continue */
+            
             continue;
           }
           // performance considerations - http://jsperf.com/call-vs-apply-for-a-plugin-architecture
@@ -1981,7 +1977,6 @@ class Hooks {
    * ```
    */
   destroy(context = null) {
-    // eslint-disable-next-line no-return-assign
     objectEach(
       this.getBucket(context),
       (value, key, bucket) => (bucket[key].length = 0),

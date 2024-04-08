@@ -76,7 +76,7 @@ class EventManager {
 
       if (tmpEvent.event === eventName && tmpEvent.element === element) {
         if (callback && callback !== tmpEvent.callback) {
-          /* eslint-disable no-continue */
+          
           continue;
         }
         this.context.eventListeners.splice(len, 1);

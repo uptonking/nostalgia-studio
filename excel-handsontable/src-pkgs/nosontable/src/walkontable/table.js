@@ -214,7 +214,6 @@ class Table {
         const previousState = this.correctHeaderWidth;
 
         this.correctHeaderWidth = leftScrollPos > 0;
-
         if (previousState !== this.correctHeaderWidth) {
           runFastDraw = false;
         }

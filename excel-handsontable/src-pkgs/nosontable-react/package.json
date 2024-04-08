@@ -1,7 +1,7 @@
 {
   "name": "nosontable-react",
   "version": "0.0.1111",
-  "description": "Best Data Grid for React with Spreadsheet Look and Feel.",
+  "description": "React wrapper for nosontable, a JavaScript data grid component with a spreadsheet look & feel.",
   "keywords": [
     "nosontable",
     "handsontable",
@@ -9,18 +9,13 @@
     "data grid",
     "spreadsheet",
     "excel",
-    "react component",
     "react grid"
   ],
-  "repository": {
-    "type": "git",
-    "url": ""
-  },
   "license": "MIT",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "build": "yarn clean && tsc --project tsconfig.json && yarn copy-css",
+    "build": "npm run clean && tsc --project tsconfig.json && yarn copy-css",
     "clean": "rimraf dist && rimraf tsconfig.tsbuildinfo",
     "copy-css": "copyfiles -u 1 \"src/**/*.css\" dist/",
     "delete-build": "rimraf dist",

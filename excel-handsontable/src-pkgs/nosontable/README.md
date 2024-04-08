@@ -1,8 +1,8 @@
 # nosontable
+- nosontable is an open source JavaScript/HTML5 data grid component with spreadsheet look & feel. 
+- It easily integrates with any data source and comes with a variety of useful features like data binding, validation, sorting or powerful context menu. 
 
-nosontable is an open source JavaScript/HTML5 data grid component with spreadsheet look & feel. 
-It is forked from HandsonTable community edition 6.2.2 before it was closed-sourced at version 7. 
-It easily integrates with any data source and comes with a variety of useful features like data binding, validation, sorting or powerful context menu. It is available for [React](//github.com/swsvindland/nosontable-react).
+> It is forked from HandsonTable community edition 6.2.2 before it was closed-sourced at version 7. 
 
 ## Table of contents
 
@@ -16,7 +16,6 @@ It easily integrates with any data source and comes with a variety of useful fea
     - [Screenshot](#screenshot)
     - [Resources](#resources)
     - [Wrappers](#wrappers)
-    - [Support](#support)
     - [License](#license)
 
 ### What to use it for?
@@ -52,15 +51,15 @@ Assuming that you have already installed nosontable, create an empty `<div>` ele
 In the next step, pass a reference to that `<div>` element into the nosontable constructor and fill the instance with sample data:
 
 ```javascript
-var data = [
+const data = [
   ["", "Tesla", "Volvo", "Toyota", "Honda"],
   ["2017", 10, 11, 12, 13],
   ["2018", 20, 11, 14, 13],
   ["2019", 30, 15, 12, 13]
 ];
 
-var container = document.getElementById('example');
-var hot = new Handsontable(container, {
+const container = document.getElementById('example');
+const hot = new Handsontable(container, {
   data: data,
   rowHeaders: true,
   colHeaders: true
@@ -105,24 +104,16 @@ var hot = new Handsontable(container, {
 - [Compatibility](//handsontable.com/docs/tutorial-compatibility.html)
 - [Change log](//github.com/handsontable/handsontable/releases)
 - [Roadmap](//trello.com/b/PztR4hpj)
-- [Newsroom](//twitter.com/handsontable)
+- [Newsroom twitter](//twitter.com/handsontable)
 
 ### Wrappers
 
 Handsontable CE comes with wrappers and directives for most popular frameworks:
 
-- [Angular](//github.com/handsontable/angular-handsontable)
-- [Angular 1](//github.com/handsontable/ngHandsontable)
 - [React](//github.com/handsontable/react-handsontable)
 - [Vue](//github.com/handsontable/vue-handsontable-official)
-- [Polymer](//github.com/handsontable/hot-table)
+- [Angular](//github.com/handsontable/angular-handsontable)
 - [Typescript file](//github.com/handsontable/handsontable/blob/master/handsontable.d.ts)
-
-### Support
-
-Report all the suggestions and problems on [GitHub Issues](//github.com/handsontable/handsontable/issues).
-
-An open source version doesn't include a commercial support. You need to purchase [Handsontable Pro](//github.com/handsontable/handsontable-pro) license or [contact us](//handsontable.com/contact.html) directly in order to obtain a technical support from the Handsoncode team.
 
 ### License
 

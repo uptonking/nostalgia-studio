@@ -1,5 +1,5 @@
-import { addClass, hasClass } from '../helpers/dom/element';
 import EventManager from '../event-manager';
+import { addClass, hasClass } from '../helpers/dom/element';
 import { CellCoords } from '../walkontable';
 import { getRenderer } from './index';
 

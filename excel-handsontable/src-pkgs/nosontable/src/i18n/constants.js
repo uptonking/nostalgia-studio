@@ -1,7 +1,6 @@
 /**
  * Constants for parts of translation.
  */
-
 export const CONTEXT_MENU_ITEMS_NAMESPACE = 'ContextMenu:items';
 export const CONTEXTMENU_ITEMS_ROW_ABOVE = `${CONTEXT_MENU_ITEMS_NAMESPACE}.insertRowAbove`;
 export const CONTEXTMENU_ITEMS_ROW_BELOW = `${CONTEXT_MENU_ITEMS_NAMESPACE}.insertRowBelow`;

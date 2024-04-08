@@ -9,6 +9,12 @@ import {
 import { isCtrlMetaKey, isMetaKey, KEY_CODES } from './helpers/unicode';
 import { CellCoords } from './walkontable';
 
+/**
+ * cell editors manager, open/close, move selection, onKeyDown
+ * @param {*} instance
+ * @param {*} priv
+ * @param {*} selection
+ */
 function EditorManager(instance, priv, selection) {
   const _this = this;
   const eventManager = new EventManager(instance);
