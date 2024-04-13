@@ -114,7 +114,7 @@ export default function Core(
   /** @type {EditorManager} */
   let editorManager;
   let grid;
-  
+
   // create grid settings as a copy of default settings
   extend(GridSettings.prototype, DefaultSettings.prototype);
   // overwrite defaults with user settings
@@ -897,7 +897,7 @@ export default function Core(
               skippedRow += 1;
               current.row += 1;
               rlen += 1;
-              
+
               continue;
             }
             skippedColumn = 0;
@@ -926,7 +926,7 @@ export default function Core(
               }
               if (cellMeta.readOnly) {
                 current.col += 1;
-                
+
                 continue;
               }
               const visualColumn = c - skippedColumn;
@@ -1989,7 +1989,6 @@ export default function Core(
 
       for (i = 0, j = 0; i < clen; i++) {
         if (columnsAsFunc && !columnSetting(i)) {
-          
           continue;
         }
         priv.columnSettings[j] = columnFactory(

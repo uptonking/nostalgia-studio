@@ -1,0 +1,21 @@
+{
+  "kind": "collectionType",
+  "collectionName": "test_field_markdowns",
+  "info": {
+    "singularName": "test-field-markdown",
+    "pluralName": "test-field-markdowns",
+    "displayName": "test-field-markdown"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title1": {
+      "type": "string"
+    },
+    "markdown": {
+      "type": "richtext"
+    }
+  }
+}

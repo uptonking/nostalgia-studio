@@ -6,6 +6,7 @@
   "author": "jinyaoo",
   "scripts": {
     "build": "strapi build",
+    "clean": "rimraf .strapi/ dist/ node_modules/.strapi/",
     "dev1": "strapi develop --debug",
     "develop": "strapi develop",
     "start": "strapi start",
@@ -13,26 +14,27 @@
   },
   "dependencies": {
     "@strapi/design-system": "^1.17.0",
-    "@strapi/plugin-users-permissions": "^5.0.0-beta.2",
-    "@strapi/strapi": "^5.0.0-beta.2",
-    "better-sqlite3": "^9.4.5",
+    "@strapi/plugin-users-permissions": "^5.0.0-beta.3",
+    "@strapi/strapi": "^5.0.0-beta.3",
+    "better-sqlite3": "^9.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3",
+    "strapi-plugin-editor-markdown": "0.0.1111",
+    "strapi-plugin-editor-quill": "0.0.1111",
+    "strapi-plugin-select-multi": "0.0.1111",
     "strapi-plugin-test-v5": "0.0.1111",
     "strapi-plugin-version-trail": "0.0.1111",
     "strapi-plugin-watoffice": "0.0.1111",
     "styled-components": "^5.3.3"
   },
   "devDependencies": {
-    "@strapi/typescript-utils": "^5.0.0-beta.2"
+    "@strapi/typescript-utils": "^5.0.0-beta.3",
+    "rimraf": "^5.0.5"
   },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.3.0"
-  },
-  "overrides": {
-    "sharp": "0.33.2"
   },
   "strapi": {
     "uuid": "3167a301-2f3c-4a4a-912d-b9f2b33321b9"

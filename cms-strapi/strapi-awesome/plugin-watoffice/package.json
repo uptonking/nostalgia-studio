@@ -34,9 +34,9 @@
     "react-intl": "6.6.2"
   },
   "devDependencies": {
-    "@strapi/strapi": "^5.0.0-beta.2",
-    "@strapi/types": "^5.0.0-beta.2",
-    "@strapi/typescript-utils": "^5.0.0-beta.2",
+    "@strapi/strapi": "^5.0.0-beta.3",
+    "@strapi/types": "^5.0.0-beta.3",
+    "@strapi/typescript-utils": "^5.0.0-beta.3",
     "@types/react": "^18.2.67",
     "@types/react-dom": "^18.2.22",
     "@types/styled-components": "^5.1.34",

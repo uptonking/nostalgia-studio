@@ -5,7 +5,11 @@
 ```json used
 {
 
-    "@notum-cz/strapi-plugin-content-versioning": "^1.2.12", 
+    "strapi-plugin-editor-markdown": "0.0.1111",
+    "strapi-plugin-editor-quill": "0.0.1111",
+    "strapi-plugin-select-multi": "0.0.1111",
+    "strapi-plugin-version-trail": "0.0.1111",
+    "strapi-plugin-watoffice": "0.0.1111",
     "strapi-plugin-csv-upload": "2.0.2111", 
     "strapi-plugin-csv-export": "0.0.2111", 
     "strapi-bulk-operator": "0.0.5111", 
@@ -23,7 +27,6 @@
 ```json marked
 {
    "@isneezy/strapi-media-preview": "^1.0.2",
-    "@notum-cz/strapi-plugin-content-versioning": "^1.2.12",
     "@webbio/strapi-plugin-scheduler": "^1.0.6",
     "strapi-advanced-uuid": "^1.3.0",
     "strapi-bulk-operator": "^0.0.5",

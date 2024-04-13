@@ -28,7 +28,6 @@
     "pouchdb-adapter-leveldb-core": "8.0.1111"
   },
   "devDependencies": {
-    "@types/node": "^20.11.25",
-    "@rspack/plugin-node-polyfill": "^0.5.0"
+    "@types/node": "^20.11.25"
   }
 }

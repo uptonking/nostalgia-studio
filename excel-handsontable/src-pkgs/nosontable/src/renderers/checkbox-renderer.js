@@ -177,7 +177,6 @@ function checkboxRenderer(
           return;
         }
 
-        
         if (cachedCellProperties.readOnly === true) {
           continue;
         }

@@ -1,0 +1,55 @@
+{
+  "name": "isomorphic.js",
+  "version": "0.2.5111",
+  "description": "Isomorphic JavaScript helper functions (performance, crpyto, ..)",
+  "homepage": "https://github.com/dmonad/isomorphic.js",
+  "license": "MIT",
+  "author": "Kevin Jahns <kevin.jahns@protonmail.com>",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "node": {
+        "module": "./node.mjs",
+        "import": "./node.mjs",
+        "require": "./iso.js"
+      },
+      "browser": {
+        "module": "./browser.mjs",
+        "import": "./browser.mjs",
+        "require": "./browser.js"
+      },
+      "default": {
+        "module": "./browser.mjs",
+        "import": "./browser.mjs",
+        "require": "./iso.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./iso.js",
+  "module": "./browser.mjs",
+  "browser": "./browser.mjs",
+  "files": [
+    "browser.js",
+    "browser.mjs",
+    "iso.js",
+    "node.js",
+    "node.mjs"
+  ],
+  "scripts": {
+    "lint": "standard && tsc",
+    "test": "npm run lint",
+    "preversion": "npm run test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.12.7"
+  },
+  "standard": {
+    "ignore": [
+      "/dist",
+      "/node_modules",
+      "/docs"
+    ]
+  }
+}

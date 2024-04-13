@@ -3,9 +3,6 @@
   "version": "0.2.9311",
   "description": "",
   "homepage": "https://github.com/dmonad/lib0#readme",
-  "bugs": {
-    "url": "https://github.com/dmonad/lib0/issues"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dmonad/lib0.git"
@@ -492,9 +489,9 @@
     "dist": "rollup -c",
     "gendocs": "node ./bin/gendocs.js",
     "gentesthtml": "node ./bin/gentesthtml.js --script test.js > test.html",
-    "postinstall2": "npm run clean && npm run dist && npm run types",
     "postinstall": "npm run clean && npm run dist",
     "lint": "standard && tsc",
+    "postinstall2": "npm run clean && npm run dist && npm run types",
     "postpublish": "npm run clean",
     "test": "c8 --check-coverage --lines 100 --branches 100 --functions 100 --statements 100 node --unhandled-rejections=strict ./test.js --repetition-time 50 --production",
     "test-extensive": "c8 --check-coverage --lines 100 --branches 100 --functions 100 --statements 100 node test.js --repetition-time 30000 --extensive --production",
@@ -505,7 +502,7 @@
     "preversion": "npm run clean && npm run lint && npm run test && npm run types && npm run dist && git add README.md"
   },
   "dependencies": {
-    "isomorphic.js": "^0.2.5"
+    "isomorphic.js": "0.2.5111"
   },
   "devDependencies": {
     "@types/node": "^20.12.5",

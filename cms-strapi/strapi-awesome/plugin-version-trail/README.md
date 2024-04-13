@@ -12,6 +12,8 @@
 > ⚠️ If you disable this plugin and then reenable it, all previous versions data will be cleared
 
 # todo
+- hide VERSION HISTORY panel if not enabled
+
 - versions pagination not working: 🐛 v5 bug
   - make pagination configurable
 

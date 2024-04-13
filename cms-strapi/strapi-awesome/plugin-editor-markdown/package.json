@@ -1,0 +1,55 @@
+{
+  "name": "strapi-plugin-editor-markdown",
+  "version": "0.0.1111",
+  "description": "A quill-based markdown editor plugin for strapi v5",
+  "exports": {
+    "./strapi-admin": {
+      "source": "./admin/src/index.ts",
+      "require": "./dist/admin/src/index.js",
+      "default": "./dist/admin/src/index.js"
+    },
+    "./strapi-server": {
+      "source": "./strapi-server.js",
+      "require": "./strapi-server.js",
+      "default": "./strapi-server.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "npm run clean && npm run build:admin-externals && npm run build:server",
+    "build:admin-externals": "rimraf dist/admin && cross-env REACT_APP_ENV=react rspack build -c ./webpacker/rspack.config.mjs",
+    "build:admin-externals-bak": "rimraf dist/admin && cross-env REACT_APP_ENV=react rspack build -c ./webpacker/rspack.config.externals.mjs",
+    "build:admin-tsc": "tsc -p ./admin/tsconfig.build.json",
+    "build:server": "tsc -p ./server/tsconfig.build.json",
+    "clean": "rimraf dist",
+    "postinstall": "npm run build",
+    "test:ts:back": " tsc -p server/tsconfig.json",
+    "test:ts:front": " tsc -p admin/tsconfig.build.json",
+    "verify": "strapi plugin:verify",
+    "watch": "strapi plugin:watch",
+    "watch:link": "strapi plugin:watch:link"
+  },
+  "dependencies": {
+    "@strapi/design-system": "^1.17.0",
+    "@strapi/icons": "^1.17.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-intl": "6.6.2",
+    "react-quill": "^2.0.0"
+  },
+  "devDependencies": {
+    "@strapi/strapi": "^5.0.0-beta.3",
+    "@strapi/types": "^5.0.0-beta.3",
+    "@strapi/typescript-utils": "^5.0.0-beta.3",
+    "@types/react": "^18.2.67",
+    "@types/react-dom": "^18.2.22",
+    "@types/styled-components": "^5.1.34",
+    "react-router-dom": "^6.22.3",
+    "styled-components": "^5.3.3"
+  },
+  "strapi": {
+    "name": "editor-markdown",
+    "displayName": "editor-markdown plugin",
+    "description": "markdown editor using quill for strapi v5"
+  }
+}

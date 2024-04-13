@@ -323,7 +323,7 @@ const REGISTERED_HOOKS = [
   'afterOnCellCornerDblClick',
 
   /**
-   * Fired after clicking on a cell or row/column header. 
+   * Fired after clicking on a cell or row/column header.
    * - In case row/column header was clicked, the coordinate indexes are negative.
    * - For example clicking on the row header of cell (0, 0) results with `afterOnCellMouseDown` called
    * with coordinates `{row: 0, col: -1}`.
@@ -1897,7 +1897,7 @@ class Hooks {
         while (index < length) {
           if (!globalHandlers[index] || globalHandlers[index].skip) {
             index += 1;
-            
+
             continue;
           }
           // performance considerations - http://jsperf.com/call-vs-apply-for-a-plugin-architecture
@@ -1933,7 +1933,7 @@ class Hooks {
         while (index < length) {
           if (!localHandlers[index] || localHandlers[index].skip) {
             index += 1;
-            
+
             continue;
           }
           // performance considerations - http://jsperf.com/call-vs-apply-for-a-plugin-architecture

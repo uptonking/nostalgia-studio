@@ -82,7 +82,7 @@ export function VersionTrailPanel() {
   const [pageCount, setPageCount] = useState(1);
   const [total, setTotal] = useState(0);
 
-  console.log(';; isVer, layout ', isVerEnabled, recordId, doc, layout);
+  // console.log(';; isVer, layout ', isVerEnabled, recordId, doc, layout);
 
   /** if collectionType is single then fetch the ID (if exists) from the server
    * and set `1` if nothing.

@@ -9,4 +9,13 @@ export default () => ({
   'test-v5': {
     enabled: true,
   },
+  'editor-markdown': {
+    enabled: false,
+  },
+  'editor-quill': {
+    enabled: true,
+  },
+  'select-multi': {
+    enabled: true,
+  },
 });

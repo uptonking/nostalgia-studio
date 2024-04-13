@@ -1,11 +1,12 @@
 import Delta from 'quill-delta';
 import * as RangeFix from 'rangefix';
-import ResizeObserver from 'resize-observer-polyfill';
 
 import Cursor from './cursor';
 import type IQuillCursorsOptions from './i-quill-cursors-options';
 import type IQuillRange from './i-range';
 import template from './template';
+
+// import ResizeObserver from 'resize-observer-polyfill';
 
 export default class QuillCursors {
   public static DEFAULTS: IQuillCursorsOptions = {

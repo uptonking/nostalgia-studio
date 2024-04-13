@@ -76,7 +76,6 @@ class EventManager {
 
       if (tmpEvent.event === eventName && tmpEvent.element === element) {
         if (callback && callback !== tmpEvent.callback) {
-          
           continue;
         }
         this.context.eventListeners.splice(len, 1);

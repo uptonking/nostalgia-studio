@@ -1,7 +1,7 @@
 {
-  "name": "strapi-plugin-test-v5",
+  "name": "strapi-plugin-select-multi",
   "version": "0.0.1111",
-  "description": "A simple plugin for strapi v5",
+  "description": "multi select-options plugin for strapi v5",
   "exports": {
     "./strapi-admin": {
       "source": "./admin/src/index.ts",
@@ -30,12 +30,13 @@
   "dependencies": {
     "@strapi/design-system": "^1.17.0",
     "@strapi/icons": "^1.16.0",
+    "react-select": "5.7.0",
     "react-intl": "6.6.2"
   },
   "devDependencies": {
-    "@strapi/strapi": "^5.0.0-beta.2",
-    "@strapi/types": "^5.0.0-beta.2",
-    "@strapi/typescript-utils": "^5.0.0-beta.2",
+    "@strapi/strapi": "^5.0.0-beta.3",
+    "@strapi/types": "^5.0.0-beta.3",
+    "@strapi/typescript-utils": "^5.0.0-beta.3",
     "@types/react": "^18.2.67",
     "@types/react-dom": "^18.2.22",
     "@types/styled-components": "^5.1.34",
@@ -46,9 +47,9 @@
     "typescript": "^5.4.3"
   },
   "strapi": {
-    "name": "test-v5",
-    "displayName": "test-v5 plugin",
-    "description": "test plugin for strapi v5",
+    "name": "select-multi",
+    "displayName": "select-multi plugin",
+    "description": "select-multi plugin for strapi v5",
     "kind": "plugin"
   }
 }

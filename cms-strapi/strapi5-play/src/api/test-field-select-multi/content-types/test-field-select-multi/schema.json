@@ -1,0 +1,23 @@
+{
+  "kind": "collectionType",
+  "collectionName": "test_field_select_multis",
+  "info": {
+    "singularName": "test-field-select-multi",
+    "pluralName": "test-field-select-multis",
+    "displayName": "test-field-select-multi"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "editor_entry": {
+      "type": "string"
+    },
+    "rich_editors": {
+      "type": "customField",
+      "options": ["quill", "slate", "prosemirror", "lexical"],
+      "customField": "plugin::select-multi.select-multi"
+    }
+  }
+}

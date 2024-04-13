@@ -3,11 +3,14 @@
   "version": "0.0.1111",
   "type": "module",
   "scripts": {
-    "build": "tsc && vite build",
+    "clean": "rimraf dist",
+    "build": "rimraf dist && cross-env REACT_APP_ENV=react rspack build -c ./webpacker/rspack.config.demo.mjs",
+    "build:externals": "rimraf dist/externals* && cross-env REACT_APP_ENV=react rspack build -c ./webpacker/rspack.config.externals.mjs",
     "server": "PORT=1234 npx y-websocket",
     "demo": "cross-env REACT_APP_ENV=reacthot rspack serve -c ./webpacker/rspack.config.demo.mjs",
-    "dev": "vite",
-    "preview": "vite preview"
+    "dev": "npm run server && npm run demo",
+    "start": "npm run dev",
+    "test": "vite preview"
   },
   "dependencies": {
     "quill": "2.0.1111",

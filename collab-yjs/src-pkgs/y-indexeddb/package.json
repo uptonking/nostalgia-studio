@@ -18,10 +18,6 @@
     "type": "git",
     "url": "git+https://github.com/yjs/y-indexeddb.git"
   },
-  "funding": {
-    "type": "GitHub Sponsors ❤",
-    "url": "https://github.com/sponsors/dmonad"
-  },
   "license": "MIT",
   "author": "Kevin Jahns <kevin.jahns@protonmail.com>",
   "sideEffects": false,

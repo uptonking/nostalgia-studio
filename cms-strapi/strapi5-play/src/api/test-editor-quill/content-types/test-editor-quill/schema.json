@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "test_editor_quills",
+  "info": {
+    "singularName": "test-editor-quill",
+    "pluralName": "test-editor-quills",
+    "displayName": "test-editor-quill"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title11": {
+      "type": "string"
+    },
+    "delta": {
+      "type": "customField",
+      "options": {
+        "header": true,
+        "list": true,
+        "checklist": true,
+        "table": true,
+        "warning": true,
+        "code": true,
+        "link_tool": true,
+        "raw": true,
+        "quote": true,
+        "marker": true,
+        "delimiter": true,
+        "inlineCode": true,
+        "image": true,
+        "component": false
+      },
+      "customField": "plugin::editor-quill.editor-quill"
+    }
+  }
+}

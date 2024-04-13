@@ -13,10 +13,6 @@
     "type": "git",
     "url": "git+https://github.com/y-js/y-quill.git"
   },
-  "funding": {
-    "type": "GitHub Sponsors ❤",
-    "url": "https://github.com/sponsors/dmonad"
-  },
   "license": "MIT",
   "author": "Kevin Jahns <kevin.jahns@protonmail.com>",
   "sideEffects": false,
@@ -28,12 +24,12 @@
     "src/*"
   ],
   "scripts": {
+    "clean": "rm -rf dist",
     "debug": "concurrently 'live-server --port=3443 --entry-file=test.html' 'npm run watch'",
     "demo": "concurrently 'live-server --port=3443 --entry-file=demo/index.html' 'npm run watch'",
-    "clean": "rm -rf dist",
     "dist": "rm -rf dist && rollup -c",
-    "lint": "standard && tsc",
     "postinstall": "npm run clean && npm run dist ",
+    "lint": "standard && tsc",
     "start": "npm run demo",
     "test": "rollup -c && node test/test.cjs",
     "preversion": "npm run dist && npm run lint && npm run test && test -e ./dist/src/y-quill.d.ts && test -e ./dist/y-quill.cjs && test -e ./dist/y-quill.cjs.map",

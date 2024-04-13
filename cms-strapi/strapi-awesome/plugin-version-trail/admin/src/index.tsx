@@ -13,6 +13,7 @@ const name = pluginPkg.strapi.name;
 
 const App = {
   register(app) {
+    // console.log(';; app ', app, app.addFields)
     app.registerPlugin({
       id: pluginId,
       name,

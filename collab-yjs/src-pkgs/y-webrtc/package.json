@@ -13,10 +13,6 @@
     "type": "git",
     "url": "git+https://github.com/yjs/y-webrtc.git"
   },
-  "funding": {
-    "type": "GitHub Sponsors ❤",
-    "url": "https://github.com/sponsors/dmonad"
-  },
   "license": "MIT",
   "author": "Kevin Jahns <kevin.jahns@protonmail.com>",
   "sideEffects": false,
@@ -28,7 +24,6 @@
     "types": "./dist/src/y-webrtc.d.ts"
   },
   "main": "./dist/y-webrtc.cjs",
-  "unpkg": "./src/y-webrtc.mjs",
   "module": "./src/y-webrtc.js",
   "types": "./dist/src/y-webrtc.d.ts",
   "bin": {
