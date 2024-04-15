@@ -71,7 +71,15 @@ const demoConfig = merge(
     // externals: [nodeExternals({ modulesFromFile: true })],
     externals: [
       ({ context, request }, cb) => {
-        !/^\./.test(request) ? cb(null, request) : cb(null, false);
+        // console.log(';; req ', request);
+        if (
+          /^\./.test(request) ||
+          ['quill', 'quill-delta', 'parchment'].includes(request)
+        ) {
+          cb(null, false);
+        } else {
+          cb(null, request);
+        }
       },
     ],
     experiments: {

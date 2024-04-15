@@ -72,7 +72,7 @@
     "rollup": "^3.20.0",
     "tui-jsdoc-template": "^1.2.2",
     "typescript": "^5.4.4",
-    "y-protocols": "^1.0.5"
+    "y-protocols": "1.0.6111"
   },
   "engines": {
     "node": ">=16.0.0",

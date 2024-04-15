@@ -1,45 +1,88 @@
 import 'react-quill/dist/quill.snow.css';
 
-import React, { useState } from 'react';
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
 
-import ReactQuill from 'react-quill';
+import Quill from 'quill';
 
 import { Button, Field, FieldLabel, Flex, Stack } from '@strapi/design-system';
 import { type InputProps, useField } from '@strapi/strapi/admin';
 
 // import { useLibrary, prefixFileUrlWithBackendUrl } from '@strapi/helper-plugin';
 
-export const QuillEditor = ({ onChange, name, value }) => {
-  const modules = {
-    toolbar: [
-      [{ header: '1' }, { header: '2' }, { font: [] }],
-      [{ size: [] }],
-      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-      [
-        { list: 'ordered' },
-        { list: 'bullet' },
-        { indent: '-1' },
-        { indent: '+1' },
-      ],
-      ['link'],
-      ['clean'],
-    ],
-  };
-
-  return (
-    <ReactQuill
-      theme='snow'
-      value={value}
-      modules={modules}
-      onChange={(content, event, editor) => {
-        onChange({ target: { name, value: content } });
-      }}
-    />
-  );
+type QuillEditorProps = {
+  onChange: (...args: any[]) => any;
+  name: string;
+  value: string;
 };
+
+export const QuillEditor = forwardRef<Quill, QuillEditorProps>(
+  ({ onChange, name, value }, ref) => {
+    const modules = {
+      toolbar: [
+        [{ header: '1' }, { header: '2' }, { font: [] }],
+        [{ size: [] }],
+        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+        [
+          { list: 'ordered' },
+          { list: 'bullet' },
+          { indent: '-1' },
+          { indent: '+1' },
+        ],
+        ['link'],
+        ['clean'],
+      ],
+    };
+
+    const containerRef = useRef<HTMLDivElement>(null);
+    // const onTextChangeRef = useRef(onTextChange);
+    // const onSelectionChangeRef = useRef(onSelectionChange);
+
+    useEffect(() => {
+      const container = containerRef.current;
+      if (!container) return;
+      const editorContainer = container.appendChild(
+        container.ownerDocument.createElement('div'),
+      );
+      const quill = new Quill(editorContainer, {
+        modules,
+        theme: 'snow',
+      });
+      if (!ref) {
+        // @ts-expect-error fix-types
+        ref = {};
+      }
+      // @ts-expect-error fix-types
+      ref.current = quill;
+
+      if (value) {
+        quill.setContents(JSON.parse(value));
+      }
+
+      quill.on(Quill.events.TEXT_CHANGE, (...args) => {
+        // onTextChangeRef.current?.(...args);
+        onChange({
+          target: { name, value: JSON.stringify(quill.getContents()) },
+        });
+      });
+      // quill.on(Quill.events.SELECTION_CHANGE, (...args) => {
+      //   onSelectionChangeRef.current?.(...args);
+      // });
+      // let vv = name;
+      return () => {
+        // @ts-expect-error fix-types
+        ref.current = null;
+        container.innerHTML = '';
+      };
+    }, [name, ref]);
+
+    return <div ref={containerRef} />;
+  },
+);
 
 export const FieldQuillEditor = ({ name }) => {
   const { onChange, value = '', error } = useField(name);
+
+  const quillRef = useRef<Quill | null>(null);
 
   const [showMediaLibDialog, setShowMediaLibDialog] = useState(false);
   // const { components } = useLibrary();
@@ -68,14 +111,19 @@ export const FieldQuillEditor = ({ name }) => {
   return (
     <div>
       <Field name={name}>
-        <Button variant='secondary' onClick={handleToggleMediaLibDialog}>
+        {/* <Button variant='secondary' onClick={handleToggleMediaLibDialog}>
           MediaLib
-        </Button>
-        <Stack size={2} padding={2}>
+        </Button> */}
+        <Stack spacing={2} padding={2}>
           <Flex>
             <FieldLabel>{name}</FieldLabel>
           </Flex>
-          <QuillEditor name={name} onChange={onChange} value={value} />
+          <QuillEditor
+            name={name}
+            onChange={onChange}
+            value={value}
+            ref={quillRef}
+          />
         </Stack>
         {
           // showMediaLibDialog

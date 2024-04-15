@@ -20,7 +20,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3",
-    "strapi-plugin-editor-markdown": "0.0.1111",
     "strapi-plugin-editor-quill": "0.0.1111",
     "strapi-plugin-select-multi": "0.0.1111",
     "strapi-plugin-test-v5": "0.0.1111",

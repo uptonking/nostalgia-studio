@@ -23,6 +23,7 @@
     "build:server": "tsc -p ./server/tsconfig.build.json",
     "clean": "rimraf dist",
     "postinstall": "npm run build",
+    "lint": "eslint --ext .ts,.tsx --fix admin server",
     "test:ts:back": " tsc -p server/tsconfig.json",
     "test:ts:front": " tsc -p admin/tsconfig.build.json",
     "verify": "strapi plugin:verify",
@@ -32,10 +33,10 @@
   "dependencies": {
     "@strapi/design-system": "^1.17.0",
     "@strapi/icons": "^1.17.0",
+    "quill": "2.0.1111",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-intl": "6.6.2",
-    "react-quill": "2.0.0"
+    "react-intl": "6.6.2"
   },
   "devDependencies": {
     "@strapi/strapi": "^5.0.0-beta.3",

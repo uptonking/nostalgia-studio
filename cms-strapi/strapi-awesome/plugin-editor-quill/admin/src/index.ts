@@ -20,7 +20,7 @@ export default {
       icon: EditorIcon,
       intlLabel: {
         id: getTrad('editor-quill.label'),
-        defaultMessage: 'Quilljs',
+        defaultMessage: 'Quill Editor',
       },
       intlDescription: {
         id: getTrad('editor-quill.description'),

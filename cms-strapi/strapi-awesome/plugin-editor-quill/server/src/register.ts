@@ -7,6 +7,10 @@ const register = ({ strapi }) => {
     name: 'editor-quill',
     plugin: 'editor-quill',
     type: 'string',
+    inputSize: {
+      default: 12,
+      isResizable: false,
+    },
   });
 };
 

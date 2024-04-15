@@ -29,7 +29,7 @@
     "watch:link": "strapi plugin:watch:link"
   },
   "dependencies": {
-    "@reduxjs/toolkit": "1.9.7",
+    "@reduxjs/toolkit": "^1.9.7",
     "@strapi/admin": "^5.0.0-beta.3",
     "@strapi/design-system": "^1.17.0",
     "@strapi/icons": "^1.17.0",

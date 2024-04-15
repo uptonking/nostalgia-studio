@@ -68,8 +68,12 @@ export const commonConfig = {
         ],
       },
       {
-        test: /\.(jpg|jpeg|png|gif|svg|ico)$/,
+        test: /\.(jpg|jpeg|png|gif|ico)$/,
         type: 'asset',
+      },
+      {
+        test: /\.(svg)$/,
+        type: 'asset/source',
       },
       {
         test: /\.(ttf|eot|woff|woff2)$/,

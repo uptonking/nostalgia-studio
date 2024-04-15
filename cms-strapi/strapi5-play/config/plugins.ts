@@ -9,9 +9,9 @@ export default () => ({
   'test-v5': {
     enabled: true,
   },
-  'editor-markdown': {
-    enabled: false,
-  },
+  // 'editor-markdown': {
+  //   enabled: false,
+  // },
   'editor-quill': {
     enabled: true,
   },

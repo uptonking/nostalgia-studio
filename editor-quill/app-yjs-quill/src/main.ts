@@ -13,18 +13,19 @@ Quill.register('modules/cursors', QuillCursors as any);
 const quill = new Quill(rootElem, {
   modules: {
     cursors: true,
-    toolbar: false,
-    //  [
-    //   [{ header: [1, 2, false] }],
-    //   ['bold', 'italic', 'underline'],
-    //   ['image', 'code-block'],
-    // ],
+    // toolbar: false,
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ['bold', 'italic', 'underline'],
+      ['image', 'code-block'],
+    ],
     history: {
       userOnly: true, // 用户自己实现历史记录
     },
   },
-  placeholder: 'hello, it is quill editor...',
+  placeholder: 'hello, quill editor...',
   theme: 'snow',
+  debug: 'warn',
 });
 
 /** 需要共享的数据容器 */
@@ -33,11 +34,10 @@ const ydoc = new Y.Doc();
 const ytext = ydoc.getText('quill');
 
 // 连接到 websocket 服务端
-const provider = new WebsocketProvider(
-  'ws://localhost:1234',
-  'quill-demo-room',
-  ydoc,
-);
-
-// 数据模型绑定，再绑上光标对象
-const binding = new QuillBinding(ytext, quill, provider.awareness);
+// const provider = new WebsocketProvider(
+//   'ws://localhost:1234',
+//   'quill-demo-room',
+//   ydoc,
+// );
+// // 数据模型绑定，再绑上光标对象
+// const binding = new QuillBinding(ytext, quill, provider.awareness);
