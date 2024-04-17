@@ -1,0 +1,26 @@
+{
+  "name": "@datalking/noseditor",
+  "version": "0.0.1111",
+  "description": "customizable and extensible rich text editor built with quill.",
+  "type": "module",
+  "main": "dist/index",
+  "scripts": {
+    "build": "npm run clean && npm run build:prod-cjs",
+    "build2": "npm run build:types && npm run build:js",
+    "build:dev": "cross-env REACT_APP_ENV=react rspack -c ./webpacker/rspack.config.demo.mjs",
+    "build:prod-cjs": "cross-env REACT_APP_ENV=react NODE_ENV=production rspack -c ./webpacker/rspack.config.prod.cjs.mjs",
+    "build:prod-esm": "cross-env REACT_APP_ENV=react NODE_ENV=production rspack -c ./webpacker/rspack.config.prod.esm.mjs",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "demo": "cross-env REACT_APP_ENV=reacthot rspack serve -c ./webpacker/rspack.config.demo.mjs",
+    "demo-esm": "cross-env REACT_APP_ENV=reacthot rspack serve -c ./webpacker/rspack.config.demo.esm.mjs",
+    "dev": "npm run demo",
+    "start": "npm run demo"
+  },
+  "dependencies": {
+    "quill": "2.0.1111"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.2"
+  }
+}

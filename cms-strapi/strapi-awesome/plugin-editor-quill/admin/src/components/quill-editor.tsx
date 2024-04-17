@@ -47,12 +47,8 @@ export const QuillEditor = forwardRef<Quill, QuillEditorProps>(
         modules,
         theme: 'snow',
       });
-      if (!ref) {
-        // @ts-expect-error fix-types
-        ref = {};
-      }
-      // @ts-expect-error fix-types
-      ref.current = quill;
+      if (!ref) ref = { current: null };
+      if (ref) ref['current'] = quill;
 
       if (value) {
         quill.setContents(JSON.parse(value));
@@ -68,6 +64,7 @@ export const QuillEditor = forwardRef<Quill, QuillEditorProps>(
       //   onSelectionChangeRef.current?.(...args);
       // });
       // let vv = name;
+
       return () => {
         // @ts-expect-error fix-types
         ref.current = null;
@@ -75,7 +72,7 @@ export const QuillEditor = forwardRef<Quill, QuillEditorProps>(
       };
     }, [name, ref]);
 
-    return <div ref={containerRef} />;
+    return <div className='ql-edit-container' ref={containerRef} />;
   },
 );
 
