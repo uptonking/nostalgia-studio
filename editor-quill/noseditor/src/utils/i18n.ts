@@ -5,10 +5,10 @@ export const i18nConfig = {
     fontYahei: 'MS Yahei',
     fontSong: 'SimSun',
     fontKai: 'KaiTi',
-    tableDialogLabel: 'Slide & Click',
+    tableDialogLabel: 'Row X Column',
     imageDialogLocal: 'Select Local Image',
     imageDialogUrlLabel: 'Or input image url',
-    iamgeDialogInsert: 'Insert',
+    imageDialogInsert: 'Insert',
     imageDialogTypeErr: 'File type is error, please upload again!',
     imageDialogSizeErr: 'Image size cannot exceed $M',
 
@@ -63,7 +63,7 @@ export const i18nConfig = {
     imgRemarkLabel: '添加备注',
     deleteImg: '删除图片',
   },
-};
+} as const;
 
 export const getI18nText = (
   keys: (keyof (typeof i18nConfig)['en'])[] | keyof (typeof i18nConfig)['en'],

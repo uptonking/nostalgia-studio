@@ -1,3 +1,1 @@
-import { createNoseditor } from './create-editor';
-
-export { createNoseditor };
+export { createNoseditor, type CreateNoseditorOptions } from './create-editor';

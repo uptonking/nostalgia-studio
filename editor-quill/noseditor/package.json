@@ -3,7 +3,7 @@
   "version": "0.0.1111",
   "description": "customizable and extensible rich text editor built with quill.",
   "type": "module",
-  "main": "dist/index",
+  "main": "src/index",
   "scripts": {
     "build": "npm run clean && npm run build:prod-cjs",
     "build2": "npm run build:types && npm run build:js",

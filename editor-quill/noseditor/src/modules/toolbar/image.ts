@@ -1,64 +1,82 @@
 import Quill from 'quill';
 import type DefaultModule from 'quill/src/core/module';
+import type DefaultToolbar from 'quill/src/modules/toolbar';
 
 import { isUrl } from '../../utils/common';
 import { getI18nText } from '../../utils/i18n';
 
 const Module = Quill.import('core/module') as typeof DefaultModule;
 
-class ImageHandler extends Module<Record<string, any>> {
-  toolbar: any;
-  imageDialog: any;
-  fileInput: any;
+type ImageHandlerOptions = {
+  /** 图片上传API，API返回的应该是结果为URL的Promise */
+  imgUploadApi?: (formData: FormData) => Promise<string>;
+  /** 上传成功回调 */
+  uploadSuccCB?: (data: unknown) => void;
+  /** 上传失败回调 */
+  uploadFailCB?: (error: unknown) => void;
+  /** 添加备注的统一前置字符串，可为空字符串 */
+  imgRemarkPre?: string;
+  /** 上传本地图片最大体积，单位MB，默认为5MB */
+  maxSize?: 5;
+  /** 上传本地图片可以接受的图片类型，默认 image/png, image/gif, image/jpeg */
+  imageAccept?: string;
+  i18n?: 'zh' | 'en';
+  dialogWidth?: number;
+};
+
+const defaultOptions: ImageHandlerOptions = {
+  dialogWidth: 360,
+};
+
+/**
+ * 默认插入图片转为base64后保存在Delta
+ */
+export class ImageHandler extends Module<ImageHandlerOptions> {
+  toolbar: DefaultToolbar;
+  imageDialogRoot: HTMLElement;
+  imgFileInput: HTMLInputElement;
+  imgTextInput: HTMLInputElement;
 
   constructor(quill, options) {
     super(quill, options);
-
-    this.quill = quill;
-    this.options = options || {};
-    this.toolbar = quill.getModule('toolbar');
-    if (typeof this.toolbar !== 'undefined') {
-      this.toolbar.addHandler('image', this.handleImageClick.bind(this));
+    this.options = { ...defaultOptions, ...options };
+    this.toolbar = quill.getModule('toolbar') as DefaultToolbar;
+    if (this.toolbar) {
+      this.toolbar.addHandler('image', this.handleAddImageClick.bind(this));
     }
   }
 
-  handleImageClick() {
-    this.imageDialogOpen();
-    if (window.event) {
-      window.event.cancelBubble = true;
-      // 点击整个编辑器就消除image的弹出框
-      this.quill.container.parentNode.addEventListener('click', () => {
-        this.imageDialogClose();
-      });
-    } else {
-      // 聚焦文本container就消除image的弹出框
-      this.quill.container.addEventListener('click', () => {
-        this.imageDialogClose();
-      });
-    }
+  handleAddImageClick() {
+    const range = this.quill.getSelection(true);
+    if (!range) return;
+
+    this.openImageDialog();
+    this.quill.container.addEventListener('click', () => {
+      this.closeImageDialog();
+    });
     window.addEventListener('resize', () => {
-      this.imageDialogClose();
+      this.closeImageDialog();
     });
   }
 
-  imageDialogOpen() {
+  openImageDialog() {
     if (this.toolbar.container.querySelector('.ql-image-dialog')) {
-      this.imageDialog.remove();
-    } else {
-      this.showImageDialog();
+      this.imageDialogRoot.remove();
+      return;
     }
+    this.renderImageDialogContent();
   }
 
-  showImageDialog() {
+  renderImageDialogContent() {
     const toolbarContainer = this.toolbar.container;
-    if (!this.imageDialog) {
-      this.imageDialog = document.createElement('div');
-      this.imageDialog.classList.add('ql-image-dialog');
+    if (!this.imageDialogRoot) {
+      this.imageDialogRoot = document.createElement('div');
+      this.imageDialogRoot.classList.add('ql-image-dialog');
       const words = getI18nText(
-        ['imageDialogLocal', 'imageDialogUrlLabel', 'iamgeDialogInsert'],
+        ['imageDialogLocal', 'imageDialogUrlLabel', 'imageDialogInsert'],
         this.options.i18n,
       );
-      this.imageDialog.innerHTML = `
+      this.imageDialogRoot.innerHTML = `
       <input type="file" class="ql-image-upload" accept="${
         this.options.imageAccept ||
         'image/png, image/gif, image/jpeg, image/bmp, image/x-icon'
@@ -66,44 +84,63 @@ class ImageHandler extends Module<Record<string, any>> {
       <button class="local-image">${words[0]}</button>
       <p class="err-tips err-file"></p>
       <p class="url-label">${words[1]}</p>
-      <div class="image-url-form"><input class="text-input" type="text" placeholder="https://example.com/img.png" /><span class="url-submit">${
-        words[2]
-      }</span></div>
+      <div class="image-url-form">
+      <input class="text-input" type="text" placeholder="https://example.com/img.png" />
+      <div>
+      <button class="insert-image"><span class="url-submit">${words[2]}</span></button>
+      </div>
+      </div>
       <p class="err-tips err-url"></p>
       `;
 
-      this.fileInput = this.imageDialog.querySelector(
-        'input.ql-image-upload[type=file]',
-      );
-      const urlInput = this.imageDialog.querySelector('input.text-input');
-      urlInput.onclick = (e) => {
+      this.imgTextInput =
+        this.imageDialogRoot.querySelector<HTMLInputElement>(
+          'input.text-input',
+        );
+      this.imgTextInput.onclick = (e) => {
+        // 阻止冒泡导致 imageDialog 消失
         e.stopPropagation();
-      }; // 阻止冒泡导致 imageDialog 消失
-      this.imageDialog.querySelector('.url-submit').onclick = (e) => {
+      };
+      this.imageDialogRoot.querySelector<HTMLElement>('.url-submit').onclick = (
+        e,
+      ) => {
         e.stopPropagation();
-        const url = urlInput.value;
+        const url = this.imgTextInput.value;
         if (url && isUrl(url)) {
           this.insertImage(url);
-          this.imageDialogClose();
-          urlInput.value = '';
+          this.closeImageDialog();
+          this.imgTextInput.value = '';
           this.quill.enable(true);
         } else {
-          const tips = this.imageDialog.querySelector('.err-tips.err-url');
-          tips.innerText = getI18nText('linkUrlErr', this.options.i18n);
-          urlInput?.addEventListener('input', () => {
+          const tips =
+            this.imageDialogRoot.querySelector<HTMLElement>(
+              '.err-tips.err-url',
+            );
+          tips.innerText = getI18nText(
+            'linkUrlErr',
+            this.options.i18n,
+          ) as string;
+          this.imgTextInput?.addEventListener('input', () => {
             if (tips.innerText) tips.innerText = '';
           });
         }
       };
-      this.imageDialog.querySelector('button.local-image').onclick = (e) => {
+
+      this.imgFileInput = this.imageDialogRoot.querySelector(
+        'input.ql-image-upload[type=file]',
+      );
+      this.imageDialogRoot.querySelector<HTMLElement>(
+        'button.local-image',
+      ).onclick = (e) => {
         e.stopPropagation();
-        this.fileInput.click();
-        this.imageDialog.querySelector('.err-tips.err-file').innerText = ''; // 删除之前的 errtips
+        this.imgFileInput.click();
+        this.imageDialogRoot.querySelector<HTMLElement>(
+          '.err-tips.err-file',
+        ).innerText = '';
       };
 
-      this.fileInput.onchange = () => {
-        const { files } = this.fileInput;
-
+      this.imgFileInput.onchange = () => {
+        const { files } = this.imgFileInput;
         if (!files || !files.length) {
           return;
         }
@@ -126,68 +163,72 @@ class ImageHandler extends Module<Record<string, any>> {
         // }
 
         // 先将图片转 base64 插入编辑器中，再由 imagePasteDrop上传，用户能更快看到图片，后台上传
-        this.beforeUpload(files[0]); // 上传先一张一张来
+        // todo support multi images
+        this.beforeUpload(files[0]);
       };
     } else {
-      this.imageDialog.querySelector('input.text-input').value = '';
+      this.imgFileInput.value = '';
+      this.imgTextInput.value = '';
     }
 
     const imageIcon = toolbarContainer.querySelector('.ql-image');
-    this.imageDialog.style = this.dialogPosition(imageIcon);
-    toolbarContainer.append(this.imageDialog);
+    const pos = this.computeDialogPosition(imageIcon);
+    this.imageDialogRoot.style.setProperty('left', pos.left + 'px');
+    this.imageDialogRoot.style.setProperty('top', pos.top + 'px');
+    toolbarContainer.append(this.imageDialogRoot);
   }
 
   beforeUpload(file) {
-    if (this.imageDialog) {
-      const tips = this.imageDialog.querySelector('.err-tips.err-file');
-      const words = getI18nText(
-        ['imageDialogTypeErr', 'imageDialogSizeErr'],
-        this.options.i18n,
-      );
-      // 判断文件的后缀，至于用户强制改变文件后缀，这里不做考虑
-      if (!file.type.startsWith('image/')) {
-        tips.innerText = words[0];
-        this.showImageDialog();
-        return;
-      }
-      const isLt5M = file.size / 1024 / 1024 < (this.options.maxSize || 5);
-      if (!isLt5M) {
-        tips.innerText = words[1].replace('$', this.options.maxSize || 5);
-        this.showImageDialog();
-        return;
-      }
+    const tips =
+      this.imageDialogRoot.querySelector<HTMLElement>('.err-tips.err-file');
+    const words = getI18nText(
+      ['imageDialogTypeErr', 'imageDialogSizeErr'],
+      this.options.i18n,
+    );
+    // 判断文件的后缀，至于用户强制改变文件后缀，这里不做考虑
+    if (!file.type.startsWith('image/')) {
+      tips.innerText = words[0];
+      this.renderImageDialogContent();
+      return;
+    }
+    const isLt5M = file.size / 1024 / 1024 < (this.options.maxSize || 5);
+    if (!isLt5M) {
+      tips.innerText = words[1].replace('$', String(this.options.maxSize || 5));
+      this.renderImageDialogContent();
+      return;
+    }
 
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (e) => {
-        const base64Str = e.target.result;
-        this.insertImage(base64Str);
-      };
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const base64Str = e.target.result;
+      this.insertImage(base64Str);
+    };
+  }
+
+  closeImageDialog() {
+    if (this.imageDialogRoot) {
+      this.imageDialogRoot.remove();
     }
   }
 
-  imageDialogClose() {
-    if (this.imageDialog) {
-      this.imageDialog.remove();
-    }
-  }
-  dialogPosition = (clickDom) => {
+  computeDialogPosition(clickDom) {
     const parent = clickDom.offsetParent;
-    const width = 280;
-    if (parent.offsetWidth - clickDom.offsetLeft + 6 > width) {
-      return `top:${clickDom.offsetTop + 24}px;left:${clickDom.offsetLeft + 6}px;`;
+    const width = this.options.dialogWidth;
+    if (parent.offsetWidth > clickDom.offsetLeft + width) {
+      return { top: clickDom.offsetTop + 24, left: clickDom.offsetLeft + 6 };
     } else {
-      return `top:${clickDom.offsetTop + 24}px;left:${parent.offsetWidth - width}px;`;
+      return { top: clickDom.offsetTop + 24, left: parent.offsetWidth - width };
     }
-  };
+  }
 
   insertImage = (url) => {
-    this.imageDialogClose();
-    this.quill.enable(true);
+    this.closeImageDialog();
+    // this.quill.enable(true);
     const range = this.quill.getSelection(true);
     this.quill.insertEmbed(range.index, 'image', url);
     this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
-    this.fileInput.value = '';
+    this.imgFileInput.value = '';
   };
 }
 

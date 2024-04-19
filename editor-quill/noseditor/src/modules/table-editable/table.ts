@@ -1,8 +1,12 @@
+import type { Blot } from 'parchment';
 import Quill from 'quill';
+import type DeltaType from 'quill-delta';
+import type DefaultModule from 'quill/src/core/module';
 
+import type { KeyboardBindingOption } from '../../types/table';
 import {
-  cellId,
-  rowId,
+  genCellId,
+  genRowId,
   TableBody,
   TableCell,
   TableCellLine,
@@ -11,70 +15,26 @@ import {
   TableContainer,
   TableRow,
   TableViewWrapper,
-} from './formats/table';
-import TableColumnTool from './modules/table-column-tool';
-import TableOperationMenu from './modules/table-operation-menu';
-import TableSelection from './modules/table-selection';
-import { getEventComposedPath } from './utils/common';
+} from './formats-table';
+import { TableColumnTool } from './table-column-tool';
+import { TableContextMenu } from './table-context-menu';
+import { TableSelection } from './table-selection';
+import { getEventComposedPath, ifInTableCell } from './utils/common';
 import {
   matchTable,
   matchTableCell,
   matchTableHeader,
 } from './utils/node-matchers';
 
-const Module = Quill.import('core/module');
-const Delta = Quill.import('delta');
+type TableEditableOptions = {
+  operationMenu?: any;
+};
 
-class TableEditable extends Module {
-  table: HTMLElement;
-  tableSelection: any;
-  tableOperationMenu: any;
-  columnTool: TableColumnTool;
+const Module = Quill.import('core/module') as typeof DefaultModule;
+const Delta = Quill.import('delta') as typeof DeltaType;
 
-  static keyboardBindings: {
-    'table-cell-line backspace': {
-      key: string;
-      format: string[];
-      collapsed: boolean;
-      offset: number;
-      handler(range: any, context: any): boolean;
-    };
-    'table-cell-line delete': {
-      key: string;
-      format: string[];
-      collapsed: boolean;
-      suffix: RegExp;
-      handler(): void;
-    };
-    'table-cell-line enter': {
-      key: string;
-      shiftKey: any;
-      format: string[];
-      handler(range: any, context: any): void;
-    };
-    'table-cell-line up': {
-      key: string;
-      collapsed: boolean;
-      format: string[];
-      handler(range: any, context: any): boolean;
-    };
-    'table-cell-line down': {
-      key: string;
-      collapsed: boolean;
-      format: string[];
-      handler(range: any, context: any): boolean;
-    };
-    'down-to-table': {
-      key: string;
-      collapsed: boolean;
-      handler(range: any, context: any): boolean;
-    };
-    'up-to-table': {
-      key: string;
-      collapsed: boolean;
-      handler(range: any, context: any): boolean;
-    };
-  };
+export class TableEditable extends Module {
+  static keyboardBindings: Record<string, KeyboardBindingOption>;
 
   static register() {
     Quill.register(TableCol, true);
@@ -90,14 +50,18 @@ class TableEditable extends Module {
     // Quill.register('formats/header', Header, true);
   }
 
-  constructor(quill, options) {
+  tableRoot: HTMLElement;
+  tableSelection: TableSelection;
+  tableOperationMenu: TableContextMenu;
+  columnTool: TableColumnTool;
+
+  constructor(quill: Quill, options) {
     super(quill, options);
 
-    // handle click on quill-better-table
+    // show/hide table tools
     this.quill.root.addEventListener(
       'click',
       (evt) => {
-        // bugfix: evt.path is undefined in Safari, FF, Micro Edge
         const path = getEventComposedPath(evt);
 
         if (!path || path.length <= 0) return;
@@ -112,11 +76,11 @@ class TableEditable extends Module {
 
         if (tableNode) {
           // current table clicked
-          if (this.table === tableNode) return;
+          if (this.tableRoot === tableNode) return;
           // other table clicked
-          if (this.table) this.hideTableTools();
+          if (this.tableRoot) this.hideTableTools();
           this.showTableTools(tableNode, quill, options);
-        } else if (this.table) {
+        } else if (this.tableRoot) {
           // other clicked
           this.hideTableTools();
         }
@@ -128,10 +92,9 @@ class TableEditable extends Module {
     this.quill.root.addEventListener(
       'contextmenu',
       (evt) => {
-        if (!this.table) return true;
+        if (!this.tableRoot) return true;
         evt.preventDefault();
 
-        // bugfix: evt.path is undefined in Safari, FF, Micro Edge
         const path = getEventComposedPath(evt);
         if (!path || path.length <= 0) return;
 
@@ -177,7 +140,7 @@ class TableEditable extends Module {
           this.tableOperationMenu = this.tableOperationMenu.destroy();
 
         if (tableNode) {
-          this.tableOperationMenu = new TableOperationMenu(
+          this.tableOperationMenu = new TableContextMenu(
             {
               table: tableNode,
               row: rowNode,
@@ -195,7 +158,6 @@ class TableEditable extends Module {
 
     // add keyboard binding：Backspace
     // prevent user hits backspace to delete table cell
-    const KeyBoard = quill.getModule('keyboard');
     quill.keyboard.addBinding({ key: 'Backspace' }, {}, (range, context) => {
       if (range.index === 0 || this.quill.getLength() <= 1) return true;
       const [line] = this.quill.getLine(range.index);
@@ -231,7 +193,7 @@ class TableEditable extends Module {
   }
 
   getTable(range = this.quill.getSelection()) {
-    if (range == null) return [null, null, null, -1];
+    if (!range) return [null, null, null, -1];
     const [cellLine, offset] = this.quill.getLine(range.index);
     if (
       cellLine == null ||
@@ -248,50 +210,57 @@ class TableEditable extends Module {
 
   insertTable(rows, columns) {
     const range = this.quill.getSelection(true);
-    if (range == null) return;
+    if (!range) return;
     const currentBlot = this.quill.getLeaf(range.index)[0];
-    let delta = new Delta().retain(range.index);
-
-    if (isInTableCell(currentBlot)) {
+    if (ifInTableCell(currentBlot)) {
       console.warn(`Can not insert table into a table cell.`);
       return;
     }
 
+    let delta = new Delta().retain(range.index);
     delta.insert('\n');
     // insert table column
-    delta = new Array(columns).fill('\n').reduce((memo, text) => {
-      memo.insert(text, { 'table-col': true });
-      return memo;
-    }, delta);
+    delta = Array(columns)
+      .fill('\n')
+      .reduce((deltas, text) => {
+        deltas.insert(text, { 'table-col': true });
+        return deltas;
+      }, delta);
     // insert table cell line with empty line
-    delta = new Array(rows).fill(0).reduce((memo) => {
-      const tableRowId = rowId();
-      return new Array(columns).fill('\n').reduce((memo, text) => {
-        memo.insert(text, {
-          'table-cell-line': { row: tableRowId, cell: cellId() },
-        });
-        return memo;
-      }, memo);
-    }, delta);
+    delta = Array(rows)
+      .fill(0)
+      .reduce((tr) => {
+        const trId = genRowId();
+        return Array(columns)
+          .fill('\n')
+          .reduce((deltas, text) => {
+            deltas.insert(text, {
+              'table-cell-line': { row: trId, cell: genCellId() },
+            });
+            return deltas;
+          }, tr);
+      }, delta);
+
+    // console.log(';; insert-tbl ', delta);
 
     this.quill.updateContents(delta, Quill.sources.USER);
     this.quill.setSelection(range.index + columns + 1, Quill.sources.API);
   }
 
   showTableTools(table, quill, options) {
-    this.table = table;
+    this.tableRoot = table;
     this.columnTool = new TableColumnTool(table, quill, options);
     this.tableSelection = new TableSelection(table, quill, options);
   }
 
   hideTableTools() {
-    this.columnTool && this.columnTool.destroy();
-    this.tableSelection && this.tableSelection.destroy();
-    this.tableOperationMenu && this.tableOperationMenu.destroy();
+    if (this.columnTool) this.columnTool.destroy();
+    if (this.tableSelection) this.tableSelection.destroy();
+    if (this.tableOperationMenu) this.tableOperationMenu.destroy();
     this.columnTool = null;
     this.tableSelection = null;
     this.tableOperationMenu = null;
-    this.table = null;
+    this.tableRoot = null;
   }
 }
 
@@ -471,18 +440,6 @@ function makeTableArrowHandler(up) {
       return false;
     },
   };
-}
-
-function isTableCell(blot) {
-  return blot.statics.blotName === TableCell.blotName;
-}
-
-function isInTableCell(current) {
-  return current && current.parent
-    ? isTableCell(current.parent)
-      ? true
-      : isInTableCell(current.parent)
-    : false;
 }
 
 export default TableEditable;

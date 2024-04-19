@@ -1,54 +1,60 @@
-import './index.scss';
-
 import Quill from 'quill';
 import type Delta from 'quill-delta';
+import type { FontClass as QuillFontClass } from 'quill/src/formats/font';
+import type { SizeStyle as QuillSizeStyle } from 'quill/src/formats/size';
 
 import { Image } from './modules/formats-custom/image';
 import { ListItem } from './modules/formats-custom/list-item';
 import { ImageDrop } from './modules/image-paste-drop';
-import ImageResize from './modules/image-resize';
+import { ImageResize } from './modules/image-resize';
 import { MagicUrl } from './modules/magic-url';
-import MarkdownShortcuts from './modules/markdown-shortcuts';
-import TableEditable from './modules/table-editable/table';
-import ImageHandler from './modules/toolbar/image';
+import { MarkdownShortcuts } from './modules/markdown-shortcuts';
+import { tableMenuZh } from './modules/table-editable/config';
+import { TableEditable } from './modules/table-editable/table';
+import { toolbarInit } from './modules/toolbar';
+import { ImageHandler } from './modules/toolbar/image';
 import { LinkHandler } from './modules/toolbar/link';
-import TableHandler from './modules/toolbar/table';
+import { TableHandler } from './modules/toolbar/table';
+import type { TableEditableOptions } from './types';
+import { setContent } from './utils/common';
 import { lineBreakMatcher } from './utils/elements';
+import { getI18nText } from './utils/i18n';
 
-interface IModules {
-  // table?: boolean | IBetterTable;
-  codeHighlight?: boolean | { key: string; label: string }[];
+interface ModulesOptions {
+  toolbarOptions?: any[][];
+  table?: boolean | TableEditableOptions;
+  tableHandler?: TableEditableOptions['toolbarOptions'] | boolean;
+  tableEditable?: Record<string, any>;
+  imageHandler?: {
+    imgUploadApi?: (formData: any) => Promise<string>;
+    uploadSuccCB?: (data: unknown) => void;
+    uploadFailCB?: (error: unknown) => void;
+    imgRemarkPre?: string;
+    maxSize?: number;
+    imageAccept?: string;
+    i18n?: Record<string, any>;
+  };
   imageResize?: boolean | {};
   imageDrop?: boolean | {};
-  magicUrl?: boolean;
-  markdown?: boolean;
   link?: boolean | {};
+  linkHandler?: boolean | { i18n: Record<string, any> };
+  magicUrl?: boolean;
+  codeHighlight?: boolean | { key: string; label: string }[];
+  syntax?: any;
+  markdown?: boolean;
+  markdownShortcuts?: boolean;
 }
 
-type CreateNoseditorOptions = {
+export type CreateNoseditorOptions = {
   container: string | HTMLElement;
   placeholder?: string;
   readOnly?: boolean;
-  modules?: {
-    imageHandler?: {
-      imgUploadApi?: (formData: any) => Promise<string>;
-      uploadSuccCB?: (data: unknown) => void;
-      uploadFailCB?: (error: unknown) => void;
-      imgRemarkPre?: string;
-      maxSize?: number;
-      imageAccept?: string;
-    };
-    toolbarOptions?: [][];
-    table?: {};
-  } & IModules;
-  // getQuill?: (quill: Quill, uploadedImgsList?: string[]) => void;
-  content?: Delta | string;
+  modules?: ModulesOptions;
   initialContent?: string;
   onChange?: (delta: Delta, old: Delta) => void;
   onFocus?: (range?: any) => void;
   onBlur?: (oldRange?: any) => void;
   i18n?: 'en' | 'zh';
-  // [k: string]: any;
 };
 
 // 允许图片的样式保存在Delta中
@@ -58,8 +64,17 @@ Quill.register(ListItem, true);
 export const createNoseditor = (options: CreateNoseditorOptions) => {
   const {
     container,
-    modules = { magicUrl: true },
-    content,
+    modules = {
+      table: true,
+      // tableEditable: true,
+      linkHandler: true,
+      magicUrl: true,
+      markdownShortcuts: true,
+      imageHandler: true,
+      imageResize: true,
+      imageDrop: true,
+      ...options.modules,
+    },
     initialContent,
     i18n = 'en',
     readOnly = false,
@@ -69,11 +84,119 @@ export const createNoseditor = (options: CreateNoseditorOptions) => {
     onBlur,
   } = options;
 
-  // const toolbarOptions = modules.toolbarOptions || [
+  // modules enabled by default
+  Quill.register(
+    {
+      'modules/tableHandler': TableHandler,
+      'modules/imageHandler': ImageHandler,
+      'modules/imageResize': ImageResize,
+      'modules/imageDrop': ImageDrop,
+      'modules/magicUrl': MagicUrl,
+      'modules/linkHandler': LinkHandler,
+      'modules/markdownShortcuts': MarkdownShortcuts,
+      // 'modules/codeHandler': CodeHandler,
+      // 'modules/qSyntax': QSyntax,
+    },
+    true,
+  );
+
+  if (modules.table) {
+    modules.table = false;
+    modules.tableEditable = {
+      // i18n,
+      operationMenu: {
+        items:
+          (typeof modules.table !== 'boolean' &&
+            modules.table['operationMenu']) ||
+          (i18n === 'zh' ? tableMenuZh : {}),
+        color: {
+          colors: ['#d1fae5', '#cca4e3', '#4994C4', '#e5e7eb', '#fff'], // 背景色值
+          text: getI18nText('tableBackground', i18n), // subtitle, 'Background Colors' as default
+          // @ts-expect-error fix-types
+          ...(typeof modules.table !== 'boolean'
+            ? modules.table['backgroundColors']
+            : null),
+        },
+      },
+    };
+
+    modules.tableHandler = {
+      // i18n,
+      ...(typeof modules.table !== 'boolean'
+        ? modules.table['toolbarOptions']
+        : {}),
+    };
+  }
+
+  if (modules.tableEditable) {
+    Quill.register(
+      {
+        'modules/tableEditable': TableEditable,
+      },
+      true,
+    );
+  }
+
+  if (modules.imageResize) {
+    // modules.imageResize =
+    //   imageResize === false
+    //     ? imageResize
+    //     : {
+    //         i18n,
+    //         ...(typeof imageResize === 'object' ? imageResize : null),
+    //       };
+  }
+  if (modules.imageDrop) {
+    // modules.imageDrop =
+    //   imageDrop === false
+    //     ? imageDrop
+    //     : {
+    //         i18n,
+    //         imageHandler,
+    //         // uploadedImgsList: uploadedImgsList.current,
+    //         ...(typeof imageDrop === 'object' ? imageDrop : null),
+    //       };
+  }
+
+  // toolbarHandlers.current.undo = () => undoHandler(quillRef.current!);
+  // toolbarHandlers.current.redo = () => redoHandler(quillRef.current!);
+
+  const { toolbarOptions } = modules;
+  let fontList = ['system', 'wsYaHei', 'songTi', 'serif', 'arial'];
+  let sizeList = ['12px', '14px', '18px', '36px'];
+  if (toolbarOptions) {
+    toolbarOptions.forEach((formats) => {
+      if (Array.isArray(formats)) {
+        formats.forEach((format: { font?: []; size?: [] }) => {
+          if (typeof format === 'object') {
+            if (format.font && Array.isArray(format.font)) {
+              fontList = format.font;
+            }
+            if (format.size && Array.isArray(format.size)) {
+              sizeList = format.size;
+            }
+          }
+        });
+      }
+    });
+  }
+
+  const SizeStyle = Quill.import(
+    'attributors/style/size',
+  ) as typeof QuillSizeStyle;
+  SizeStyle.whitelist = sizeList;
+  Quill.register(SizeStyle, true);
+  const FontClass = Quill.import('formats/font') as typeof QuillFontClass;
+  FontClass.whitelist = fontList;
+  Quill.register(FontClass, true);
+  // const icons = Quill.import('ui/icons');
+  // icons.undo = IconUndo;
+  // icons.redo = IconRedo;
+
   const toolbarDefaultOptions = [
     // ['undo', 'redo', 'clean'],
     [
-      // { font: ['system', 'wsYaHei', 'songTi', 'serif', 'arial'] },
+      { font: ['system', 'wsYaHei', 'songTi', 'serif', 'arial'] },
       { size: ['12px', false, '18px', '36px'] },
       { header: [false, 1, 2, 3, 4] },
     ],
@@ -98,44 +221,21 @@ export const createNoseditor = (options: CreateNoseditorOptions) => {
       // modules.codeHighlight ? 'code-block' : undefined,
       modules.link !== false ? 'link' : undefined,
       'image',
-      // { script: 'sub' },
-      // { script: 'super' },
-      // modules['table-editable'] ? 'table' : undefined,
+      { script: 'sub' },
+      { script: 'super' },
+      modules.tableEditable ? 'table' : undefined,
     ],
   ];
+  const nosToolbarOptions = modules.toolbarOptions || toolbarDefaultOptions;
 
-  // modules enabled by default
-  Quill.register(
-    {
-      'modules/magicUrl': MagicUrl,
-      'modules/imageResize': ImageResize,
-      'modules/imageDrop': ImageDrop,
-      'modules/markdownShortcuts': MarkdownShortcuts,
-      'modules/tableHandler': TableHandler,
-      'modules/linkHandler': LinkHandler,
-      'modules/imageHandler': ImageHandler,
-      // 'modules/codeHandler': CodeHandler,
-      // 'modules/qSyntax': QSyntax,
-    },
-    true,
-  );
-
-  if (modules['table-editable']) {
-    Quill.register(
-      {
-        'modules/table-editable': TableEditable,
-      },
-      true,
-    );
-  }
-
+  console.log(';; ql-modules ', modules, container);
   const noseditor = new Quill(container, {
-    debug: false,
+    debug: 'warn',
     modules: {
       ...modules,
       toolbar: {
-        container: toolbarDefaultOptions,
-        handlers: {},
+        container: nosToolbarOptions,
+        // handlers: { ...toolbarHandlers },
       },
       clipboard: {
         matchers: [['BR', lineBreakMatcher]],
@@ -159,8 +259,10 @@ export const createNoseditor = (options: CreateNoseditorOptions) => {
     theme: 'snow',
   });
 
+  toolbarInit(noseditor, i18n);
+
   noseditor.on('selection-change', (range, oldRange, source) => {
-    if (range == null || !noseditor?.hasFocus()) return;
+    if (!range || !noseditor.hasFocus()) return;
 
     // 当新建table或者选中table时，禁止部分toolbar options，添加table时触发的source=api
     if (modules.table && noseditor) {
@@ -181,7 +283,7 @@ export const createNoseditor = (options: CreateNoseditorOptions) => {
   });
 
   if (initialContent) {
-    noseditor.setContents(JSON.parse(initialContent));
+    setContent(initialContent, noseditor);
   }
 
   if (onChange) {
@@ -198,12 +300,10 @@ export const createNoseditor = (options: CreateNoseditorOptions) => {
     });
   }
 
-  if (noseditor) {
-    if (readOnly) {
-      noseditor.enable(false);
-    } else {
-      noseditor.enable();
-    }
+  if (readOnly) {
+    noseditor.enable(false);
+  } else {
+    noseditor.enable();
   }
 
   return noseditor;

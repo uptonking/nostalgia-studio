@@ -74,7 +74,13 @@ const demoConfig = merge(
         // console.log(';; req ', request);
         if (
           /^\./.test(request) ||
-          ['quill', 'quill-delta', 'parchment'].includes(request)
+          [
+            'quill',
+            'quill-delta',
+            'parchment',
+            '@datalking/noseditor-react',
+            '@datalking/noseditor',
+          ].includes(request)
         ) {
           cb(null, false);
         } else {

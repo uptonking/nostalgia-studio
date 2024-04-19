@@ -1,7 +1,6 @@
 import Quill from 'quill';
 import type DefaultImage from 'quill/src/formats/image';
 
-const Parchment = Quill.import('parchment');
 const BaseImage = Quill.import('formats/image') as typeof DefaultImage;
 
 const ATTRIBUTES = ['alt', 'height', 'width', 'style'];

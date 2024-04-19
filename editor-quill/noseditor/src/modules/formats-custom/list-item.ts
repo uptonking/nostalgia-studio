@@ -21,7 +21,6 @@ export class ListItem extends QuillListItem {
     return node;
   }
 
-  // 保存在Delta中
   static formats(domNode) {
     if (
       domNode.hasAttribute('data-start') &&

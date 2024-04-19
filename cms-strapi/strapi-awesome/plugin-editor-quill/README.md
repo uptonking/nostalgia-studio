@@ -5,3 +5,5 @@
 # overview
 
 # roadmap
+
+- fix quill rerender

@@ -1,60 +1,65 @@
 import type { BlockBlot } from 'parchment';
 import Quill from 'quill';
 
-import { TableCell } from '../formats/table';
-import { css, getRelativeRect } from '../utils/common';
+import type { RectBoundary } from '../../types';
+import { tableDefaultOptions } from './config';
+import { TableCell } from './formats-table';
+import { css, getRelativeRect } from './utils/common';
 
-const PRIMARY_COLOR = '#6918b4';
-const LINE_POSITIONS = ['left', 'right', 'top', 'bottom'];
-const ERROR_LIMIT = 2;
+const selLineDirections = ['left', 'right', 'top', 'bottom'] as const;
+const errorLimit = 2;
 
-export default class TableSelection {
-  table: any;
-  quill: any;
-  options: any;
-  boundary: {
-    x: number;
-    x1: number;
-    y: number;
-    y1: number;
-    width: number;
-    height: number;
+/** custom table selection */
+export class TableSelection {
+  tableRoot: HTMLElement;
+  selLines: {
+    left: HTMLElement;
+    right: HTMLElement;
+    top: HTMLElement;
+    bottom: HTMLElement;
   };
+  /** array for selected table-cells */
   selectedTds: any[];
+  quill: Quill;
+  options: any;
+  /** params for selected square */
+  boundary: RectBoundary;
   dragging: boolean;
-  selectingHandler: (e: any) => void;
-  clearSelectionHandler: () => void;
 
   constructor(table, quill, options) {
     if (!table) return null;
-    this.table = table;
+    this.tableRoot = table;
+    this.selLines = {} as any;
     this.quill = quill;
     this.options = options;
-    this.boundary = {} as any; // params for selected square
-    this.selectedTds = []; // array for selected table-cells
+    this.boundary = {} as any;
+    this.selectedTds = [];
     this.dragging = false;
-    this.selectingHandler = this.mouseDownHandler.bind(this);
-    this.clearSelectionHandler = this.clearSelection.bind(this);
+    this.mouseDownHandler = this.mouseDownHandler.bind(this);
+    this.clearSelection = this.clearSelection.bind(this);
 
-    this.helpLinesInitial();
-    this.quill.root.addEventListener('mousedown', this.selectingHandler, false);
+    this.helpLinesInit();
+    this.quill.root.addEventListener('mousedown', this.mouseDownHandler, false);
 
-    this.quill.on('text-change', this.clearSelectionHandler);
+    this.quill.on('text-change', this.clearSelection);
   }
 
-  helpLinesInitial() {
+  helpLinesInit() {
     const parent = this.quill.root.parentNode;
-    LINE_POSITIONS.forEach((direction) => {
-      this[direction] = document.createElement('div');
-      this[direction].classList.add('qlbt-selection-line');
-      this[direction].classList.add('qlbt-selection-line-' + direction);
-      css(this[direction], {
+    selLineDirections.forEach((direction) => {
+      this.selLines[direction] = document.createElement('div');
+      this.selLines[direction].classList.add('qlbt-selection-line');
+      this.selLines[direction].classList.add(
+        'qlbt-selection-line-' + direction,
+      );
+      css(this.selLines[direction], {
         position: 'absolute',
         display: 'none',
-        'background-color': PRIMARY_COLOR,
+        'background-color': tableDefaultOptions.primaryColor,
       });
-      parent.appendChild(this[direction]);
+      parent.appendChild(this.selLines[direction]);
     });
+    // console.log(';; initSel ', LINE_POSITIONS, this);
   }
 
   mouseDownHandler(e) {
@@ -100,7 +105,7 @@ export default class TableSelection {
   }
 
   correctBoundary() {
-    const tableContainer = Quill.find(this.table) as BlockBlot;
+    const tableContainer = Quill.find(this.tableRoot) as BlockBlot;
     const tableCells = tableContainer.descendants(TableCell);
 
     tableCells.forEach((tableCell) => {
@@ -109,14 +114,14 @@ export default class TableSelection {
         this.quill.root.parentNode,
       );
       const isCellIntersected =
-        ((x + ERROR_LIMIT >= this.boundary.x &&
-          x + ERROR_LIMIT <= this.boundary.x1) ||
-          (x - ERROR_LIMIT + width >= this.boundary.x &&
-            x - ERROR_LIMIT + width <= this.boundary.x1)) &&
-        ((y + ERROR_LIMIT >= this.boundary.y &&
-          y + ERROR_LIMIT <= this.boundary.y1) ||
-          (y - ERROR_LIMIT + height >= this.boundary.y &&
-            y - ERROR_LIMIT + height <= this.boundary.y1));
+        ((x + errorLimit >= this.boundary.x &&
+          x + errorLimit <= this.boundary.x1) ||
+          (x - errorLimit + width >= this.boundary.x &&
+            x - errorLimit + width <= this.boundary.x1)) &&
+        ((y + errorLimit >= this.boundary.y &&
+          y + errorLimit <= this.boundary.y1) ||
+          (y - errorLimit + height >= this.boundary.y &&
+            y - errorLimit + height <= this.boundary.y1));
       if (isCellIntersected) {
         this.boundary = computeBoundaryFromRects(this.boundary, {
           x,
@@ -129,7 +134,7 @@ export default class TableSelection {
   }
 
   computeSelectedTds() {
-    const tableContainer = Quill.find(this.table) as BlockBlot;
+    const tableContainer = Quill.find(this.tableRoot) as BlockBlot;
     const tableCells = tableContainer.descendants(TableCell);
 
     return tableCells.reduce((selectedCells, tableCell) => {
@@ -138,10 +143,10 @@ export default class TableSelection {
         this.quill.root.parentNode,
       );
       const isCellIncluded =
-        x + ERROR_LIMIT >= this.boundary['x'] &&
-        x - ERROR_LIMIT + width <= this.boundary['x1'] &&
-        y + ERROR_LIMIT >= this.boundary['y'] &&
-        y - ERROR_LIMIT + height <= this.boundary['y1'];
+        x + errorLimit >= this.boundary['x'] &&
+        x - errorLimit + width <= this.boundary['x1'] &&
+        y + errorLimit >= this.boundary['y'] &&
+        y - errorLimit + height <= this.boundary['y1'];
 
       if (isCellIncluded) {
         selectedCells.push(tableCell);
@@ -152,8 +157,8 @@ export default class TableSelection {
   }
 
   repositionHelpLines() {
-    const tableViewScrollLeft = this.table.parentNode.scrollLeft;
-    css(this.left, {
+    const tableViewScrollLeft = this.tableRoot.parentNode['scrollLeft'];
+    css(this.selLines.left, {
       display: 'block',
       left: `${this.boundary.x - tableViewScrollLeft - 1}px`,
       top: `${this.boundary.y}px`,
@@ -161,7 +166,7 @@ export default class TableSelection {
       width: '1px',
     });
 
-    css(this.right, {
+    css(this.selLines.right, {
       display: 'block',
       left: `${this.boundary.x1 - tableViewScrollLeft}px`,
       top: `${this.boundary.y}px`,
@@ -169,7 +174,7 @@ export default class TableSelection {
       width: '1px',
     });
 
-    css(this.top, {
+    css(this.selLines.top, {
       display: 'block',
       left: `${this.boundary.x - 1 - tableViewScrollLeft}px`,
       top: `${this.boundary.y}px`,
@@ -177,61 +182,13 @@ export default class TableSelection {
       height: '1px',
     });
 
-    css(this.bottom, {
+    css(this.selLines.bottom, {
       display: 'block',
       left: `${this.boundary.x - 1 - tableViewScrollLeft}px`,
       top: `${this.boundary.y1 + 1}px`,
       width: `${this.boundary.width + 1}px`,
       height: '1px',
     });
-  }
-  left(
-    left: any,
-    arg1: {
-      display: string;
-      left: string;
-      top: string;
-      height: string;
-      width: string;
-    },
-  ) {
-    throw new Error('Method not implemented.');
-  }
-  right(
-    right: any,
-    arg1: {
-      display: string;
-      left: string;
-      top: string;
-      height: string;
-      width: string;
-    },
-  ) {
-    throw new Error('Method not implemented.');
-  }
-  top(
-    top: any,
-    arg1: {
-      display: string;
-      left: string;
-      top: string;
-      width: string;
-      height: string;
-    },
-  ) {
-    throw new Error('Method not implemented.');
-  }
-  bottom(
-    bottom: any,
-    arg1: {
-      display: string;
-      left: string;
-      top: string;
-      width: string;
-      height: string;
-    },
-  ) {
-    throw new Error('Method not implemented.');
   }
 
   // based on selectedTds compute positions of help lines
@@ -252,18 +209,19 @@ export default class TableSelection {
   }
 
   destroy() {
-    LINE_POSITIONS.forEach((direction) => {
-      this[direction].remove();
-      this[direction] = null;
+    selLineDirections.forEach((direction) => {
+      this.selLines[direction].remove();
+      this.selLines[direction] = null;
     });
+    this.selLines = {} as any;
 
     this.quill.root.removeEventListener(
       'mousedown',
-      this.selectingHandler,
+      this.mouseDownHandler,
       false,
     );
 
-    this.quill.off('text-change', this.clearSelectionHandler);
+    this.quill.off('text-change', this.clearSelection);
 
     return null;
   }
@@ -281,11 +239,12 @@ export default class TableSelection {
   clearSelection() {
     this.boundary = {} as any;
     this.selectedTds = [];
-    LINE_POSITIONS.forEach((direction) => {
-      this[direction] &&
-        css(this[direction], {
+    selLineDirections.forEach((direction) => {
+      if (this.selLines[direction]) {
+        css(this.selLines[direction], {
           display: 'none',
         });
+      }
     });
   }
 }

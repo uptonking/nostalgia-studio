@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // "rootDir": "./src/",
+    "outDir": "./dist",
+    "noImplicitAny": false
+    // "composite": true
+    // "noEmit": false
+  },
+  "include": ["examples/**/*", "../../typings.d.ts"],
+  "exclude": ["examples/**/*.test.ts", "examples/**/*.test.tsx"]
+}

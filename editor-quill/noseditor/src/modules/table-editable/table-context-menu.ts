@@ -1,15 +1,18 @@
 import Quill from 'quill';
 
-import deleteIcon from '../../../assets/icons/delete.svg';
-import deleteColumn from '../../../assets/icons/deleteColumn.svg';
-import deleteRow from '../../../assets/icons/deleteRow.svg';
-import insertColumnLeft from '../../../assets/icons/insertColumnLeft.svg';
-import insertColumnRight from '../../../assets/icons/insertColumnRight.svg';
-import insertRowAbove from '../../../assets/icons/insertRowAbove.svg';
-import insertRowBelow from '../../../assets/icons/insertRowBelow.svg';
-import mergeCells from '../../../assets/icons/mergeCells.svg';
-import splitCells from '../../../assets/icons/splitCells.svg';
-import { css, getRelativeRect } from '../utils/common';
+import deleteIcon from '../../assets/icons/delete.svg';
+import deleteColumn from '../../assets/icons/deleteColumn.svg';
+import deleteRow from '../../assets/icons/deleteRow.svg';
+import insertColumnLeft from '../../assets/icons/insertColumnLeft.svg';
+import insertColumnRight from '../../assets/icons/insertColumnRight.svg';
+import insertRowAbove from '../../assets/icons/insertRowAbove.svg';
+import insertRowBelow from '../../assets/icons/insertRowBelow.svg';
+import mergeCells from '../../assets/icons/mergeCells.svg';
+import splitCells from '../../assets/icons/splitCells.svg';
+import type { TableEditable } from './table';
+import type { TableColumnTool } from './table-column-tool';
+import type { TableSelection } from './table-selection';
+import { css, getRelativeRect } from './utils/common';
 
 const MENU_MIN_HEIHGT = 150;
 const MENU_WIDTH = 200;
@@ -17,12 +20,12 @@ const ERROR_LIMIT = 5;
 const DEFAULT_CELL_COLORS = ['white', 'red', 'yellow', 'blue'];
 const DEFAULT_COLOR_SUBTITLE = 'Background Colors';
 
-const MENU_ITEMS_DEFAULT = {
+const defaultMenuItems = {
   insertColumnRight: {
     text: 'Insert Column Right',
     iconSrc: insertColumnRight,
     handler(this: any) {
-      const tableContainer = Quill.find(this.table);
+      const tableContainer = Quill.find(this.tableRoot);
       const colIndex = getColToolCellIndexByBoundary(
         this.columnToolCells,
         this.boundary,
@@ -60,7 +63,7 @@ const MENU_ITEMS_DEFAULT = {
     text: 'Insert Column Left',
     iconSrc: insertColumnLeft,
     handler(this: any) {
-      const tableContainer = Quill.find(this.table);
+      const tableContainer = Quill.find(this.tableRoot);
       const colIndex = getColToolCellIndexByBoundary(
         this.columnToolCells,
         this.boundary,
@@ -96,7 +99,7 @@ const MENU_ITEMS_DEFAULT = {
     text: 'Insert Row Above',
     iconSrc: insertRowAbove,
     handler(this: any) {
-      const tableContainer = Quill.find(this.table);
+      const tableContainer = Quill.find(this.tableRoot);
       // @ts-expect-error fix-types
       const affectedCells = tableContainer.insertRow(
         this.boundary,
@@ -120,7 +123,7 @@ const MENU_ITEMS_DEFAULT = {
     text: 'Insert Row Below',
     iconSrc: insertRowBelow,
     handler(this: any) {
-      const tableContainer = Quill.find(this.table);
+      const tableContainer = Quill.find(this.tableRoot);
       // @ts-expect-error fix-types
       const affectedCells = tableContainer.insertRow(
         this.boundary,
@@ -140,77 +143,77 @@ const MENU_ITEMS_DEFAULT = {
     },
   },
 
-  mergeCells: {
-    text: 'Merge Selected Cells',
-    iconSrc: mergeCells,
-    handler(this: any) {
-      const tableContainer = Quill.find(this.table);
-      // compute merged Cell rowspan, equal to length of selected rows
-      // @ts-expect-error fix-types
-      const rowspan = tableContainer.rows().reduce((sum, row) => {
-        const rowRect = getRelativeRect(
-          row.domNode.getBoundingClientRect(),
-          this.quill.root.parentNode,
-        );
-        if (
-          rowRect.y > this.boundary.y - ERROR_LIMIT &&
-          rowRect.y + rowRect.height <
-            this.boundary.y + this.boundary.height + ERROR_LIMIT
-        ) {
-          sum += 1;
-        }
-        return sum;
-      }, 0);
+  // mergeCells: {
+  //   text: 'Merge Selected Cells',
+  //   iconSrc: mergeCells,
+  //   handler(this: any) {
+  //     const tableContainer = Quill.find(this.tableRoot);
+  //     // compute merged Cell rowspan, equal to length of selected rows
+  //     // @ts-expect-error fix-types
+  //     const rowspan = tableContainer.rows().reduce((sum, row) => {
+  //       const rowRect = getRelativeRect(
+  //         row.domNode.getBoundingClientRect(),
+  //         this.quill.root.parentNode,
+  //       );
+  //       if (
+  //         rowRect.y > this.boundary.y - ERROR_LIMIT &&
+  //         rowRect.y + rowRect.height <
+  //           this.boundary.y + this.boundary.height + ERROR_LIMIT
+  //       ) {
+  //         sum += 1;
+  //       }
+  //       return sum;
+  //     }, 0);
 
-      // compute merged cell colspan, equal to length of selected cols
-      const colspan = this.columnToolCells.reduce((sum, cell) => {
-        const cellRect = getRelativeRect(
-          cell.getBoundingClientRect(),
-          this.quill.root.parentNode,
-        );
-        if (
-          cellRect.x > this.boundary.x - ERROR_LIMIT &&
-          cellRect.x + cellRect.width <
-            this.boundary.x + this.boundary.width + ERROR_LIMIT
-        ) {
-          sum += 1;
-        }
-        return sum;
-      }, 0);
+  //     // compute merged cell colspan, equal to length of selected cols
+  //     const colspan = this.columnToolCells.reduce((sum, cell) => {
+  //       const cellRect = getRelativeRect(
+  //         cell.getBoundingClientRect(),
+  //         this.quill.root.parentNode,
+  //       );
+  //       if (
+  //         cellRect.x > this.boundary.x - ERROR_LIMIT &&
+  //         cellRect.x + cellRect.width <
+  //           this.boundary.x + this.boundary.width + ERROR_LIMIT
+  //       ) {
+  //         sum += 1;
+  //       }
+  //       return sum;
+  //     }, 0);
 
-      // @ts-expect-error fix-types
-      const mergedCell = tableContainer.mergeCells(
-        this.boundary,
-        this.selectedTds,
-        rowspan,
-        colspan,
-        this.quill.root.parentNode,
-      );
-      this.quill.update(Quill.sources.USER);
-      this.tableSelection.setSelection(
-        mergedCell.domNode.getBoundingClientRect(),
-        mergedCell.domNode.getBoundingClientRect(),
-      );
-    },
-  },
+  //     // @ts-expect-error fix-types
+  //     const mergedCell = tableContainer.mergeCells(
+  //       this.boundary,
+  //       this.selectedTds,
+  //       rowspan,
+  //       colspan,
+  //       this.quill.root.parentNode,
+  //     );
+  //     this.quill.update(Quill.sources.USER);
+  //     this.tableSelection.setSelection(
+  //       mergedCell.domNode.getBoundingClientRect(),
+  //       mergedCell.domNode.getBoundingClientRect(),
+  //     );
+  //   },
+  // },
 
-  unmergeCells: {
-    text: 'Unmerge Cells',
-    iconSrc: splitCells,
-    handler(this: any) {
-      const tableContainer = Quill.find(this.table);
-      // @ts-expect-error fix-types
-      tableContainer.unmergeCells(this.selectedTds, this.quill.root.parentNode);
-      this.quill.update(Quill.sources.USER);
-      this.tableSelection.clearSelection();
-    },
-  },
+  // unmergeCells: {
+  //   text: 'Unmerge Cells',
+  //   iconSrc: splitCells,
+  //   handler(this: any) {
+  //     const tableContainer = Quill.find(this.tableRoot);
+  //     // @ts-expect-error fix-types
+  //     tableContainer.unmergeCells(this.selectedTds, this.quill.root.parentNode);
+  //     this.quill.update(Quill.sources.USER);
+  //     this.tableSelection.clearSelection();
+  //   },
+  // },
 
   deleteColumn: {
     text: 'Delete Columns',
     iconSrc: deleteColumn,
     handler(this: any) {
-      const tableContainer = Quill.find(this.table);
+      const tableContainer = Quill.find(this.tableRoot);
       const colIndexes = getColToolCellIndexesByBoundary(
         this.columnToolCells,
         this.boundary,
@@ -241,7 +244,7 @@ const MENU_ITEMS_DEFAULT = {
     text: 'Delete Rows',
     iconSrc: deleteRow,
     handler(this: any) {
-      const tableContainer = Quill.find(this.table);
+      const tableContainer = Quill.find(this.tableRoot);
       // @ts-expect-error fix-types
       tableContainer.deleteRow(this.boundary, this.quill.root.parentNode);
       this.quill.update(Quill.sources.USER);
@@ -253,8 +256,8 @@ const MENU_ITEMS_DEFAULT = {
     text: 'Delete Table',
     iconSrc: deleteIcon,
     handler(this: any) {
-      const betterTableModule = this.quill.getModule('table-editable');
-      const tableContainer = Quill.find(this.table);
+      const betterTableModule = this.quill.getModule('tableEditable');
+      const tableContainer = Quill.find(this.tableRoot);
       betterTableModule.hideTableTools();
       // @ts-expect-error fix-types
       tableContainer.remove();
@@ -263,33 +266,31 @@ const MENU_ITEMS_DEFAULT = {
   },
 };
 
-export default class TableOperationMenu {
-  tableSelection: any;
-  table: any;
-  quill: any;
+export class TableContextMenu {
+  tableSelection: TableSelection;
+  tableColumnTool: TableColumnTool;
+  quill: Quill;
+  tableRoot: HTMLElement;
+  containerRoot: HTMLElement;
   options: any;
   menuItems: any;
-  tableColumnTool: any;
   boundary: any;
-  selectedTds: any;
-  destroyHandler: () => any;
+  selectedTds: any[];
   columnToolCells: any;
   colorSubTitle: any;
   cellColors: any;
 
-  domNode: HTMLElement;
-
   constructor(params, quill, options) {
-    const betterTableModule = quill.getModule('table-editable');
-    this.tableSelection = betterTableModule.tableSelection;
-    this.table = params.table;
+    const tableEditableMod = quill.getModule('tableEditable') as TableEditable;
+    this.tableSelection = tableEditableMod.tableSelection;
+    this.tableColumnTool = tableEditableMod.columnTool;
+    this.tableRoot = params.table;
     this.quill = quill;
     this.options = options;
-    this.menuItems = Object.assign({}, MENU_ITEMS_DEFAULT, options.items);
-    this.tableColumnTool = betterTableModule.columnTool;
+    this.menuItems = Object.assign({}, defaultMenuItems, options.items);
     this.boundary = this.tableSelection.boundary;
     this.selectedTds = this.tableSelection.selectedTds;
-    this.destroyHandler = this.destroy.bind(this);
+    this.destroy = this.destroy.bind(this);
     this.columnToolCells = this.tableColumnTool.colToolCells();
     this.colorSubTitle =
       options.color && options.color.text
@@ -302,23 +303,23 @@ export default class TableOperationMenu {
 
     this.menuInitial(params);
     this.mount();
-    document.addEventListener('click', this.destroyHandler, false);
+    document.addEventListener('click', this.destroy, false);
   }
 
   mount() {
-    document.body.appendChild(this.domNode);
+    document.body.appendChild(this.containerRoot);
   }
 
   destroy() {
-    this.domNode.remove();
-    document.removeEventListener('click', this.destroyHandler, false);
+    this.containerRoot.remove();
+    document.removeEventListener('click', this.destroy, false);
     return null;
   }
 
   menuInitial({ table, left, top }) {
-    this.domNode = document.createElement('div');
-    this.domNode.classList.add('qlbt-operation-menu');
-    css(this.domNode, {
+    this.containerRoot = document.createElement('div');
+    this.containerRoot.classList.add('qlbt-operation-menu');
+    css(this.containerRoot, {
       position: 'absolute',
       left: `${left}px`,
       top: `${top}px`,
@@ -328,23 +329,23 @@ export default class TableOperationMenu {
 
     for (const name in this.menuItems) {
       if (this.menuItems[name]) {
-        this.domNode.appendChild(
+        this.containerRoot.appendChild(
           this.menuItemCreator(
-            Object.assign({}, MENU_ITEMS_DEFAULT[name], this.menuItems[name]),
+            Object.assign({}, defaultMenuItems[name], this.menuItems[name]),
           ),
         );
 
         if (['insertRowDown', 'unmergeCells'].indexOf(name) > -1) {
-          this.domNode.appendChild(dividingCreator());
+          this.containerRoot.appendChild(dividingCreator());
         }
       }
     }
 
     // if colors option is false, disabled bg color
     if (this.options.color && this.options.color !== false) {
-      this.domNode.appendChild(dividingCreator());
-      this.domNode.appendChild(subTitleCreator(this.colorSubTitle));
-      this.domNode.appendChild(this.colorsItemCreator(this.cellColors));
+      this.containerRoot.appendChild(dividingCreator());
+      this.containerRoot.appendChild(subTitleCreator(this.colorSubTitle));
+      this.containerRoot.appendChild(this.colorsItemCreator(this.cellColors));
     }
 
     // create dividing line

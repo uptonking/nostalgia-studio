@@ -1,4 +1,4 @@
-import Quill from 'quill';
+import type Quill from 'quill';
 
 import { i18nConfig } from '../../utils/i18n';
 import { showTitle } from '../../utils/title';
@@ -9,8 +9,7 @@ export { default as ImageHandler } from './image';
 export { default as CodeHandler } from './code';
 
 export const toolbarInit = (quill: Quill, i18n: keyof typeof i18nConfig) => {
-  // @ts-expect-error fix-types
-  const container = quill.getModule('toolbar').container;
+  const container = quill.getModule('toolbar')['container'];
 
   // 设置 toolbar 中的 i18n 的 label，css 中使用 data-before 来作为 content
   const setDataSet = (

@@ -1,10 +1,12 @@
-# table-editable
+# tableEditable module
 
-A module for better table in Quill, more useful features are supported. There is a list of features below. Thanks [quilljs](https://quilljs.com/) for its awesome extensibility. Hope that quill-better-table could help you.
+> a fork of https://github.com/soccerloway/quill-better-table /MIT/20200701/js
 
 # Online Demo
 
 [quill-better-table Codepen Demo](https://codepen.io/soccerloway/pen/WWJowj)
+
+# roadmap
 
 # License
 

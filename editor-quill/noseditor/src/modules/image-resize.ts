@@ -6,11 +6,11 @@ import IconAlignLeft from '../assets/icons/align-left.svg';
 import IconAlignRight from '../assets/icons/align-right.svg';
 import Delete from '../assets/icons/delete.svg';
 import Words from '../assets/icons/words.svg';
+import { genIconDom } from '../config/icons-config';
 import { isMobile, throttle } from '../utils/common';
 import { getI18nText } from '../utils/i18n';
-import { genIconDom } from '../utils/icons-config';
 
-const DefaultOptions = {
+const defaultOptions = {
   modules: ['DisplaySize', 'Toolbar', 'Resize'],
   overlayStyles: {
     position: 'absolute',
@@ -458,7 +458,7 @@ const knownModules = { DisplaySize, Toolbar, Resize };
 主要参考quill-image-resize-module，但是原包依赖quill版本较低，会导致包体积大（还有lodash）；
 另外必须window上有Quill，在建构工具中添加变量会导致和syntax的highlight冲突
 */
-class ImageResize {
+export class ImageResize {
   quill: any;
   options: {
     modules: string[];
@@ -522,7 +522,7 @@ class ImageResize {
 
     // Apply options to default options
     // this.options = defaultsDeep({}, options, DefaultOptions);
-    this.options = { ...DefaultOptions, ...options };
+    this.options = { ...defaultOptions, ...options };
 
     // (see above about moduleClasses)
     if (moduleClasses !== false) {

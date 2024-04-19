@@ -1,43 +1,43 @@
 import type { BlockBlot } from 'parchment';
 import Quill from 'quill';
 
-import { css } from '../utils/common';
+import { tableDefaultOptions } from './config';
+import { css } from './utils/common';
 
 const COL_TOOL_HEIGHT = 10;
 const COL_TOOL_CELL_HEIGHT = 10;
 const ROW_TOOL_WIDTH = 12;
 const CELL_MIN_WIDTH = 50;
-const PRIMARY_COLOR = '#35A7ED';
 
-export default class TableColumnTool {
-  table: HTMLElement;
+/** a floating header row above the table, useful for resizing column width */
+export class TableColumnTool {
+  tableRoot: HTMLElement;
+  containerRoot: HTMLElement | null;
   quill: Quill;
   options: Record<string, any>;
-  domNode: HTMLElement | null;
 
   constructor(table, quill, options) {
     if (!table) return null;
-    this.table = table;
+    this.tableRoot = table;
+    this.containerRoot = null;
     this.quill = quill;
     this.options = options;
-    this.domNode = null;
 
     this.initColTool();
   }
 
   initColTool() {
     const parent = this.quill.root.parentNode as HTMLElement;
-    const tableRect = this.table.getBoundingClientRect();
     const containerRect = parent.getBoundingClientRect();
     const tableViewRect = (
-      this.table.parentNode as HTMLElement
+      this.tableRoot.parentNode as HTMLElement
     ).getBoundingClientRect();
 
-    this.domNode = document.createElement('div');
-    this.domNode.classList.add('qlbt-col-tool');
+    this.containerRoot = document.createElement('div');
+    this.containerRoot.classList.add('qlbt-col-tool');
     this.updateToolCells();
-    parent.appendChild(this.domNode);
-    css(this.domNode, {
+    parent.appendChild(this.containerRoot);
+    css(this.containerRoot, {
       width: `${tableViewRect.width}px`,
       height: `${COL_TOOL_HEIGHT}px`,
       left: `${tableViewRect.left - containerRect.left + parent.scrollLeft}px`,
@@ -58,14 +58,14 @@ export default class TableColumnTool {
   }
 
   updateToolCells() {
-    const tableContainer = Quill.find(this.table) as BlockBlot;
+    const tableContainer = Quill.find(this.tableRoot) as BlockBlot;
     // @ts-expect-error fix-types
     const CellsInFirstRow = tableContainer.children.tail.children.head.children;
     // @ts-expect-error fix-types
     const tableCols = tableContainer.colGroup().children;
     const cellsNumber = computeCellsNumber(CellsInFirstRow);
     const existCells = Array.from(
-      this.domNode.querySelectorAll('.qlbt-col-tool-cell'),
+      this.containerRoot.querySelectorAll('.qlbt-col-tool-cell'),
     );
 
     for (
@@ -80,7 +80,7 @@ export default class TableColumnTool {
       let toolCell = null;
       if (!existCells[index]) {
         toolCell = this.createToolCell();
-        this.domNode.appendChild(toolCell);
+        this.containerRoot.appendChild(toolCell);
         this.addColCellHolderHandler(toolCell);
         // set tool cell min-width
         css(toolCell, {
@@ -99,19 +99,19 @@ export default class TableColumnTool {
   }
 
   destroy() {
-    this.domNode.remove();
+    this.containerRoot.remove();
     return null;
   }
 
   addColCellHolderHandler(cell: HTMLElement) {
-    const tableContainer = Quill.find(this.table);
+    const tableContainer = Quill.find(this.tableRoot);
     const $holder = cell.querySelector('.qlbt-col-tool-cell-holder');
     let dragging = false;
     let x0 = 0;
     let x = 0;
     let delta = 0;
     let width0 = 0;
-    // helpLine relation varrible
+    // helpLine relation variable
     let tableRect = {} as DOMRect;
     let cellRect = {} as DOMRect;
     let $helpLine = null;
@@ -137,7 +137,7 @@ export default class TableColumnTool {
     const handleMouseup = (e) => {
       e.preventDefault();
       const existCells = Array.from(
-        this.domNode.querySelectorAll('.qlbt-col-tool-cell'),
+        this.containerRoot.querySelectorAll('.qlbt-col-tool-cell'),
       );
       const colIndex = existCells.indexOf(cell);
       // @ts-expect-error fix-types
@@ -166,15 +166,15 @@ export default class TableColumnTool {
 
       const tableSelection =
         // @ts-expect-error fix-types
-        this.quill.getModule('table-editable').tableSelection;
-      tableSelection && tableSelection.clearSelection();
+        this.quill.getModule('tableEditable').tableSelection;
+      if (tableSelection) tableSelection.clearSelection();
     };
 
     const handleMousedown = (e) => {
       document.addEventListener('mousemove', handleDrag, false);
       document.addEventListener('mouseup', handleMouseup, false);
 
-      tableRect = this.table.getBoundingClientRect();
+      tableRect = this.tableRoot.getBoundingClientRect();
       cellRect = cell.getBoundingClientRect();
       $helpLine = document.createElement('div');
       css($helpLine, {
@@ -184,7 +184,7 @@ export default class TableColumnTool {
         zIndex: '100',
         height: `${tableRect.height + COL_TOOL_HEIGHT + 4}px`,
         width: '1px',
-        backgroundColor: PRIMARY_COLOR,
+        backgroundColor: tableDefaultOptions.primaryColor,
       });
 
       document.body.appendChild($helpLine);
@@ -197,11 +197,13 @@ export default class TableColumnTool {
   }
 
   colToolCells() {
-    return Array.from(this.domNode.querySelectorAll('.qlbt-col-tool-cell'));
+    return Array.from(
+      this.containerRoot.querySelectorAll('.qlbt-col-tool-cell'),
+    );
   }
 }
 
-function computeCellsNumber(CellsInFirstRow) {
+function computeCellsNumber(CellsInFirstRow: any[]) {
   return CellsInFirstRow.reduce((sum, cell) => {
     const cellColspan = cell.formats().colspan;
     sum = sum + parseInt(cellColspan, 10);

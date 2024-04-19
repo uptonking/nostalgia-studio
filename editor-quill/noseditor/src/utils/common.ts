@@ -29,11 +29,11 @@ export function isMobile() {
   return false;
 }
 
-// 设置content
+/** set editor with delta or html string */
 export function setContent(content: Delta | string, quill: Quill) {
   // console.log(6666, quill.getModule('imageResize'));
   // 在设置新值时，需要将上一个笔记可能遗留的imageResize图层弄消失，不然focus图片后的图层可能会保留
-  quill.getModule('imageResize')?.['hide']?.();
+  // quill.getModule('imageResize')?.['hide']?.();
   if (content) {
     if (typeof content === 'object') {
       quill.setContents(content);

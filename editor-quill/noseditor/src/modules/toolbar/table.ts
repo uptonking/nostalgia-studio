@@ -1,94 +1,109 @@
 import Quill from 'quill';
 import type DefaultModule from 'quill/src/core/module';
+import type DefaultToolbar from 'quill/src/modules/toolbar';
 
 import { getI18nText } from '../../utils/i18n';
+import type { TableEditable } from '../table-editable/table';
+import { ifInTableCell } from '../table-editable/utils/common';
+
+type TableHandlerOptions = {
+  dialogWidth: number;
+  dialogRowNum: number;
+  dialogColNum: number;
+  i18n: 'zh' | 'en';
+};
+
+const defaultOptions: TableHandlerOptions = {
+  dialogWidth: 200,
+  dialogRowNum: 9,
+  dialogColNum: 9,
+  i18n: 'en',
+};
 
 const Module = Quill.import('core/module') as typeof DefaultModule;
 
-class TableHandler extends Module<Record<string, any>> {
-  toolbar: any;
-  DEFAULT_COL: number;
-  DEFAULT_ROW: number;
-  tableDialog: any;
+export class TableHandler extends Module<TableHandlerOptions> {
+  static genNumArr = (max: number) =>
+    Array(max)
+      .fill(0)
+      .map((_, index) => index);
 
-  constructor(quill, options) {
+  declare options: TableHandlerOptions;
+
+  toolbar: DefaultToolbar;
+  tableDialogRoot: HTMLElement;
+
+  constructor(quill: Quill, options: Partial<TableHandlerOptions>) {
     super(quill, options);
-
-    this.quill = quill;
-    this.options = options || {};
-    this.toolbar = quill.getModule('toolbar');
-    this.DEFAULT_COL = 9;
-    this.DEFAULT_ROW = 9;
-    if (typeof this.toolbar !== 'undefined') {
-      this.toolbar.addHandler('table', this.handleTableClick.bind(this));
+    this.options = { ...defaultOptions, ...options };
+    this.toolbar = quill.getModule('toolbar') as DefaultToolbar;
+    if (this.toolbar) {
+      this.toolbar.addHandler('table', this.handleAddTableClick.bind(this));
     }
   }
 
-  handleTableClick() {
-    this.tableDialogOpen();
-    if (window.event) {
-      window.event.cancelBubble = true;
-      // 点击整个编辑器就消除table的弹出框
-      this.quill.container.parentNode.addEventListener('click', () => {
-        this.tableDialogClose();
-      });
-    } else {
-      // 聚焦文本container就消除table的弹出框
-      this.quill.container.addEventListener('click', () => {
-        this.tableDialogClose();
-      });
+  handleAddTableClick() {
+    const range = this.quill.getSelection(true);
+    if (!range) return;
+    const currentBlot = this.quill.getLeaf(range.index)[0];
+    if (ifInTableCell(currentBlot)) {
+      console.warn(`Can not insert table into a table cell.`);
+      return;
     }
-    window.addEventListener('resize', () => {
-      this.tableDialogClose();
+
+    this.openTableDialog();
+    this.quill.container.addEventListener('click', (ev) => {
+      this.closeTableDialog();
+    });
+    window.addEventListener('resize', (et) => {
+      this.closeTableDialog();
     });
   }
 
-  tableDialogOpen() {
+  openTableDialog() {
     if (this.toolbar.container.querySelector('.ql-table-dialog')) {
-      this.tableDialog.remove();
-    } else {
-      this.showTableDialog();
-      Array.from(
-        this.tableDialog.getElementsByClassName('table-dialog-item'),
-        // @ts-expect-error fix-types
-      ).forEach((dom: HTMLElement) => {
-        dom.addEventListener('mouseover', () => {
-          this.tableDialog.querySelector('#table-row-number').innerText =
-            Number(dom.dataset.row) + 1;
-          this.tableDialog.querySelector('#table-col-number').innerText =
-            Number(dom.dataset.column) + 1;
-          this.itemBackgroundChange(dom.dataset.row, dom.dataset.column);
-        });
-        dom.addEventListener('click', () => {
-          this.createTable(
-            Number(dom.dataset.row) + 1,
-            Number(dom.dataset.column) + 1,
-          );
-        });
-      });
+      this.closeTableDialog();
+      return;
     }
+
+    this.renderTableDialogContent();
+
+    (
+      Array.from(
+        this.tableDialogRoot.getElementsByClassName('table-dialog-item'),
+      ) as HTMLElement[]
+    ).forEach((dom) => {
+      dom.addEventListener('mouseover', () => {
+        this.tableDialogRoot.querySelector<HTMLElement>(
+          '#tableRowNumber',
+        ).innerText = String(Number(dom.dataset.row) + 1);
+        this.tableDialogRoot.querySelector<HTMLElement>(
+          '#tableColNumber',
+        ).innerText = String(Number(dom.dataset.column) + 1);
+        this.updateItemBackground(dom.dataset.row, dom.dataset.column);
+      });
+      dom.addEventListener('click', () => {
+        this.insertTable(
+          Number(dom.dataset.row) + 1,
+          Number(dom.dataset.column) + 1,
+        );
+      });
+    });
   }
 
-  showTableDialog() {
-    const toolbarContainer = this.toolbar.container;
-    if (!this.tableDialog) {
-      this.tableDialog = document.createElement('div');
-      this.tableDialog.classList.add('ql-table-dialog');
-      const { dialogRows, dialogColumns } = this.options; // 生成dialogRows * dialogColumns的格子弹框
+  renderTableDialogContent() {
+    if (!this.tableDialogRoot) {
+      this.tableDialogRoot = document.createElement('div');
+      this.tableDialogRoot.classList.add('ql-table-dialog');
       const tableDialogLabel = getI18nText(
         'tableDialogLabel',
         this.options.i18n,
       );
-      const dialogContent = `${TableHandler.genNumArr(
-        Number(dialogRows) > 0 ? Number(dialogRows) : this.DEFAULT_ROW,
-      )
+      const { dialogRowNum, dialogColNum } = this.options;
+      const dialogContent = `${TableHandler.genNumArr(dialogRowNum)
         .map(
           (row) =>
-            `<div class="table-dialog-tr">${TableHandler.genNumArr(
-              Number(dialogColumns) > 0
-                ? Number(dialogColumns)
-                : this.DEFAULT_COL,
-            )
+            `<div class="table-dialog-tr">${TableHandler.genNumArr(dialogColNum)
               .map(
                 (column) =>
                   `<div class="table-dialog-item" data-row="${row}" data-column="${column}"></div>`,
@@ -96,53 +111,78 @@ class TableHandler extends Module<Record<string, any>> {
               .join('')}</div>`,
         )
         .join('')}
-        <p><label>${tableDialogLabel}</label><span><span id="table-row-number">0</span> X <span id="table-col-number">0</span></span></p>
+        <p><label>${tableDialogLabel}</label><span>
+        <span id="tableRowNumber">0</span> X <span id="tableColNumber">0</span>
+        </span></p>
       `;
-
-      this.tableDialog.innerHTML = dialogContent;
+      this.tableDialogRoot.innerHTML = dialogContent;
     } else {
-      this.itemBackgroundChange(-1, 0); // 每次打开都清空之前被 hover 过的格子
+      // clear previous bg and reset row x col
+      this.updateItemBackground(-1, -1);
+      this.tableDialogRoot.querySelector<HTMLElement>(
+        '#tableRowNumber',
+      ).innerText = '0';
+      this.tableDialogRoot.querySelector<HTMLElement>(
+        '#tableColNumber',
+      ).innerText = '0';
     }
 
-    const tableIcon = toolbarContainer.querySelector('.ql-table');
-    this.tableDialog.style = this.dialogPosition(tableIcon);
-    toolbarContainer.append(this.tableDialog);
+    const toolbarContainer = this.toolbar.container;
+    const tableIcon = toolbarContainer.querySelector<HTMLElement>('.ql-table');
+    const pos = this.computeDialogPosition(tableIcon);
+    this.tableDialogRoot.style.setProperty('top', pos.top + 'px');
+    this.tableDialogRoot.style.setProperty('left', pos.left + 'px');
+    toolbarContainer.append(this.tableDialogRoot);
   }
 
-  tableDialogClose() {
-    if (this.tableDialog) {
-      this.tableDialog.remove();
+  closeTableDialog() {
+    if (this.tableDialogRoot) {
+      this.tableDialogRoot.remove();
     }
+    // this.tableDialogRoot = null;
   }
-  dialogPosition = (clickDom) => {
-    const parent = clickDom.offsetParent;
-    const width = 200;
-    if (parent.offsetWidth - clickDom.offsetLeft + 6 > width) {
-      return `top:${clickDom.offsetTop + 24}px;left:${clickDom.offsetLeft + 6}px;`;
+
+  computeDialogPosition(clickDom: HTMLElement) {
+    const parent = clickDom.offsetParent as HTMLElement;
+    const dialogWidth = this.options.dialogWidth;
+    if (parent.offsetWidth > clickDom.offsetLeft + dialogWidth) {
+      // /if it's wide enough
+      return { top: clickDom.offsetTop + 32, left: clickDom.offsetLeft + 6 };
     } else {
-      return `top:${clickDom.offsetTop + 24}px;left:${parent.offsetWidth - width}px;`;
+      return {
+        top: clickDom.offsetTop + 32,
+        left: parent.offsetWidth - dialogWidth,
+      };
     }
-  };
-
-  createTable(row, column) {
-    this.tableDialogClose();
-    // @ts-expect-error fix-types
-    this.quill.getModule('table-editable').insertTable(row, column);
   }
 
-  itemBackgroundChange(row, column) {
-    Array.from(
-      this.tableDialog.getElementsByClassName('table-dialog-item'),
-      // @ts-expect-error fix-types
-    ).forEach((dom: HTMLElement) => {
+  insertTable(row: number, column: number) {
+    this.closeTableDialog();
+    const tableEditableMod = this.quill.getModule(
+      'tableEditable',
+    ) as TableEditable;
+    tableEditableMod.insertTable(row, column);
+  }
+
+  updateItemBackground(row: string | number, column: string | number) {
+    (
+      Array.from(
+        this.tableDialogRoot.getElementsByClassName('table-dialog-item'),
+      ) as HTMLElement[]
+    ).forEach((dom) => {
       if (dom.dataset.row <= row && dom.dataset.column <= column) {
-        dom.className = 'table-dialog-item item-hover';
+        if (!dom.classList.contains('item-hover')) {
+          dom.classList.add('item-hover');
+        }
+        // dom.className = 'table-dialog-item item-hover';
       } else {
-        dom.className = 'table-dialog-item';
+        if (dom.classList.contains('item-hover')) {
+          dom.classList.remove('item-hover');
+        }
+        // dom.className = 'table-dialog-item';
       }
     });
   }
-  static genNumArr = (max) => new Array(max).fill(0).map((i, index) => index);
 }
 
 export default TableHandler;

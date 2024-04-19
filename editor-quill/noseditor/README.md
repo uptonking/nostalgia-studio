@@ -12,5 +12,7 @@ npm start
 - open a browser and go to http://localhost:8999
 # notes
 - forked from https://github.com/ludejun/quill-react-commercial /ISC/20240416/ts/js
+# fix
+- markdown hot keys not work
 # roadmap
 - migrate highlight.js

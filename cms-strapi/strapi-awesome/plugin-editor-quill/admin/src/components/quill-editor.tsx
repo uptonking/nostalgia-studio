@@ -1,9 +1,17 @@
-import 'react-quill/dist/quill.snow.css';
+import 'quill/styles/quill.snow.css';
+import '@datalking/noseditor/src/styles.scss';
 
-import React, { forwardRef, useEffect, useRef, useState } from 'react';
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
-import Quill from 'quill';
+import type Quill from 'quill';
 
+import { NoseditorFull } from '@datalking/noseditor-react';
 import { Button, Field, FieldLabel, Flex, Stack } from '@strapi/design-system';
 import { type InputProps, useField } from '@strapi/strapi/admin';
 
@@ -17,62 +25,24 @@ type QuillEditorProps = {
 
 export const QuillEditor = forwardRef<Quill, QuillEditorProps>(
   ({ onChange, name, value }, ref) => {
-    const modules = {
-      toolbar: [
-        [{ header: '1' }, { header: '2' }, { font: [] }],
-        [{ size: [] }],
-        ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-        [
-          { list: 'ordered' },
-          { list: 'bullet' },
-          { indent: '-1' },
-          { indent: '+1' },
-        ],
-        ['link'],
-        ['clean'],
-      ],
-    };
-
-    const containerRef = useRef<HTMLDivElement>(null);
-    // const onTextChangeRef = useRef(onTextChange);
-    // const onSelectionChangeRef = useRef(onSelectionChange);
-
-    useEffect(() => {
-      const container = containerRef.current;
-      if (!container) return;
-      const editorContainer = container.appendChild(
-        container.ownerDocument.createElement('div'),
-      );
-      const quill = new Quill(editorContainer, {
-        modules,
-        theme: 'snow',
-      });
-      if (!ref) ref = { current: null };
-      if (ref) ref['current'] = quill;
-
-      if (value) {
-        quill.setContents(JSON.parse(value));
-      }
-
-      quill.on(Quill.events.TEXT_CHANGE, (...args) => {
-        // onTextChangeRef.current?.(...args);
+    const onContentChange = useCallback(() => {
+      console.log(';; ref ', ref);
+      if (ref && ref['current']) {
         onChange({
-          target: { name, value: JSON.stringify(quill.getContents()) },
+          // @ts-expect-error fix-types
+          target: { name, value: JSON.stringify(ref.current.getContents()) },
         });
-      });
-      // quill.on(Quill.events.SELECTION_CHANGE, (...args) => {
-      //   onSelectionChangeRef.current?.(...args);
-      // });
-      // let vv = name;
+      }
+    }, [name, onChange, ref]);
 
-      return () => {
-        // @ts-expect-error fix-types
-        ref.current = null;
-        container.innerHTML = '';
-      };
-    }, [name, ref]);
-
-    return <div className='ql-edit-container' ref={containerRef} />;
+    console.log(';; ql ', name, value);
+    return (
+      <NoseditorFull
+        onChange={onContentChange}
+        initialContent={value ? JSON.parse(value) : ' '}
+        ref={ref}
+      />
+    );
   },
 );
 

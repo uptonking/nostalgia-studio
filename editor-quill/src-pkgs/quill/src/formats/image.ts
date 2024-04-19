@@ -1,4 +1,5 @@
 import { EmbedBlot } from 'parchment';
+
 import { sanitize } from './link';
 
 const ATTRIBUTES = ['alt', 'height', 'width'];
@@ -39,7 +40,7 @@ class Image extends EmbedBlot {
     return domNode.getAttribute('src');
   }
 
-  domNode: HTMLImageElement;
+  declare domNode: HTMLImageElement;
 
   format(name: string, value: string) {
     if (ATTRIBUTES.indexOf(name) > -1) {

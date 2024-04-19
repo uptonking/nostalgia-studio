@@ -1,3 +1,19 @@
+import type { Blot } from 'parchment';
+
+import { TableCell } from '../formats-table';
+
+export function isTableCell(blot) {
+  return blot.statics.blotName === TableCell.blotName;
+}
+
+export function ifInTableCell(current: Blot) {
+  return current && current.parent
+    ? isTableCell(current.parent)
+      ? true
+      : ifInTableCell(current.parent)
+    : false;
+}
+
 export function css(domNode, rules) {
   if (typeof rules === 'object') {
     for (const prop in rules) {

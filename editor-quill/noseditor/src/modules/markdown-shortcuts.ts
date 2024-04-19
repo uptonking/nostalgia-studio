@@ -12,7 +12,7 @@ const Block = Quill.import('blots/block') as typeof BlockBlot;
 
 Quill.register('formats/horizontal', HorizontalRule);
 
-class MarkdownShortcuts {
+export class MarkdownShortcuts {
   quill: Quill;
   options: any;
   ignoreElements: any;

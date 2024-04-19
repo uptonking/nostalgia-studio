@@ -2,7 +2,7 @@ import type Quill from 'quill';
 
 import { throttle } from '../utils/common';
 // Copy/paste or drag images into the rich-text editor.
-/* 原改编自 'quill-image-drop-module'，主要Bug是
+/** 原改编自 'quill-image-drop-module'，主要Bug是
 		1. Quill已支持Drop成Base64图片，当本Module运行时Drop会插入两次base64图片
 		2. paste到table中还是Base64
 		3. 无法上传到服务器

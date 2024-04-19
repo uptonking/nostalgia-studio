@@ -3,32 +3,31 @@ import type DefaultBlock from 'quill/src/blots/block';
 import type DefaultBreak from 'quill/src/blots/break';
 import type DefaultContainer from 'quill/src/blots/container';
 
-import { getRelativeRect } from '../utils/common';
-import Header from './header';
+import type TableEditable from './table';
+import { getRelativeRect } from './utils/common';
 
 const Break = Quill.import('blots/break') as typeof DefaultBreak;
 const Block = Quill.import('blots/block') as typeof DefaultBlock;
 const Container = Quill.import('blots/container') as typeof DefaultContainer;
 
-const COL_ATTRIBUTES = ['width'];
-const COL_DEFAULT = { width: 120 };
-const CELL_IDENTITY_KEYS = ['row', 'cell'];
-const CELL_ATTRIBUTES = ['rowspan', 'colspan'];
+export const CELL_IDENTITY_KEYS = ['row', 'cell'] as const;
+export const CELL_ATTRIBUTES = ['rowspan', 'colspan'];
 const CELL_DEFAULT = {
   rowspan: 1,
   colspan: 1,
-};
-const ERROR_LIMIT = 5;
+} as const;
+const colAttributes = ['width'] as const;
+const colDefaultOptions = { width: 120 } as const;
+const errorLimit = 5;
 
-class TableCellLine extends Block {
+/** inside cell */
+export class TableCellLine extends Block {
   static create(value) {
     const node = super.create(value);
-
     CELL_IDENTITY_KEYS.forEach((key) => {
-      const identityMaker = key === 'row' ? rowId : cellId;
-      node.setAttribute(`data-${key}`, value[key] || identityMaker());
+      const genId = key === 'row' ? genRowId : genCellId;
+      node.setAttribute(`data-${key}`, value[key] || genId());
     });
-
     CELL_ATTRIBUTES.forEach((attrName) => {
       node.setAttribute(
         `data-${attrName}`,
@@ -46,19 +45,19 @@ class TableCellLine extends Block {
   static formats(domNode) {
     const formats = {};
 
-    return CELL_ATTRIBUTES.concat(CELL_IDENTITY_KEYS)
-      .concat(['cell-bg'])
-      .reduce((formats, attribute) => {
-        if (domNode.hasAttribute(`data-${attribute}`)) {
-          formats[attribute] =
-            domNode.getAttribute(`data-${attribute}`) || undefined;
+    return [...CELL_ATTRIBUTES, ...CELL_IDENTITY_KEYS, 'cell-bg'].reduce(
+      (formats, attr) => {
+        if (domNode.hasAttribute(`data-${attr}`)) {
+          formats[attr] = domNode.getAttribute(`data-${attr}`) || undefined;
         }
         return formats;
-      }, formats);
+      },
+      formats,
+    );
   }
 
   format(name, value) {
-    if (CELL_ATTRIBUTES.concat(CELL_IDENTITY_KEYS).indexOf(name) > -1) {
+    if ([...CELL_ATTRIBUTES, ...CELL_IDENTITY_KEYS].indexOf(name) > -1) {
       if (value) {
         this.domNode.setAttribute(`data-${name}`, value);
       } else {
@@ -116,7 +115,46 @@ TableCellLine.blotName = 'table-cell-line';
 TableCellLine.className = 'qlbt-cell-line';
 TableCellLine.tagName = 'P';
 
-class TableCell extends Container {
+/** create table cell td */
+export class TableCell extends Container {
+  static create(value) {
+    const node = super.create(value) as HTMLElement;
+    node.setAttribute('data-row', value.row);
+
+    CELL_ATTRIBUTES.forEach((attrName) => {
+      if (value[attrName]) {
+        node.setAttribute(attrName, value[attrName]);
+      }
+    });
+
+    if (value['cell-bg']) {
+      node.setAttribute('data-cell-bg', value['cell-bg']);
+      node.style.backgroundColor = value['cell-bg'];
+    }
+
+    return node;
+  }
+
+  static formats(domNode) {
+    const formats = {};
+
+    if (domNode.hasAttribute('data-row')) {
+      formats['row'] = domNode.getAttribute('data-row');
+    }
+
+    if (domNode.hasAttribute('data-cell-bg')) {
+      formats['cell-bg'] = domNode.getAttribute('data-cell-bg');
+    }
+
+    return CELL_ATTRIBUTES.reduce((formats, attribute) => {
+      if (domNode.hasAttribute(attribute)) {
+        formats[attribute] = domNode.getAttribute(attribute);
+      }
+
+      return formats;
+    }, formats);
+  }
+
   checkMerge() {
     // table中允许List之后，输入有序列表报错 this.children.head.formats没有
     if (
@@ -157,44 +195,6 @@ class TableCell extends Container {
       }
     }
     return false;
-  }
-
-  static create(value) {
-    const node = super.create(value) as HTMLElement;
-    node.setAttribute('data-row', value.row);
-
-    CELL_ATTRIBUTES.forEach((attrName) => {
-      if (value[attrName]) {
-        node.setAttribute(attrName, value[attrName]);
-      }
-    });
-
-    if (value['cell-bg']) {
-      node.setAttribute('data-cell-bg', value['cell-bg']);
-      node.style.backgroundColor = value['cell-bg'];
-    }
-
-    return node;
-  }
-
-  static formats(domNode) {
-    const formats = {};
-
-    if (domNode.hasAttribute('data-row')) {
-      formats['row'] = domNode.getAttribute('data-row');
-    }
-
-    if (domNode.hasAttribute('data-cell-bg')) {
-      formats['cell-bg'] = domNode.getAttribute('data-cell-bg');
-    }
-
-    return CELL_ATTRIBUTES.reduce((formats, attribute) => {
-      if (domNode.hasAttribute(attribute)) {
-        formats[attribute] = domNode.getAttribute(attribute);
-      }
-
-      return formats;
-    }, formats);
   }
 
   cellOffset() {
@@ -292,10 +292,17 @@ class TableCell extends Container {
     return this.row() && this.row().table();
   }
 }
+// todo name
 TableCell.blotName = 'table';
 TableCell.tagName = 'TD';
 
-class TableRow extends Container {
+export class TableRow extends Container {
+  static create(value) {
+    const node = super.create(value) as HTMLElement;
+    node.setAttribute('data-row', value.row);
+    return node;
+  }
+
   checkMerge() {
     if (super.checkMerge() && this.next.children.head != null) {
       // @ts-expect-error fix-types
@@ -314,12 +321,6 @@ class TableRow extends Container {
       );
     }
     return false;
-  }
-
-  static create(value) {
-    const node = super.create(value) as HTMLElement;
-    node.setAttribute('data-row', value.row);
-    return node;
   }
 
   formats() {
@@ -369,24 +370,121 @@ class TableRow extends Container {
 TableRow.blotName = 'table-row';
 TableRow.tagName = 'TR';
 
-class TableBody extends Container {}
+export class TableBody extends Container {}
 TableBody.blotName = 'table-body';
 TableBody.tagName = 'TBODY';
 
-class TableCol extends Block {
+export class Header extends Block {
+  static create(value) {
+    if (typeof value === 'string') {
+      value = { value };
+    }
+
+    const node = super.create(value.value);
+
+    CELL_IDENTITY_KEYS.forEach((key) => {
+      if (value[key]) node.setAttribute(`data-${key}`, value[key]);
+    });
+
+    CELL_ATTRIBUTES.forEach((key) => {
+      if (value[key]) node.setAttribute(`data-${key}`, value[key]);
+    });
+
+    return node;
+  }
+
+  static formats(domNode) {
+    const formats: Record<string, any> = {};
+    formats.value = this.tagName.indexOf(domNode.tagName) + 1;
+
+    return CELL_ATTRIBUTES.concat(CELL_IDENTITY_KEYS).reduce(
+      (formats, attribute) => {
+        if (domNode.hasAttribute(`data-${attribute}`)) {
+          formats[attribute] =
+            domNode.getAttribute(`data-${attribute}`) || undefined;
+        }
+        return formats;
+      },
+      formats,
+    );
+  }
+
+  format(name, value) {
+    const { row, cell, rowspan, colspan } = Header.formats(this.domNode);
+    if (name === Header.blotName) {
+      if (value) {
+        super.format(name, {
+          value,
+          row,
+          cell,
+          rowspan,
+          colspan,
+        });
+      } else {
+        if (row) {
+          this.replaceWith(TableCellLine.blotName, {
+            row,
+            cell,
+            rowspan,
+            colspan,
+          });
+        } else {
+          super.format(name, value);
+        }
+      }
+    } else {
+      super.format(name, value);
+    }
+  }
+
+  optimize(context) {
+    const { row, rowspan, colspan } = Header.formats(this.domNode);
+
+    if (row && !(this.parent instanceof TableCell)) {
+      this.wrap(TableCell.blotName, {
+        row,
+        colspan,
+        rowspan,
+      });
+    }
+
+    // ShadowBlot optimize
+    this.enforceAllowedChildren();
+    if (this.uiNode != null && this.uiNode !== this.domNode.firstChild) {
+      this.domNode.insertBefore(this.uiNode, this.domNode.firstChild);
+    }
+    if (this.children.length === 0) {
+      if (this.statics.defaultChild != null) {
+        const child = this.scroll.create(this.statics.defaultChild.blotName);
+        this.appendChild(child);
+        // TODO double check if necessary
+        // child.optimize(context);
+      } else {
+        this.remove();
+      }
+    }
+    // Block optimize
+    this.cache = {};
+  }
+}
+// todo th
+Header.blotName = 'header';
+Header.tagName = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+
+export class TableCol extends Block {
   static create(value) {
     const node = super.create(value);
-    COL_ATTRIBUTES.forEach((attrName) => {
+    colAttributes.forEach((attrName) => {
       node.setAttribute(
         `${attrName}`,
-        value[attrName] || COL_DEFAULT[attrName],
+        value[attrName] || colDefaultOptions[attrName],
       );
     });
     return node;
   }
 
   static formats(domNode) {
-    return COL_ATTRIBUTES.reduce((formats, attribute) => {
+    return colAttributes.reduce((formats, attribute) => {
       if (domNode.hasAttribute(`${attribute}`)) {
         formats[attribute] = domNode.getAttribute(`${attribute}`) || undefined;
       }
@@ -395,8 +493,8 @@ class TableCol extends Block {
   }
 
   format(name, value) {
-    if (COL_ATTRIBUTES.indexOf(name) > -1) {
-      this.domNode.setAttribute(`${name}`, value || COL_DEFAULT[name]);
+    if (colAttributes.indexOf(name) > -1) {
+      this.domNode.setAttribute(`${name}`, value || colDefaultOptions[name]);
     } else {
       super.format(name, value);
     }
@@ -409,11 +507,11 @@ class TableCol extends Block {
 TableCol.blotName = 'table-col';
 TableCol.tagName = 'col';
 
-class TableColGroup extends Container {}
+export class TableColGroup extends Container {}
 TableColGroup.blotName = 'table-col-group';
 TableColGroup.tagName = 'colgroup';
 
-class TableContainer extends Container {
+export class TableContainer extends Container {
   static create() {
     const node = super.create();
     return node;
@@ -425,13 +523,15 @@ class TableContainer extends Container {
   }
 
   updateTableWidth() {
+    // todo replace setTimeout
     setTimeout(() => {
       const colGroup = this.colGroup();
       if (!colGroup) return;
       // @ts-expect-error fix-types
       const tableWidth = colGroup.children.reduce((sumWidth, col) => {
-        sumWidth =
-          sumWidth + parseInt(col.formats()[TableCol.blotName].width, 10);
+        const colWidth =
+          col.formats()[TableCol.blotName]?.width || colDefaultOptions.width;
+        sumWidth = sumWidth + parseInt(colWidth, 10);
         return sumWidth;
       }, 0);
       this.domNode.style.width = `${tableWidth}px`;
@@ -461,13 +561,13 @@ class TableContainer extends Container {
       );
 
       if (
-        cellRect.x + ERROR_LIMIT > compareRect.x &&
-        cellRect.x1 - ERROR_LIMIT < compareRect.x1
+        cellRect.x + errorLimit > compareRect.x &&
+        cellRect.x1 - errorLimit < compareRect.x1
       ) {
         removedCells.push(cell);
       } else if (
-        cellRect.x < compareRect.x + ERROR_LIMIT &&
-        cellRect.x1 > compareRect.x1 - ERROR_LIMIT
+        cellRect.x < compareRect.x + errorLimit &&
+        cellRect.x1 > compareRect.x1 - errorLimit
       ) {
         modifiedCells.push(cell);
       }
@@ -516,8 +616,8 @@ class TableContainer extends Container {
       );
 
       return (
-        rowRect.y > compareRect.y - ERROR_LIMIT &&
-        rowRect.y1 < compareRect.y1 + ERROR_LIMIT
+        rowRect.y > compareRect.y - errorLimit &&
+        rowRect.y1 < compareRect.y1 + errorLimit
       );
     });
 
@@ -528,17 +628,17 @@ class TableContainer extends Container {
       );
 
       if (
-        cellRect.y > compareRect.y - ERROR_LIMIT &&
-        cellRect.y1 < compareRect.y1 + ERROR_LIMIT
+        cellRect.y > compareRect.y - errorLimit &&
+        cellRect.y1 < compareRect.y1 + errorLimit
       ) {
         removedCells.push(cell);
       } else if (
-        cellRect.y < compareRect.y + ERROR_LIMIT &&
-        cellRect.y1 > compareRect.y1 - ERROR_LIMIT
+        cellRect.y < compareRect.y + errorLimit &&
+        cellRect.y1 > compareRect.y1 - errorLimit
       ) {
         modifiedCells.push(cell);
 
-        if (Math.abs(cellRect.y - compareRect.y) < ERROR_LIMIT) {
+        if (Math.abs(cellRect.y - compareRect.y) < errorLimit) {
           fallCells.push(cell);
         }
       }
@@ -557,8 +657,8 @@ class TableContainer extends Container {
       );
 
       if (
-        rowRect.y > compareRect.y - ERROR_LIMIT &&
-        rowRect.y1 < compareRect.y1 + ERROR_LIMIT
+        rowRect.y > compareRect.y - errorLimit &&
+        rowRect.y1 < compareRect.y1 + errorLimit
       ) {
         sum += 1;
       }
@@ -579,7 +679,7 @@ class TableContainer extends Container {
           compareCell.domNode.getBoundingClientRect(),
           editorWrapper,
         );
-        if (Math.abs(cellRect.x1 - compareRect.x) < ERROR_LIMIT) {
+        if (Math.abs(cellRect.x1 - compareRect.x) < errorLimit) {
           ref = compareCell;
         }
         return ref;
@@ -605,7 +705,7 @@ class TableContainer extends Container {
   tableDestroy() {
     const quill = Quill.find(this.scroll.domNode.parentNode);
     // @ts-expect-error fix-types
-    const tableModule = quill.getModule('table-editable');
+    const tableModule = quill.getModule('tableEditable');
     this.remove();
     tableModule.hideTableTools();
     // @ts-expect-error fix-types 🚨
@@ -613,7 +713,7 @@ class TableContainer extends Container {
   }
 
   insertCell(tableRow, ref) {
-    const id = cellId();
+    const id = genCellId();
     const rId = tableRow.formats().row;
     const tableCell = this.scroll.create(
       TableCell.blotName,
@@ -652,26 +752,26 @@ class TableContainer extends Container {
       );
 
       if (isRight) {
-        if (Math.abs(cellRect.x1 - compareRect.x1) < ERROR_LIMIT) {
+        if (Math.abs(cellRect.x1 - compareRect.x1) < errorLimit) {
           // the right of selected boundary equal to the right of table cell,
           // add a new table cell right aside this table cell
           addAsideCells.push(cell);
         } else if (
-          compareRect.x1 - cellRect.x > ERROR_LIMIT &&
-          compareRect.x1 - cellRect.x1 < -ERROR_LIMIT
+          compareRect.x1 - cellRect.x > errorLimit &&
+          compareRect.x1 - cellRect.x1 < -errorLimit
         ) {
           // the right of selected boundary is inside this table cell
           // colspan of this table cell will increase 1
           modifiedCells.push(cell);
         }
       } else {
-        if (Math.abs(cellRect.x - compareRect.x) < ERROR_LIMIT) {
+        if (Math.abs(cellRect.x - compareRect.x) < errorLimit) {
           // left of selected boundary equal to left of table cell,
           // add a new table cell left aside this table cell
           addAsideCells.push(cell);
         } else if (
-          compareRect.x - cellRect.x > ERROR_LIMIT &&
-          compareRect.x - cellRect.x1 < -ERROR_LIMIT
+          compareRect.x - cellRect.x > errorLimit &&
+          compareRect.x - cellRect.x1 < -errorLimit
         ) {
           // the left of selected boundary is inside this table cell
           // colspan of this table cell will increase 1
@@ -682,7 +782,7 @@ class TableContainer extends Container {
 
     addAsideCells.forEach((cell) => {
       const ref = isRight ? cell.next : cell;
-      const id = cellId();
+      const id = genCellId();
       const tableRow = cell.parent;
       const rId = tableRow.formats().row;
       const cellFormats = cell.formats();
@@ -739,7 +839,7 @@ class TableContainer extends Container {
     if (body == null || body.children.head == null) return;
 
     const tableCells = this.descendants(TableCell);
-    const rId = rowId();
+    const rId = genRowId();
     const newRow = this.scroll.create(TableRow.blotName, {
       row: rId,
     });
@@ -754,20 +854,20 @@ class TableContainer extends Container {
       );
 
       if (isDown) {
-        if (Math.abs(cellRect.y1 - compareRect.y1) < ERROR_LIMIT) {
+        if (Math.abs(cellRect.y1 - compareRect.y1) < errorLimit) {
           addBelowCells.push(cell);
         } else if (
-          compareRect.y1 - cellRect.y > ERROR_LIMIT &&
-          compareRect.y1 - cellRect.y1 < -ERROR_LIMIT
+          compareRect.y1 - cellRect.y > errorLimit &&
+          compareRect.y1 - cellRect.y1 < -errorLimit
         ) {
           modifiedCells.push(cell);
         }
       } else {
-        if (Math.abs(cellRect.y - compareRect.y) < ERROR_LIMIT) {
+        if (Math.abs(cellRect.y - compareRect.y) < errorLimit) {
           addBelowCells.push(cell);
         } else if (
-          compareRect.y - cellRect.y > ERROR_LIMIT &&
-          compareRect.y - cellRect.y1 < -ERROR_LIMIT
+          compareRect.y - cellRect.y > errorLimit &&
+          compareRect.y - cellRect.y1 < -errorLimit
         ) {
           modifiedCells.push(cell);
         }
@@ -784,7 +884,7 @@ class TableContainer extends Container {
     addBelowCells.sort(sortFunc);
 
     addBelowCells.forEach((cell) => {
-      const cId = cellId();
+      const cId = genCellId();
       const cellFormats = cell.formats();
 
       const tableCell = this.scroll.create(
@@ -822,10 +922,10 @@ class TableContainer extends Container {
       );
       if (isDown) {
         return (
-          Math.abs(rowRect.y - compareRect.y - compareRect.height) < ERROR_LIMIT
+          Math.abs(rowRect.y - compareRect.y - compareRect.height) < errorLimit
         );
       } else {
-        return Math.abs(rowRect.y - compareRect.y) < ERROR_LIMIT;
+        return Math.abs(rowRect.y - compareRect.y) < errorLimit;
       }
     });
     body.insertBefore(newRow, refRow);
@@ -895,7 +995,7 @@ class TableContainer extends Container {
               cell.domNode.getBoundingClientRect(),
               editorWrapper,
             );
-            if (Math.abs(compareRect.x1 - cellRect.x) < ERROR_LIMIT) {
+            if (Math.abs(compareRect.x1 - cellRect.x) < errorLimit) {
               result = cell;
             }
             return result;
@@ -925,17 +1025,16 @@ TableContainer.blotName = 'table-container';
 TableContainer.className = 'quill-better-table';
 TableContainer.tagName = 'TABLE';
 
-class TableViewWrapper extends Container {
+export class TableViewWrapper extends Container {
   constructor(scroll, domNode) {
     super(scroll, domNode);
-    const quill = Quill.find(scroll.domNode.parentNode);
+    const quill = Quill.find(scroll.domNode.parentNode) as Quill;
     domNode.addEventListener(
       'scroll',
       (e) => {
-        // @ts-expect-error fix-types
-        const tableModule = quill.getModule('table-editable');
+        const tableModule = quill.getModule('tableEditable') as TableEditable;
         if (tableModule.columnTool) {
-          tableModule.columnTool.domNode.scrollLeft = e.target.scrollLeft;
+          tableModule.columnTool.containerRoot.scrollLeft = e.target.scrollLeft;
         }
 
         if (
@@ -968,7 +1067,6 @@ TableRow.requiredContainer = TableBody;
 
 TableRow.allowedChildren = [TableCell];
 TableCell.requiredContainer = TableRow;
-
 // https://github.com/soccerloway/quill-better-table/issues/68
 // 支持table中输入List
 // const List = Quill.import('formats/list');
@@ -981,32 +1079,12 @@ TableColGroup.requiredContainer = TableContainer;
 
 TableCol.requiredContainer = TableColGroup;
 
-function rowId() {
+export function genRowId() {
   const id = Math.random().toString(36).slice(2, 6);
   return `row-${id}`;
 }
 
-function cellId() {
+export function genCellId() {
   const id = Math.random().toString(36).slice(2, 6);
   return `cell-${id}`;
 }
-
-export {
-  // blots
-  TableCol,
-  TableColGroup,
-  TableCellLine,
-  TableCell,
-  TableRow,
-  TableBody,
-  TableContainer,
-  TableViewWrapper,
-
-  // identity getters
-  rowId,
-  cellId,
-
-  // attributes
-  CELL_IDENTITY_KEYS,
-  CELL_ATTRIBUTES,
-};

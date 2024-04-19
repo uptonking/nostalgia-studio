@@ -2,9 +2,9 @@ import normalizeUrl from 'normalize-url';
 import Quill, { type Range } from 'quill';
 import type DefaultModule from 'quill/src/core/module';
 
+import { genIconDom, iconsConfig } from '../../config/icons-config';
 import { isEmail, isUrl } from '../../utils/common';
 import { getI18nText } from '../../utils/i18n';
-import { genIconDom, iconsConfig } from '../../utils/icons-config';
 
 const Module = Quill.import('core/module') as typeof DefaultModule;
 
@@ -69,13 +69,12 @@ export class LinkHandler extends Module<Record<string, any>> {
     });
 
     // 添加全局 Link Tooltip Dom，替换原 snow 的 tooltip
-    if (this.quill.theme && this.quill.theme.tooltip) {
+    if (this.quill.theme && this.quill.theme['tooltip']) {
       // @ts-expect-error fix-types
       this.quill.theme.tooltip.root.innerHTML = LinkHandler.linkTooltip(
         options.i18n,
       );
     }
-    // 编辑器有 text-change，关闭 tooltip
     quill.on('text-change', this.tooltipClose);
   }
 
