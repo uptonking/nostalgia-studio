@@ -78,6 +78,8 @@
       "parchment": ["./editor-quill/src-pkgs/parchment/src/"],
       "quill": ["./editor-quill/src-pkgs/quill/src/"],
       "y-quill": ["./collab-yjs/src-pkgs/y-quill/"],
+      "@datalking/noseditor": ["./editor-quill/noseditor/src/"],
+      "@datalking/noseditor-react": ["./editor-quill/noseditor-react/src/"],
       "strapi-plugin-*": ["./cms-strapi/strapi-awesome/plugin-*/"],
       "@datalking/pivot-core": ["./excel-watarble/core/src/"],
       "@datalking/pivot-cqrs": ["./excel-watarble/cqrs/src/"],

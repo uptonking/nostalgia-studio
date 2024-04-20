@@ -1,7 +1,7 @@
 // shared webpack config object for dev, build, prod, demo...
 import rspack from '@rspack/core';
 
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = process.env.NODE_ENV !== 'production';
 
 /** @type {import("@rspack/cli").Configuration} */
 export const commonConfig = {
@@ -18,7 +18,7 @@ export const commonConfig = {
               target: 'es2020',
               loose: false,
               externalHelpers: true,
-              preserveAllComments: false,
+              preserveAllComments: isDev ? true : false,
               parser: {
                 syntax: 'typescript',
                 jsx: true,
@@ -28,7 +28,7 @@ export const commonConfig = {
                   // runtime: 'automatic',
                   runtime: 'classic',
                   throwIfNamespace: true,
-                  useBuiltins: false,
+                  useBuiltins: true,
                   // development: isDev,
                   // refresh: isDev
                 },
@@ -50,7 +50,7 @@ export const commonConfig = {
               target: 'es2020',
               loose: false,
               externalHelpers: true,
-              preserveAllComments: false,
+              preserveAllComments: isDev ? true : false,
               parser: {
                 syntax: 'typescript',
               },
@@ -91,7 +91,7 @@ export const commonConfig = {
     extensions: ['.tsx', '.jsx', '.ts', '.js', '.mjs', '.cjs'],
   },
   experiments: {
-    // css: true,
+    // css: false,
     // outputModule: true,
     rspackFuture: {
       newTreeshaking: true,

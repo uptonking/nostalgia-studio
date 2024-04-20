@@ -7,3 +7,5 @@
 # roadmap
 
 - fix quill rerender
+
+- css order: quill.snow.css, noseditor.styles.scss, 处理的loader不同

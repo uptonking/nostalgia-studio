@@ -36,7 +36,6 @@
 "@linaria/babel-preset": "^4.4.4",
 "@linaria/webpack5-loader": "^4.1.16",
 
-"@icon-park/react": "^1.4.2",
-"@faker-js/faker": "^8.0.0",
+"@icon-park/react": "^1.4.2"
 }
 ```

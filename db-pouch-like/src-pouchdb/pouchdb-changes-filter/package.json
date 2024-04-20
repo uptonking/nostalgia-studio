@@ -34,6 +34,6 @@
     "pouchdb-selector-core": "8.0.1111"
   },
   "devDependencies": {
-    "@types/node": "^20.11.25"
+    "@types/node": "^20.12.7"
   }
 }

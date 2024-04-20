@@ -18,9 +18,9 @@ import { type InputProps, useField } from '@strapi/strapi/admin';
 // import { useLibrary, prefixFileUrlWithBackendUrl } from '@strapi/helper-plugin';
 
 type QuillEditorProps = {
-  onChange: (...args: any[]) => any;
   name: string;
   value: string;
+  onChange: (...args: any[]) => any;
 };
 
 export const QuillEditor = forwardRef<Quill, QuillEditorProps>(

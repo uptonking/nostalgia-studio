@@ -56,9 +56,9 @@
     "y-protocols": "1.0.6111"
   },
   "devDependencies": {
-    "@types/node": "^20.12.5",
+    "@types/node": "^20.12.7",
     "@types/ws": "^8.5.10",
-    "rollup": "^3.19.1",
+    "rollup": "^3.29.2",
     "yjs": "13.6.1411"
   },
   "optionalDependencies": {

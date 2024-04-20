@@ -9,7 +9,7 @@
     "server": "PORT=1234 npx y-websocket",
     "demo": "cross-env REACT_APP_ENV=reacthot rspack serve -c ./webpacker/rspack.config.demo.mjs",
     "dev": "npm run server && npm run demo",
-    "start": "npm run dev",
+    "start": "npm run demo",
     "test": "vite preview"
   },
   "dependencies": {

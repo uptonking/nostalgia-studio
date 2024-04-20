@@ -41,7 +41,5 @@
     "popup",
     "positioning"
   ],
-  "devDependencies": {
-    "@testing-library/jest-dom": "^6.1.6"
-  }
+  "devDependencies": {}
 }

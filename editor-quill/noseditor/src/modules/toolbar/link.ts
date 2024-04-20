@@ -1,10 +1,10 @@
-import normalizeUrl from 'normalize-url';
 import Quill, { type Range } from 'quill';
 import type DefaultModule from 'quill/src/core/module';
 
 import { genIconDom, iconsConfig } from '../../config/icons-config';
 import { isEmail, isUrl } from '../../utils/common';
 import { getI18nText } from '../../utils/i18n';
+import { normalizeUrl } from '../../utils/normalize-url';
 
 const Module = Quill.import('core/module') as typeof DefaultModule;
 
