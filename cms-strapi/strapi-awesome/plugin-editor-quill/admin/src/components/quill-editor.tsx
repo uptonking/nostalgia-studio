@@ -10,13 +10,17 @@ import React, {
   useState,
 } from 'react';
 
-import type Quill from 'quill';
+import Quill from 'quill';
 
 import { NoseditorFull } from '@datalking/noseditor-react';
+import { useStrapiApp } from '@strapi/admin/strapi-admin';
 import { Button, Field, FieldLabel, Flex, Stack } from '@strapi/design-system';
 import { useField } from '@strapi/strapi/admin';
+import type { Schema } from '@strapi/types';
 
-// import { useLibrary, prefixFileUrlWithBackendUrl } from '@strapi/helper-plugin';
+import { prefixFileUrlWithBackendUrl } from '../utils/image';
+
+const Delta = Quill.import('delta');
 
 type QuillEditorProps = {
   name: string;
@@ -30,14 +34,15 @@ export const QuillEditor = forwardRef<Quill | null, QuillEditorProps>(
     const selection = useRef<{ index: number; length: number } | null>(null);
 
     const onContentChange = useCallback(() => {
+      // console.log(';; on-chg ', ref)
       if (ref && ref['current']) {
         Promise.resolve().then(() => {
           selection.current = ref['current'].getSelection();
           // console.log(';; txt-sel ', selection.current);
           // console.log(
           //   ';; on-txt ',
-          //   ref['current'].getContents(),
-          //   ref['current'].getSelection(),
+          //   JSON.stringify(ref['current'].getContents()),
+          //   JSON.stringify(ref['current'].getSelection())
           // );
           onChange({
             target: {
@@ -98,38 +103,56 @@ export const FieldQuillEditor = ({ name }) => {
   const { onChange, value = '', error } = useField(name);
   // console.log(';; field-edi ', typeof value, value);
 
-  const quillRef = useRef<Quill | null>(null);
+  const quillInstance = useRef<Quill | null>(null);
 
   const [showMediaLibDialog, setShowMediaLibDialog] = useState(false);
-  // const { components } = useLibrary();
-  // const MediaLibDialog = components['media-library'];
+  const components = useStrapiApp(
+    'FieldQuillEditor',
+    (state) => state.components,
+  );
+  const MediaLibDialog = components['media-library'] as React.ComponentType<{
+    allowedTypes: Schema.Attribute.MediaKind[];
+    onClose: () => void;
+    onSelectAssets: (_images: Schema.Attribute.MediaValue<true>) => void;
+  }>;
 
-  const handleToggleMediaLibDialog = () => {
-    setShowMediaLibDialog(!showMediaLibDialog);
-  };
+  const handleToggleMediaLibDialog = useCallback(() => {
+    setShowMediaLibDialog((v) => !v);
+  }, []);
 
   const handleSelectAssets = (files) => {
-    // const formattedFiles = files.map(file => ({
-    //     alt: file.alternativeText || file.name,
-    //     url: prefixFileUrlWithBackendUrl(file.url),
-    //     mime: file.mime,
-    // }));
-    // const images = formattedFiles.map(image => `<image src='${image.url}' alt='${image.alt}'>`).join();
-    // onChange({
-    //     target: {
-    //         name: name,
-    //         value: value + images
-    //     }
-    // });
+    if (!quillInstance.current) return;
+    const formattedImages = files.map((file) => ({
+      alt: file.alternativeText || file.name,
+      url: prefixFileUrlWithBackendUrl(file.url),
+      mime: file.mime,
+    }));
+    // const images = formattedImages.map(image => `<image src='${image.url}' alt='${image.alt}'>`).join();
+    const imgDelta = new Delta(
+      formattedImages.map((img) => ({
+        insert: { image: img.url },
+        // attributes:{}
+      })),
+    );
+    // console.log(';; img ', formattedImages, imgDelta);
+    const existingDelta = quillInstance.current.getContents();
+    const newContentDelta = existingDelta.concat(imgDelta);
+    // @ts-expect-error fix-types
+    onChange({
+      target: {
+        name,
+        value: JSON.stringify(newContentDelta),
+      },
+    });
     handleToggleMediaLibDialog();
   };
 
   return (
     <div>
       <Field name={name}>
-        {/* <Button variant='secondary' onClick={handleToggleMediaLibDialog}>
-          MediaLib
-        </Button> */}
+        <Button variant='secondary' onClick={handleToggleMediaLibDialog}>
+          Insert image from Media Library
+        </Button>
         <Stack spacing={2} padding={2}>
           <Flex>
             <FieldLabel>{name}</FieldLabel>
@@ -138,17 +161,16 @@ export const FieldQuillEditor = ({ name }) => {
             name={name}
             onChange={onChange}
             value={value}
-            ref={quillRef}
+            ref={quillInstance}
           />
         </Stack>
-        {
-          // showMediaLibDialog
-          // &&
-          // <MediaLibDialog
-          //     onClose={handleToggleMediaLibDialog}
-          //     onSelectAssets={handleSelectAssets}
-          // />
-        }
+        {showMediaLibDialog ? (
+          <MediaLibDialog
+            allowedTypes={['images']}
+            onClose={handleToggleMediaLibDialog}
+            onSelectAssets={handleSelectAssets}
+          />
+        ) : null}
       </Field>
     </div>
   );

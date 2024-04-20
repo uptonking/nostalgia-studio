@@ -226,7 +226,7 @@ export class ImageHandler extends Module<ImageHandlerOptions> {
     this.closeImageDialog();
     // this.quill.enable(true);
     const range = this.quill.getSelection(true);
-    this.quill.insertEmbed(range.index, 'image', url);
+    this.quill.insertEmbed(range.index, 'image', url, 'user');
     this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
     this.imgFileInput.value = '';
   };
