@@ -8,3 +8,14 @@ const ql = createNoseditor({
 });
 
 window['ql'] = ql;
+
+// ql.on('selection-change', (range, oldRange) => {
+//   console.log(';; on-sel ', range, oldRange);
+// });
+
+// ql.on('text-change', (delta, oldDelta, source) => {
+//   console.log(';; on-chg ', delta, source, ql.getSelection());
+//   Promise.resolve().then(() => {
+//     console.log('chg ', delta, source, ql.getSelection());
+//   });
+// });

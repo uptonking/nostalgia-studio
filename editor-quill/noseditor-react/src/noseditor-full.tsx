@@ -17,15 +17,17 @@ export const NoseditorFull = forwardRef<Quill, NoseditorFullProps>(
 
     useEffect(() => {
       const root = editorRoot.current;
-      console.log(';; nos-react-ef ', root);
       if (root) {
         const noseditor = createNoseditor({
           ...props,
           container: root,
         });
 
-        if (!ref) ref = { current: null };
-        if (ref) ref['current'] = noseditor;
+        if (!ref) {
+          ref = { current: noseditor };
+        } else {
+          ref['current'] = noseditor;
+        }
 
         return () => {
           // @ts-expect-error fix-types
@@ -34,15 +36,14 @@ export const NoseditorFull = forwardRef<Quill, NoseditorFullProps>(
           noseditor.theme.modules.clipboard?.container?.remove();
           // @ts-expect-error fix-types
           noseditor.theme?.tooltip?.root?.remove();
-          // root.remove();
-          // root.innerHTML = '';
-          // console.log(';; cleaned ')
+          root.remove();
+          root.innerHTML = '';
+          // console.log(';; cleaned ');
         };
       }
     }, [props]);
 
-    console.log(';; nos-react ', props, ref);
-
+    // console.log(';; nos-react ', props, ref);
     return (
       <div className='ql-editor-container noseditor-container'>
         <div className='noseditor-root' ref={editorRoot} />

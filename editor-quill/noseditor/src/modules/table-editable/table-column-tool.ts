@@ -100,6 +100,7 @@ export class TableColumnTool {
 
   destroy() {
     this.containerRoot.remove();
+    this.containerRoot = null;
     return null;
   }
 

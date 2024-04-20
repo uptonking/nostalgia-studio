@@ -1,4 +1,4 @@
-# @datalking/noseditor
+# @datalking/noseditor-react
 
 > customizable and extensible rich text editor built with quill
 

@@ -1,5 +1,4 @@
-import { EmbedBlot, Scope } from 'parchment';
-import type { Parent, ScrollBlot } from 'parchment';
+import { EmbedBlot, Scope, type Parent, type ScrollBlot } from 'parchment';
 import type Selection from '../core/selection';
 import TextBlot from './text';
 import type { EmbedContextRange } from './embed';

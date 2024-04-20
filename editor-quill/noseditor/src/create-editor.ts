@@ -16,6 +16,7 @@ import { ImageHandler } from './modules/toolbar/image';
 import { LinkHandler } from './modules/toolbar/link';
 import { TableHandler } from './modules/toolbar/table';
 import type { TableEditableOptions } from './types';
+import type { Range } from './types/editor';
 import { setContent } from './utils/common';
 import { lineBreakMatcher } from './utils/elements';
 import { getI18nText } from './utils/i18n';
@@ -54,6 +55,7 @@ export type CreateNoseditorOptions = {
   onChange?: (delta: Delta, old: Delta) => void;
   onFocus?: (range?: any) => void;
   onBlur?: (oldRange?: any) => void;
+  onSelectionChange?: (range: Range, oldRange: Range) => any;
   i18n?: 'en' | 'zh';
 };
 
@@ -82,6 +84,7 @@ export const createNoseditor = (options: CreateNoseditorOptions) => {
     onChange,
     onFocus,
     onBlur,
+    onSelectionChange,
   } = options;
 
   // modules enabled by default
@@ -218,17 +221,17 @@ export const createNoseditor = (options: CreateNoseditorOptions) => {
     ],
     [
       'blockquote',
-      // modules.codeHighlight ? 'code-block' : undefined,
       modules.link !== false ? 'link' : undefined,
       'image',
       { script: 'sub' },
       { script: 'super' },
       modules.tableEditable ? 'table' : undefined,
+      // modules.codeHighlight ? 'code-block' : undefined,
     ],
   ];
   const nosToolbarOptions = modules.toolbarOptions || toolbarDefaultOptions;
 
-  console.log(';; ql-modules ', modules, container);
+  // console.log(';; ql-modules ', modules, container);
   const noseditor = new Quill(container, {
     debug: 'warn',
     modules: {
@@ -291,12 +294,13 @@ export const createNoseditor = (options: CreateNoseditorOptions) => {
       if (source === 'user') onChange(delta, old);
     });
   }
-  if (onFocus || onBlur) {
+  if (onFocus || onBlur || onSelectionChange) {
     noseditor.on('selection-change', (range, oldRange, source) => {
       const hasFocus = range && !oldRange;
       const hasBlur = !range && oldRange;
       if (onFocus && hasFocus) onFocus(range);
       if (onBlur && hasBlur) onBlur(oldRange);
+      if (onSelectionChange) onSelectionChange(range, oldRange);
     });
   }
 
