@@ -1,20 +1,20 @@
+import CellCoords from './cell/coords';
+import ColumnFilter from './filter/column';
+import RowFilter from './filter/row';
 import {
+  closest,
   getStyle,
   getTrimmingContainer,
   hasClass,
   index,
   offset,
+  overlayContainsElement,
   removeClass,
   removeTextNodes,
-  overlayContainsElement,
-  closest,
 } from './helpers/dom/element';
 import { isFunction } from './helpers/function';
-import CellCoords from './cell/coords';
-import ColumnFilter from './filter/column';
-import RowFilter from './filter/row';
-import TableRenderer from './table-renderer';
 import Overlay from './overlay/base';
+import TableRenderer from './table-renderer';
 
 /**
  *

@@ -6,4 +6,6 @@
 
 # roadmap
 
-- 
+- fix hot .wtHolder 的div高度由style设置为 height: 2248.38px; 
+
+- support sorting

@@ -33,8 +33,8 @@ export const NosontableMinimal = () => {
     <div>
       <HotTable
         data={data}
-        minRows={100}
-        minCols={12}
+        minRows={6}
+        minCols={6}
         minSpareRows={4}
         afterChange={afterChanges}
         debug={true}

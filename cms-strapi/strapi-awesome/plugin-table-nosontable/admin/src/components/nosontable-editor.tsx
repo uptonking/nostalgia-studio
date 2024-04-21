@@ -7,6 +7,8 @@ import React, {
   useState,
 } from 'react';
 
+import styled from 'styled-components';
+
 import type Handsontable from '@datalking/nosontable';
 import { HotTable } from '@datalking/nosontable-react';
 import { Button, Field, FieldLabel, Flex, Stack } from '@strapi/design-system';
@@ -84,21 +86,23 @@ export const NosontableEditor = forwardRef<
 
   const memoedEditor = useMemo(
     () => (
-      <HotTable
-        data={value ? JSON.parse(value) : emptyData}
-        afterChange={onContentChange}
-        minRows={3}
-        minCols={3}
-        minSpareRows={2}
-        debug={true}
-        colHeaders={true}
-        rowHeaders={true}
-        columnSorting={true}
-        manualColumnMove={true}
-        manualColumnResize={true}
-        // @ts-expect-error fix-types
-        ref={ref}
-      />
+      <StyledTableContainer>
+        <HotTable
+          data={value ? JSON.parse(value) : emptyData}
+          afterChange={onContentChange}
+          minRows={40}
+          minCols={12}
+          minSpareRows={2}
+          debug={true}
+          colHeaders={true}
+          rowHeaders={true}
+          columnSorting={true}
+          manualColumnMove={true}
+          manualColumnResize={true}
+          // @ts-expect-error fix-types
+          ref={ref}
+        />
+      </StyledTableContainer>
     ),
     [onContentChange, ref, value],
   );
@@ -185,3 +189,10 @@ export const FieldNosontableEditor = ({ name }) => {
 };
 
 export default FieldNosontableEditor;
+
+const StyledTableContainer = styled.div`
+  overflow: hidden;
+  width:100%;
+  min-height: 35rem;
+  max-height: 60rem;
+`
