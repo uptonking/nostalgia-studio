@@ -30,7 +30,7 @@
   "dependencies": {
     "@strapi/admin": "^5.0.0-beta.4",
     "@strapi/design-system": "^1.18.0",
-    "@strapi/icons": "^1.17.0",
+    "@strapi/icons": "^1.18.0",
     "@strapi/utils": "^5.0.0-beta.4",
     "lodash": "^4.17.21",
     "react-intl": "6.6.2",

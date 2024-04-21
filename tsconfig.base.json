@@ -36,6 +36,10 @@
       "@datalking/toolkitjs": ["./utilities/toolkitjs/src"],
       "@datalking/components/*": ["./packages/components/src/*"],
       "@datalking/elmoid": ["./utilities//elmoid/src"],
+      "@datalking/nosontable": ["./excel-handsontable/src-pkgs/nosontable/"],
+      "@datalking/nosontable-react": [
+        "./excel-handsontable/src-pkgs/nosontable-react/"
+      ],
       "@datalking/*": ["./packages/*/src"],
       "sublevel-pouchdb": ["./db-pouch-like/src-pouchdb/sublevel-pouchdb/src"],
       "pouchdb-*": [
@@ -72,8 +76,6 @@
         "./excel-tanstack-table/src-pkgs/virtual-react/"
       ],
       "react-window": ["./excel-tanstack-table/src-react-window/src/"],
-      "nosontable": ["./excel-handsontable/src-pkgs/nosontable/"],
-      "nosontable-react": ["./excel-handsontable/src-pkgs/nosontable-react/"],
       "quill-delta": ["./editor-quill/src-pkgs/delta/src/"],
       "parchment": ["./editor-quill/src-pkgs/parchment/src/"],
       "quill": ["./editor-quill/src-pkgs/quill/src/"],

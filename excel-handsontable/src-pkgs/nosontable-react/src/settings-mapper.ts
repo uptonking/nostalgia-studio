@@ -1,4 +1,4 @@
-import Handsontable from 'nosontable';
+import Handsontable from '@datalking/nosontable';
 
 import type { HotTableProps } from './hot-table';
 

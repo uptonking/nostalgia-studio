@@ -15,6 +15,9 @@ export default () => ({
   'editor-quill': {
     enabled: true,
   },
+  'table-nosontable': {
+    enabled: true,
+  },
   'select-multi': {
     enabled: true,
   },

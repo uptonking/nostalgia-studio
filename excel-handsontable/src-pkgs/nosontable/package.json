@@ -1,5 +1,5 @@
 {
-  "name": "nosontable",
+  "name": "@datalking/nosontable",
   "version": "0.0.1111",
   "description": "nosontable is a fork of Handsontable 6, a JavaScript Spreadsheet Component available for React, Angular and Vue.",
   "keywords": [

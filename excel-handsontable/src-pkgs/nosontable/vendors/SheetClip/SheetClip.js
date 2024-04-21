@@ -10,6 +10,7 @@
  * http://github.com/warpech/sheetclip/
  */
 /*jslint white: true*/
+var SheetClip;
 (function (global) {
   'use strict';
 
@@ -17,7 +18,7 @@
     return str.split('"').length - 1;
   }
 
-  var SheetClip = {
+  SheetClip = {
     /**
      * Decode spreadsheet string into array
      *
@@ -133,3 +134,5 @@
     global.SheetClip = SheetClip;
   }
 })(window);
+
+export default SheetClip;

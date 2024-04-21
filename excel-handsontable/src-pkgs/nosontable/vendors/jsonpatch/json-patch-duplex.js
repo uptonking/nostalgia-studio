@@ -716,3 +716,5 @@ if (typeof exports !== 'undefined') {
   exports.JsonPatchError = jsonpatch.JsonPatchError;
   exports.Error = jsonpatch.Error;
 }
+
+export default jsonpatch;

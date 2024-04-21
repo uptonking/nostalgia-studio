@@ -171,6 +171,8 @@ function autoResize() {
   };
 }
 
+export default autoResize;
+
 if (typeof exports !== 'undefined') {
   module.exports = autoResize;
 }

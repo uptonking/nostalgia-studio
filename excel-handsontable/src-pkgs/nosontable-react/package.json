@@ -1,5 +1,5 @@
 {
-  "name": "nosontable-react",
+  "name": "@datalking/nosontable-react",
   "version": "0.0.1111",
   "description": "React wrapper for nosontable, a JavaScript data grid component with a spreadsheet look & feel.",
   "keywords": [
@@ -46,7 +46,7 @@
     }
   },
   "dependencies": {
-    "nosontable": "0.0.1111"
+    "@datalking/nosontable": "0.0.1111"
   },
   "devDependencies": {
     "@types/react": "^18.2.79",

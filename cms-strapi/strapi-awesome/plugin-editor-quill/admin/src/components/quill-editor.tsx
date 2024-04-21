@@ -72,6 +72,9 @@ export const QuillEditor = forwardRef<Quill | null, QuillEditorProps>(
       }
 
       lastContent.current = value || '';
+      // return () => {
+      //   lastContent.current = '';
+      // }
     }, [ref, value]);
 
     // console.log(';; ql ', name, value);

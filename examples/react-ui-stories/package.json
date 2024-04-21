@@ -15,6 +15,7 @@
     "test:log": "node index.js --name nested-a"
   },
   "dependencies": {
+    "@datalking/nosontable-react": "0.0.1111",
     "@dnd-kit/accessibility": "3.0.1111",
     "@dnd-kit/core": "6.0.8111",
     "@dnd-kit/modifiers": "6.0.1111",
@@ -34,7 +35,6 @@
     "@tanstack/table-core": "8.7.9111",
     "cirrus-ui": "^0.7.1",
     "classnames": "^2.5.1",
-    "nosontable-react": "0.0.1111",
     "clsx": "^2.1.0",
     "debug": "^4.3.4",
     "lodash": "^4.17.21",
@@ -47,8 +47,8 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@linaria/core": "^4.5.4",
     "@linaria/babel-preset": "^4.5.4",
+    "@linaria/core": "^4.5.4",
     "@linaria/webpack5-loader": "^4.5.4",
     "circular-dependency-plugin": "^5.2.2"
   }

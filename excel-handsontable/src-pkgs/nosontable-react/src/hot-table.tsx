@@ -1,6 +1,6 @@
 import React, { Component, type CSSProperties, type ReactNode } from 'react';
 
-import Handsontable from 'nosontable';
+import Handsontable from '@datalking/nosontable';
 
 import { SettingsMapper } from './settings-mapper';
 
@@ -96,9 +96,6 @@ export class HotTable extends Component<HotTableProps, {}> {
     this.hotInstance.destroy();
   }
 
-  /**
-   * Render the table.
-   */
   render() {
     this.id = this.props.id || 'hot-' + Math.random().toString(36).substring(5);
     this.className = this.props.className || '';

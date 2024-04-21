@@ -698,6 +698,32 @@ export interface ApiTestFieldSelectMultiTestFieldSelectMulti
   };
 }
 
+export interface ApiTestTblNosontableTestTblNosontable
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'test_tbl_nosontables';
+  info: {
+    singularName: 'test-tbl-nosontable';
+    pluralName: 'test-tbl-nosontables';
+    displayName: 'test-tbl-nosontable';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title11: Schema.Attribute.String;
+    nosontable11: Schema.Attribute.String &
+      Schema.Attribute.CustomField<'plugin::table-nosontable.table-nosontable'>;
+    createdAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    publishedAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String;
+  };
+}
+
 export interface ApiTestTrail11TestTrail11 extends Struct.CollectionTypeSchema {
   collectionName: 'test_trail11s';
   info: {
@@ -1128,6 +1154,7 @@ declare module '@strapi/strapi' {
       'api::test-field.test-field': ApiTestFieldTestField;
       'api::test-field-markdown.test-field-markdown': ApiTestFieldMarkdownTestFieldMarkdown;
       'api::test-field-select-multi.test-field-select-multi': ApiTestFieldSelectMultiTestFieldSelectMulti;
+      'api::test-tbl-nosontable.test-tbl-nosontable': ApiTestTblNosontableTestTblNosontable;
       'api::test-trail11.test-trail11': ApiTestTrail11TestTrail11;
       'api::test-version12.test-version12': ApiTestVersion12TestVersion12;
       'admin::permission': AdminPermission;

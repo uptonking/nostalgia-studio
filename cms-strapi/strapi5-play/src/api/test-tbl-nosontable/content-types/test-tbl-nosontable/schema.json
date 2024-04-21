@@ -1,0 +1,22 @@
+{
+  "kind": "collectionType",
+  "collectionName": "test_tbl_nosontables",
+  "info": {
+    "singularName": "test-tbl-nosontable",
+    "pluralName": "test-tbl-nosontables",
+    "displayName": "test-tbl-nosontable"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title11": {
+      "type": "string"
+    },
+    "nosontable11": {
+      "type": "customField",
+      "customField": "plugin::table-nosontable.table-nosontable"
+    }
+  }
+}
