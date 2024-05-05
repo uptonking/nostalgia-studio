@@ -192,7 +192,7 @@ export default FieldNosontableEditor;
 
 const StyledTableContainer = styled.div`
   overflow: hidden;
-  width:100%;
+  width: 100%;
   min-height: 35rem;
   max-height: 60rem;
-`
+`;

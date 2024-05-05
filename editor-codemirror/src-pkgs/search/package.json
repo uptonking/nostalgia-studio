@@ -1,0 +1,36 @@
+{
+  "name": "@codemirror/search",
+  "version": "6.5.6111",
+  "description": "Search functionality for the CodeMirror code editor",
+  "keywords": [
+    "editor",
+    "code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codemirror/search.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Marijn Haverbeke",
+    "email": "marijn@haverbeke.berlin",
+    "url": "http://marijnhaverbeke.nl"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "src/search.ts",
+  "types": "src/search.ts",
+  "scripts": {
+    "prepare1": "cm-buildhelper src/search.ts",
+    "test": "cm-runtests"
+  },
+  "dependencies": {
+    "@codemirror/state": "6.4.1111",
+    "@codemirror/view": "6.26.3111",
+    "crelt": "^1.0.5"
+  },
+  "devDependencies": {
+    "@codemirror/buildhelper": "^1.0.0"
+  }
+}

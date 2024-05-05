@@ -21,7 +21,7 @@
     "build:admin": "tsc -p ./admin/tsconfig.build.json",
     "build:server": "tsc -p ./server/tsconfig.build.json",
     "dev": "",
-    "postinstall": "npm run build",
+    "postinstall1": "npm run build",
     "test:ts:back": " tsc -p server/tsconfig.json",
     "test:ts:front": " tsc -p admin/tsconfig.build.json",
     "watch": "strapi plugin:watch",
@@ -34,9 +34,9 @@
     "react-intl": "6.6.2"
   },
   "devDependencies": {
-    "@strapi/strapi": "^5.0.0-beta.4",
-    "@strapi/types": "^5.0.0-beta.4",
-    "@strapi/typescript-utils": "^5.0.0-beta.4",
+    "@strapi/strapi": "^5.0.0-beta.6",
+    "@strapi/types": "^5.0.0-beta.6",
+    "@strapi/typescript-utils": "^5.0.0-beta.6",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
     "@types/styled-components": "^5.1.34",

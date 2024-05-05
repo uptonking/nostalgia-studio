@@ -1,0 +1,36 @@
+{
+  "name": "@codemirror/lint",
+  "version": "6.7.1111",
+  "description": "Linting support for the CodeMirror code editor",
+  "keywords": [
+    "editor",
+    "code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codemirror/lint.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Marijn Haverbeke",
+    "email": "marijn@haverbeke.berlin",
+    "url": "http://marijnhaverbeke.nl"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "src/lint.ts",
+  "types": "src/lint.ts",
+  "scripts": {
+    "prepare1": "cm-buildhelper src/lint.ts",
+    "test": "cm-runtests"
+  },
+  "dependencies": {
+    "@codemirror/state": "6.4.1111",
+    "@codemirror/view": "6.26.3111",
+    "crelt": "^1.0.5"
+  },
+  "devDependencies": {
+    "@codemirror/buildhelper": "^1.0.0"
+  }
+}

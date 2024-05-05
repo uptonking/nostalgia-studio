@@ -1,0 +1,37 @@
+{
+  "name": "@datalking/codemirror-react",
+  "version": "0.0.1111",
+  "description": "React component for CodeMirror 6",
+  "keywords": [
+    "codemirror",
+    "editor"
+  ],
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "main": "src/index.tsx",
+  "module": "src/index.tsx",
+  "types": "src/index.tsx",
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "format": "dprint fmt",
+    "lint": "run-p lint:*",
+    "lint:format": "dprint check",
+    "lint:types": "tsc",
+    "prepare1": "husky install",
+    "prepublishOnly": "pnpm build",
+    "semantic-release": "semantic-release",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@codemirror/state": "6.4.1111",
+    "@codemirror/view": "6.26.3111",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "peerDependencies": {}
+}

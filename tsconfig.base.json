@@ -81,6 +81,11 @@
       "quill": ["./editor-quill/src-pkgs/quill/src/"],
       "y-quill": ["./collab-yjs/src-pkgs/y-quill/"],
       "@datalking/noseditor": ["./editor-quill/noseditor/src/"],
+      "@codemirror/*": ["./editor-codemirror/src-pkgs/*/"],
+      "codemirror": ["./editor-codemirror/src-pkgs/codemirror/"],
+      "@datalking/codemirror-react": [
+        "./editor-codemirror/codemirror-awesome/codemirror-react/src/"
+      ],
       "@datalking/noseditor-react": ["./editor-quill/noseditor-react/src/"],
       "strapi-plugin-*": ["./cms-strapi/strapi-awesome/plugin-*/"],
       "@datalking/pivot-core": ["./excel-watarble/core/src/"],
