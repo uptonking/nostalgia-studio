@@ -122,6 +122,8 @@ export const scrollIntoView = StateEffect.define<ScrollTarget>({
   map: (t, ch) => t.map(ch),
 });
 
+export const setEditContextFormatting = StateEffect.define<DecorationSet>();
+
 /// Log or report an unhandled exception in client code. Should
 /// probably only be used by extension code that allows client code to
 /// provide functions, and calls those functions in a context where an

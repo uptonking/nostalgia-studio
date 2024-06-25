@@ -26,6 +26,6 @@
   "devDependencies": {
     "ts-node": "^10.9.2",
     "mocha": "^10.4.0",
-    "chai": "^5.1.0"
+    "chai": "^5.1.1"
   }
 }

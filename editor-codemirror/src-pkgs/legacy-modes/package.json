@@ -1,0 +1,31 @@
+{
+  "name": "@codemirror/legacy-modes",
+  "version": "6.4.0",
+  "description": "Collection of ported legacy language modes for the CodeMirror code editor",
+  "keywords": [
+    "editor",
+    "code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codemirror/legacy-modes.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Marijn Haverbeke",
+    "email": "marijn@haverbeke.berlin",
+    "url": "http://marijnhaverbeke.nl"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "prepare1": "rollup -c",
+    "test": "cm-runtests"
+  },
+  "dependencies": {
+    "@codemirror/language": "6.10.1111"
+  },
+  "devDependencies": {}
+}

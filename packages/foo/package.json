@@ -17,7 +17,5 @@
     "compile": "tsc -p tsconfig.build.json",
     "prepublishOnly": "npm run build"
   },
-  "devDependencies": {
-    "rimraf": "^5.0.5"
-  }
+  "devDependencies": {}
 }

@@ -1,0 +1,36 @@
+{
+  "name": "@codemirror/language-data",
+  "version": "6.5.1",
+  "description": "Language metadata and dynamic loading for the CodeMirror code editor",
+  "keywords": [
+    "editor",
+    "code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codemirror/language-data.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Marijn Haverbeke",
+    "email": "marijn@haverbeke.berlin",
+    "url": "http://marijnhaverbeke.nl"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "src/language-data.ts",
+  "types": "src/language-data.ts",
+  "scripts": {
+    "prepare1": "cm-buildhelper src/language-data.ts",
+    "test": "cm-runtests"
+  },
+  "dependencies": {
+    "@codemirror/lang-css": "6.2.1111",
+    "@codemirror/lang-html": "6.4.9111",
+    "@codemirror/lang-javascript": "6.2.2111",
+    "@codemirror/lang-markdown": "6.2.5111",
+    "@codemirror/language": "6.10.1111"
+  },
+  "devDependencies": {}
+}

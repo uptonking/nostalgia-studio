@@ -16,7 +16,8 @@ import {
   State,
   ActiveSource,
   ActiveResult,
-  getUserEvent,
+  getUpdateType,
+  UpdateType,
   applyCompletion,
 } from './state';
 import { completionConfig } from './config';
@@ -149,7 +150,12 @@ export const completionPlugin = ViewPlugin.fromClass(
         return;
 
       let doesReset = update.transactions.some((tr) => {
-        return (tr.selection || tr.docChanged) && !getUserEvent(tr, conf);
+        let type = getUpdateType(tr, conf);
+        return (
+          type & UpdateType.Reset ||
+          ((tr.selection || tr.docChanged) &&
+            !(type & UpdateType.SimpleInteraction))
+        );
       });
       for (let i = 0; i < this.running.length; i++) {
         let query = this.running[i];
@@ -190,7 +196,7 @@ export const completionPlugin = ViewPlugin.fromClass(
 
       if (this.composing != CompositionState.None)
         for (let tr of update.transactions) {
-          if (getUserEvent(tr, conf) == 'input')
+          if (tr.isUserEvent('input.type'))
             this.composing = CompositionState.Changed;
           else if (this.composing == CompositionState.Changed && tr.selection)
             this.composing = CompositionState.ChangedAndMoved;

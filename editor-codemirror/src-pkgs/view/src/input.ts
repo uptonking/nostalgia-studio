@@ -46,9 +46,15 @@ export class InputState {
   pendingIOSKey: undefined | { key: string; keyCode: number } | KeyboardEvent =
     undefined;
 
+  /// When enabled (>-1), tab presses are not given to key handlers,
+  /// leaving the browser's default behavior. If >0, the mode expires
+  /// at that timestamp, and any other keypress clears it.
+  /// Esc enables temporary tab focus mode for two seconds when not
+  /// otherwise handled.
+  tabFocusMode: number = -1;
+
   lastSelectionOrigin: string | null = null;
   lastSelectionTime: number = 0;
-  lastEscPress: number = 0;
   lastContextMenu: number = 0;
   scrollHandlers: ((event: Event) => boolean | void)[] = [];
 
@@ -149,10 +155,18 @@ export class InputState {
     this.lastKeyCode = event.keyCode;
     this.lastKeyTime = Date.now();
 
-    if (event.keyCode == 9 && Date.now() < this.lastEscPress + 2000)
+    if (
+      event.keyCode == 9 &&
+      this.tabFocusMode > -1 &&
+      (!this.tabFocusMode || Date.now() <= this.tabFocusMode)
+    )
       return true;
-    if (event.keyCode != 27 && modifierCodes.indexOf(event.keyCode) < 0)
-      this.view.inputState.lastEscPress = 0;
+    if (
+      this.tabFocusMode > 0 &&
+      event.keyCode != 27 &&
+      modifierCodes.indexOf(event.keyCode) < 0
+    )
+      this.tabFocusMode = -1;
 
     // Chrome for Android usually doesn't fire proper key events, but
     // occasionally does, usually surrounded by a bunch of complicated
@@ -240,6 +254,7 @@ export class InputState {
   }
 
   update(update: ViewUpdate) {
+    this.view.observer.update(update);
     if (this.mouseSelection) this.mouseSelection.update(update);
     if (this.draggedContent && update.docChanged)
       this.draggedContent = this.draggedContent.map(update.changes);
@@ -507,7 +522,9 @@ class MouseSelection {
   }
 
   update(update: ViewUpdate) {
-    if (this.style.update(update))
+    if (update.transactions.some((tr) => tr.isUserEvent('input.type')))
+      this.destroy();
+    else if (this.style.update(update))
       setTimeout(() => this.select(this.lastEvent), 20);
   }
 }
@@ -642,7 +659,8 @@ observers.scroll = (view) => {
 
 handlers.keydown = (view, event: KeyboardEvent) => {
   view.inputState.setSelectionOrigin('select');
-  if (event.keyCode == 27) view.inputState.lastEscPress = Date.now();
+  if (event.keyCode == 27 && view.inputState.tabFocusMode != 0)
+    view.inputState.tabFocusMode = Date.now() + 2000;
   return false;
 };
 
@@ -1043,6 +1061,7 @@ observers.blur = (view) => {
 };
 
 observers.compositionstart = observers.compositionupdate = (view) => {
+  if (view.observer.editContext) return; // Composition handled by edit context
   if (view.inputState.compositionFirstChange == null)
     view.inputState.compositionFirstChange = true;
   if (view.inputState.composing < 0) {
@@ -1052,6 +1071,7 @@ observers.compositionstart = observers.compositionupdate = (view) => {
 };
 
 observers.compositionend = (view) => {
+  if (view.observer.editContext) return; // Composition handled by edit context
   view.inputState.composing = -1;
   view.inputState.compositionEndedAt = Date.now();
   view.inputState.compositionPendingKey = true;

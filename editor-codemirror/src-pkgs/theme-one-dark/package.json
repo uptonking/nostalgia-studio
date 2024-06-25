@@ -1,0 +1,37 @@
+{
+  "name": "@codemirror/theme-one-dark",
+  "version": "6.1.2",
+  "description": "One Dark theme for the CodeMirror code editor",
+  "keywords": [
+    "editor",
+    "code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codemirror/theme-one-dark.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Marijn Haverbeke",
+    "email": "marijn@haverbeke.berlin",
+    "url": "http://marijnhaverbeke.nl"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "src/one-dark.ts",
+  "types": "src/one-dark.ts",
+  "scripts": {
+    "prepare1": "cm-buildhelper src/one-dark.ts",
+    "test": "cm-runtests"
+  },
+  "dependencies": {
+    "@codemirror/language": "6.10.1111",
+    "@codemirror/state": "6.4.1111",
+    "@codemirror/view": "6.26.3111",
+    "@lezer/highlight": "^1.0.0"
+  },
+  "devDependencies": {
+    "@codemirror/buildhelper": "^1.0.0"
+  }
+}

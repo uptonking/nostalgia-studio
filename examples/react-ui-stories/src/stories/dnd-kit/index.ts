@@ -13,9 +13,9 @@ export {
   WithoutDragOverlay as A4b2NoOverlay,
   DragHandle as A4b3DragHandle,
 } from './a4-sortable/a4b-vertical-list';
-export { A4c1VirtualDndList } from './a4-sortable/a4c1-virtual-list';
-export { A4c2VirtualWindow } from './a4-sortable/a4c2-virtual-window';
-export { A4c3VirtualTanstack } from './a4-sortable/a4c3-virtual-tanstack';
+// export { A4c1VirtualDndList } from './a4-sortable/a4c1-virtual-list';
+// export { A4c2VirtualWindow } from './a4-sortable/a4c2-virtual-window';
+// export { A4c3VirtualTanstack } from './a4-sortable/a4c3-virtual-tanstack';
 export {
   DndTreeApp as A5b1DndTree,
   TreeUpdateOnDrop as A5b2TreeUpdateOnDrop,
@@ -25,4 +25,4 @@ export {
   Horizontal as A5c2Horizontal,
   Vertical as A5c1Vertical,
 } from './a5-examples/a5c-layout';
-export { DragDropRenderCountApp as A6b1RenderCount } from './a6-issues/a6b-rerender/drag-drop-render-count';
+// export { DragDropRenderCountApp as A6b1RenderCount } from './a6-issues/a6b-rerender/drag-drop-render-count';

@@ -9,9 +9,44 @@ import React, {
 import { basicSetup, EditorView } from 'codemirror';
 
 import { javascript } from '@codemirror/lang-javascript';
-import { EditorState } from '@codemirror/state';
+import { markdown } from '@codemirror/lang-markdown';
+import { Compartment, EditorState } from '@codemirror/state';
 import type { ViewUpdate } from '@codemirror/view';
 import { CodeMirrorReact } from '@datalking/codemirror-react';
+
+export const CMMinimal = () => {
+  const content = `# CodeMirror v6
+
+This is an cm example
+
+## Lists
+
+- apple
+- banana
+- another fruit
+
+## Links
+
+[Some Link](https://example.org)
+`;
+
+  const editorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const language = new Compartment();
+    const editor = new EditorView({
+      extensions: [basicSetup, language.of(markdown())],
+      doc: content,
+      parent: editorRef.current,
+    });
+  }, [content]);
+
+  return (
+    <div id='CMEditor'>
+      <div ref={editorRef} />
+    </div>
+  );
+};
 
 export const CMMinimal2 = () => {
   const extensions = useMemo(() => [basicSetup, javascript()], []);
@@ -19,7 +54,7 @@ export const CMMinimal2 = () => {
   return <CodeMirrorReact extensions={extensions} />;
 };
 
-export const CMMinimal = () => {
+export const CMMinimal3 = () => {
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

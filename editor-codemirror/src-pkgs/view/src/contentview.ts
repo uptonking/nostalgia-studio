@@ -1,6 +1,6 @@
-import type { Text } from '@codemirror/state';
-import { type Rect, maxOffset, domIndex } from './dom';
-import type { EditorView } from './editorview';
+import { Text } from '@codemirror/state';
+import { Rect, maxOffset, domIndex } from './dom';
+import { EditorView } from './editorview';
 
 // Track mutated / outdated status of a view node's DOM
 export const enum ViewFlag {
@@ -56,7 +56,7 @@ export abstract class ContentView {
 
   posBefore(view: ContentView): number {
     let pos = this.posAtStart;
-    for (const child of this.children) {
+    for (let child of this.children) {
       if (child == view) return pos;
       pos += child.length + child.breakAfter;
     }
@@ -74,16 +74,16 @@ export abstract class ContentView {
 
   sync(view: EditorView, track?: { node: Node; written: boolean }) {
     if (this.flags & ViewFlag.NodeDirty) {
-      const parent = this.dom as HTMLElement;
-      let prev: Node | null = null;
-      let next;
-      for (const child of this.children) {
+      let parent = this.dom as HTMLElement;
+      let prev: Node | null = null,
+        next;
+      for (let child of this.children) {
         if (child.flags & ViewFlag.Dirty) {
           if (
             !child.dom &&
             (next = prev ? prev.nextSibling : parent.firstChild)
           ) {
-            const contentView = ContentView.get(next);
+            let contentView = ContentView.get(next);
             if (
               !contentView ||
               (!contentView.parent && contentView.canReuseDOM(child))
@@ -112,7 +112,7 @@ export abstract class ContentView {
       if (next && track && track.node == parent) track.written = true;
       while (next) next = rm(next);
     } else if (this.flags & ViewFlag.ChildDirty) {
-      for (const child of this.children)
+      for (let child of this.children)
         if (child.flags & ViewFlag.Dirty) {
           child.sync(view, track);
           child.flags &= ~ViewFlag.Dirty;
@@ -131,7 +131,7 @@ export abstract class ContentView {
     } else {
       let bias = maxOffset(node) == 0 ? 0 : offset == 0 ? -1 : 1;
       for (;;) {
-        const parent = node.parentNode!;
+        let parent = node.parentNode!;
         if (parent == this.dom) break;
         if (bias == 0 && parent.firstChild != parent.lastChild) {
           if (node == parent.firstChild) bias = -1;
@@ -147,7 +147,7 @@ export abstract class ContentView {
     if (!after) return this.length;
 
     for (let i = 0, pos = 0; ; i++) {
-      const child = this.children[i];
+      let child = this.children[i];
       if (child.dom == after) return pos;
       pos += child.length + child.breakAfter;
     }
@@ -163,17 +163,17 @@ export abstract class ContentView {
     from: number;
     to: number;
   } | null {
-    let fromI = -1;
-    let fromStart = -1;
-    let toI = -1;
-    let toEnd = -1;
+    let fromI = -1,
+      fromStart = -1,
+      toI = -1,
+      toEnd = -1;
     for (
       let i = 0, pos = offset, prevEnd = offset;
       i < this.children.length;
       i++
     ) {
-      const child = this.children[i];
-      const end = pos + child.length;
+      let child = this.children[i],
+        end = pos + child.length;
       if (pos < from && end > to) return child.domBoundsAround(from, to, pos);
       if (end >= from && fromI == -1) {
         fromI = i;
@@ -229,7 +229,7 @@ export abstract class ContentView {
 
   get rootView(): ContentView {
     for (let v: ContentView = this; ; ) {
-      const parent = v.parent;
+      let parent = v.parent;
       if (!parent) return v;
       v = parent;
     }
@@ -242,7 +242,7 @@ export abstract class ContentView {
   ) {
     this.markDirty();
     for (let i = from; i < to; i++) {
-      const child = this.children[i];
+      let child = this.children[i];
       if (child.parent == this && children.indexOf(child) < 0) child.destroy();
     }
     this.children.splice(from, to - from, ...children);
@@ -265,7 +265,7 @@ export abstract class ContentView {
   }
 
   toString() {
-    const name = this.constructor.name.replace('View', '');
+    let name = this.constructor.name.replace('View', '');
     return (
       name +
       (this.children.length
@@ -325,8 +325,7 @@ export abstract class ContentView {
   }
 
   destroy() {
-    for (const child of this.children)
-      if (child.parent == this) child.destroy();
+    for (let child of this.children) if (child.parent == this) child.destroy();
     this.parent = null;
   }
 }
@@ -335,7 +334,7 @@ ContentView.prototype.breakAfter = 0;
 
 // Remove a DOM node and return its next sibling.
 function rm(dom: Node): Node | null {
-  const next = dom.nextSibling;
+  let next = dom.nextSibling;
   dom.parentNode!.removeChild(dom);
   return next;
 }
@@ -359,7 +358,7 @@ export class ChildCursor {
         this.off = pos - this.pos;
         return this;
       }
-      const next = this.children[--this.i];
+      let next = this.children[--this.i];
       this.pos -= next.length + next.breakAfter;
     }
   }
@@ -376,10 +375,10 @@ export function replaceRange(
   openStart: number,
   openEnd: number,
 ) {
-  const { children } = parent;
-  const before = children.length ? children[fromI] : null;
-  const last = insert.length ? insert[insert.length - 1] : null;
-  const breakAtEnd = last ? last.breakAfter : breakAtStart;
+  let { children } = parent;
+  let before = children.length ? children[fromI] : null;
+  let last = insert.length ? insert[insert.length - 1] : null;
+  let breakAtEnd = last ? last.breakAfter : breakAtStart;
   // Change within a single child
   if (
     fromI == toI &&
@@ -491,11 +490,11 @@ export function mergeChildrenInto(
   openStart: number,
   openEnd: number,
 ) {
-  const cur = parent.childCursor();
-  const { i: toI, off: toOff } = cur.findPos(to, 1);
-  const { i: fromI, off: fromOff } = cur.findPos(from, -1);
+  let cur = parent.childCursor();
+  let { i: toI, off: toOff } = cur.findPos(to, 1);
+  let { i: fromI, off: fromOff } = cur.findPos(from, -1);
   let dLen = from - to;
-  for (const view of insert) dLen += view.length;
+  for (let view of insert) dLen += view.length;
   parent.length += dLen;
 
   replaceRange(

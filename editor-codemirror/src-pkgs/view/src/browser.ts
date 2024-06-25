@@ -41,7 +41,7 @@ export default {
   webkit,
   safari,
   webkit_version: webkit
-    ? +(/\bAppleWebKit\/(\d+)/.exec(navigator.userAgent) || [0, 0])[1]
+    ? +(/\bAppleWebKit\/(\d+)/.exec(nav.userAgent) || [0, 0])[1]
     : 0,
   tabSize:
     doc.documentElement.style.tabSize != null ? 'tab-size' : '-moz-tab-size',

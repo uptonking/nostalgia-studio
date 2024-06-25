@@ -1,25 +1,24 @@
-import { Text } from '@codemirror/state';
-
-import { type Attrs, attrsEq, combineAttrs, updateAttrs } from './attributes';
-import browser from './browser';
 import {
   ContentView,
   DOMPos,
-  mergeChildrenInto,
-  noChildren,
   ViewFlag,
+  noChildren,
+  mergeChildrenInto,
 } from './contentview';
-import type { LineDecoration, PointDecoration, WidgetType } from './decoration';
-import type { DocView } from './docview';
-import { clearAttributes, clientRectsFor, type Rect } from './dom';
-import type { EditorView } from './editorview';
+import { DocView } from './docview';
 import {
-  coordsInChildren,
+  TextView,
+  MarkView,
   inlineDOMAtPos,
   joinInlineInto,
-  MarkView,
-  TextView,
+  coordsInChildren,
 } from './inlineview';
+import { clientRectsFor, Rect, clearAttributes } from './dom';
+import { LineDecoration, WidgetType, PointDecoration } from './decoration';
+import { Attrs, combineAttrs, attrsEq, updateAttrs } from './attributes';
+import browser from './browser';
+import { EditorView } from './editorview';
+import { Text } from '@codemirror/state';
 
 export interface BlockView extends ContentView {
   covers(side: -1 | 1): boolean;
@@ -29,11 +28,11 @@ export interface BlockView extends ContentView {
 export class LineView extends ContentView implements BlockView {
   children: ContentView[] = [];
   length: number = 0;
-  declare dom: HTMLElement | null;
+  dom!: HTMLElement | null;
   prevAttrs: Attrs | null | undefined = undefined;
   attrs: Attrs | null = null;
   breakAfter = 0;
-  declare parent: DocView | null;
+  parent!: DocView | null;
 
   // Consumes source
   merge(
@@ -61,7 +60,7 @@ export class LineView extends ContentView implements BlockView {
   }
 
   split(at: number) {
-    const end = new LineView();
+    let end = new LineView();
     end.breakAfter = this.breakAfter;
     if (this.length == 0) return end;
     let { i, off } = this.childPos(at);
@@ -106,8 +105,8 @@ export class LineView extends ContentView implements BlockView {
 
   // Only called when building a line view in ContentBuilder
   addLineDeco(deco: LineDecoration) {
-    const attrs = deco.spec.attributes;
-    const cls = deco.spec.class;
+    let attrs = deco.spec.attributes,
+      cls = deco.spec.class;
     if (attrs) this.attrs = combineAttrs(attrs, this.attrs || {});
     if (cls) this.attrs = combineAttrs({ class: cls }, this.attrs || {});
   }
@@ -149,7 +148,7 @@ export class LineView extends ContentView implements BlockView {
         ContentView.get(last)?.isEditable == false &&
         (!browser.ios || !this.children.some((ch) => ch instanceof TextView)))
     ) {
-      const hack = document.createElement('BR');
+      let hack = document.createElement('BR');
       (hack as any).cmIgnore = true;
       this.dom!.appendChild(hack);
     }
@@ -161,12 +160,12 @@ export class LineView extends ContentView implements BlockView {
     textHeight: number;
   } | null {
     if (this.children.length == 0 || this.length > 20) return null;
-    let totalWidth = 0;
-    let textHeight!: number;
-    for (const child of this.children) {
+    let totalWidth = 0,
+      textHeight!: number;
+    for (let child of this.children) {
       if (!(child instanceof TextView) || /[^ -~]/.test(child.text))
         return null;
-      const rects = clientRectsFor(child.dom!);
+      let rects = clientRectsFor(child.dom!);
       if (rects.length != 1) return null;
       totalWidth += rects[0].width;
       textHeight = rects[0].height;
@@ -181,17 +180,17 @@ export class LineView extends ContentView implements BlockView {
   }
 
   coordsAt(pos: number, side: number): Rect | null {
-    const rect = coordsInChildren(this, pos, side);
+    let rect = coordsInChildren(this, pos, side);
     // Correct rectangle height for empty lines when the returned
     // height is larger than the text height.
     if (!this.children.length && rect && this.parent) {
-      const { heightOracle } = this.parent.view.viewState;
-      const height = rect.bottom - rect.top;
+      let { heightOracle } = this.parent.view.viewState,
+        height = rect.bottom - rect.top;
       if (
         Math.abs(height - heightOracle.lineHeight) < 2 &&
         heightOracle.textHeight < height
       ) {
-        const dist = (height - heightOracle.textHeight) / 2;
+        let dist = (height - heightOracle.textHeight) / 2;
         return {
           top: rect.top + dist,
           bottom: rect.bottom - dist,
@@ -203,8 +202,14 @@ export class LineView extends ContentView implements BlockView {
     return rect;
   }
 
-  become(_other: ContentView) {
-    return false;
+  become(other: ContentView) {
+    return (
+      other instanceof LineView &&
+      this.children.length == 0 &&
+      other.children.length == 0 &&
+      attrsEq(this.attrs, other.attrs) &&
+      this.breakAfter == other.breakAfter
+    );
   }
 
   covers() {
@@ -213,8 +218,8 @@ export class LineView extends ContentView implements BlockView {
 
   static find(docView: DocView, pos: number): LineView | null {
     for (let i = 0, off = 0; i < docView.children.length; i++) {
-      const block = docView.children[i];
-      const end = off + block.length;
+      let block = docView.children[i],
+        end = off + block.length;
       if (end >= pos) {
         if (block instanceof LineView) return block;
         if (end > pos) break;
@@ -226,8 +231,8 @@ export class LineView extends ContentView implements BlockView {
 }
 
 export class BlockWidgetView extends ContentView implements BlockView {
-  declare dom: HTMLElement | null;
-  declare parent: DocView | null;
+  dom!: HTMLElement | null;
+  parent!: DocView | null;
   breakAfter = 0;
   prevWidget: WidgetType | null = null;
 
@@ -266,9 +271,9 @@ export class BlockWidgetView extends ContentView implements BlockView {
   }
 
   split(at: number) {
-    const len = this.length - at;
+    let len = this.length - at;
     this.length = at;
-    const end = new BlockWidgetView(this.widget, len, this.deco);
+    let end = new BlockWidgetView(this.widget, len, this.deco);
     end.breakAfter = this.breakAfter;
     return end;
   }
@@ -337,7 +342,7 @@ export class BlockWidgetView extends ContentView implements BlockView {
   }
 
   covers(side: -1 | 1) {
-    const { startSide, endSide } = this.deco;
+    let { startSide, endSide } = this.deco;
     return startSide == endSide
       ? false
       : side < 0

@@ -1,29 +1,28 @@
 import { Text as DocText } from '@codemirror/state';
-
-import browser from './browser';
 import {
   ContentView,
   DOMPos,
+  ViewFlag,
   mergeChildrenInto,
   noChildren,
-  ViewFlag,
 } from './contentview';
-import type { MarkDecoration, WidgetType } from './decoration';
-import type { DocView } from './docview';
+import { WidgetType, MarkDecoration } from './decoration';
 import {
-  clearAttributes,
-  clientRectsFor,
+  Rect,
   flattenRect,
-  type Rect,
   textRange,
+  clientRectsFor,
+  clearAttributes,
 } from './dom';
-import type { EditorView } from './editorview';
+import { DocView } from './docview';
+import browser from './browser';
+import { EditorView } from './editorview';
 
 const MaxJoinLen = 256;
 
 export class TextView extends ContentView {
-  declare children: ContentView[];
-  declare dom: Text | null;
+  children!: ContentView[];
+  dom!: Text | null;
 
   constructor(public text: string) {
     super();
@@ -67,7 +66,7 @@ export class TextView extends ContentView {
   }
 
   split(from: number) {
-    const result = new TextView(this.text.slice(from));
+    let result = new TextView(this.text.slice(from));
     this.text = this.text.slice(0, from);
     this.markDirty();
     result.flags |= this.flags & ViewFlag.Composition;
@@ -97,7 +96,7 @@ export class TextView extends ContentView {
 }
 
 export class MarkView extends ContentView {
-  declare dom: HTMLElement | null;
+  dom!: HTMLElement | null;
 
   constructor(
     readonly mark: MarkDecoration,
@@ -105,14 +104,14 @@ export class MarkView extends ContentView {
     public length = 0,
   ) {
     super();
-    for (const ch of children) ch.setParent(this);
+    for (let ch of children) ch.setParent(this);
   }
 
   setAttrs(dom: HTMLElement) {
     clearAttributes(dom);
     if (this.mark.class) dom.className = this.mark.class;
     if (this.mark.attrs)
-      for (const name in this.mark.attrs)
+      for (let name in this.mark.attrs)
         dom.setAttribute(name, this.mark.attrs[name]);
     return dom;
   }
@@ -166,19 +165,18 @@ export class MarkView extends ContentView {
   }
 
   split(from: number) {
-    const result = [];
-    let off = 0;
-    let detachFrom = -1;
-    let i = 0;
-    for (const elt of this.children) {
-      const end = off + elt.length;
-      // @ts-expect-error fix-types
+    let result = [],
+      off = 0,
+      detachFrom = -1,
+      i = 0;
+    for (let elt of this.children) {
+      let end = off + elt.length;
       if (end > from) result.push(off < from ? elt.split(from - off) : elt);
       if (detachFrom < 0 && off >= from) detachFrom = i;
       off = end;
       i++;
     }
-    const length = this.length - from;
+    let length = this.length - from;
     this.length = from;
     if (detachFrom > -1) {
       this.children.length = detachFrom;
@@ -197,11 +195,11 @@ export class MarkView extends ContentView {
 }
 
 function textCoords(text: Text, pos: number, side: number): Rect | null {
-  const length = text.nodeValue!.length;
+  let length = text.nodeValue!.length;
   if (pos > length) pos = length;
-  let from = pos;
-  let to = pos;
-  let flatten = 0;
+  let from = pos,
+    to = pos,
+    flatten = 0;
   if ((pos == 0 && side < 0) || (pos == length && side >= 0)) {
     if (!(browser.chrome || browser.gecko)) {
       // These browsers reliably return valid rectangles for empty ranges
@@ -218,7 +216,7 @@ function textCoords(text: Text, pos: number, side: number): Rect | null {
     if (side < 0) from--;
     else if (to < length) to++;
   }
-  const rects = textRange(text, from, to).getClientRects();
+  let rects = textRange(text, from, to).getClientRects();
   if (!rects.length) return null;
   let rect = rects[(flatten ? flatten < 0 : side >= 0) ? 0 : rects.length - 1];
   if (browser.safari && !flatten && rect.width == 0)
@@ -228,8 +226,8 @@ function textCoords(text: Text, pos: number, side: number): Rect | null {
 
 // Also used for collapsed ranges that don't have a placeholder widget!
 export class WidgetView extends ContentView {
-  declare children: ContentView[];
-  declare dom: HTMLElement | null;
+  children!: ContentView[];
+  dom!: HTMLElement | null;
   prevWidget: WidgetType | null = null;
 
   static create(widget: WidgetType, length: number, side: number) {
@@ -245,11 +243,7 @@ export class WidgetView extends ContentView {
   }
 
   split(from: number) {
-    const result = WidgetView.create(
-      this.widget,
-      this.length - from,
-      this.side,
-    );
+    let result = WidgetView.create(this.widget, this.length - from, this.side);
     this.length -= from;
     return result;
   }
@@ -313,9 +307,9 @@ export class WidgetView extends ContentView {
     if (this.length == 0) return DocText.empty;
     let top: ContentView = this;
     while (top.parent) top = top.parent;
-    const { view } = top as DocView;
-    const text: DocText | undefined = view && view.state.doc;
-    const start = this.posAtStart;
+    let { view } = top as DocView,
+      text: DocText | undefined = view && view.state.doc,
+      start = this.posAtStart;
     return text ? text.slice(start, start + this.length) : DocText.empty;
   }
 
@@ -330,12 +324,12 @@ export class WidgetView extends ContentView {
   }
 
   coordsAt(pos: number, side: number): Rect | null {
-    const custom = this.widget.coordsAt(this.dom!, pos, side);
+    let custom = this.widget.coordsAt(this.dom!, pos, side);
     if (custom) return custom;
-    const rects = this.dom!.getClientRects();
-    let rect: Rect | null = null;
+    let rects = this.dom!.getClientRects(),
+      rect: Rect | null = null;
     if (!rects.length) return null;
-    const fromBack = this.side ? this.side < 0 : pos > 0;
+    let fromBack = this.side ? this.side < 0 : pos > 0;
     for (let i = fromBack ? rects.length - 1 : 0; ; i += fromBack ? -1 : 1) {
       rect = rects[i];
       if (pos > 0 ? i == 0 : i == rects.length - 1 || rect.top < rect.bottom)
@@ -366,8 +360,8 @@ export class WidgetView extends ContentView {
 // browser bugs that show up when the cursor is directly next to
 // uneditable inline content.
 export class WidgetBufferView extends ContentView {
-  declare children: ContentView[];
-  declare dom: HTMLElement | null;
+  children!: ContentView[];
+  dom!: HTMLElement | null;
 
   constructor(readonly side: number) {
     super();
@@ -391,7 +385,7 @@ export class WidgetBufferView extends ContentView {
 
   sync() {
     if (!this.dom) {
-      const dom = document.createElement('img');
+      let dom = document.createElement('img');
       dom.className = 'cm-widgetBuffer';
       dom.setAttribute('aria-hidden', 'true');
       this.setDOM(dom);
@@ -433,12 +427,12 @@ TextView.prototype.children =
     noChildren;
 
 export function inlineDOMAtPos(parent: ContentView, pos: number) {
-  const dom = parent.dom!;
-  const { children } = parent;
-  let i = 0;
+  let dom = parent.dom!,
+    { children } = parent,
+    i = 0;
   for (let off = 0; i < children.length; i++) {
-    const child = children[i];
-    const end = off + child.length;
+    let child = children[i],
+      end = off + child.length;
     if (end == off && child.getSide() <= 0) continue;
     if (pos > off && pos < end && child.dom!.parentNode == dom)
       return child.domAtPos(pos - off);
@@ -446,11 +440,11 @@ export function inlineDOMAtPos(parent: ContentView, pos: number) {
     off = end;
   }
   for (let j = i; j > 0; j--) {
-    const prev = children[j - 1];
+    let prev = children[j - 1];
     if (prev.dom!.parentNode == dom) return prev.domAtPos(prev.length);
   }
   for (let j = i; j < children.length; j++) {
-    const next = children[j];
+    let next = children[j];
     if (next.dom!.parentNode == dom) return next.domAtPos(0);
   }
   return new DOMPos(dom, 0);
@@ -462,8 +456,8 @@ export function joinInlineInto(
   view: ContentView,
   open: number,
 ) {
-  let last;
-  const { children } = parent;
+  let last,
+    { children } = parent;
   if (
     open > 0 &&
     view instanceof MarkView &&
@@ -484,14 +478,14 @@ export function coordsInChildren(
   pos: number,
   side: number,
 ): Rect | null {
-  let before: ContentView | null = null;
-  let beforePos = -1;
-  let after: ContentView | null = null;
-  let afterPos = -1;
+  let before: ContentView | null = null,
+    beforePos = -1,
+    after: ContentView | null = null,
+    afterPos = -1;
   function scan(view: ContentView, pos: number) {
     for (let i = 0, off = 0; i < view.children.length && off <= pos; i++) {
-      const child = view.children[i];
-      const end = off + child.length;
+      let child = view.children[i],
+        end = off + child.length;
       if (end >= pos) {
         if (child.children.length) {
           scan(child, pos - off);
@@ -513,7 +507,7 @@ export function coordsInChildren(
     }
   }
   scan(view, pos);
-  const target = (side < 0 ? before : after) || before || after;
+  let target = (side < 0 ? before : after) || before || after;
   if (target)
     return (target as ContentView).coordsAt(
       Math.max(0, target == before ? beforePos : afterPos),
@@ -523,8 +517,8 @@ export function coordsInChildren(
 }
 
 function fallbackRect(view: ContentView) {
-  const last = view.dom!.lastChild;
+  let last = view.dom!.lastChild;
   if (!last) return (view.dom as HTMLElement).getBoundingClientRect();
-  const rects = clientRectsFor(last);
+  let rects = clientRectsFor(last);
   return rects[rects.length - 1] || null;
 }

@@ -46,7 +46,7 @@
     "classnames": "^2.5.1",
     "clsx": "^2.1.0",
     "codemirror": "6.0.1111",
-    "debug": "^4.3.4",
+    "debug": "^4.3.5",
     "lodash": "^4.17.21",
     "nanoid": "^5.0.7",
     "react": "^18.2.0",

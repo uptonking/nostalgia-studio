@@ -1106,6 +1106,7 @@ export class EditorView {
   /// plugins. The view instance can no longer be used after
   /// calling this.
   destroy() {
+    if (this.root.activeElement == this.contentDOM) this.contentDOM.blur();
     for (let plugin of this.plugins) plugin.destroy(this);
     this.plugins = [];
     this.inputState.destroy();
@@ -1177,6 +1178,23 @@ export class EditorView {
         true,
       ),
     );
+  }
+
+  /// Enable or disable tab-focus mode, which disables key bindings
+  /// for Tab and Shift-Tab, letting the browser's default
+  /// focus-changing behavior go through instead. This is useful to
+  /// prevent trapping keyboard users in your editor.
+  ///
+  /// Without argument, this toggles the mode. With a boolean, it
+  /// enables (true) or disables it (false). Given a number, it
+  /// temporarily enables the mode until that number of milliseconds
+  /// have passed or another non-Tab key is pressed.
+  setTabFocusMode(to?: boolean | number) {
+    if (to == null)
+      this.inputState.tabFocusMode = this.inputState.tabFocusMode < 0 ? 0 : -1;
+    else if (typeof to == 'boolean') this.inputState.tabFocusMode = to ? 0 : -1;
+    else if (this.inputState.tabFocusMode != 0)
+      this.inputState.tabFocusMode = Date.now() + to;
   }
 
   /// Facet to add a [style

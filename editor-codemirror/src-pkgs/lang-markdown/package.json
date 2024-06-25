@@ -1,0 +1,40 @@
+{
+  "name": "@codemirror/lang-markdown",
+  "version": "6.2.5111",
+  "description": "Markdown language support for the CodeMirror code editor",
+  "keywords": [
+    "editor",
+    "code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codemirror/lang-markdown.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Marijn Haverbeke",
+    "email": "marijn@haverbeke.berlin",
+    "url": "http://marijnhaverbeke.nl"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "prepare1": "cm-buildhelper src/index.ts",
+    "test": "cm-runtests"
+  },
+  "dependencies": {
+    "@codemirror/autocomplete": "6.16.1111",
+    "@codemirror/lang-html": "6.4.9111",
+    "@codemirror/language": "6.10.1111",
+    "@codemirror/state": "6.4.1111",
+    "@codemirror/view": "6.26.3111",
+    "@lezer/common": "^1.2.1",
+    "@lezer/markdown": "^1.0.0"
+  },
+  "devDependencies": {
+    "@codemirror/buildhelper": "^1.0.0"
+  }
+}

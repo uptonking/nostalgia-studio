@@ -31,7 +31,7 @@
     "watch:link": "strapi plugin:watch:link"
   },
   "dependencies": {
-    "@strapi/design-system": "^1.18.0",
+    "@strapi/design-system": "^1.19.0",
     "@strapi/icons": "^1.18.0",
     "quill": "2.0.1111",
     "@datalking/noseditor-react": "0.0.1111",
@@ -40,9 +40,9 @@
     "react-intl": "6.6.2"
   },
   "devDependencies": {
-    "@strapi/strapi": "^5.0.0-beta.6",
-    "@strapi/types": "^5.0.0-beta.6",
-    "@strapi/typescript-utils": "^5.0.0-beta.6",
+    "@strapi/strapi": "^5.0.0-beta.14",
+    "@strapi/types": "^5.0.0-beta.14",
+    "@strapi/typescript-utils": "^5.0.0-beta.14",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
     "@types/styled-components": "^5.1.34",

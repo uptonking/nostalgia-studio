@@ -22,7 +22,5 @@
     "@datalking/foo": "*",
     "@datalking/components": "*"
   },
-  "devDependencies": {
-    "rimraf": "^5.0.5"
-  }
+  "devDependencies": {}
 }

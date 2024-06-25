@@ -24,7 +24,7 @@ import {
   nativeSelectionHidden,
   contentAttributes,
 } from './extension';
-import { WidgetType, Decoration, DecorationSet } from './decoration';
+import { WidgetType, Decoration, DecorationSet, BlockType } from './decoration';
 import { EditorView } from './editorview';
 import { Direction } from './bidi';
 
@@ -211,7 +211,7 @@ export class ViewState {
   defaultTextDirection: Direction = Direction.LTR;
 
   // The main viewport for the visible part of the document
-  viewport: Viewport;
+  viewport!: Viewport;
   // If the main selection starts or ends outside of the main
   // viewport, extra single-line viewports are created for these
   // points, so that the DOM selection doesn't fall in a gap.
@@ -244,9 +244,11 @@ export class ViewState {
       this.heightOracle.setDoc(state.doc),
       [new ChangedRange(0, 0, 0, state.doc.length)],
     );
-    this.viewport = this.getViewport(0, null);
+    for (let i = 0; i < 2; i++) {
+      this.viewport = this.getViewport(0, null);
+      if (!this.updateForViewport()) break;
+    }
     this.updateViewportLines();
-    this.updateForViewport();
     this.lineGaps = this.ensureLineGaps([]);
     this.lineGapDeco = Decoration.set(
       this.lineGaps.map((gap) => gap.draw(this, false)),
@@ -265,11 +267,16 @@ export class ViewState {
       }
     }
     this.viewports = viewports.sort((a, b) => a.from - b.from);
+    return this.updateScaler();
+  }
 
+  updateScaler() {
+    let scaler = this.scaler;
     this.scaler =
       this.heightMap.height <= VP.MaxDOMHeight
         ? IdScaler
         : new BigScaler(this.heightOracle, this.heightMap, this.viewports);
+    return scaler.eq(this.scaler) ? 0 : UpdateFlag.Height;
   }
 
   updateViewportLines() {
@@ -281,9 +288,7 @@ export class ViewState {
       0,
       0,
       (block) => {
-        this.viewportLines.push(
-          this.scaler.scale == 1 ? block : scaleBlock(block, this.scaler),
-        );
+        this.viewportLines.push(scaleBlock(block, this.scaler));
       },
     );
   }
@@ -333,14 +338,17 @@ export class ViewState {
       !this.viewportIsAppropriate(viewport)
     )
       viewport = this.getViewport(0, scrollTarget);
-    let updateLines =
-      !update.changes.empty ||
-      update.flags & UpdateFlag.Height ||
-      viewport.from != this.viewport.from ||
-      viewport.to != this.viewport.to;
+    let viewportChange =
+      viewport.from != this.viewport.from || viewport.to != this.viewport.to;
     this.viewport = viewport;
-    this.updateForViewport();
-    if (updateLines) this.updateViewportLines();
+    update.flags |= this.updateForViewport();
+    if (
+      viewportChange ||
+      !update.changes.empty ||
+      update.flags & UpdateFlag.Height
+    )
+      this.updateViewportLines();
+
     if (
       this.lineGaps.length ||
       this.viewport.to - this.viewport.from > LG.Margin << 1
@@ -501,9 +509,11 @@ export class ViewState {
       (this.scrollTarget &&
         (this.scrollTarget.range.head < this.viewport.from ||
           this.scrollTarget.range.head > this.viewport.to));
-    if (viewportChange)
+    if (viewportChange) {
+      if (result & UpdateFlag.Height) result |= this.updateScaler();
       this.viewport = this.getViewport(bias, this.scrollTarget);
-    this.updateForViewport();
+      result |= this.updateForViewport();
+    }
     if (result & UpdateFlag.Height || viewportChange)
       this.updateViewportLines();
 
@@ -722,10 +732,10 @@ export class ViewState {
       gaps.push(gap);
     };
 
-    for (let line of this.viewportLines) {
-      if (line.length < doubleMargin) continue;
+    let checkLine = (line: BlockInfo) => {
+      if (line.length < doubleMargin || line.type != BlockType.Text) return;
       let structure = lineStructure(line.from, line.to, this.stateDeco);
-      if (structure.total < doubleMargin) continue;
+      if (structure.total < doubleMargin) return;
       let target = this.scrollTarget ? this.scrollTarget.range.head : null;
       let viewFrom, viewTo;
       if (wrapping) {
@@ -768,6 +778,11 @@ export class ViewState {
 
       if (viewFrom > line.from) addGap(line.from, viewFrom, line, structure);
       if (viewTo < line.to) addGap(viewTo, line.to, line, structure);
+    };
+
+    for (let line of this.viewportLines) {
+      if (Array.isArray(line.type)) line.type.forEach(checkLine);
+      else checkLine(line);
     }
     return gaps;
   }
@@ -828,15 +843,22 @@ export class ViewState {
   }
 
   lineBlockAtHeight(height: number): BlockInfo {
-    return scaleBlock(
-      this.heightMap.lineAt(
-        this.scaler.fromDOM(height),
-        QueryType.ByHeight,
-        this.heightOracle,
-        0,
-        0,
-      ),
-      this.scaler,
+    return (
+      (height >= this.viewportLines[0].top &&
+        height <= this.viewportLines[this.viewportLines.length - 1].bottom &&
+        this.viewportLines.find(
+          (l) => l.top <= height && l.bottom >= height,
+        )) ||
+      scaleBlock(
+        this.heightMap.lineAt(
+          this.scaler.fromDOM(height),
+          QueryType.ByHeight,
+          this.heightOracle,
+          0,
+          0,
+        ),
+        this.scaler,
+      )
     );
   }
 
@@ -944,6 +966,7 @@ type YScaler = {
   toDOM(n: number): number;
   fromDOM(n: number): number;
   scale: number;
+  eq(other: YScaler): boolean;
 };
 
 // Don't scale when the document height is within the range of what
@@ -956,6 +979,9 @@ const IdScaler: YScaler = {
     return n;
   },
   scale: 1,
+  eq(other: YScaler) {
+    return other == this;
+  },
 };
 
 // When the height is too big (> VP.MaxDOMHeight), scale down the
@@ -1012,6 +1038,18 @@ class BigScaler implements YScaler {
       base = vp.bottom;
       domBase = vp.domBottom;
     }
+  }
+
+  eq(other: YScaler) {
+    if (!(other instanceof BigScaler)) return false;
+    return (
+      this.scale == other.scale &&
+      this.viewports.length == other.viewports.length &&
+      this.viewports.every(
+        (vp, i) =>
+          vp.from == other.viewports[i].from && vp.to == other.viewports[i].to,
+      )
+    );
   }
 }
 

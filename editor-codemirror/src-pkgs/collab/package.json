@@ -1,0 +1,32 @@
+{
+  "name": "@codemirror/collab",
+  "version": "6.1.1111",
+  "description": "Collaborative editing for the CodeMirror code editor",
+  "keywords": [
+    "editor",
+    "code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codemirror/collab.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Marijn Haverbeke",
+    "email": "marijn@haverbeke.berlin",
+    "url": "http://marijnhaverbeke.nl"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "src/collab.ts",
+  "types": "src/collab.ts",
+  "scripts": {
+    "prepare1": "cm-buildhelper src/collab.ts",
+    "test": "cm-runtests"
+  },
+  "dependencies": {
+    "@codemirror/state": "6.4.1111"
+  },
+  "devDependencies": {}
+}

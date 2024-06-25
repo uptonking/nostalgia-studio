@@ -88,10 +88,13 @@ class Snippet {
       positions: FieldPos[] = [],
       m;
     for (let line of template.split(/\r\n?|\n/)) {
-      while ((m = /[#$]\{(?:(\d+)(?::([^}]*))?|([^}]*))\}/.exec(line))) {
+      while (
+        (m = /[#$]\{(?:(\d+)(?::([^}]*))?|((?:\\[{}]|[^}])*))\}/.exec(line))
+      ) {
         let seq = m[1] ? +m[1] : null,
-          name = m[2] || m[3] || '',
+          rawName = m[2] || m[3] || '',
           found = -1;
+        let name = rawName.replace(/\\[{}]/g, (m) => m[1]);
         for (let i = 0; i < fields.length; i++) {
           if (
             seq != null
@@ -117,7 +120,7 @@ class Snippet {
           new FieldPos(found, lines.length, m.index, m.index + name.length),
         );
         line =
-          line.slice(0, m.index) + name + line.slice(m.index + m[0].length);
+          line.slice(0, m.index) + rawName + line.slice(m.index + m[0].length);
       }
       line = line.replace(/\\([{}])/g, (_, brace, index) => {
         for (let pos of positions)

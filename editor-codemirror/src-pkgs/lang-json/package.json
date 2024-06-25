@@ -1,0 +1,35 @@
+{
+  "name": "@codemirror/lang-json",
+  "version": "6.0.1",
+  "description": "JSON language support for the CodeMirror code editor",
+  "keywords": [
+    "editor",
+    "code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codemirror/lang-json.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Marijn Haverbeke",
+    "email": "marijn@haverbeke.berlin",
+    "url": "http://marijnhaverbeke.nl"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "src/json.ts",
+  "types": "src/json.ts",
+  "scripts": {
+    "prepare1": "cm-buildhelper src/json.ts",
+    "test": "cm-runtests"
+  },
+  "dependencies": {
+    "@codemirror/language": "6.10.1111",
+    "@lezer/json": "^1.0.0"
+  },
+  "devDependencies": {
+    "@codemirror/buildhelper": "^1.0.0"
+  }
+}

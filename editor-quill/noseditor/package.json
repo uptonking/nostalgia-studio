@@ -19,7 +19,5 @@
   "dependencies": {
     "quill": "2.0.1111"
   },
-  "devDependencies": {
-    "rimraf": "^5.0.5"
-  }
+  "devDependencies": {}
 }

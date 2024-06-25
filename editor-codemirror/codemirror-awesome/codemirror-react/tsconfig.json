@@ -2,7 +2,7 @@
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["es6", "dom", "scripthost"],
-    "types": ["mocha"],
+    // "types": [],
     "stripInternal": true,
     "noUnusedLocals": true,
     "strict": true,

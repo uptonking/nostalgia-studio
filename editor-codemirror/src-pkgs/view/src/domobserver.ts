@@ -1,7 +1,12 @@
 import browser from './browser';
 import { ContentView, ViewFlag } from './contentview';
 import { EditorView } from './editorview';
-import { editable } from './extension';
+import {
+  editable,
+  ViewUpdate,
+  setEditContextFormatting,
+  MeasureRequest,
+} from './extension';
 import {
   hasSelection,
   getSelection,
@@ -11,7 +16,10 @@ import {
   dispatchKey,
   atElementStart,
 } from './dom';
-import { DOMChange, applyDOMChange } from './domchange';
+import { DOMChange, applyDOMChange, applyDOMChangeInner } from './domchange';
+import type { EditContext } from './editcontext';
+import { Decoration } from './decoration';
+import { Text, EditorSelection, EditorState } from '@codemirror/state';
 
 const observeOptions = {
   childList: true,
@@ -31,6 +39,8 @@ export class DOMObserver {
 
   observer: MutationObserver;
   active: boolean = false;
+
+  editContext: EditContextManager | null = null;
 
   // The known selection. Kept in our own object, as opposed to just
   // directly accessing the selection because:
@@ -89,6 +99,17 @@ export class DOMObserver {
         this.flushSoon();
       else this.flush();
     });
+
+    if (
+      window.EditContext &&
+      (view.constructor as any).EDIT_CONTEXT !== false &&
+      // Chrome <126 doesn't support inverted selections in edit context (#1392)
+      !(browser.chrome && browser.chrome_version < 126)
+    ) {
+      this.editContext = new EditContextManager(view);
+      if (view.state.facet(editable))
+        view.contentDOM.editContext = this.editContext.editContext;
+    }
 
     if (useCharData)
       this.onCharData = (event: MutationEvent) => {
@@ -156,6 +177,7 @@ export class DOMObserver {
 
   onScroll(e: Event) {
     if (this.intersecting) this.flush(false);
+    if (this.editContext) this.view.requestMeasure(this.editContext.measureReq);
     this.onScrollChanged(e);
   }
 
@@ -458,8 +480,14 @@ export class DOMObserver {
     }
     let startState = this.view.state;
     let handled = applyDOMChange(this.view, domChange);
-    // The view wasn't updated
-    if (this.view.state == startState) this.view.update([]);
+    // The view wasn't updated but DOM/selection changes were seen. Reset the view.
+    if (
+      this.view.state == startState &&
+      (domChange.domChanged ||
+        (domChange.newSel &&
+          !domChange.newSel.main.eq(this.view.state.selection.main)))
+    )
+      this.view.update([]);
     return handled;
   }
 
@@ -522,6 +550,16 @@ export class DOMObserver {
       this.printQuery.removeEventListener('change', this.onPrint);
     else win.removeEventListener('beforeprint', this.onPrint);
     win.document.removeEventListener('selectionchange', this.onSelectionChange);
+  }
+
+  update(update: ViewUpdate) {
+    if (this.editContext) {
+      this.editContext.update(update);
+      if (update.startState.facet(editable) != update.state.facet(editable))
+        update.view.contentDOM.editContext = update.state.facet(editable)
+          ? this.editContext.editContext
+          : null;
+    }
   }
 
   destroy() {
@@ -608,4 +646,257 @@ function safariSelectionRangeHack(view: EditorView, selection: Selection) {
   view.dom.ownerDocument.execCommand('indent');
   view.contentDOM.removeEventListener('beforeinput', read, true);
   return found ? buildSelectionRangeFromRange(view, found) : null;
+}
+
+const enum CxVp {
+  Margin = 10000,
+  MaxSize = Margin * 3,
+  MinMargin = 500,
+}
+
+class EditContextManager {
+  editContext: EditContext;
+  measureReq: MeasureRequest<void>;
+  // The document window for which the text in the context is
+  // maintained. For large documents, this may be smaller than the
+  // editor document. This window always includes the selection head.
+  from: number = 0;
+  to: number = 0;
+  // When applying a transaction, this is used to compare the change
+  // made to the context content to the change in the transaction in
+  // order to make the minimal changes to the context (since touching
+  // that sometimes breaks series of multiple edits made for a single
+  // user action on some Android keyboards)
+  pendingContextChange: { from: number; to: number; insert: Text } | null =
+    null;
+
+  constructor(view: EditorView) {
+    this.resetRange(view.state);
+
+    let context = (this.editContext = new window.EditContext({
+      text: view.state.doc.sliceString(this.from, this.to),
+      selectionStart: this.toContextPos(
+        Math.max(
+          this.from,
+          Math.min(this.to, view.state.selection.main.anchor),
+        ),
+      ),
+      selectionEnd: this.toContextPos(view.state.selection.main.head),
+    }));
+    context.addEventListener('textupdate', (e) => {
+      let { anchor } = view.state.selection.main;
+      let change = {
+        from: this.toEditorPos(e.updateRangeStart),
+        to: this.toEditorPos(e.updateRangeEnd),
+        insert: Text.of(e.text.split('\n')),
+      };
+      // If the window doesn't include the anchor, assume changes
+      // adjacent to a side go up to the anchor.
+      if (change.from == this.from && anchor < this.from) change.from = anchor;
+      else if (change.to == this.to && anchor > this.to) change.to = anchor;
+
+      // Edit context sometimes fire empty changes
+      if (change.from == change.to && !change.insert.length) return;
+
+      this.pendingContextChange = change;
+      applyDOMChangeInner(
+        view,
+        change,
+        EditorSelection.single(
+          this.toEditorPos(e.selectionStart),
+          this.toEditorPos(e.selectionEnd),
+        ),
+      );
+      // If the transaction didn't flush our change, revert it so
+      // that the context is in sync with the editor state again.
+      if (this.pendingContextChange) this.revertPending(view.state);
+    });
+    context.addEventListener('characterboundsupdate', (e) => {
+      let rects: DOMRect[] = [],
+        prev: DOMRect | null = null;
+      for (
+        let i = this.toEditorPos(e.rangeStart),
+          end = this.toEditorPos(e.rangeEnd);
+        i < end;
+        i++
+      ) {
+        let rect = view.coordsForChar(i);
+        prev =
+          (rect &&
+            new DOMRect(
+              rect.left,
+              rect.right,
+              rect.right - rect.left,
+              rect.bottom - rect.top,
+            )) ||
+          prev ||
+          new DOMRect();
+        rects.push(prev);
+      }
+      context.updateCharacterBounds(e.rangeStart, rects);
+    });
+    context.addEventListener('textformatupdate', (e) => {
+      let deco = [];
+      for (let format of e.getTextFormats()) {
+        let lineStyle = format.underlineStyle,
+          thickness = format.underlineThickness;
+        if (lineStyle != 'None' && thickness != 'None') {
+          let style = `text-decoration: underline ${
+            lineStyle == 'Dashed'
+              ? 'dashed '
+              : lineStyle == 'Squiggle'
+                ? 'wavy '
+                : ''
+          }${thickness == 'Thin' ? 1 : 2}px`;
+          deco.push(
+            Decoration.mark({ attributes: { style } }).range(
+              this.toEditorPos(format.rangeStart),
+              this.toEditorPos(format.rangeEnd),
+            ),
+          );
+        }
+      }
+      view.dispatch({
+        effects: setEditContextFormatting.of(Decoration.set(deco)),
+      });
+    });
+    context.addEventListener('compositionstart', () => {
+      if (view.inputState.composing < 0) {
+        view.inputState.composing = 0;
+        view.inputState.compositionFirstChange = true;
+      }
+    });
+    context.addEventListener('compositionend', () => {
+      view.inputState.composing = -1;
+      view.inputState.compositionFirstChange = null;
+    });
+
+    this.measureReq = {
+      read: (view) => {
+        this.editContext.updateControlBounds(
+          view.contentDOM.getBoundingClientRect(),
+        );
+        let sel = getSelection(view.root);
+        if (sel && sel.rangeCount)
+          this.editContext.updateSelectionBounds(
+            sel.getRangeAt(0).getBoundingClientRect(),
+          );
+      },
+    };
+  }
+
+  applyEdits(update: ViewUpdate) {
+    let off = 0,
+      abort = false,
+      pending = this.pendingContextChange;
+    update.changes.iterChanges((fromA, toA, _fromB, _toB, insert) => {
+      if (abort) return;
+
+      let dLen = insert.length - (toA - fromA);
+      if (pending && toA >= pending.to) {
+        if (
+          pending.from == fromA &&
+          pending.to == toA &&
+          pending.insert.eq(insert)
+        ) {
+          pending = this.pendingContextChange = null; // Match
+          off += dLen;
+          return;
+        } else {
+          // Mismatch, revert
+          pending = null;
+          this.revertPending(update.state);
+        }
+      }
+
+      fromA += off;
+      toA += off;
+      if (toA <= this.from) {
+        // Before the window
+        this.from += dLen;
+        this.to += dLen;
+      } else if (fromA < this.to) {
+        // Overlaps with window
+        if (
+          fromA < this.from ||
+          toA > this.to ||
+          this.to - this.from + insert.length > CxVp.MaxSize
+        ) {
+          abort = true;
+          return;
+        }
+        this.editContext.updateText(
+          this.toContextPos(fromA),
+          this.toContextPos(toA),
+          insert.toString(),
+        );
+        this.to += dLen;
+      }
+      off += dLen;
+    });
+    if (pending && !abort) this.revertPending(update.state);
+    return !abort;
+  }
+
+  update(update: ViewUpdate) {
+    if (!this.applyEdits(update) || !this.rangeIsValid(update.state)) {
+      this.pendingContextChange = null;
+      this.resetRange(update.state);
+      this.editContext.updateText(
+        0,
+        this.editContext.text.length,
+        update.state.doc.sliceString(this.from, this.to),
+      );
+      this.setSelection(update.state);
+    } else if (update.docChanged || update.selectionSet) {
+      this.setSelection(update.state);
+    }
+    if (update.geometryChanged || update.docChanged || update.selectionSet)
+      update.view.requestMeasure(this.measureReq);
+  }
+
+  resetRange(state: EditorState) {
+    let { head } = state.selection.main;
+    this.from = Math.max(0, head - CxVp.Margin);
+    this.to = Math.min(state.doc.length, head + CxVp.Margin);
+  }
+
+  revertPending(state: EditorState) {
+    let pending = this.pendingContextChange!;
+    this.pendingContextChange = null;
+    this.editContext.updateText(
+      this.toContextPos(pending.from),
+      this.toContextPos(pending.to + pending.insert.length),
+      state.doc.sliceString(pending.from, pending.to),
+    );
+  }
+
+  setSelection(state: EditorState) {
+    let { main } = state.selection;
+    let start = this.toContextPos(
+      Math.max(this.from, Math.min(this.to, main.anchor)),
+    );
+    let end = this.toContextPos(main.head);
+    if (
+      this.editContext.selectionStart != start ||
+      this.editContext.selectionEnd != end
+    )
+      this.editContext.updateSelection(start, end);
+  }
+
+  rangeIsValid(state: EditorState) {
+    let { head } = state.selection.main;
+    return !(
+      (this.from > 0 && head - this.from < CxVp.MinMargin) ||
+      (this.to < state.doc.length && this.to - head < CxVp.MinMargin) ||
+      this.to - this.from > CxVp.Margin * 3
+    );
+  }
+
+  toEditorPos(contextPos: number) {
+    return contextPos + this.from;
+  }
+  toContextPos(editorPos: number) {
+    return editorPos - this.from;
+  }
 }
