@@ -1,8 +1,13 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { merge } from 'webpack-merge';
 
 import rspack from '@rspack/core';
 
 import { devServerConfig } from '../../../webpacker/rspack.server.mjs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /** @type {import("@rspack/cli").Configuration} */
 const demoConfig = merge(
@@ -14,8 +19,8 @@ const demoConfig = merge(
     },
     output: {
       filename: 'main.js',
-      path: './dist',
-      // path: path.resolve(__dirname, '../build'),
+      // path: './dist1',
+      path: path.resolve(__dirname, './dist1'),
       // module: true,
       // libraryTarget: 'module',
       // chunkFormat: 'module',

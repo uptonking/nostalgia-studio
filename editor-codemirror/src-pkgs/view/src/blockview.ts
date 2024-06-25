@@ -1,24 +1,25 @@
+import { Text } from '@codemirror/state';
+
+import { Attrs, attrsEq, combineAttrs, updateAttrs } from './attributes';
+import browser from './browser';
 import {
   ContentView,
   DOMPos,
-  ViewFlag,
-  noChildren,
   mergeChildrenInto,
+  noChildren,
+  ViewFlag,
 } from './contentview';
+import { LineDecoration, PointDecoration, WidgetType } from './decoration';
 import { DocView } from './docview';
+import { clearAttributes, clientRectsFor, Rect } from './dom';
+import { EditorView } from './editorview';
 import {
-  TextView,
-  MarkView,
+  coordsInChildren,
   inlineDOMAtPos,
   joinInlineInto,
-  coordsInChildren,
+  MarkView,
+  TextView,
 } from './inlineview';
-import { clientRectsFor, Rect, clearAttributes } from './dom';
-import { LineDecoration, WidgetType, PointDecoration } from './decoration';
-import { Attrs, combineAttrs, attrsEq, updateAttrs } from './attributes';
-import browser from './browser';
-import { EditorView } from './editorview';
-import { Text } from '@codemirror/state';
 
 export interface BlockView extends ContentView {
   covers(side: -1 | 1): boolean;
@@ -28,11 +29,11 @@ export interface BlockView extends ContentView {
 export class LineView extends ContentView implements BlockView {
   children: ContentView[] = [];
   length: number = 0;
-  dom!: HTMLElement | null;
+  declare dom: HTMLElement | null;
   prevAttrs: Attrs | null | undefined = undefined;
   attrs: Attrs | null = null;
   breakAfter = 0;
-  parent!: DocView | null;
+  declare parent: DocView | null;
 
   // Consumes source
   merge(
@@ -231,8 +232,8 @@ export class LineView extends ContentView implements BlockView {
 }
 
 export class BlockWidgetView extends ContentView implements BlockView {
-  dom!: HTMLElement | null;
-  parent!: DocView | null;
+  declare dom: HTMLElement | null;
+  declare parent: DocView | null;
   breakAfter = 0;
   prevWidget: WidgetType | null = null;
 

@@ -18,6 +18,10 @@ import { Direction } from './bidi';
 /// in a specific gutter. Your own custom markers have to extend this
 /// class.
 export abstract class GutterMarker extends RangeValue {
+  mapMode = MapMode.TrackBefore;
+  startSide = (GutterMarker.prototype.endSide = -1);
+  point = true;
+
   /// @internal
   compare(other: GutterMarker) {
     return (
@@ -31,11 +35,13 @@ export abstract class GutterMarker extends RangeValue {
   }
 
   /// Render the DOM node for this marker, if any.
-  toDOM?(view: EditorView): Node;
+  // toDOM?(view: EditorView): Node;
+  toDOM = undefined;
 
   /// This property can be used to add CSS classes to the gutter
   /// element that contains this marker.
-  elementClass!: string;
+  elementClass = '';
+  // elementClass!: string;
 
   /// Called if the marker has a `toDOM` method and its representation
   /// was removed from a gutter.

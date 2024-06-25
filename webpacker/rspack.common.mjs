@@ -94,7 +94,7 @@ export const commonConfig = {
     // css: false,
     // outputModule: true,
     rspackFuture: {
-      newTreeshaking: true,
+      // newTreeshaking: true,
     },
   },
   optimization: {

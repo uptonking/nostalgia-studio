@@ -1,28 +1,29 @@
 import { Text as DocText } from '@codemirror/state';
+
+import browser from './browser';
 import {
   ContentView,
   DOMPos,
-  ViewFlag,
   mergeChildrenInto,
   noChildren,
+  ViewFlag,
 } from './contentview';
-import { WidgetType, MarkDecoration } from './decoration';
-import {
-  Rect,
-  flattenRect,
-  textRange,
-  clientRectsFor,
-  clearAttributes,
-} from './dom';
+import { MarkDecoration, WidgetType } from './decoration';
 import { DocView } from './docview';
-import browser from './browser';
+import {
+  clearAttributes,
+  clientRectsFor,
+  flattenRect,
+  Rect,
+  textRange,
+} from './dom';
 import { EditorView } from './editorview';
 
 const MaxJoinLen = 256;
 
 export class TextView extends ContentView {
-  children!: ContentView[];
-  dom!: Text | null;
+  children: ContentView[] = noChildren;
+  declare dom: Text | null;
 
   constructor(public text: string) {
     super();
@@ -96,7 +97,7 @@ export class TextView extends ContentView {
 }
 
 export class MarkView extends ContentView {
-  dom!: HTMLElement | null;
+  declare dom: HTMLElement | null;
 
   constructor(
     readonly mark: MarkDecoration,
@@ -226,8 +227,8 @@ function textCoords(text: Text, pos: number, side: number): Rect | null {
 
 // Also used for collapsed ranges that don't have a placeholder widget!
 export class WidgetView extends ContentView {
-  children!: ContentView[];
-  dom!: HTMLElement | null;
+  children: ContentView[] = noChildren;
+  declare dom: HTMLElement | null;
   prevWidget: WidgetType | null = null;
 
   static create(widget: WidgetType, length: number, side: number) {
@@ -360,8 +361,8 @@ export class WidgetView extends ContentView {
 // browser bugs that show up when the cursor is directly next to
 // uneditable inline content.
 export class WidgetBufferView extends ContentView {
-  children!: ContentView[];
-  dom!: HTMLElement | null;
+  children: ContentView[] = noChildren;
+  declare dom: HTMLElement | null;
 
   constructor(readonly side: number) {
     super();

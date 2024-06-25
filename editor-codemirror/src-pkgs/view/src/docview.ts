@@ -57,7 +57,7 @@ type Composition = {
 };
 
 export class DocView extends ContentView {
-  children!: BlockView[];
+  declare children: BlockView[];
 
   decorations: readonly DecorationSet[] = [];
   dynamicDecorationMap: boolean[] = [false];
@@ -84,7 +84,7 @@ export class DocView extends ContentView {
   impreciseHead: DOMPos | null = null;
   forceSelection = false;
 
-  dom!: HTMLElement;
+  declare dom: HTMLElement;
 
   // Used by the resize observer to ignore resizes that we caused
   // ourselves
