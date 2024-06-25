@@ -1,7 +1,7 @@
 import {
   EditorView,
   Decoration,
-  DecorationSet,
+  type DecorationSet,
   WidgetType,
   gutter,
   GutterMarker,
@@ -20,7 +20,7 @@ import { language, highlightingFor } from '@codemirror/language';
 import { highlightTree } from '@lezer/highlight';
 import { Chunk, defaultDiffConfig } from './chunk';
 import { setChunks, ChunkField, mergeConfig } from './merge';
-import { Change, DiffConfig } from './diff';
+import type { Change, DiffConfig } from './diff';
 import { decorateChunks } from './deco';
 import { baseTheme } from './theme';
 
@@ -62,21 +62,21 @@ const unifiedChangeGutter = Prec.low(
 /// chunks will be highlighted, with uneditable widgets displaying the
 /// original text displayed above the new text.
 export function unifiedMergeView(config: UnifiedMergeConfig) {
-  let orig =
-    typeof config.original == 'string'
+  const orig =
+    typeof config.original === 'string'
       ? Text.of(config.original.split(/\r?\n/))
       : config.original;
-  let diffConf = config.diffConfig || defaultDiffConfig;
+  const diffConf = config.diffConfig || defaultDiffConfig;
   return [
     Prec.low(decorateChunks),
     deletedChunks,
     baseTheme,
     EditorView.editorAttributes.of({ class: 'cm-merge-b' }),
     EditorState.transactionExtender.of((tr) => {
-      let updateDoc = tr.effects.find((e) => e.is(updateOriginalDoc));
+      const updateDoc = tr.effects.find((e) => e.is(updateOriginalDoc));
       if (!tr.docChanged && !updateDoc) return null;
-      let prev = tr.startState.field(ChunkField);
-      let chunks = updateDoc
+      const prev = tr.startState.field(ChunkField);
+      const chunks = updateDoc
         ? Chunk.updateA(
             prev,
             updateDoc.value.doc,
@@ -128,7 +128,7 @@ export function originalDocChangeEffect(
 const originalDoc = StateField.define<Text>({
   create: () => Text.empty,
   update(doc, tr) {
-    for (let e of tr.effects) if (e.is(updateOriginalDoc)) doc = e.value.doc;
+    for (const e of tr.effects) if (e.is(updateOriginalDoc)) doc = e.value.doc;
     return doc;
   },
 });
@@ -154,29 +154,29 @@ class DeletionWidget extends WidgetType {
 }
 
 function deletionWidget(state: EditorState, chunk: Chunk) {
-  let known = DeletionWidgets.get(chunk.changes);
+  const known = DeletionWidgets.get(chunk.changes);
   if (known) return known;
 
-  let buildDOM = (view: EditorView) => {
-    let { highlightChanges, syntaxHighlightDeletions, mergeControls } =
+  const buildDOM = (view: EditorView) => {
+    const { highlightChanges, syntaxHighlightDeletions, mergeControls } =
       state.facet(mergeConfig);
-    let text = view.state
+    const text = view.state
       .field(originalDoc)
       .sliceString(chunk.fromA, chunk.endA);
-    let lang = syntaxHighlightDeletions && state.facet(language);
-    let dom = document.createElement('div');
+    const lang = syntaxHighlightDeletions && state.facet(language);
+    const dom = document.createElement('div');
     dom.className = 'cm-deletedChunk';
     if (mergeControls) {
-      let buttons = dom.appendChild(document.createElement('div'));
+      const buttons = dom.appendChild(document.createElement('div'));
       buttons.className = 'cm-chunkButtons';
-      let accept = buttons.appendChild(document.createElement('button'));
+      const accept = buttons.appendChild(document.createElement('button'));
       accept.name = 'accept';
       accept.textContent = state.phrase('Accept');
       accept.onmousedown = (e) => {
         e.preventDefault();
         acceptChunk(view, view.posAtDOM(dom));
       };
-      let reject = buttons.appendChild(document.createElement('button'));
+      const reject = buttons.appendChild(document.createElement('button'));
       reject.name = 'reject';
       reject.textContent = state.phrase('Reject');
       reject.onmousedown = (e) => {
@@ -185,16 +185,16 @@ function deletionWidget(state: EditorState, chunk: Chunk) {
       };
     }
 
-    let content = dom.appendChild(document.createElement('del'));
-    let changes = chunk.changes,
-      changeI = 0,
-      inside = false;
+    const content = dom.appendChild(document.createElement('del'));
+    const changes = chunk.changes;
+      let changeI = 0;
+      let inside = false;
     function add(from: number, to: number, cls: string) {
       for (let at = from; at < to; ) {
-        let nextStop = to,
-          nodeCls = cls + (inside ? ' cm-deletedText' : '');
+        let nextStop = to;
+          const nodeCls = cls + (inside ? ' cm-deletedText' : '');
         if (highlightChanges && changeI < changes.length) {
-          let nextBound = inside
+          const nextBound = inside
             ? changes[changeI].toA
             : changes[changeI].fromA;
           if (nextBound <= nextStop) {
@@ -204,9 +204,9 @@ function deletionWidget(state: EditorState, chunk: Chunk) {
           }
         }
         if (nextStop > at) {
-          let node = document.createTextNode(text.slice(at, nextStop));
+          const node = document.createTextNode(text.slice(at, nextStop));
           if (nodeCls) {
-            let span = dom.appendChild(document.createElement('span'));
+            const span = dom.appendChild(document.createElement('span'));
             span.className = nodeCls;
             content.appendChild(node);
           } else {
@@ -218,8 +218,8 @@ function deletionWidget(state: EditorState, chunk: Chunk) {
     }
 
     if (lang) {
-      let tree = lang.parser.parse(text),
-        pos = 0;
+      const tree = lang.parser.parse(text);
+        let pos = 0;
       highlightTree(
         tree,
         { style: (tags) => highlightingFor(state, tags) },
@@ -235,7 +235,7 @@ function deletionWidget(state: EditorState, chunk: Chunk) {
     }
     return dom;
   };
-  let deco = Decoration.widget({
+  const deco = Decoration.widget({
     block: true,
     side: -1,
     widget: new DeletionWidget(buildDOM),
@@ -248,9 +248,9 @@ function deletionWidget(state: EditorState, chunk: Chunk) {
 /// chunk under the given position or the cursor. This chunk will no
 /// longer be highlighted unless it is edited again.
 export function acceptChunk(view: EditorView, pos?: number) {
-  let { state } = view,
-    at = pos ?? state.selection.main.head;
-  let chunk = view.state
+  const { state } = view;
+    const at = pos ?? state.selection.main.head;
+  const chunk = view.state
     .field(ChunkField)
     .find((ch) => ch.fromB <= at && ch.endB >= at);
   if (!chunk) return false;
@@ -258,10 +258,10 @@ export function acceptChunk(view: EditorView, pos?: number) {
     chunk.fromB,
     Math.max(chunk.fromB, chunk.toB - 1),
   );
-  let orig = view.state.field(originalDoc);
+  const orig = view.state.field(originalDoc);
   if (chunk.fromB != chunk.toB && chunk.toA <= orig.length)
     insert += view.state.lineBreak;
-  let changes = ChangeSet.of(
+  const changes = ChangeSet.of(
     { from: chunk.fromA, to: Math.min(orig.length, chunk.toA), insert },
     orig.length,
   );
@@ -276,13 +276,13 @@ export function acceptChunk(view: EditorView, pos?: number) {
 /// chunk under the given position or the cursor. Reverts that range
 /// to the content it has in the original document.
 export function rejectChunk(view: EditorView, pos?: number) {
-  let { state } = view,
-    at = pos ?? state.selection.main.head;
-  let chunk = state
+  const { state } = view;
+    const at = pos ?? state.selection.main.head;
+  const chunk = state
     .field(ChunkField)
     .find((ch) => ch.fromB <= at && ch.endB >= at);
   if (!chunk) return false;
-  let orig = state.field(originalDoc);
+  const orig = state.field(originalDoc);
   let insert = orig.sliceString(
     chunk.fromA,
     Math.max(chunk.fromA, chunk.toA - 1),
@@ -301,8 +301,8 @@ export function rejectChunk(view: EditorView, pos?: number) {
 }
 
 function buildDeletedChunks(state: EditorState) {
-  let builder = new RangeSetBuilder<Decoration>();
-  for (let ch of state.field(ChunkField))
+  const builder = new RangeSetBuilder<Decoration>();
+  for (const ch of state.field(ChunkField))
     builder.add(ch.fromB, ch.fromB, deletionWidget(state, ch));
   return builder.finish();
 }

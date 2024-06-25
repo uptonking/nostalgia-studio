@@ -1,14 +1,14 @@
 import {
-  StateCommand,
-  Text,
-  EditorState,
+  type StateCommand,
+  type Text,
+  type EditorState,
   EditorSelection,
-  ChangeSpec,
+  type ChangeSpec,
   countColumn,
-  Line,
+  type Line,
 } from '@codemirror/state';
 import { syntaxTree, indentUnit } from '@codemirror/language';
-import { SyntaxNode, Tree } from '@lezer/common';
+import type { SyntaxNode, Tree } from '@lezer/common';
 import { markdownLanguage } from './markdown';
 
 class Context {
@@ -39,16 +39,16 @@ class Context {
   }
 
   marker(doc: Text, add: number) {
-    let number =
+    const number =
       this.node.name == 'OrderedList'
-        ? String(+itemNumber(this.item!, doc)[2] + add)
+        ? String(Number(itemNumber(this.item!, doc)[2]) + add)
         : '';
     return this.spaceBefore + number + this.type + this.spaceAfter;
   }
 }
 
 function getContext(node: SyntaxNode, doc: Text) {
-  let nodes = [];
+  const nodes = [];
   for (
     let cur: SyntaxNode | null = node;
     cur && cur.name != 'Document';
@@ -61,12 +61,12 @@ function getContext(node: SyntaxNode, doc: Text) {
     )
       nodes.push(cur);
   }
-  let context = [];
+  const context = [];
   for (let i = nodes.length - 1; i >= 0; i--) {
-    let node = nodes[i],
-      match;
-    let line = doc.lineAt(node.from),
-      startPos = node.from - line.from;
+    const node = nodes[i];
+      let match;
+    const line = doc.lineAt(node.from);
+      const startPos = node.from - line.from;
     if (node.name == 'FencedCode') {
       context.push(new Context(node, startPos, startPos, '', '', '', null));
     } else if (
@@ -89,8 +89,8 @@ function getContext(node: SyntaxNode, doc: Text) {
       node.parent!.name == 'OrderedList' &&
       (match = /^( *)\d+([.)])( *)/.exec(line.text.slice(startPos)))
     ) {
-      let after = match[3],
-        len = match[0].length;
+      let after = match[3];
+        let len = match[0].length;
       if (after.length >= 4) {
         after = after.slice(0, after.length - 4);
         len -= 4;
@@ -113,8 +113,8 @@ function getContext(node: SyntaxNode, doc: Text) {
         line.text.slice(startPos),
       ))
     ) {
-      let after = match[4],
-        len = match[0].length;
+      let after = match[4];
+        let len = match[0].length;
       if (after.length > 4) {
         after = after.slice(0, after.length - 4);
         len -= 4;
@@ -151,8 +151,8 @@ function renumberList(
 ) {
   for (let prev = -1, node = after; ; ) {
     if (node.name == 'ListItem') {
-      let m = itemNumber(node, doc);
-      let number = +m[2];
+      const m = itemNumber(node, doc);
+      const number = Number(m[2]);
       if (prev >= 0) {
         if (number != prev + 1) return;
         changes.push({
@@ -163,16 +163,16 @@ function renumberList(
       }
       prev = number;
     }
-    let next = node.nextSibling;
+    const next = node.nextSibling;
     if (!next) break;
     node = next;
   }
 }
 
 function normalizeIndent(content: string, state: EditorState) {
-  let blank = /^[ \t]*/.exec(content)![0].length;
+  const blank = /^[ \t]*/.exec(content)![0].length;
   if (!blank || state.facet(indentUnit) != '\t') return content;
-  let col = countColumn(content, 4, blank);
+  const col = countColumn(content, 4, blank);
   let space = '';
   for (let i = col; i > 0; ) {
     if (i >= 4) {
@@ -199,41 +199,41 @@ export const insertNewlineContinueMarkup: StateCommand = ({
   state,
   dispatch,
 }) => {
-  let tree = syntaxTree(state),
-    { doc } = state;
-  let dont = null,
-    changes = state.changeByRange((range) => {
+  const tree = syntaxTree(state);
+    const { doc } = state;
+  let dont = null;
+    const changes = state.changeByRange((range) => {
       if (!range.empty || !markdownLanguage.isActiveAt(state, range.from))
         return (dont = { range });
-      let pos = range.from,
-        line = doc.lineAt(pos);
-      let context = getContext(tree.resolveInner(pos, -1), doc);
+      const pos = range.from;
+        const line = doc.lineAt(pos);
+      const context = getContext(tree.resolveInner(pos, -1), doc);
       while (
         context.length &&
         context[context.length - 1].from > pos - line.from
       )
         context.pop();
       if (!context.length) return (dont = { range });
-      let inner = context[context.length - 1];
+      const inner = context[context.length - 1];
       if (inner.to - inner.spaceAfter.length > pos - line.from)
         return (dont = { range });
 
-      let emptyLine =
+      const emptyLine =
         pos >= inner.to - inner.spaceAfter.length &&
         !/\S/.test(line.text.slice(inner.to));
       // Empty line in list
       if (inner.item && emptyLine) {
-        let first = inner.node.firstChild!,
-          second = inner.node.getChild('ListItem', 'ListItem');
+        const first = inner.node.firstChild!;
+          const second = inner.node.getChild('ListItem', 'ListItem');
         // Not second item or blank line before: delete a level of markup
         if (
           first.to >= pos ||
           (second && second.to < pos) ||
           (line.from > 0 && !/[^\s>]/.test(doc.lineAt(line.from - 1).text))
         ) {
-          let next = context.length > 1 ? context[context.length - 2] : null;
-          let delTo,
-            insert = '';
+          const next = context.length > 1 ? context[context.length - 2] : null;
+          let delTo;
+            let insert = '';
           if (next && next.item) {
             // Re-add marker for the list at the next level
             delTo = line.from + next.from;
@@ -241,7 +241,7 @@ export const insertNewlineContinueMarkup: StateCommand = ({
           } else {
             delTo = line.from + (next ? next.to : 0);
           }
-          let changes: ChangeSpec[] = [{ from: delTo, to: pos, insert }];
+          const changes: ChangeSpec[] = [{ from: delTo, to: pos, insert }];
           if (inner.node.name == 'OrderedList')
             renumberList(inner.item!, doc, changes, -2);
           if (next && next.node.name == 'OrderedList')
@@ -252,7 +252,7 @@ export const insertNewlineContinueMarkup: StateCommand = ({
           };
         } else {
           // Move second item down, making tight two-item list non-tight
-          let insert = blankLine(context, state, line);
+          const insert = blankLine(context, state, line);
           return {
             range: EditorSelection.cursor(pos + insert.length + 1),
             changes: { from: line.from, insert: insert + state.lineBreak },
@@ -261,11 +261,11 @@ export const insertNewlineContinueMarkup: StateCommand = ({
       }
 
       if (inner.node.name == 'Blockquote' && emptyLine && line.from) {
-        let prevLine = doc.lineAt(line.from - 1),
-          quoted = />\s*$/.exec(prevLine.text);
+        const prevLine = doc.lineAt(line.from - 1);
+          const quoted = />\s*$/.exec(prevLine.text);
         // Two aligned empty quoted lines in a row
         if (quoted && quoted.index == inner.from) {
-          let changes = state.changes([
+          const changes = state.changes([
             { from: prevLine.from + quoted.index, to: prevLine.to },
             { from: line.from + inner.from, to: line.to },
           ]);
@@ -273,10 +273,10 @@ export const insertNewlineContinueMarkup: StateCommand = ({
         }
       }
 
-      let changes: ChangeSpec[] = [];
+      const changes: ChangeSpec[] = [];
       if (inner.node.name == 'OrderedList')
         renumberList(inner.item!, doc, changes);
-      let continued = inner.item && inner.item.from < line.from;
+      const continued = inner.item && inner.item.from < line.from;
       let insert = '';
       // If not dedented
       if (
@@ -321,12 +321,12 @@ function isMark(node: SyntaxNode) {
 
 function nonTightList(node: SyntaxNode, doc: Text) {
   if (node.name != 'OrderedList' && node.name != 'BulletList') return false;
-  let first = node.firstChild!,
-    second = node.getChild('ListItem', 'ListItem');
+  const first = node.firstChild!;
+    const second = node.getChild('ListItem', 'ListItem');
   if (!second) return false;
-  let line1 = doc.lineAt(first.to),
-    line2 = doc.lineAt(second.from);
-  let empty = /^[\s>]*$/.test(line1.text);
+  const line1 = doc.lineAt(first.to);
+    const line2 = doc.lineAt(second.from);
+  const empty = /^[\s>]*$/.test(line1.text);
   return line1.number + (empty ? 0 : 1) < line2.number;
 }
 
@@ -344,8 +344,8 @@ function blankLine(context: Context[], state: EditorState, line: Line) {
 }
 
 function contextNodeForDelete(tree: Tree, pos: number) {
-  let node = tree.resolveInner(pos, -1),
-    scan = pos;
+  let node = tree.resolveInner(pos, -1);
+    let scan = pos;
   if (isMark(node)) {
     scan = node.from;
     node = node.parent!;
@@ -373,17 +373,17 @@ function contextNodeForDelete(tree: Tree, pos: number) {
 /// false, so it is intended to be bound alongside other deletion
 /// commands, with a higher precedence than the more generic commands.
 export const deleteMarkupBackward: StateCommand = ({ state, dispatch }) => {
-  let tree = syntaxTree(state);
-  let dont = null,
-    changes = state.changeByRange((range) => {
-      let pos = range.from,
-        { doc } = state;
+  const tree = syntaxTree(state);
+  let dont = null;
+    const changes = state.changeByRange((range) => {
+      const pos = range.from;
+        const { doc } = state;
       if (range.empty && markdownLanguage.isActiveAt(state, range.from)) {
-        let line = doc.lineAt(pos);
-        let context = getContext(contextNodeForDelete(tree, pos), doc);
+        const line = doc.lineAt(pos);
+        const context = getContext(contextNodeForDelete(tree, pos), doc);
         if (context.length) {
-          let inner = context[context.length - 1];
-          let spaceEnd =
+          const inner = context[context.length - 1];
+          const spaceEnd =
             inner.to - inner.spaceAfter.length + (inner.spaceAfter ? 1 : 0);
           // Delete extra trailing space after markup
           if (
@@ -403,7 +403,7 @@ export const deleteMarkupBackward: StateCommand = ({ state, dispatch }) => {
               line.from <= inner.item.from ||
               !/\S/.test(line.text.slice(0, inner.to)))
           ) {
-            let start = line.from + inner.from;
+            const start = line.from + inner.from;
             // Replace a list item marker with blank space
             if (
               inner.item &&

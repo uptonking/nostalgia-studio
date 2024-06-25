@@ -274,7 +274,7 @@ function produceTokenFunction(pConfig) {
     }
     /* keywords & operators */
     if (
-      !!pConfig.keywords &&
+      Boolean(pConfig.keywords) &&
       pStream.match(wordRegexpBoundary(pConfig.keywords), true, true)
     )
       return 'keyword';
@@ -289,13 +289,13 @@ function produceTokenFunction(pConfig) {
       return 'keyword';
 
     if (
-      !!pConfig.operators &&
+      Boolean(pConfig.operators) &&
       pStream.match(wordRegexp(pConfig.operators), true, true)
     )
       return 'operator';
 
     if (
-      !!pConfig.constants &&
+      Boolean(pConfig.constants) &&
       pStream.match(wordRegexp(pConfig.constants), true, true)
     )
       return 'variable';
@@ -303,7 +303,7 @@ function produceTokenFunction(pConfig) {
     /* attribute lists */
     if (
       !pConfig.inAttributeList &&
-      !!pConfig.attributes &&
+      Boolean(pConfig.attributes) &&
       pStream.match('[', true, true)
     ) {
       pConfig.inAttributeList = true;

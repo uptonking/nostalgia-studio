@@ -1,9 +1,9 @@
-var curPunc;
+let curPunc;
 
 function wordRegexp(words) {
   return new RegExp('^(?:' + words.join('|') + ')$', 'i');
 }
-var ops = wordRegexp([
+const ops = wordRegexp([
   'str',
   'lang',
   'langmatches',
@@ -67,7 +67,7 @@ var ops = wordRegexp([
   'a',
   'bind',
 ]);
-var keywords = wordRegexp([
+const keywords = wordRegexp([
   'base',
   'prefix',
   'select',
@@ -116,15 +116,15 @@ var keywords = wordRegexp([
   'load',
   'into',
 ]);
-var operatorChars = /[*+\-<>=&|\^\/!\?]/;
-var PN_CHARS = '[A-Za-z_\\-0-9]';
-var PREFIX_START = new RegExp('[A-Za-z]');
-var PREFIX_REMAINDER = new RegExp(
+const operatorChars = /[*+\-<>=&|\^\/!\?]/;
+const PN_CHARS = '[A-Za-z_\\-0-9]';
+const PREFIX_START = new RegExp('[A-Za-z]');
+const PREFIX_REMAINDER = new RegExp(
   '((' + PN_CHARS + '|\\.)*(' + PN_CHARS + '))?:',
 );
 
 function tokenBase(stream, state) {
-  var ch = stream.next();
+  const ch = stream.next();
   curPunc = null;
   if (ch == '$' || ch == '?') {
     if (ch == '?' && stream.match(/\s/, false)) {
@@ -159,7 +159,7 @@ function tokenBase(stream, state) {
     return 'atom';
   }
   stream.eatWhile(/[_\w\d]/);
-  var word = stream.current();
+  const word = stream.current();
   if (ops.test(word)) return 'builtin';
   else if (keywords.test(word)) return 'keyword';
   else return 'variable';
@@ -173,8 +173,8 @@ function eatPnLocal(stream) {
 
 function tokenLiteral(quote) {
   return function (stream, state) {
-    var escaped = false,
-      ch;
+    let escaped = false;
+      let ch;
     while ((ch = stream.next()) != null) {
       if (ch == quote && !escaped) {
         state.tokenize = tokenBase;
@@ -213,7 +213,7 @@ export const sparql = {
       state.indent = stream.indentation();
     }
     if (stream.eatSpace()) return null;
-    var style = state.tokenize(stream, state);
+    const style = state.tokenize(stream, state);
 
     if (
       style != 'comment' &&
@@ -254,12 +254,12 @@ export const sparql = {
   },
 
   indent: function (state, textAfter, cx) {
-    var firstChar = textAfter && textAfter.charAt(0);
-    var context = state.context;
+    const firstChar = textAfter && textAfter.charAt(0);
+    let context = state.context;
     if (/[\]\}]/.test(firstChar))
       while (context && context.type == 'pattern') context = context.prev;
 
-    var closing = context && firstChar == context.type;
+    const closing = context && firstChar == context.type;
     if (!context) return 0;
     else if (context.type == 'pattern') return context.col;
     else if (context.align) return context.col + (closing ? 0 : 1);

@@ -25,15 +25,15 @@ export class DOMReader {
 
   readRange(start: Node | null, end: Node | null) {
     if (!start) return this;
-    let parent = start.parentNode!;
+    const parent = start.parentNode!;
     for (let cur = start; ; ) {
       this.findPointBefore(parent, cur);
-      let oldLen = this.text.length;
+      const oldLen = this.text.length;
       this.readNode(cur);
-      let next: Node | null = cur.nextSibling;
+      const next: Node | null = cur.nextSibling;
       if (next == end) break;
-      let view = ContentView.get(cur),
-        nextView = ContentView.get(next!);
+      const view = ContentView.get(cur);
+        const nextView = ContentView.get(next!);
       if (
         view && nextView
           ? view.breakAfter
@@ -50,15 +50,15 @@ export class DOMReader {
   }
 
   readTextNode(node: Text) {
-    let text = node.nodeValue!;
-    for (let point of this.points)
+    const text = node.nodeValue!;
+    for (const point of this.points)
       if (point.node == node)
         point.pos = this.text.length + Math.min(point.offset, text.length);
 
     for (let off = 0, re = this.lineSeparator ? null : /\r\n?|\n/g; ; ) {
-      let nextBreak = -1,
-        breakSize = 1,
-        m;
+      let nextBreak = -1;
+        let breakSize = 1;
+        let m;
       if (this.lineSeparator) {
         nextBreak = text.indexOf(this.lineSeparator, off);
         breakSize = this.lineSeparator.length;
@@ -70,7 +70,7 @@ export class DOMReader {
       if (nextBreak < 0) break;
       this.lineBreak();
       if (breakSize > 1)
-        for (let point of this.points)
+        for (const point of this.points)
           if (point.node == node && point.pos > this.text.length)
             point.pos -= breakSize - 1;
       off = nextBreak + breakSize;
@@ -79,8 +79,8 @@ export class DOMReader {
 
   readNode(node: Node) {
     if ((node as any).cmIgnore) return;
-    let view = ContentView.get(node);
-    let fromView = view && view.overrideDOMText;
+    const view = ContentView.get(node);
+    const fromView = view && view.overrideDOMText;
     if (fromView != null) {
       this.findPointInside(node, fromView.length);
       for (let i = fromView.iter(); !i.next().done; ) {
@@ -97,13 +97,13 @@ export class DOMReader {
   }
 
   findPointBefore(node: Node, next: Node | null) {
-    for (let point of this.points)
+    for (const point of this.points)
       if (point.node == node && node.childNodes[point.offset] == next)
         point.pos = this.text.length;
   }
 
   findPointInside(node: Node, length: number) {
-    for (let point of this.points)
+    for (const point of this.points)
       if (node.nodeType == 3 ? point.node == node : node.contains(point.node))
         point.pos =
           this.text.length +

@@ -1,5 +1,5 @@
 function errorIfNotEmpty(stream) {
-  var nonWS = stream.match(/^\s*\S/);
+  const nonWS = stream.match(/^\s*\S/);
   stream.skipToEnd();
   return nonWS ? 'error' : null;
 }
@@ -7,7 +7,7 @@ function errorIfNotEmpty(stream) {
 export const asciiArmor = {
   name: 'asciiarmor',
   token: function (stream, state) {
-    var m;
+    let m;
     if (state.state == 'top') {
       if (stream.sol() && (m = stream.match(/^-----BEGIN (.*)?-----\s*$/))) {
         state.state = 'headers';
@@ -20,7 +20,7 @@ export const asciiArmor = {
         state.state = 'header';
         return 'atom';
       } else {
-        var result = errorIfNotEmpty(stream);
+        const result = errorIfNotEmpty(stream);
         if (result) state.state = 'body';
         return result;
       }

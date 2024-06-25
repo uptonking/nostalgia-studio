@@ -1,11 +1,11 @@
 import browser from './browser';
 import { ContentView, ViewFlag } from './contentview';
-import { EditorView } from './editorview';
+import type { EditorView } from './editorview';
 import {
   editable,
-  ViewUpdate,
+  type ViewUpdate,
   setEditContextFormatting,
-  MeasureRequest,
+  type MeasureRequest,
 } from './extension';
 import {
   hasSelection,
@@ -19,7 +19,7 @@ import {
 import { DOMChange, applyDOMChange, applyDOMChangeInner } from './domchange';
 import type { EditContext } from './editcontext';
 import { Decoration } from './decoration';
-import { Text, EditorSelection, EditorState } from '@codemirror/state';
+import { Text, EditorSelection, type EditorState } from '@codemirror/state';
 
 const observeOptions = {
   childList: true,
@@ -76,7 +76,7 @@ export class DOMObserver {
   constructor(private view: EditorView) {
     this.dom = view.contentDOM;
     this.observer = new MutationObserver((mutations) => {
-      for (let mut of mutations) this.queue.push(mut);
+      for (const mut of mutations) this.queue.push(mut);
       // IE11 will sometimes (on typing over a selection or
       // backspacing out a single character text node) call the
       // observer callback before actually updating the DOM.
@@ -127,7 +127,7 @@ export class DOMObserver {
     this.onScroll = this.onScroll.bind(this);
 
     if (window.matchMedia) this.printQuery = window.matchMedia('print');
-    if (typeof ResizeObserver == 'function') {
+    if (typeof ResizeObserver === 'function') {
       this.resizeScroll = new ResizeObserver(() => {
         if (this.view.docView?.lastUpdate < Date.now() - 75) this.onResize();
       });
@@ -137,7 +137,7 @@ export class DOMObserver {
 
     this.start();
 
-    if (typeof IntersectionObserver == 'function') {
+    if (typeof IntersectionObserver === 'function') {
       this.intersection = new IntersectionObserver(
         (entries) => {
           if (this.parentCheck < 0)
@@ -207,16 +207,16 @@ export class DOMObserver {
         this.gaps.some((g, i) => g != gaps[i]))
     ) {
       this.gapIntersection.disconnect();
-      for (let gap of gaps) this.gapIntersection.observe(gap);
+      for (const gap of gaps) this.gapIntersection.observe(gap);
       this.gaps = gaps;
     }
   }
 
   onSelectionChange(event: Event) {
-    let wasChanged = this.selectionChanged;
+    const wasChanged = this.selectionChanged;
     if (!this.readSelectionRange() || this.delayedAndroidKey) return;
-    let { view } = this,
-      sel = this.selectionRange;
+    const { view } = this;
+      const sel = this.selectionRange;
     if (
       view.state.facet(editable)
         ? view.root.activeElement != this.dom
@@ -224,7 +224,7 @@ export class DOMObserver {
     )
       return;
 
-    let context = sel.anchorNode && view.docView.nearest(sel.anchorNode);
+    const context = sel.anchorNode && view.docView.nearest(sel.anchorNode);
     if (context && context.ignoreEvent(event)) {
       if (!wasChanged) this.selectionChanged = false;
       return;
@@ -253,19 +253,19 @@ export class DOMObserver {
   }
 
   readSelectionRange() {
-    let { view } = this;
+    const { view } = this;
     // The Selection object is broken in shadow roots in Safari. See
     // https://github.com/codemirror/dev/issues/414
-    let selection = getSelection(view.root);
+    const selection = getSelection(view.root);
     if (!selection) return false;
-    let range =
+    const range =
       (browser.safari &&
         (view.root as any).nodeType == 11 &&
         deepActiveElement(this.dom.ownerDocument) == this.dom &&
         safariSelectionRangeHack(this.view, selection)) ||
       selection;
     if (!range || this.selectionRange.eq(range)) return false;
-    let local = hasSelection(this.dom, range);
+    const local = hasSelection(this.dom, range);
     // Detect the situation where the browser has, on focus, moved the
     // selection to the start of the content element. Reset it to the
     // position from the editor state.
@@ -299,8 +299,8 @@ export class DOMObserver {
 
   listenForScroll() {
     this.parentCheck = -1;
-    let i = 0,
-      changed: HTMLElement[] | null = null;
+    let i = 0;
+      let changed: HTMLElement[] | null = null;
     for (let dom = this.dom as any; dom; ) {
       if (dom.nodeType == 1) {
         if (
@@ -322,9 +322,9 @@ export class DOMObserver {
     if (i < this.scrollTargets.length && !changed)
       changed = this.scrollTargets.slice(0, i);
     if (changed) {
-      for (let dom of this.scrollTargets)
+      for (const dom of this.scrollTargets)
         dom.removeEventListener('scroll', this.onScroll);
-      for (let dom of (this.scrollTargets = changed))
+      for (const dom of (this.scrollTargets = changed))
         dom.addEventListener('scroll', this.onScroll);
     }
   }
@@ -373,13 +373,13 @@ export class DOMObserver {
   // them or, if that has no effect, dispatches the given key.
   delayAndroidKey(key: string, keyCode: number) {
     if (!this.delayedAndroidKey) {
-      let flush = () => {
-        let key = this.delayedAndroidKey;
+      const flush = () => {
+        const key = this.delayedAndroidKey;
         if (key) {
           this.clearDelayedAndroidKey();
           this.view.inputState.lastKeyCode = key.keyCode;
           this.view.inputState.lastKeyTime = Date.now();
-          let flushed = this.flush();
+          const flushed = this.flush();
           if (!flushed && key.force)
             dispatchKey(this.dom, key.key, key.keyCode);
         }
@@ -397,7 +397,7 @@ export class DOMObserver {
         // it is probably part of a weird chain of updates, and should
         // be ignored if it returns the DOM to its previous state.
         force:
-          this.lastChange < Date.now() - 50 || !!this.delayedAndroidKey?.force,
+          this.lastChange < Date.now() - 50 || Boolean(this.delayedAndroidKey?.force),
       };
   }
 
@@ -424,19 +424,19 @@ export class DOMObserver {
   }
 
   pendingRecords() {
-    for (let mut of this.observer.takeRecords()) this.queue.push(mut);
+    for (const mut of this.observer.takeRecords()) this.queue.push(mut);
     return this.queue;
   }
 
   processRecords() {
-    let records = this.pendingRecords();
+    const records = this.pendingRecords();
     if (records.length) this.queue = [];
 
-    let from = -1,
-      to = -1,
-      typeOver = false;
-    for (let record of records) {
-      let range = this.readMutation(record);
+    let from = -1;
+      let to = -1;
+      let typeOver = false;
+    for (const record of records) {
+      const range = this.readMutation(record);
       if (!range) continue;
       if (range.typeOver) typeOver = true;
       if (from == -1) {
@@ -450,14 +450,14 @@ export class DOMObserver {
   }
 
   readChange() {
-    let { from, to, typeOver } = this.processRecords();
-    let newSel =
+    const { from, to, typeOver } = this.processRecords();
+    const newSel =
       this.selectionChanged && hasSelection(this.dom, this.selectionRange);
     if (from < 0 && !newSel) return null;
     if (from > -1) this.lastChange = Date.now();
     this.view.inputState.lastFocusTime = 0;
     this.selectionChanged = false;
-    let change = new DOMChange(this.view, from, to, typeOver);
+    const change = new DOMChange(this.view, from, to, typeOver);
     this.view.docView.domChanged = {
       newSel: change.newSel ? change.newSel.main : null,
     };
@@ -473,13 +473,13 @@ export class DOMObserver {
 
     if (readSelection) this.readSelectionRange();
 
-    let domChange = this.readChange();
+    const domChange = this.readChange();
     if (!domChange) {
       this.view.requestMeasure();
       return false;
     }
-    let startState = this.view.state;
-    let handled = applyDOMChange(this.view, domChange);
+    const startState = this.view.state;
+    const handled = applyDOMChange(this.view, domChange);
     // The view wasn't updated but DOM/selection changes were seen. Reset the view.
     if (
       this.view.state == startState &&
@@ -494,18 +494,18 @@ export class DOMObserver {
   readMutation(
     rec: MutationRecord,
   ): { from: number; to: number; typeOver: boolean } | null {
-    let cView = this.view.docView.nearest(rec.target);
+    const cView = this.view.docView.nearest(rec.target);
     if (!cView || cView.ignoreMutation(rec)) return null;
     cView.markDirty(rec.type == 'attributes');
     if (rec.type == 'attributes') cView.flags |= ViewFlag.AttrsDirty;
 
     if (rec.type == 'childList') {
-      let childBefore = findChild(
+      const childBefore = findChild(
         cView,
         rec.previousSibling || rec.target.previousSibling,
         -1,
       );
-      let childAfter = findChild(
+      const childAfter = findChild(
         cView,
         rec.nextSibling || rec.target.nextSibling,
         1,
@@ -567,7 +567,7 @@ export class DOMObserver {
     this.intersection?.disconnect();
     this.gapIntersection?.disconnect();
     this.resizeScroll?.disconnect();
-    for (let dom of this.scrollTargets)
+    for (const dom of this.scrollTargets)
       dom.removeEventListener('scroll', this.onScroll);
     this.removeWindowListeners(this.win);
     clearTimeout(this.parentCheck);
@@ -583,9 +583,9 @@ function findChild(
   dir: number,
 ): ContentView | null {
   while (dom) {
-    let curView = ContentView.get(dom);
+    const curView = ContentView.get(dom);
     if (curView && curView.parent == cView) return curView;
-    let parent = dom.parentNode;
+    const parent = dom.parentNode;
     dom =
       parent != cView.dom
         ? parent
@@ -597,11 +597,11 @@ function findChild(
 }
 
 function buildSelectionRangeFromRange(view: EditorView, range: StaticRange) {
-  let anchorNode = range.startContainer,
-    anchorOffset = range.startOffset;
-  let focusNode = range.endContainer,
-    focusOffset = range.endOffset;
-  let curAnchor = view.docView.domAtPos(view.state.selection.main.anchor);
+  let anchorNode = range.startContainer;
+    let anchorOffset = range.startOffset;
+  let focusNode = range.endContainer;
+    let focusOffset = range.endOffset;
+  const curAnchor = view.docView.domAtPos(view.state.selection.main.anchor);
   // Since such a range doesn't distinguish between anchor and head,
   // use a heuristic that flips it around if its end matches the
   // current anchor.
@@ -625,7 +625,7 @@ function buildSelectionRangeFromRange(view: EditorView, range: StaticRange) {
 // Used to work around a Safari Selection/shadow DOM bug (#414)
 function safariSelectionRangeHack(view: EditorView, selection: Selection) {
   if ((selection as any).getComposedRanges) {
-    let range = (selection as any).getComposedRanges(
+    const range = (selection as any).getComposedRanges(
       view.root,
     )[0] as StaticRange;
     if (range) return buildSelectionRangeFromRange(view, range);
@@ -673,7 +673,7 @@ class EditContextManager {
   constructor(view: EditorView) {
     this.resetRange(view.state);
 
-    let context = (this.editContext = new window.EditContext({
+    const context = (this.editContext = new window.EditContext({
       text: view.state.doc.sliceString(this.from, this.to),
       selectionStart: this.toContextPos(
         Math.max(
@@ -684,8 +684,8 @@ class EditContextManager {
       selectionEnd: this.toContextPos(view.state.selection.main.head),
     }));
     context.addEventListener('textupdate', (e) => {
-      let { anchor } = view.state.selection.main;
-      let change = {
+      const { anchor } = view.state.selection.main;
+      const change = {
         from: this.toEditorPos(e.updateRangeStart),
         to: this.toEditorPos(e.updateRangeEnd),
         insert: Text.of(e.text.split('\n')),
@@ -712,15 +712,15 @@ class EditContextManager {
       if (this.pendingContextChange) this.revertPending(view.state);
     });
     context.addEventListener('characterboundsupdate', (e) => {
-      let rects: DOMRect[] = [],
-        prev: DOMRect | null = null;
+      const rects: DOMRect[] = [];
+        let prev: DOMRect | null = null;
       for (
         let i = this.toEditorPos(e.rangeStart),
           end = this.toEditorPos(e.rangeEnd);
         i < end;
         i++
       ) {
-        let rect = view.coordsForChar(i);
+        const rect = view.coordsForChar(i);
         prev =
           (rect &&
             new DOMRect(
@@ -736,12 +736,12 @@ class EditContextManager {
       context.updateCharacterBounds(e.rangeStart, rects);
     });
     context.addEventListener('textformatupdate', (e) => {
-      let deco = [];
-      for (let format of e.getTextFormats()) {
-        let lineStyle = format.underlineStyle,
-          thickness = format.underlineThickness;
+      const deco = [];
+      for (const format of e.getTextFormats()) {
+        const lineStyle = format.underlineStyle;
+          const thickness = format.underlineThickness;
         if (lineStyle != 'None' && thickness != 'None') {
-          let style = `text-decoration: underline ${
+          const style = `text-decoration: underline ${
             lineStyle == 'Dashed'
               ? 'dashed '
               : lineStyle == 'Squiggle'
@@ -776,7 +776,7 @@ class EditContextManager {
         this.editContext.updateControlBounds(
           view.contentDOM.getBoundingClientRect(),
         );
-        let sel = getSelection(view.root);
+        const sel = getSelection(view.root);
         if (sel && sel.rangeCount)
           this.editContext.updateSelectionBounds(
             sel.getRangeAt(0).getBoundingClientRect(),
@@ -786,13 +786,13 @@ class EditContextManager {
   }
 
   applyEdits(update: ViewUpdate) {
-    let off = 0,
-      abort = false,
-      pending = this.pendingContextChange;
+    let off = 0;
+      let abort = false;
+      let pending = this.pendingContextChange;
     update.changes.iterChanges((fromA, toA, _fromB, _toB, insert) => {
       if (abort) return;
 
-      let dLen = insert.length - (toA - fromA);
+      const dLen = insert.length - (toA - fromA);
       if (pending && toA >= pending.to) {
         if (
           pending.from == fromA &&
@@ -856,13 +856,13 @@ class EditContextManager {
   }
 
   resetRange(state: EditorState) {
-    let { head } = state.selection.main;
+    const { head } = state.selection.main;
     this.from = Math.max(0, head - CxVp.Margin);
     this.to = Math.min(state.doc.length, head + CxVp.Margin);
   }
 
   revertPending(state: EditorState) {
-    let pending = this.pendingContextChange!;
+    const pending = this.pendingContextChange!;
     this.pendingContextChange = null;
     this.editContext.updateText(
       this.toContextPos(pending.from),
@@ -872,11 +872,11 @@ class EditContextManager {
   }
 
   setSelection(state: EditorState) {
-    let { main } = state.selection;
-    let start = this.toContextPos(
+    const { main } = state.selection;
+    const start = this.toContextPos(
       Math.max(this.from, Math.min(this.to, main.anchor)),
     );
-    let end = this.toContextPos(main.head);
+    const end = this.toContextPos(main.head);
     if (
       this.editContext.selectionStart != start ||
       this.editContext.selectionEnd != end
@@ -885,7 +885,7 @@ class EditContextManager {
   }
 
   rangeIsValid(state: EditorState) {
-    let { head } = state.selection.main;
+    const { head } = state.selection.main;
     return !(
       (this.from > 0 && head - this.from < CxVp.MinMargin) ||
       (this.to < state.doc.length && this.to - head < CxVp.MinMargin) ||

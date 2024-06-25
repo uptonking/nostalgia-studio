@@ -1,14 +1,14 @@
 import {
-  Extension,
+  type Extension,
   Facet,
-  EditorState,
-  SelectionRange,
+  type EditorState,
+  type SelectionRange,
 } from '@codemirror/state';
-import { ViewPlugin, ViewUpdate } from './extension';
-import { EditorView } from './editorview';
+import { ViewPlugin, type ViewUpdate } from './extension';
+import type { EditorView } from './editorview';
 import { Direction } from './bidi';
 import { BlockType } from './decoration';
-import { BlockInfo } from './heightmap';
+import type { BlockInfo } from './heightmap';
 import { blockAt } from './cursor';
 
 /// Markers shown in a [layer](#view.layer) must conform to this
@@ -47,7 +47,7 @@ export class RectangleMarker implements LayerMarker {
   ) {}
 
   draw() {
-    let elt = document.createElement('div');
+    const elt = document.createElement('div');
     elt.className = this.className;
     this.adjust(elt);
     return elt;
@@ -87,9 +87,9 @@ export class RectangleMarker implements LayerMarker {
     range: SelectionRange,
   ): readonly RectangleMarker[] {
     if (range.empty) {
-      let pos = view.coordsAtPos(range.head, range.assoc || 1);
+      const pos = view.coordsAtPos(range.head, range.assoc || 1);
       if (!pos) return [];
-      let base = getBase(view);
+      const base = getBase(view);
       return [
         new RectangleMarker(
           className,
@@ -106,8 +106,8 @@ export class RectangleMarker implements LayerMarker {
 }
 
 function getBase(view: EditorView) {
-  let rect = view.scrollDOM.getBoundingClientRect();
-  let left =
+  const rect = view.scrollDOM.getBoundingClientRect();
+  const left =
     view.textDirection == Direction.LTR
       ? rect.left
       : rect.right - view.scrollDOM.clientWidth * view.scaleX;
@@ -123,12 +123,12 @@ function wrappedLine(
   side: 1 | -1,
   inside: { from: number; to: number },
 ) {
-  let coords = view.coordsAtPos(pos, (side * 2) as any);
+  const coords = view.coordsAtPos(pos, (side * 2) as any);
   if (!coords) return inside;
-  let editorRect = view.dom.getBoundingClientRect();
-  let y = (coords.top + coords.bottom) / 2;
-  let left = view.posAtCoords({ x: editorRect.left + 1, y });
-  let right = view.posAtCoords({ x: editorRect.right - 1, y });
+  const editorRect = view.dom.getBoundingClientRect();
+  const y = (coords.top + coords.bottom) / 2;
+  const left = view.posAtCoords({ x: editorRect.left + 1, y });
+  const right = view.posAtCoords({ x: editorRect.right - 1, y });
   if (left == null || right == null) return inside;
   return {
     from: Math.max(inside.from, Math.min(left, right)),
@@ -149,26 +149,26 @@ function rectanglesForRange(
 ): RectangleMarker[] {
   if (range.to <= view.viewport.from || range.from >= view.viewport.to)
     return [];
-  let from = Math.max(range.from, view.viewport.from),
-    to = Math.min(range.to, view.viewport.to);
+  const from = Math.max(range.from, view.viewport.from);
+    const to = Math.min(range.to, view.viewport.to);
 
-  let ltr = view.textDirection == Direction.LTR;
-  let content = view.contentDOM,
-    contentRect = content.getBoundingClientRect(),
-    base = getBase(view);
-  let lineElt = content.querySelector('.cm-line'),
-    lineStyle = lineElt && window.getComputedStyle(lineElt);
-  let leftSide =
+  const ltr = view.textDirection == Direction.LTR;
+  const content = view.contentDOM;
+    const contentRect = content.getBoundingClientRect();
+    const base = getBase(view);
+  const lineElt = content.querySelector('.cm-line');
+    const lineStyle = lineElt && window.getComputedStyle(lineElt);
+  const leftSide =
     contentRect.left +
     (lineStyle
       ? parseInt(lineStyle.paddingLeft) +
         Math.min(0, parseInt(lineStyle.textIndent))
       : 0);
-  let rightSide =
+  const rightSide =
     contentRect.right - (lineStyle ? parseInt(lineStyle.paddingRight) : 0);
 
-  let startBlock = blockAt(view, from),
-    endBlock = blockAt(view, to);
+  const startBlock = blockAt(view, from);
+    const endBlock = blockAt(view, to);
   let visualStart: { from: number; to: number } | null =
     startBlock.type == BlockType.Text ? startBlock : null;
   let visualEnd: { from: number; to: number } | null =
@@ -185,13 +185,13 @@ function rectanglesForRange(
   ) {
     return pieces(drawForLine(range.from, range.to, visualStart));
   } else {
-    let top = visualStart
+    const top = visualStart
       ? drawForLine(range.from, null, visualStart)
       : drawForWidget(startBlock, false);
-    let bottom = visualEnd
+    const bottom = visualEnd
       ? drawForLine(null, range.to, visualEnd)
       : drawForWidget(endBlock, true);
-    let between = [];
+    const between = [];
     if (
       (visualStart || startBlock).to <
         (visualEnd || endBlock).from - (visualStart && visualEnd ? 1 : 0) ||
@@ -225,7 +225,7 @@ function rectanglesForRange(
     bottom: number;
     horizontal: number[];
   }) {
-    let pieces = [];
+    const pieces = [];
     for (let i = 0; i < horizontal.length; i += 2)
       pieces.push(piece(horizontal[i], top, horizontal[i + 1], bottom));
     return pieces;
@@ -237,9 +237,9 @@ function rectanglesForRange(
     to: null | number,
     line: { from: number; to: number },
   ) {
-    let top = 1e9,
-      bottom = -1e9,
-      horizontal: number[] = [];
+    let top = 1e9;
+      let bottom = -1e9;
+      const horizontal: number[] = [];
     function addSpan(
       from: number,
       fromOpen: boolean,
@@ -251,11 +251,11 @@ function rectanglesForRange(
       // coordinates on the proper side of block widgets, since
       // normalizing the side there, though appropriate for most
       // coordsAtPos queries, would break selection drawing.
-      let fromCoords = view.coordsAtPos(
+      const fromCoords = view.coordsAtPos(
         from,
         (from == line.to ? -2 : 2) as any,
       );
-      let toCoords = view.coordsAtPos(to, (to == line.from ? 2 : -2) as any);
+      const toCoords = view.coordsAtPos(to, (to == line.from ? 2 : -2) as any);
       if (!fromCoords || !toCoords) return;
       top = Math.min(fromCoords.top, toCoords.top, top);
       bottom = Math.max(fromCoords.bottom, toCoords.bottom, bottom);
@@ -271,20 +271,20 @@ function rectanglesForRange(
         );
     }
 
-    let start = from ?? line.from,
-      end = to ?? line.to;
+    const start = from ?? line.from;
+      const end = to ?? line.to;
     // Split the range by visible range and document line
-    for (let r of view.visibleRanges)
+    for (const r of view.visibleRanges)
       if (r.to > start && r.from < end) {
         for (
           let pos = Math.max(r.from, start), endPos = Math.min(r.to, end);
           ;
 
         ) {
-          let docLine = view.state.doc.lineAt(pos);
-          for (let span of view.bidiSpans(docLine)) {
-            let spanFrom = span.from + docLine.from,
-              spanTo = span.to + docLine.from;
+          const docLine = view.state.doc.lineAt(pos);
+          for (const span of view.bidiSpans(docLine)) {
+            const spanFrom = span.from + docLine.from;
+              const spanTo = span.to + docLine.from;
             if (spanFrom >= endPos) break;
             if (spanTo > pos)
               addSpan(
@@ -306,7 +306,7 @@ function rectanglesForRange(
   }
 
   function drawForWidget(block: BlockInfo, top: boolean) {
-    let y = contentRect.top + (top ? block.top : block.bottom);
+    const y = contentRect.top + (top ? block.top : block.bottom);
     return { top: y, bottom: y, horizontal: [] };
   }
 }
@@ -381,8 +381,8 @@ class LayerView {
   }
 
   setOrder(state: EditorState) {
-    let pos = 0,
-      order = state.facet(layerOrder);
+    let pos = 0;
+      const order = state.facet(layerOrder);
     while (pos < order.length && order[pos] != this.layer) pos++;
     this.dom.style.zIndex = String((this.layer.above ? 150 : -1) - pos);
   }
@@ -392,7 +392,7 @@ class LayerView {
   }
 
   scale() {
-    let { scaleX, scaleY } = this.view;
+    const { scaleX, scaleY } = this.view;
     if (scaleX != this.scaleX || scaleY != this.scaleY) {
       this.scaleX = scaleX;
       this.scaleY = scaleY;
@@ -405,9 +405,9 @@ class LayerView {
       markers.length != this.drawn.length ||
       markers.some((p, i) => !sameMarker(p, this.drawn[i]))
     ) {
-      let old = this.dom.firstChild,
-        oldI = 0;
-      for (let marker of markers) {
+      let old = this.dom.firstChild;
+        let oldI = 0;
+      for (const marker of markers) {
         if (
           marker.update &&
           old &&
@@ -422,7 +422,7 @@ class LayerView {
         }
       }
       while (old) {
-        let next = old.nextSibling;
+        const next = old.nextSibling;
         old.remove();
         old = next;
       }

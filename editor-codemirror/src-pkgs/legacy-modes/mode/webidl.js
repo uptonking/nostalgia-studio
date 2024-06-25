@@ -2,7 +2,7 @@ function wordRegexp(words) {
   return new RegExp('^((' + words.join(')|(') + '))\\b');
 }
 
-var builtinArray = [
+const builtinArray = [
   'Clamp',
   'Constructor',
   'EnforceRange',
@@ -26,9 +26,9 @@ var builtinArray = [
   'Unforgeable',
   'Unscopeable',
 ];
-var builtins = wordRegexp(builtinArray);
+const builtins = wordRegexp(builtinArray);
 
-var typeArray = [
+const typeArray = [
   'unsigned',
   'short',
   'long', // UnsignedIntegerType
@@ -62,9 +62,9 @@ var typeArray = [
   'any', // Rest of SingleType
   'void', // Rest of ReturnType
 ];
-var types = wordRegexp(typeArray);
+const types = wordRegexp(typeArray);
 
-var keywordArray = [
+const keywordArray = [
   'attribute',
   'callback',
   'const',
@@ -91,33 +91,33 @@ var keywordArray = [
   'readonly',
   'or',
 ];
-var keywords = wordRegexp(keywordArray);
+const keywords = wordRegexp(keywordArray);
 
-var atomArray = [
+const atomArray = [
   'true',
   'false', // BooleanLiteral
   'Infinity',
   'NaN', // FloatLiteral
   'null', // Rest of ConstValue
 ];
-var atoms = wordRegexp(atomArray);
+const atoms = wordRegexp(atomArray);
 
-var startDefArray = ['callback', 'dictionary', 'enum', 'interface'];
-var startDefs = wordRegexp(startDefArray);
+const startDefArray = ['callback', 'dictionary', 'enum', 'interface'];
+const startDefs = wordRegexp(startDefArray);
 
-var endDefArray = ['typedef'];
-var endDefs = wordRegexp(endDefArray);
+const endDefArray = ['typedef'];
+const endDefs = wordRegexp(endDefArray);
 
-var singleOperators = /^[:<=>?]/;
-var integers = /^-?([1-9][0-9]*|0[Xx][0-9A-Fa-f]+|0[0-7]*)/;
-var floats =
+const singleOperators = /^[:<=>?]/;
+const integers = /^-?([1-9][0-9]*|0[Xx][0-9A-Fa-f]+|0[0-7]*)/;
+const floats =
   /^-?(([0-9]+\.[0-9]*|[0-9]*\.[0-9]+)([Ee][+-]?[0-9]+)?|[0-9]+[Ee][+-]?[0-9]+)/;
-var identifiers = /^_?[A-Za-z][0-9A-Z_a-z-]*/;
-var identifiersEnd = /^_?[A-Za-z][0-9A-Z_a-z-]*(?=\s*;)/;
-var strings = /^"[^"]*"/;
-var multilineComments = /^\/\*.*?\*\//;
-var multilineCommentsStart = /^\/\*.*/;
-var multilineCommentsEnd = /^.*?\*\//;
+const identifiers = /^_?[A-Za-z][0-9A-Z_a-z-]*/;
+const identifiersEnd = /^_?[A-Za-z][0-9A-Z_a-z-]*(?=\s*;)/;
+const strings = /^"[^"]*"/;
+const multilineComments = /^\/\*.*?\*\//;
+const multilineCommentsStart = /^\/\*.*/;
+const multilineCommentsEnd = /^.*?\*\//;
 
 function readToken(stream, state) {
   // whitespace
@@ -161,8 +161,8 @@ function readToken(stream, state) {
   if (stream.match(keywords)) return 'keyword';
 
   if (stream.match(types)) {
-    var lastToken = state.lastToken;
-    var nextToken = (stream.match(/^\s*(.+?)\b/, false) || [])[1];
+    const lastToken = state.lastToken;
+    const nextToken = (stream.match(/^\s*(.+?)\b/, false) || [])[1];
 
     if (
       lastToken === ':' ||
@@ -205,10 +205,10 @@ export const webIDL = {
     };
   },
   token: function (stream, state) {
-    var style = readToken(stream, state);
+    const style = readToken(stream, state);
 
     if (style) {
-      var cur = stream.current();
+      const cur = stream.current();
       state.lastToken = cur;
       if (style === 'keyword') {
         state.startDef = startDefs.test(cur);

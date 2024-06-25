@@ -1,15 +1,15 @@
 import {
   EditorView,
   ViewPlugin,
-  ViewUpdate,
-  Command,
+  type ViewUpdate,
+  type Command,
   Decoration,
-  DecorationSet,
+  type DecorationSet,
   runScopeHandlers,
-  KeyBinding,
-  PanelConstructor,
+  type KeyBinding,
+  type PanelConstructor,
   showPanel,
-  Panel,
+  type Panel,
   getPanel,
 } from '@codemirror/view';
 import {
@@ -17,13 +17,13 @@ import {
   StateField,
   StateEffect,
   EditorSelection,
-  SelectionRange,
-  StateCommand,
+  type SelectionRange,
+  type StateCommand,
   Prec,
   Facet,
-  Extension,
+  type Extension,
   RangeSetBuilder,
-  Text,
+  type Text,
   CharCategory,
   findClusterBreak,
   combineConfig,
@@ -155,13 +155,13 @@ export class SearchQuery {
     wholeWord?: boolean;
   }) {
     this.search = config.search;
-    this.caseSensitive = !!config.caseSensitive;
-    this.literal = !!config.literal;
-    this.regexp = !!config.regexp;
+    this.caseSensitive = Boolean(config.caseSensitive);
+    this.literal = Boolean(config.literal);
+    this.regexp = Boolean(config.regexp);
     this.replace = config.replace || '';
-    this.valid = !!this.search && (!this.regexp || validRegExp(this.search));
+    this.valid = Boolean(this.search) && (!this.regexp || validRegExp(this.search));
     this.unquoted = this.unquote(this.search);
-    this.wholeWord = !!config.wholeWord;
+    this.wholeWord = Boolean(config.wholeWord);
   }
 
   /// @internal
@@ -196,7 +196,7 @@ export class SearchQuery {
     from: number = 0,
     to?: number,
   ): Iterator<{ from: number; to: number }> {
-    let st = (state as any).doc
+    const st = (state as any).doc
       ? (state as EditorState)
       : EditorState.create({ doc: state as Text });
     if (to == null) to = st.doc.length;
@@ -299,12 +299,12 @@ class StringQuery extends QueryType<SearchResult> {
   // cursor, done by scanning chunk after chunk forward.
   private prevMatchInRange(state: EditorState, from: number, to: number) {
     for (let pos = to; ; ) {
-      let start = Math.max(
+      const start = Math.max(
         from,
         pos - FindPrev.ChunkSize - this.spec.unquoted.length,
       );
-      let cursor = stringCursor(this.spec, state, start, pos),
-        range: SearchResult | null = null;
+      const cursor = stringCursor(this.spec, state, start, pos);
+        let range: SearchResult | null = null;
       while (!cursor.nextOverlapping().done) range = cursor.value;
       if (range) return range;
       if (start == from) return null;
@@ -324,8 +324,8 @@ class StringQuery extends QueryType<SearchResult> {
   }
 
   matchAll(state: EditorState, limit: number) {
-    let cursor = stringCursor(this.spec, state, 0, state.doc.length),
-      ranges = [];
+    const cursor = stringCursor(this.spec, state, 0, state.doc.length);
+      const ranges = [];
     while (!cursor.next().done) {
       if (ranges.length >= limit) return null;
       ranges.push(cursor.value);
@@ -339,7 +339,7 @@ class StringQuery extends QueryType<SearchResult> {
     to: number,
     add: (from: number, to: number) => void,
   ) {
-    let cursor = stringCursor(
+    const cursor = stringCursor(
       this.spec,
       state,
       Math.max(0, from - this.spec.unquoted.length),
@@ -402,9 +402,9 @@ class RegExpQuery extends QueryType<RegExpResult> {
 
   private prevMatchInRange(state: EditorState, from: number, to: number) {
     for (let size = 1; ; size++) {
-      let start = Math.max(from, to - size * FindPrev.ChunkSize);
-      let cursor = regexpCursor(this.spec, state, start, to),
-        range: RegExpResult | null = null;
+      const start = Math.max(from, to - size * FindPrev.ChunkSize);
+      const cursor = regexpCursor(this.spec, state, start, to);
+        let range: RegExpResult | null = null;
       while (!cursor.next().done) range = cursor.value;
       if (range && (start == from || range.from > start + 10)) return range;
       if (start == from) return null;
@@ -426,15 +426,15 @@ class RegExpQuery extends QueryType<RegExpResult> {
           ? '$'
           : i == '&'
             ? result.match[0]
-            : i != '0' && +i < result.match.length
+            : i != '0' && Number(i) < result.match.length
               ? result.match[i]
               : m,
       );
   }
 
   matchAll(state: EditorState, limit: number) {
-    let cursor = regexpCursor(this.spec, state, 0, state.doc.length),
-      ranges = [];
+    const cursor = regexpCursor(this.spec, state, 0, state.doc.length);
+      const ranges = [];
     while (!cursor.next().done) {
       if (ranges.length >= limit) return null;
       ranges.push(cursor.value);
@@ -448,7 +448,7 @@ class RegExpQuery extends QueryType<RegExpResult> {
     to: number,
     add: (from: number, to: number) => void,
   ) {
-    let cursor = regexpCursor(
+    const cursor = regexpCursor(
       this.spec,
       state,
       Math.max(0, from - RegExp.HighlightMargin),
@@ -472,7 +472,7 @@ const searchState: StateField<SearchState> = StateField.define<SearchState>({
     return new SearchState(defaultQuery(state).create(), null);
   },
   update(value, tr) {
-    for (let effect of tr.effects) {
+    for (const effect of tr.effects) {
       if (effect.is(setSearchQuery))
         value = new SearchState(effect.value.create(), value.panel);
       else if (effect.is(togglePanel))
@@ -488,7 +488,7 @@ const searchState: StateField<SearchState> = StateField.define<SearchState>({
 
 /// Get the current search query from an editor state.
 export function getSearchQuery(state: EditorState) {
-  let curState = state.field(searchState, false);
+  const curState = state.field(searchState, false);
   return curState ? curState.query.spec : defaultQuery(state);
 }
 
@@ -504,8 +504,8 @@ class SearchState {
   ) {}
 }
 
-const matchMark = Decoration.mark({ class: 'cm-searchMatch' }),
-  selectedMatchMark = Decoration.mark({
+const matchMark = Decoration.mark({ class: 'cm-searchMatch' });
+  const selectedMatchMark = Decoration.mark({
     class: 'cm-searchMatch cm-searchMatch-selected',
   });
 
@@ -518,7 +518,7 @@ const searchHighlighter = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      let state = update.state.field(searchState);
+      const state = update.state.field(searchState);
       if (
         state != update.startState.field(searchState) ||
         update.docChanged ||
@@ -530,8 +530,8 @@ const searchHighlighter = ViewPlugin.fromClass(
 
     highlight({ query, panel }: SearchState) {
       if (!panel || !query.spec.valid) return Decoration.none;
-      let { view } = this;
-      let builder = new RangeSetBuilder<Decoration>();
+      const { view } = this;
+      const builder = new RangeSetBuilder<Decoration>();
       for (
         let i = 0, ranges = view.visibleRanges, l = ranges.length;
         i < l;
@@ -544,7 +544,7 @@ const searchHighlighter = ViewPlugin.fromClass(
         )
           to = ranges[++i].to;
         query.highlight(view.state, from, to, (from, to) => {
-          let selected = view.state.selection.ranges.some(
+          const selected = view.state.selection.ranges.some(
             (r) => r.from == from && r.to == to,
           );
           builder.add(from, to, selected ? selectedMatchMark : matchMark);
@@ -562,7 +562,7 @@ function searchCommand(
   f: (view: EditorView, state: SearchState) => boolean,
 ): Command {
   return (view) => {
-    let state = view.state.field(searchState, false);
+    const state = view.state.field(searchState, false);
     return state && state.query.spec.valid
       ? f(view, state)
       : openSearchPanel(view);
@@ -574,11 +574,11 @@ function searchCommand(
 /// Will wrap around to the start of the document when it reaches the
 /// end.
 export const findNext = searchCommand((view, { query }) => {
-  let { to } = view.state.selection.main;
-  let next = query.nextMatch(view.state, to, to);
+  const { to } = view.state.selection.main;
+  const next = query.nextMatch(view.state, to, to);
   if (!next) return false;
-  let selection = EditorSelection.single(next.from, next.to);
-  let config = view.state.facet(searchConfigFacet);
+  const selection = EditorSelection.single(next.from, next.to);
+  const config = view.state.facet(searchConfigFacet);
   view.dispatch({
     selection,
     effects: [
@@ -595,12 +595,12 @@ export const findNext = searchCommand((view, { query }) => {
 /// before the current main selection. Will wrap past the start
 /// of the document to start searching at the end again.
 export const findPrevious = searchCommand((view, { query }) => {
-  let { state } = view,
-    { from } = state.selection.main;
-  let prev = query.prevMatch(state, from, from);
+  const { state } = view;
+    const { from } = state.selection.main;
+  const prev = query.prevMatch(state, from, from);
   if (!prev) return false;
-  let selection = EditorSelection.single(prev.from, prev.to);
-  let config = view.state.facet(searchConfigFacet);
+  const selection = EditorSelection.single(prev.from, prev.to);
+  const config = view.state.facet(searchConfigFacet);
   view.dispatch({
     selection,
     effects: [
@@ -615,7 +615,7 @@ export const findPrevious = searchCommand((view, { query }) => {
 
 /// Select all instances of the search query.
 export const selectMatches = searchCommand((view, { query }) => {
-  let ranges = query.matchAll(view.state, 1000);
+  const ranges = query.matchAll(view.state, 1000);
   if (!ranges || !ranges.length) return false;
   view.dispatch({
     selection: EditorSelection.create(
@@ -628,11 +628,11 @@ export const selectMatches = searchCommand((view, { query }) => {
 
 /// Select all instances of the currently selected text.
 export const selectSelectionMatches: StateCommand = ({ state, dispatch }) => {
-  let sel = state.selection;
+  const sel = state.selection;
   if (sel.ranges.length > 1 || sel.main.empty) return false;
-  let { from, to } = sel.main;
-  let ranges = [],
-    main = 0;
+  const { from, to } = sel.main;
+  const ranges = [];
+    let main = 0;
   for (
     let cur = new SearchCursor(state.doc, state.sliceDoc(from, to));
     !cur.next().done;
@@ -653,15 +653,15 @@ export const selectSelectionMatches: StateCommand = ({ state, dispatch }) => {
 
 /// Replace the current match of the search query.
 export const replaceNext = searchCommand((view, { query }) => {
-  let { state } = view,
-    { from, to } = state.selection.main;
+  const { state } = view;
+    const { from, to } = state.selection.main;
   if (state.readOnly) return false;
   let next = query.nextMatch(state, from, from);
   if (!next) return false;
-  let changes = [],
-    selection: EditorSelection | undefined,
-    replacement: Text | undefined;
-  let effects: StateEffect<unknown>[] = [];
+  const changes = [];
+    let selection: EditorSelection | undefined;
+    let replacement: Text | undefined;
+  const effects: StateEffect<unknown>[] = [];
   if (next.from == from && next.to == to) {
     replacement = state.toText(query.getReplacement(next));
     changes.push({ from: next.from, to: next.to, insert: replacement });
@@ -676,7 +676,7 @@ export const replaceNext = searchCommand((view, { query }) => {
     );
   }
   if (next) {
-    let off =
+    const off =
       changes.length == 0 || changes[0].from >= next.to
         ? 0
         : next.to - next.from - replacement!.length;
@@ -699,12 +699,12 @@ export const replaceNext = searchCommand((view, { query }) => {
 /// replacement.
 export const replaceAll = searchCommand((view, { query }) => {
   if (view.state.readOnly) return false;
-  let changes = query.matchAll(view.state, 1e9)!.map((match) => {
-    let { from, to } = match;
+  const changes = query.matchAll(view.state, 1e9)!.map((match) => {
+    const { from, to } = match;
     return { from, to, insert: query.getReplacement(match) };
   });
   if (!changes.length) return false;
-  let announceText =
+  const announceText =
     view.state.phrase('replaced $ matches', changes.length) + '.';
   view.dispatch({
     changes,
@@ -719,13 +719,13 @@ function createSearchPanel(view: EditorView) {
 }
 
 function defaultQuery(state: EditorState, fallback?: SearchQuery) {
-  let sel = state.selection.main;
-  let selText =
+  const sel = state.selection.main;
+  const selText =
     sel.empty || sel.to > sel.from + 100
       ? ''
       : state.sliceDoc(sel.from, sel.to);
   if (fallback && !selText) return fallback;
-  let config = state.facet(searchConfigFacet);
+  const config = state.facet(searchConfigFacet);
   return new SearchQuery({
     search:
       fallback?.literal ?? config.literal
@@ -739,7 +739,7 @@ function defaultQuery(state: EditorState, fallback?: SearchQuery) {
 }
 
 function getSearchInput(view: EditorView) {
-  let panel = getPanel(view, createSearchPanel);
+  const panel = getPanel(view, createSearchPanel);
   return (
     panel &&
     (panel.dom.querySelector('[main-field]') as HTMLInputElement | null)
@@ -747,17 +747,17 @@ function getSearchInput(view: EditorView) {
 }
 
 function selectSearchInput(view: EditorView) {
-  let input = getSearchInput(view);
+  const input = getSearchInput(view);
   if (input && input == view.root.activeElement) input.select();
 }
 
 /// Make sure the search panel is open and focused.
 export const openSearchPanel: Command = (view) => {
-  let state = view.state.field(searchState, false);
+  const state = view.state.field(searchState, false);
   if (state && state.panel) {
-    let searchInput = getSearchInput(view);
+    const searchInput = getSearchInput(view);
     if (searchInput && searchInput != view.root.activeElement) {
-      let query = defaultQuery(view.state, state.query.spec);
+      const query = defaultQuery(view.state, state.query.spec);
       if (query.valid) view.dispatch({ effects: setSearchQuery.of(query) });
       searchInput.focus();
       searchInput.select();
@@ -777,9 +777,9 @@ export const openSearchPanel: Command = (view) => {
 
 /// Close the search panel.
 export const closeSearchPanel: Command = (view) => {
-  let state = view.state.field(searchState, false);
+  const state = view.state.field(searchState, false);
   if (!state || !state.panel) return false;
-  let panel = getPanel(view, createSearchPanel);
+  const panel = getPanel(view, createSearchPanel);
   if (panel && panel.dom.contains(view.root.activeElement)) view.focus();
   view.dispatch({ effects: togglePanel.of(false) });
   return true;
@@ -824,7 +824,7 @@ class SearchPanel implements Panel {
   query: SearchQuery;
 
   constructor(readonly view: EditorView) {
-    let query = (this.query = view.state.field(searchState).query.spec);
+    const query = (this.query = view.state.field(searchState).query.spec);
     this.commit = this.commit.bind(this);
 
     this.searchField = elt('input', {
@@ -919,7 +919,7 @@ class SearchPanel implements Panel {
   }
 
   commit() {
-    let query = new SearchQuery({
+    const query = new SearchQuery({
       search: this.searchField.value,
       caseSensitive: this.caseField.checked,
       regexp: this.reField.checked,
@@ -945,8 +945,8 @@ class SearchPanel implements Panel {
   }
 
   update(update: ViewUpdate) {
-    for (let tr of update.transactions)
-      for (let effect of tr.effects) {
+    for (const tr of update.transactions)
+      for (const effect of tr.effects) {
         if (effect.is(setSearchQuery) && !effect.value.eq(this.query))
           this.setQuery(effect.value);
       }
@@ -986,10 +986,10 @@ function announceMatch(
   view: EditorView,
   { from, to }: { from: number; to: number },
 ) {
-  let line = view.state.doc.lineAt(from),
-    lineEnd = view.state.doc.lineAt(to).to;
-  let start = Math.max(line.from, from - AnnounceMargin),
-    end = Math.min(lineEnd, to + AnnounceMargin);
+  const line = view.state.doc.lineAt(from);
+    const lineEnd = view.state.doc.lineAt(to).to;
+  const start = Math.max(line.from, from - AnnounceMargin);
+    const end = Math.min(lineEnd, to + AnnounceMargin);
   let text = view.state.sliceDoc(start, end);
   if (start != line.from) {
     for (let i = 0; i < AnnounceMargin; i++)

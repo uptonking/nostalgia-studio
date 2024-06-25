@@ -1,13 +1,13 @@
 import {
-  Text,
-  TextIterator,
+  type Text,
+  type TextIterator,
   codePointAt,
   codePointSize,
   fromCodePoint,
 } from '@codemirror/state';
 
 const basicNormalize: (string: string) => string =
-  typeof String.prototype.normalize == 'function'
+  typeof String.prototype.normalize === 'function'
     ? (x) => x.normalize('NFKD')
     : (x) => x;
 
@@ -85,18 +85,18 @@ export class SearchCursor implements Iterator<{ from: number; to: number }> {
   /// such matches.
   nextOverlapping() {
     for (;;) {
-      let next = this.peek();
+      const next = this.peek();
       if (next < 0) {
         this.done = true;
         return this;
       }
-      let str = fromCodePoint(next),
-        start = this.bufferStart + this.bufferPos;
+      const str = fromCodePoint(next);
+        const start = this.bufferStart + this.bufferPos;
       this.bufferPos += codePointSize(next);
-      let norm = this.normalize(str);
+      const norm = this.normalize(str);
       for (let i = 0, pos = start; ; i++) {
-        let code = norm.charCodeAt(i);
-        let match = this.match(code, pos, this.bufferPos + this.bufferStart);
+        const code = norm.charCodeAt(i);
+        const match = this.match(code, pos, this.bufferPos + this.bufferStart);
         if (i == norm.length - 1) {
           if (match) {
             this.value = match;
@@ -112,8 +112,8 @@ export class SearchCursor implements Iterator<{ from: number; to: number }> {
   private match(code: number, pos: number, end: number) {
     let match: null | { from: number; to: number } = null;
     for (let i = 0; i < this.matches.length; i += 2) {
-      let index = this.matches[i],
-        keep = false;
+      const index = this.matches[i];
+        let keep = false;
       if (this.query.charCodeAt(index) == code) {
         if (index == this.query.length - 1) {
           match = { from: this.matches[i + 1], to: end };
@@ -143,7 +143,7 @@ export class SearchCursor implements Iterator<{ from: number; to: number }> {
   [Symbol.iterator]!: () => Iterator<{ from: number; to: number }>;
 }
 
-if (typeof Symbol != 'undefined')
+if (typeof Symbol !== 'undefined')
   SearchCursor.prototype[Symbol.iterator] = function (this: SearchCursor) {
     return this;
   };

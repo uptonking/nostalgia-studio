@@ -1,12 +1,12 @@
 function toWordList(words) {
-  var ret = [];
+  const ret = [];
   words.split(' ').forEach(function (e) {
     ret.push({ name: e });
   });
   return ret;
 }
 
-var coreWordList = toWordList(
+const coreWordList = toWordList(
   'INVERT AND OR XOR\
  2* 2/ LSHIFT RSHIFT\
  0= = 0< < > U< MIN MAX\
@@ -47,12 +47,12 @@ var coreWordList = toWordList(
  -TRAILING /STRING SEARCH COMPARE CMOVE CMOVE> BLANK SLITERAL',
 );
 
-var immediateWordList = toWordList(
+const immediateWordList = toWordList(
   'IF ELSE THEN BEGIN WHILE REPEAT UNTIL RECURSE [IF] [ELSE] [THEN] ?DO DO LOOP +LOOP UNLOOP LEAVE EXIT AGAIN CASE OF ENDOF ENDCASE',
 );
 
 function searchWordList(wordList, word) {
-  var i;
+  let i;
   for (i = wordList.length - 1; i >= 0; i--) {
     if (wordList[i].name === word.toUpperCase()) {
       return wordList[i];
@@ -72,7 +72,7 @@ export const forth = {
     };
   },
   token: function (stream, stt) {
-    var mat;
+    let mat;
     if (stream.eatSpace()) {
       return null;
     }

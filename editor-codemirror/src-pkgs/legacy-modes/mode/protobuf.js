@@ -2,7 +2,7 @@ function wordRegexp(words) {
   return new RegExp('^((' + words.join(')|(') + '))\\b', 'i');
 }
 
-var keywordArray = [
+const keywordArray = [
   'package',
   'message',
   'import',
@@ -35,9 +35,9 @@ var keywordArray = [
   'rpc',
   'returns',
 ];
-var keywords = wordRegexp(keywordArray);
+const keywords = wordRegexp(keywordArray);
 
-var identifiers = new RegExp('^[_A-Za-z\xa1-\uffff][_A-Za-z0-9\xa1-\uffff]*');
+const identifiers = new RegExp('^[_A-Za-z\xa1-\uffff][_A-Za-z0-9\xa1-\uffff]*');
 
 function tokenBase(stream) {
   // whitespaces

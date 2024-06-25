@@ -1,26 +1,26 @@
 export function sql(parserConfig) {
-  var client = parserConfig.client || {},
-    atoms = parserConfig.atoms || { false: true, true: true, null: true },
-    builtin = parserConfig.builtin || set(defaultBuiltin),
-    keywords = parserConfig.keywords || set(sqlKeywords),
-    operatorChars = parserConfig.operatorChars || /^[*+\-%<>!=&|~^\/]/,
-    support = parserConfig.support || {},
-    hooks = parserConfig.hooks || {},
-    dateSQL = parserConfig.dateSQL || {
+  const client = parserConfig.client || {};
+    const atoms = parserConfig.atoms || { false: true, true: true, null: true };
+    const builtin = parserConfig.builtin || set(defaultBuiltin);
+    const keywords = parserConfig.keywords || set(sqlKeywords);
+    const operatorChars = parserConfig.operatorChars || /^[*+\-%<>!=&|~^\/]/;
+    const support = parserConfig.support || {};
+    const hooks = parserConfig.hooks || {};
+    const dateSQL = parserConfig.dateSQL || {
       date: true,
       time: true,
       timestamp: true,
-    },
-    backslashStringEscapes = parserConfig.backslashStringEscapes !== false,
-    brackets = parserConfig.brackets || /^[\{}\(\)\[\]]/,
-    punctuation = parserConfig.punctuation || /^[;.,:]/;
+    };
+    const backslashStringEscapes = parserConfig.backslashStringEscapes !== false;
+    const brackets = parserConfig.brackets || /^[\{}\(\)\[\]]/;
+    const punctuation = parserConfig.punctuation || /^[;.,:]/;
 
   function tokenBase(stream, state) {
-    var ch = stream.next();
+    const ch = stream.next();
 
     // call hooks from the mime type
     if (hooks[ch]) {
-      var result = hooks[ch](stream, state);
+      const result = hooks[ch](stream, state);
       if (result !== false) return result;
     }
 
@@ -129,7 +129,7 @@ export function sql(parserConfig) {
       return 'number';
     } else {
       stream.eatWhile(/^[_\w\d]/);
-      var word = stream.current().toLowerCase();
+      const word = stream.current().toLowerCase();
       // dates (standard SQL syntax)
       // ref: http://dev.mysql.com/doc/refman/5.5/en/date-and-time-literals.html
       if (
@@ -148,8 +148,8 @@ export function sql(parserConfig) {
   // 'string', with char specified in quote escaped by '\'
   function tokenLiteral(quote, backslashEscapes) {
     return function (stream, state) {
-      var escaped = false,
-        ch;
+      let escaped = false;
+        let ch;
       while ((ch = stream.next()) != null) {
         if (ch == quote && !escaped) {
           state.tokenize = tokenBase;
@@ -165,7 +165,7 @@ export function sql(parserConfig) {
   }
   function tokenComment(depth) {
     return function (stream, state) {
-      var m = stream.match(/^.*?(\/\*|\*\/)/);
+      const m = stream.match(/^.*?(\/\*|\*\/)/);
       if (!m) stream.skipToEnd();
       else if (m[1] == '/*') state.tokenize = tokenComment(depth + 1);
       else if (depth > 1) state.tokenize = tokenComment(depth - 1);
@@ -202,13 +202,13 @@ export function sql(parserConfig) {
       }
       if (state.tokenize == tokenBase && stream.eatSpace()) return null;
 
-      var style = state.tokenize(stream, state);
+      const style = state.tokenize(stream, state);
       if (style == 'comment') return style;
 
       if (state.context && state.context.align == null)
         state.context.align = true;
 
-      var tok = stream.current();
+      const tok = stream.current();
       if (tok == '(') pushContext(stream, state, ')');
       else if (tok == '[') pushContext(stream, state, ']');
       else if (state.context && state.context.type == tok) popContext(state);
@@ -216,9 +216,9 @@ export function sql(parserConfig) {
     },
 
     indent: function (state, textAfter, iCx) {
-      var cx = state.context;
+      const cx = state.context;
       if (!cx) return null;
-      var closing = textAfter.charAt(0) == cx.type;
+      const closing = textAfter.charAt(0) == cx.type;
       if (cx.align) return cx.col + (closing ? 0 : 1);
       else return cx.indent + (closing ? 0 : iCx.unit);
     },
@@ -241,7 +241,7 @@ export function sql(parserConfig) {
 function hookIdentifier(stream) {
   // MySQL/MariaDB identifiers
   // ref: http://dev.mysql.com/doc/refman/5.6/en/identifier-qualifiers.html
-  var ch;
+  let ch;
   while ((ch = stream.next()) != null) {
     if (ch == '`' && !stream.eat('`')) return 'string.special';
   }
@@ -254,7 +254,7 @@ function hookIdentifierDoublequote(stream) {
   // Standard SQL /SQLite identifiers
   // ref: http://web.archive.org/web/20160813185132/http://savage.net.au/SQL/sql-99.bnf.html#delimited%20identifier
   // ref: http://sqlite.org/lang_keywords.html
-  var ch;
+  let ch;
   while ((ch = stream.next()) != null) {
     if (ch == '"' && !stream.eat('"')) return 'string.special';
   }
@@ -307,9 +307,9 @@ var sqlKeywords =
 
 // turn a space-separated list into an array
 function set(str) {
-  var obj = {},
-    words = str.split(' ');
-  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
+  const obj = {};
+    const words = str.split(' ');
+  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
 

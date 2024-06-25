@@ -1,4 +1,4 @@
-import { StreamParser } from '@codemirror/language';
+import type { StreamParser } from '@codemirror/language';
 export interface Rule {
   regex?: string | RegExp | undefined;
   token?:

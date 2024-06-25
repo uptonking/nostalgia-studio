@@ -1,7 +1,7 @@
-var headerSeparator = /^-+$/;
-var headerLine =
+const headerSeparator = /^-+$/;
+const headerLine =
   /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)  ?\d{1,2} \d{2}:\d{2}(:\d{2})? [A-Z]{3,4} \d{4} - /;
-var simpleEmail = /^[\w+.-]+@[\w.-]+/;
+const simpleEmail = /^[\w+.-]+@[\w.-]+/;
 
 export const rpmChanges = {
   name: 'rpmchanges',
@@ -24,15 +24,15 @@ export const rpmChanges = {
 
 // Quick and dirty spec file highlighting
 
-var arch =
+const arch =
   /^(i386|i586|i686|x86_64|ppc64le|ppc64|ppc|ia64|s390x|s390|sparc64|sparcv9|sparc|noarch|alphaev6|alpha|hppa|mipsel)/;
 
-var preamble = /^[a-zA-Z0-9()]+:/;
-var section =
+const preamble = /^[a-zA-Z0-9()]+:/;
+const section =
   /^%(debug_package|package|description|prep|build|install|files|clean|changelog|preinstall|preun|postinstall|postun|pretrans|posttrans|pre|post|triggerin|triggerun|verifyscript|check|triggerpostun|triggerprein|trigger)/;
-var control_flow_complex = /^%(ifnarch|ifarch|if)/; // rpm control flow macros
-var control_flow_simple = /^%(else|endif)/; // rpm control flow macros
-var operators = /^(\!|\?|\<\=|\<|\>\=|\>|\=\=|\&\&|\|\|)/; // operators in control flow macros
+const control_flow_complex = /^%(ifnarch|ifarch|if)/; // rpm control flow macros
+const control_flow_simple = /^%(else|endif)/; // rpm control flow macros
+const operators = /^(\!|\?|\<\=|\<|\>\=|\>|\=\=|\&\&|\|\|)/; // operators in control flow macros
 
 export const rpmSpec = {
   name: 'rpmspec',
@@ -44,7 +44,7 @@ export const rpmSpec = {
     };
   },
   token: function (stream, state) {
-    var ch = stream.peek();
+    const ch = stream.peek();
     if (ch == '#') {
       stream.skipToEnd();
       return 'comment';

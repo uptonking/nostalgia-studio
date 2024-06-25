@@ -1,7 +1,7 @@
 import {
   LanguageSupport,
   LanguageDescription,
-  StreamParser,
+  type StreamParser,
   StreamLanguage,
 } from '@codemirror/language';
 

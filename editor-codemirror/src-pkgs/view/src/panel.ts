@@ -1,6 +1,6 @@
-import { Facet, Extension } from '@codemirror/state';
+import { Facet, type Extension } from '@codemirror/state';
 import { EditorView } from './editorview';
-import { ViewPlugin, ViewUpdate } from './extension';
+import { ViewPlugin, type ViewUpdate } from './extension';
 
 type PanelConfig = {
   /// By default, panels will be placed inside the editor's DOM
@@ -13,8 +13,8 @@ type PanelConfig = {
 
 const panelConfig = Facet.define<PanelConfig, PanelConfig>({
   combine(configs: readonly PanelConfig[]) {
-    let topContainer, bottomContainer;
-    for (let c of configs) {
+    let topContainer; let bottomContainer;
+    for (const c of configs) {
       topContainer = topContainer || c.topContainer;
       bottomContainer = bottomContainer || c.bottomContainer;
     }
@@ -48,8 +48,8 @@ export interface Panel {
 /// This can be useful when you need access to your panels' DOM
 /// structure.
 export function getPanel(view: EditorView, panel: PanelConstructor) {
-  let plugin = view.plugin(panelPlugin);
-  let index = plugin ? plugin.specs.indexOf(panel) : -1;
+  const plugin = view.plugin(panelPlugin);
+  const index = plugin ? plugin.specs.indexOf(panel) : -1;
   return index > -1 ? plugin!.panels[index] : null;
 }
 
@@ -65,19 +65,19 @@ const panelPlugin = ViewPlugin.fromClass(
       this.input = view.state.facet(showPanel);
       this.specs = this.input.filter((s) => s) as PanelConstructor[];
       this.panels = this.specs.map((spec) => spec(view));
-      let conf = view.state.facet(panelConfig);
+      const conf = view.state.facet(panelConfig);
       this.top = new PanelGroup(view, true, conf.topContainer);
       this.bottom = new PanelGroup(view, false, conf.bottomContainer);
       this.top.sync(this.panels.filter((p) => p.top));
       this.bottom.sync(this.panels.filter((p) => !p.top));
-      for (let p of this.panels) {
+      for (const p of this.panels) {
         p.dom.classList.add('cm-panel');
         if (p.mount) p.mount();
       }
     }
 
     update(update: ViewUpdate) {
-      let conf = update.state.facet(panelConfig);
+      const conf = update.state.facet(panelConfig);
       if (this.top.container != conf.topContainer) {
         this.top.sync([]);
         this.top = new PanelGroup(update.view, true, conf.topContainer);
@@ -88,16 +88,16 @@ const panelPlugin = ViewPlugin.fromClass(
       }
       this.top.syncClasses();
       this.bottom.syncClasses();
-      let input = update.state.facet(showPanel);
+      const input = update.state.facet(showPanel);
       if (input != this.input) {
-        let specs = input.filter((x) => x) as PanelConstructor[];
-        let panels = [],
-          top: Panel[] = [],
-          bottom: Panel[] = [],
-          mount = [];
-        for (let spec of specs) {
-          let known = this.specs.indexOf(spec),
-            panel;
+        const specs = input.filter((x) => x) as PanelConstructor[];
+        const panels = [];
+          const top: Panel[] = [];
+          const bottom: Panel[] = [];
+          const mount = [];
+        for (const spec of specs) {
+          const known = this.specs.indexOf(spec);
+            let panel;
           if (known < 0) {
             panel = spec(update.view);
             mount.push(panel);
@@ -112,12 +112,12 @@ const panelPlugin = ViewPlugin.fromClass(
         this.panels = panels;
         this.top.sync(top);
         this.bottom.sync(bottom);
-        for (let p of mount) {
+        for (const p of mount) {
           p.dom.classList.add('cm-panel');
           if (p.mount) p.mount!();
         }
       } else {
-        for (let p of this.panels) if (p.update) p.update(update);
+        for (const p of this.panels) if (p.update) p.update(update);
       }
     }
 
@@ -129,7 +129,7 @@ const panelPlugin = ViewPlugin.fromClass(
   {
     provide: (plugin) =>
       EditorView.scrollMargins.of((view) => {
-        let value = view.plugin(plugin);
+        const value = view.plugin(plugin);
         return (
           value && {
             top: value.top.scrollMargin(),
@@ -154,7 +154,7 @@ class PanelGroup {
   }
 
   sync(panels: Panel[]) {
-    for (let p of this.panels)
+    for (const p of this.panels)
       if (p.destroy && panels.indexOf(p) < 0) p.destroy();
     this.panels = panels;
     this.syncDOM();
@@ -175,12 +175,12 @@ class PanelGroup {
         ? 'cm-panels cm-panels-top'
         : 'cm-panels cm-panels-bottom';
       this.dom.style[this.top ? 'top' : 'bottom'] = '0';
-      let parent = this.container || this.view.dom;
+      const parent = this.container || this.view.dom;
       parent.insertBefore(this.dom, this.top ? parent.firstChild : null);
     }
 
     let curDOM = this.dom.firstChild;
-    for (let panel of this.panels) {
+    for (const panel of this.panels) {
       if (panel.dom.parentNode == this.dom) {
         while (curDOM != panel.dom) curDOM = rm(curDOM!);
         curDOM = curDOM!.nextSibling;
@@ -208,15 +208,15 @@ class PanelGroup {
 
   syncClasses() {
     if (!this.container || this.classes == this.view.themeClasses) return;
-    for (let cls of this.classes.split(' '))
+    for (const cls of this.classes.split(' '))
       if (cls) this.container.classList.remove(cls);
-    for (let cls of (this.classes = this.view.themeClasses).split(' '))
+    for (const cls of (this.classes = this.view.themeClasses).split(' '))
       if (cls) this.container.classList.add(cls);
   }
 }
 
 function rm(node: ChildNode) {
-  let next = node.nextSibling;
+  const next = node.nextSibling;
   node.remove();
   return next;
 }

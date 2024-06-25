@@ -1,4 +1,4 @@
-import { EditorView } from './editorview';
+import type { EditorView } from './editorview';
 import { inputHandler, editable } from './extension';
 import { contains, dispatchKey } from './dom';
 import browser from './browser';
@@ -7,8 +7,8 @@ import { findCompositionNode } from './docview';
 import {
   EditorSelection,
   Text,
-  Transaction,
-  TransactionSpec,
+  type Transaction,
+  type TransactionSpec,
 } from '@codemirror/state';
 
 export class DOMChange {
@@ -29,7 +29,7 @@ export class DOMChange {
     readonly typeOver: boolean,
   ) {
     this.domChanged = start > -1;
-    let { impreciseHead: iHead, impreciseAnchor: iAnchor } = view.docView;
+    const { impreciseHead: iHead, impreciseAnchor: iAnchor } = view.docView;
     if (view.state.readOnly && start > -1) {
       // Ignore changes when the editor is read-only
       this.newSel = null;
@@ -37,13 +37,13 @@ export class DOMChange {
       start > -1 &&
       (this.bounds = view.docView.domBoundsAround(start, end, 0))
     ) {
-      let selPoints = iHead || iAnchor ? [] : selectionPoints(view);
-      let reader = new DOMReader(selPoints, view.state);
+      const selPoints = iHead || iAnchor ? [] : selectionPoints(view);
+      const reader = new DOMReader(selPoints, view.state);
       reader.readRange(this.bounds.startDOM, this.bounds.endDOM);
       this.text = reader.text;
       this.newSel = selectionFromPoints(selPoints, this.bounds.from);
     } else {
-      let domSel = view.observer.selectionRange;
+      const domSel = view.observer.selectionRange;
       let head =
         (iHead &&
           iHead.node == domSel.focusNode &&
@@ -62,17 +62,17 @@ export class DOMChange {
       // select-all.
       // Chrome will put the selection *inside* them, confusing
       // posFromDOM
-      let vp = view.viewport;
+      const vp = view.viewport;
       if (
         (browser.ios || browser.chrome) &&
         view.state.selection.main.empty &&
         head != anchor &&
         (vp.from > 0 || vp.to < view.state.doc.length)
       ) {
-        let from = Math.min(head, anchor),
-          to = Math.max(head, anchor);
-        let offFrom = vp.from - from,
-          offTo = vp.to - to;
+        const from = Math.min(head, anchor);
+          const to = Math.max(head, anchor);
+        const offFrom = vp.from - from;
+          const offTo = vp.to - to;
         if (
           (offFrom == 0 || offFrom == 1 || from == 0) &&
           (offTo == 0 || offTo == -1 || to == view.state.doc.length)
@@ -91,16 +91,16 @@ export function applyDOMChange(
   domChange: DOMChange,
 ): boolean {
   let change: undefined | { from: number; to: number; insert: Text };
-  let { newSel } = domChange,
-    sel = view.state.selection.main;
-  let lastKey =
+  let { newSel } = domChange;
+    const sel = view.state.selection.main;
+  const lastKey =
     view.inputState.lastKeyTime > Date.now() - 100
       ? view.inputState.lastKeyCode
       : -1;
   if (domChange.bounds) {
-    let { from, to } = domChange.bounds;
-    let preferredPos = sel.from,
-      preferredSide = null;
+    const { from, to } = domChange.bounds;
+    let preferredPos = sel.from;
+      let preferredSide = null;
     // Prefer anchoring to end when Backspace is pressed (or, on
     // Android, when something was deleted)
     if (
@@ -110,7 +110,7 @@ export function applyDOMChange(
       preferredPos = sel.to;
       preferredSide = 'end';
     }
-    let diff = findDiff(
+    const diff = findDiff(
       view.state.doc.sliceString(from, to, LineBreakPlaceholder),
       domChange.text,
       preferredPos - from,
@@ -214,8 +214,8 @@ export function applyDOMChange(
   if (change) {
     return applyDOMChangeInner(view, change, newSel, lastKey);
   } else if (newSel && !newSel.main.eq(sel)) {
-    let scrollIntoView = false,
-      userEvent = 'select';
+    let scrollIntoView = false;
+      let userEvent = 'select';
     if (view.inputState.lastSelectionTime > Date.now() - 50) {
       if (view.inputState.lastSelectionOrigin == 'select')
         scrollIntoView = true;
@@ -235,7 +235,7 @@ export function applyDOMChangeInner(
   lastKey: number = -1,
 ): boolean {
   if (browser.ios && view.inputState.flushIOSKey(change)) return true;
-  let sel = view.state.selection.main;
+  const sel = view.state.selection.main;
   // Android browsers don't fire reasonable key events for enter,
   // backspace, or delete. So this detects changes that look like
   // they're caused by those keys, and reinterprets them as key
@@ -267,11 +267,11 @@ export function applyDOMChangeInner(
   )
     return true;
 
-  let text = change.insert.toString();
+  const text = change.insert.toString();
   if (view.inputState.composing >= 0) view.inputState.composing++;
 
   let defaultTr: Transaction | null;
-  let defaultInsert = () =>
+  const defaultInsert = () =>
     defaultTr || (defaultTr = applyDefaultInsert(view, change!, newSel));
   if (
     !view.state
@@ -287,9 +287,9 @@ function applyDefaultInsert(
   change: { from: number; to: number; insert: Text },
   newSel: EditorSelection | null,
 ): Transaction {
-  let tr: TransactionSpec,
-    startState = view.state,
-    sel = startState.selection.main;
+  let tr: TransactionSpec;
+    const startState = view.state;
+    const sel = startState.selection.main;
   if (
     change.from >= sel.from &&
     change.to <= sel.to &&
@@ -299,9 +299,9 @@ function applyDefaultInsert(
         newSel.main.from == change.from + change.insert.length)) &&
     view.inputState.composing < 0
   ) {
-    let before =
+    const before =
       sel.from < change.from ? startState.sliceDoc(sel.from, change.from) : '';
-    let after =
+    const after =
       sel.to > change.to ? startState.sliceDoc(change.to, sel.to) : '';
     tr = startState.replaceSelection(
       view.state.toText(
@@ -311,8 +311,8 @@ function applyDefaultInsert(
       ),
     );
   } else {
-    let changes = startState.changes(change);
-    let mainSel =
+    const changes = startState.changes(change);
+    const mainSel =
       newSel && newSel.main.to <= changes.newLength ? newSel.main : undefined;
     // Try to apply a composition change to all cursors
     if (
@@ -321,11 +321,11 @@ function applyDefaultInsert(
       change.to <= sel.to &&
       change.to >= sel.to - 10
     ) {
-      let replaced = view.state.sliceDoc(change.from, change.to);
-      let compositionRange: { from: number; to: number },
-        composition = newSel && findCompositionNode(view, newSel.main.head);
+      const replaced = view.state.sliceDoc(change.from, change.to);
+      let compositionRange: { from: number; to: number };
+        const composition = newSel && findCompositionNode(view, newSel.main.head);
       if (composition) {
-        let dLen = change.insert.length - (change.to - change.from);
+        const dLen = change.insert.length - (change.to - change.from);
         compositionRange = {
           from: composition.from,
           to: composition.to - dLen,
@@ -333,13 +333,13 @@ function applyDefaultInsert(
       } else {
         compositionRange = view.state.doc.lineAt(sel.head);
       }
-      let offset = sel.to - change.to,
-        size = sel.to - sel.from;
+      const offset = sel.to - change.to;
+        const size = sel.to - sel.from;
       tr = startState.changeByRange((range) => {
         if (range.from == sel.from && range.to == sel.to)
           return { changes, range: mainSel || range.map(changes) };
-        let to = range.to - offset,
-          from = to - replaced.length;
+        const to = range.to - offset;
+          const from = to - replaced.length;
         if (
           range.to - range.from != size ||
           view.state.sliceDoc(from, to) != replaced ||
@@ -351,12 +351,12 @@ function applyDefaultInsert(
             range.from <= compositionRange.to)
         )
           return { range };
-        let rangeChanges = startState.changes({
+        const rangeChanges = startState.changes({
             from,
             to,
             insert: change!.insert,
-          }),
-          selOff = range.to - sel.to;
+          });
+          const selOff = range.to - sel.to;
         return {
           changes: rangeChanges,
           range: !mainSel
@@ -396,29 +396,29 @@ function findDiff(
   preferredPos: number,
   preferredSide: string | null,
 ): { from: number; toA: number; toB: number } | null {
-  let minLen = Math.min(a.length, b.length);
+  const minLen = Math.min(a.length, b.length);
   let from = 0;
   while (from < minLen && a.charCodeAt(from) == b.charCodeAt(from)) from++;
   if (from == minLen && a.length == b.length) return null;
-  let toA = a.length,
-    toB = b.length;
+  let toA = a.length;
+    let toB = b.length;
   while (toA > 0 && toB > 0 && a.charCodeAt(toA - 1) == b.charCodeAt(toB - 1)) {
     toA--;
     toB--;
   }
 
   if (preferredSide == 'end') {
-    let adjust = Math.max(0, from - Math.min(toA, toB));
+    const adjust = Math.max(0, from - Math.min(toA, toB));
     preferredPos -= toA + adjust - from;
   }
   if (toA < from && a.length < b.length) {
-    let move =
+    const move =
       preferredPos <= from && preferredPos >= toA ? from - preferredPos : 0;
     from -= move;
     toB = from + (toB - toA);
     toA = from;
   } else if (toB < from) {
-    let move =
+    const move =
       preferredPos <= from && preferredPos >= toB ? from - preferredPos : 0;
     from -= move;
     toA = from + (toA - toB);
@@ -428,9 +428,9 @@ function findDiff(
 }
 
 function selectionPoints(view: EditorView) {
-  let result: DOMPoint[] = [];
+  const result: DOMPoint[] = [];
   if (view.root.activeElement != view.contentDOM) return result;
-  let { anchorNode, anchorOffset, focusNode, focusOffset } =
+  const { anchorNode, anchorOffset, focusNode, focusOffset } =
     view.observer.selectionRange;
   if (anchorNode) {
     result.push(new DOMPoint(anchorNode, anchorOffset));
@@ -445,8 +445,8 @@ function selectionFromPoints(
   base: number,
 ): EditorSelection | null {
   if (points.length == 0) return null;
-  let anchor = points[0].pos,
-    head = points.length == 2 ? points[1].pos : anchor;
+  const anchor = points[0].pos;
+    const head = points.length == 2 ? points[1].pos : anchor;
   return anchor > -1 && head > -1
     ? EditorSelection.single(anchor + base, head + base)
     : null;

@@ -1,5 +1,5 @@
 import {
-  Completion,
+  type Completion,
   snippetCompletion as snip,
 } from '@codemirror/autocomplete';
 

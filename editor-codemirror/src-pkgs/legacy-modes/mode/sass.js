@@ -8,10 +8,10 @@ function tokenRegexp(words) {
   return new RegExp('^' + words.join('|'));
 }
 
-let keywords = ['true', 'false', 'null', 'auto'];
-let keywordsRegexp = new RegExp('^' + keywords.join('|'));
+const keywords = ['true', 'false', 'null', 'auto'];
+const keywordsRegexp = new RegExp('^' + keywords.join('|'));
 
-let operators = [
+const operators = [
   '\\(',
   '\\)',
   '=',
@@ -34,9 +34,9 @@ let operators = [
   '\\}',
   ':',
 ];
-let opRegexp = tokenRegexp(operators);
+const opRegexp = tokenRegexp(operators);
 
-let pseudoElementsRegexp = /^::?[a-zA-Z_][\w\-]*/;
+const pseudoElementsRegexp = /^::?[a-zA-Z_][\w\-]*/;
 
 let word;
 
@@ -45,7 +45,7 @@ function isEndLine(stream) {
 }
 
 function urlTokens(stream, state) {
-  let ch = stream.peek();
+  const ch = stream.peek();
 
   if (ch === ')') {
     stream.next();
@@ -89,11 +89,11 @@ function buildStringTokenizer(quote, greedy) {
   }
 
   function stringTokenizer(stream, state) {
-    let nextChar = stream.next();
-    let peekChar = stream.peek();
-    let previousChar = stream.string.charAt(stream.pos - 2);
+    const nextChar = stream.next();
+    const peekChar = stream.peek();
+    const previousChar = stream.string.charAt(stream.pos - 2);
 
-    let endingString =
+    const endingString =
       (nextChar !== '\\' && peekChar === quote) ||
       (nextChar === quote && previousChar !== '\\');
 
@@ -133,8 +133,8 @@ function buildInterpolationTokenizer(currentTokenizer) {
 function indent(state, stream) {
   if (state.indentCount == 0) {
     state.indentCount++;
-    let lastScopeOffset = state.scopes[0].offset;
-    let currentOffset = lastScopeOffset + stream.indentUnit;
+    const lastScopeOffset = state.scopes[0].offset;
+    const currentOffset = lastScopeOffset + stream.indentUnit;
     state.scopes.unshift({ offset: currentOffset });
   }
 }
@@ -146,7 +146,7 @@ function dedent(state) {
 }
 
 function tokenBase(stream, state) {
-  let ch = stream.peek();
+  const ch = stream.peek();
 
   // Comment
   if (stream.match('/*')) {
@@ -263,7 +263,7 @@ function tokenBase(stream, state) {
     if (stream.eatWhile(/[\w-]/)) {
       if (stream.match(/ *: *[\w-\+\$#!\("']/, false)) {
         word = stream.current().toLowerCase();
-        let prop = state.prevProp + '-' + word;
+        const prop = state.prevProp + '-' + word;
         if (propertyKeywords.has(prop)) {
           return 'property';
         } else if (propertyKeywords.has(word)) {
@@ -394,23 +394,23 @@ function tokenBase(stream, state) {
 
 function tokenLexer(stream, state) {
   if (stream.sol()) state.indentCount = 0;
-  let style = state.tokenizer(stream, state);
-  let current = stream.current();
+  const style = state.tokenizer(stream, state);
+  const current = stream.current();
 
   if (current === '@return' || current === '}') {
     dedent(state);
   }
 
   if (style !== null) {
-    let startOfToken = stream.pos - current.length;
+    const startOfToken = stream.pos - current.length;
 
-    let withCurrentIndent =
+    const withCurrentIndent =
       startOfToken + stream.indentUnit * state.indentCount;
 
-    let newScopes = [];
+    const newScopes = [];
 
     for (let i = 0; i < state.scopes.length; i++) {
-      let scope = state.scopes[i];
+      const scope = state.scopes[i];
 
       if (scope.offset <= withCurrentIndent) newScopes.push(scope);
     }
@@ -435,7 +435,7 @@ export const sass = {
     };
   },
   token: function (stream, state) {
-    let style = tokenLexer(stream, state);
+    const style = tokenLexer(stream, state);
     state.lastToken = { style: style, content: stream.current() };
     return style;
   },

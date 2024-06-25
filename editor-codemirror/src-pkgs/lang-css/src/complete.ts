@@ -1,22 +1,22 @@
-import { CompletionSource, Completion } from '@codemirror/autocomplete';
+import type { CompletionSource, Completion } from '@codemirror/autocomplete';
 import { syntaxTree } from '@codemirror/language';
 import {
-  SyntaxNode,
-  SyntaxNodeRef,
+  type SyntaxNode,
+  type SyntaxNodeRef,
   NodeWeakMap,
   IterMode,
 } from '@lezer/common';
-import { Text } from '@codemirror/state';
+import type { Text } from '@codemirror/state';
 
 let _properties: readonly Completion[] | null = null;
 function properties() {
-  if (!_properties && typeof document == 'object' && document.body) {
-    let { style } = document.body,
-      names = [],
-      seen = new Set();
+  if (!_properties && typeof document === 'object' && document.body) {
+    const { style } = document.body;
+      const names = [];
+      const seen = new Set();
     for (let prop in style)
       if (prop != 'cssText' && prop != 'cssFloat') {
-        if (typeof style[prop] == 'string') {
+        if (typeof style[prop] === 'string') {
           if (/[A-Z]/.test(prop))
             prop = prop.replace(/[A-Z]/g, (ch) => '-' + ch.toLowerCase());
           if (!seen.has(prop)) {
@@ -748,13 +748,13 @@ const tags = [
   'ul',
 ].map((name) => ({ type: 'type', label: name }));
 
-const identifier = /^(\w[\w-]*|-\w[\w-]*|)$/,
-  variable = /^-(-[\w-]*)?$/;
+const identifier = /^(\w[\w-]*|-\w[\w-]*|)$/;
+  const variable = /^-(-[\w-]*)?$/;
 
 function isVarArg(node: SyntaxNode, doc: Text) {
   if (node.name == '(' || node.type.isError) node = node.parent || node;
   if (node.name != 'ArgList') return false;
-  let callee = node.parent?.firstChild;
+  const callee = node.parent?.firstChild;
   if (callee?.name != 'Callee') return false;
   return doc.sliceString(callee.from, callee.to) == 'var';
 }
@@ -775,14 +775,14 @@ function variableNames(
   isVariable: (node: SyntaxNodeRef) => boolean,
 ): readonly Completion[] {
   if (node.to - node.from > 4096) {
-    let known = VariablesByNode.get(node);
+    const known = VariablesByNode.get(node);
     if (known) return known;
-    let result = [],
-      seen = new Set(),
-      cursor = node.cursor(IterMode.IncludeAnonymous);
+    const result = [];
+      const seen = new Set();
+      const cursor = node.cursor(IterMode.IncludeAnonymous);
     if (cursor.firstChild())
       do {
-        for (let option of variableNames(doc, cursor.node, isVariable))
+        for (const option of variableNames(doc, cursor.node, isVariable))
           if (!seen.has(option.label)) {
             seen.add(option.label);
             result.push(option);
@@ -791,15 +791,15 @@ function variableNames(
     VariablesByNode.set(node, result);
     return result;
   } else {
-    let result: Completion[] = [],
-      seen = new Set();
+    const result: Completion[] = [];
+      const seen = new Set();
     node.cursor().iterate((node) => {
       if (
         isVariable(node) &&
         node.matchContext(declSelector) &&
         node.node.nextSibling?.name == ':'
       ) {
-        let name = doc.sliceString(node.from, node.to);
+        const name = doc.sliceString(node.from, node.to);
         if (!seen.has(name)) {
           seen.add(name);
           result.push({ label: name, type: 'variable' });
@@ -817,9 +817,9 @@ function variableNames(
 export const defineCSSCompletionSource =
   (isVariable: (node: SyntaxNodeRef) => boolean): CompletionSource =>
   (context) => {
-    let { state, pos } = context,
-      node = syntaxTree(state).resolveInner(pos, -1);
-    let isDash =
+    const { state, pos } = context;
+      const node = syntaxTree(state).resolveInner(pos, -1);
+    const isDash =
       node.type.isError &&
       node.from == node.to - 1 &&
       state.doc.sliceString(node.from, node.to) == '-';
@@ -855,8 +855,8 @@ export const defineCSSCompletionSource =
 
     if (!context.explicit) return null;
 
-    let above = node.resolve(pos),
-      before = above.childBefore(pos);
+    const above = node.resolve(pos);
+      const before = above.childBefore(pos);
     if (before && before.name == ':' && above.name == 'PseudoClassSelector')
       return { from: pos, options: pseudoClasses, validFor: identifier };
     if (

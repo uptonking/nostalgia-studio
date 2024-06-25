@@ -1,7 +1,7 @@
 function words(str) {
-  var obj = {},
-    words = str.split(' ');
-  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
+  const obj = {};
+    const words = str.split(' ');
+  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
 
@@ -53,37 +53,37 @@ const parserConfig = {
   multiLineStrings: true,
 };
 
-var wordList = [];
+const wordList = [];
 function add(obj) {
   if (obj)
-    for (var prop in obj) if (obj.hasOwnProperty(prop)) wordList.push(prop);
+    for (const prop in obj) if (obj.hasOwnProperty(prop)) wordList.push(prop);
 }
 add(parserConfig.keywords);
 add(parserConfig.builtin);
 add(parserConfig.timerOps);
 add(parserConfig.portOps);
 
-var keywords = parserConfig.keywords || {},
-  builtin = parserConfig.builtin || {},
-  timerOps = parserConfig.timerOps || {},
-  portOps = parserConfig.portOps || {},
-  configOps = parserConfig.configOps || {},
-  verdictOps = parserConfig.verdictOps || {},
-  sutOps = parserConfig.sutOps || {},
-  functionOps = parserConfig.functionOps || {},
-  verdictConsts = parserConfig.verdictConsts || {},
-  booleanConsts = parserConfig.booleanConsts || {},
-  otherConsts = parserConfig.otherConsts || {},
-  types = parserConfig.types || {},
-  visibilityModifiers = parserConfig.visibilityModifiers || {},
-  templateMatch = parserConfig.templateMatch || {},
-  multiLineStrings = parserConfig.multiLineStrings,
-  indentStatements = parserConfig.indentStatements !== false;
-var isOperatorChar = /[+\-*&@=<>!\/]/;
-var curPunc;
+const keywords = parserConfig.keywords || {};
+  const builtin = parserConfig.builtin || {};
+  const timerOps = parserConfig.timerOps || {};
+  const portOps = parserConfig.portOps || {};
+  const configOps = parserConfig.configOps || {};
+  const verdictOps = parserConfig.verdictOps || {};
+  const sutOps = parserConfig.sutOps || {};
+  const functionOps = parserConfig.functionOps || {};
+  const verdictConsts = parserConfig.verdictConsts || {};
+  const booleanConsts = parserConfig.booleanConsts || {};
+  const otherConsts = parserConfig.otherConsts || {};
+  const types = parserConfig.types || {};
+  const visibilityModifiers = parserConfig.visibilityModifiers || {};
+  const templateMatch = parserConfig.templateMatch || {};
+  const multiLineStrings = parserConfig.multiLineStrings;
+  const indentStatements = parserConfig.indentStatements !== false;
+const isOperatorChar = /[+\-*&@=<>!\/]/;
+let curPunc;
 
 function tokenBase(stream, state) {
-  var ch = stream.next();
+  const ch = stream.next();
 
   if (ch == '"' || ch == "'") {
     state.tokenize = tokenString(ch);
@@ -129,7 +129,7 @@ function tokenBase(stream, state) {
     return 'operator';
   }
   stream.eatWhile(/[\w\$_\xa1-\uffff]/);
-  var cur = stream.current();
+  const cur = stream.current();
 
   if (keywords.propertyIsEnumerable(cur)) return 'keyword';
   if (builtin.propertyIsEnumerable(cur)) return 'builtin';
@@ -154,12 +154,12 @@ function tokenBase(stream, state) {
 
 function tokenString(quote) {
   return function (stream, state) {
-    var escaped = false,
-      next,
-      end = false;
+    let escaped = false;
+      let next;
+      let end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
-        var afterQuote = stream.peek();
+        let afterQuote = stream.peek();
         //look if the character after the quote is like the B in '10100010'B
         if (afterQuote) {
           afterQuote = afterQuote.toLowerCase();
@@ -177,8 +177,8 @@ function tokenString(quote) {
 }
 
 function tokenComment(stream, state) {
-  var maybeEnd = false,
-    ch;
+  let maybeEnd = false;
+    let ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = null;
@@ -198,14 +198,14 @@ function Context(indented, column, type, align, prev) {
 }
 
 function pushContext(state, col, type) {
-  var indent = state.indented;
+  let indent = state.indented;
   if (state.context && state.context.type == 'statement')
     indent = state.context.indented;
   return (state.context = new Context(indent, col, type, null, state.context));
 }
 
 function popContext(state) {
-  var t = state.context.type;
+  const t = state.context.type;
   if (t == ')' || t == ']' || t == '}') state.indented = state.context.indented;
   return (state.context = state.context.prev);
 }
@@ -223,7 +223,7 @@ export const ttcn = {
   },
 
   token: function (stream, state) {
-    var ctx = state.context;
+    let ctx = state.context;
     if (stream.sol()) {
       if (ctx.align == null) ctx.align = false;
       state.indented = stream.indentation();
@@ -231,7 +231,7 @@ export const ttcn = {
     }
     if (stream.eatSpace()) return null;
     curPunc = null;
-    var style = (state.tokenize || tokenBase)(stream, state);
+    const style = (state.tokenize || tokenBase)(stream, state);
     if (style == 'comment') return style;
     if (ctx.align == null) ctx.align = true;
 

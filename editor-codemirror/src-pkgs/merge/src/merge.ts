@@ -1,13 +1,13 @@
 import { EditorView } from '@codemirror/view';
 import {
-  EditorState,
+  type EditorState,
   EditorSelection,
   Facet,
   StateEffect,
   StateField,
-  StateCommand,
+  type StateCommand,
 } from '@codemirror/state';
-import { Chunk } from './chunk';
+import type { Chunk } from './chunk';
 
 type Config = {
   sibling?: () => EditorView;
@@ -29,7 +29,7 @@ export const ChunkField = StateField.define<readonly Chunk[]>({
     return null as any;
   },
   update(current, tr) {
-    for (let e of tr.effects) if (e.is(setChunks)) current = e.value;
+    for (const e of tr.effects) if (e.is(setChunks)) current = e.value;
     return current;
   },
 });
@@ -39,23 +39,23 @@ export const ChunkField = StateField.define<readonly Chunk[]>({
 /// null if the editor doesn't have a merge extension active or the
 /// merge view hasn't finished initializing yet.
 export function getChunks(state: EditorState) {
-  let field = state.field(ChunkField, false);
+  const field = state.field(ChunkField, false);
   if (!field) return null;
-  let conf = state.facet(mergeConfig);
+  const conf = state.facet(mergeConfig);
   return { chunks: field, side: conf ? conf.side : null };
 }
 
-let moveByChunk =
+const moveByChunk =
   (dir: -1 | 1): StateCommand =>
   ({ state, dispatch }) => {
-    let chunks = state.field(ChunkField, false),
-      conf = state.facet(mergeConfig);
+    const chunks = state.field(ChunkField, false);
+      const conf = state.facet(mergeConfig);
     if (!chunks || !chunks.length || !conf) return false;
-    let { head } = state.selection.main,
-      pos = 0;
+    const { head } = state.selection.main;
+      let pos = 0;
     for (let i = chunks.length - 1; i >= 0; i--) {
-      let chunk = chunks[i];
-      let [from, to] =
+      const chunk = chunks[i];
+      const [from, to] =
         conf.side == 'b' ? [chunk.fromB, chunk.toB] : [chunk.fromA, chunk.toA];
       if (to < head) {
         pos = i + 1;
@@ -67,9 +67,9 @@ let moveByChunk =
         break;
       }
     }
-    let next =
+    const next =
       chunks[(pos + (dir < 0 ? chunks.length - 1 : 0)) % chunks.length];
-    let [from, to] =
+    const [from, to] =
       conf.side == 'b' ? [next.fromB, next.toB] : [next.fromA, next.toA];
     dispatch(
       state.update({

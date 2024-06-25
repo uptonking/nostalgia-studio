@@ -1,28 +1,28 @@
 import {
   EditorState,
   Transaction,
-  TransactionSpec,
-  Extension,
+  type TransactionSpec,
+  type Extension,
   Prec,
-  ChangeDesc,
+  type ChangeDesc,
   EditorSelection,
-  SelectionRange,
+  type SelectionRange,
   StateEffect,
   Facet,
-  Line,
-  EditorStateConfig,
+  type Line,
+  type EditorStateConfig,
 } from '@codemirror/state';
-import { StyleModule, StyleSpec } from 'style-mod';
+import { StyleModule, type StyleSpec } from 'style-mod';
 
 import { DocView } from './docview';
 import { ContentView } from './contentview';
 import { InputState, focusChangeTransaction, isFocusChange } from './input';
 import {
-  Rect,
+  type Rect,
   focusPreventScroll,
   flattenRect,
   getRoot,
-  ScrollStrategy,
+  type ScrollStrategy,
   isScrolledToBottom,
   dispatchKey,
 } from './dom';
@@ -34,14 +34,14 @@ import {
   moveVertically,
   skipAtoms,
 } from './cursor';
-import { BlockInfo } from './heightmap';
+import type { BlockInfo } from './heightmap';
 import { ViewState } from './viewstate';
 import {
   ViewUpdate,
   styleModule,
   contentAttributes,
   editorAttributes,
-  AttrSource,
+  type AttrSource,
   clickAddsSelectionRange,
   dragMovesSelection,
   mouseSelectionStyle,
@@ -50,13 +50,13 @@ import {
   logException,
   viewPlugin,
   ViewPlugin,
-  PluginValue,
+  type PluginValue,
   PluginInstance,
   decorations,
   outerDecorations,
   atomicRanges,
   scrollMargins,
-  MeasureRequest,
+  type MeasureRequest,
   editable,
   inputHandler,
   focusChangeEffect,
@@ -79,17 +79,17 @@ import {
   baseTheme,
 } from './theme';
 import { DOMObserver } from './domobserver';
-import { Attrs, updateAttrs, combineAttrs } from './attributes';
+import { type Attrs, updateAttrs, combineAttrs } from './attributes';
 import browser from './browser';
 import {
   computeOrder,
   trivialOrder,
   BidiSpan,
   Direction,
-  Isolate,
+  type Isolate,
   isolatesEq,
 } from './bidi';
-import { applyDOMChange, DOMChange } from './domchange';
+import { applyDOMChange, type DOMChange } from './domchange';
 
 /// The type of object given to the [`EditorView`](#view.EditorView)
 /// constructor.
@@ -281,7 +281,7 @@ export class EditorView {
 
     if (config.parent) config.parent.appendChild(this.dom);
 
-    let { dispatch } = config;
+    const { dispatch } = config;
     this.dispatchTransactions =
       config.dispatchTransactions ||
       (dispatch &&
@@ -301,7 +301,7 @@ export class EditorView {
     this.plugins = this.state
       .facet(viewPlugin)
       .map((spec) => new PluginInstance(spec));
-    for (let plugin of this.plugins) plugin.update(this);
+    for (const plugin of this.plugins) plugin.update(this);
     this.observer = new DOMObserver(this);
     this.inputState = new InputState(this);
     this.inputState.ensureHandlers(this.plugins);
@@ -331,7 +331,7 @@ export class EditorView {
   dispatch(
     ...input: (Transaction | readonly Transaction[] | TransactionSpec)[]
   ) {
-    let trs =
+    const trs =
       input.length == 1 && input[0] instanceof Transaction
         ? (input as readonly Transaction[])
         : input.length == 1 && Array.isArray(input[0])
@@ -352,11 +352,11 @@ export class EditorView {
         'Calls to EditorView.update are not allowed while an update is in progress',
       );
 
-    let redrawn = false,
-      attrsChanged = false,
-      update: ViewUpdate;
+    let redrawn = false;
+      let attrsChanged = false;
+      let update: ViewUpdate;
     let state = this.state;
-    for (let tr of transactions) {
+    for (const tr of transactions) {
       if (tr.startState != state)
         throw new RangeError(
           "Trying to update state with a transaction that doesn't start from the previous state.",
@@ -368,9 +368,9 @@ export class EditorView {
       return;
     }
 
-    let focus = this.hasFocus,
-      focusFlag = 0,
-      dispatchFocus: Transaction | null = null;
+    const focus = this.hasFocus;
+      let focusFlag = 0;
+      let dispatchFocus: Transaction | null = null;
     if (transactions.some((tr) => tr.annotation(isFocusChange))) {
       this.inputState.notifiedFocused = focus;
       // If a focus-change transaction is being dispatched, set this update flag.
@@ -385,8 +385,8 @@ export class EditorView {
 
     // If there was a pending DOM change, eagerly read it and try to
     // apply it after the given transactions.
-    let pendingKey = this.observer.delayedAndroidKey,
-      domChange: DOMChange | null = null;
+    const pendingKey = this.observer.delayedAndroidKey;
+      let domChange: DOMChange | null = null;
     if (pendingKey) {
       this.observer.clearDelayedAndroidKey();
       domChange = this.observer.readChange();
@@ -413,10 +413,10 @@ export class EditorView {
     let scrollTarget = this.viewState.scrollTarget;
     try {
       this.updateState = UpdateState.Updating;
-      for (let tr of transactions) {
+      for (const tr of transactions) {
         if (scrollTarget) scrollTarget = scrollTarget.map(tr.changes);
         if (tr.scrollIntoView) {
-          let { main } = tr.state.selection;
+          const { main } = tr.state.selection;
           scrollTarget = new ScrollTarget(
             main.empty
               ? main
@@ -426,7 +426,7 @@ export class EditorView {
                 ),
           );
         }
-        for (let e of tr.effects)
+        for (const e of tr.effects)
           if (e.is(scrollIntoView)) scrollTarget = e.value.clip(this.state);
       }
       this.viewState.update(update, scrollTarget);
@@ -459,7 +459,7 @@ export class EditorView {
       this.requestMeasure();
     if (redrawn) this.docViewUpdate();
     if (!update.empty)
-      for (let listener of this.state.facet(updateListener)) {
+      for (const listener of this.state.facet(updateListener)) {
         try {
           listener(update);
         } catch (e) {
@@ -493,15 +493,15 @@ export class EditorView {
       return;
     }
     this.updateState = UpdateState.Updating;
-    let hadFocus = this.hasFocus;
+    const hadFocus = this.hasFocus;
     try {
-      for (let plugin of this.plugins) plugin.destroy(this);
+      for (const plugin of this.plugins) plugin.destroy(this);
       this.viewState = new ViewState(newState);
       this.plugins = newState
         .facet(viewPlugin)
         .map((spec) => new PluginInstance(spec));
       this.pluginMap.clear();
-      for (let plugin of this.plugins) plugin.update(this);
+      for (const plugin of this.plugins) plugin.update(this);
       this.docView.destroy();
       this.docView = new DocView(this);
       this.inputState.ensureHandlers(this.plugins);
@@ -516,34 +516,34 @@ export class EditorView {
   }
 
   private updatePlugins(update: ViewUpdate) {
-    let prevSpecs = update.startState.facet(viewPlugin),
-      specs = update.state.facet(viewPlugin);
+    const prevSpecs = update.startState.facet(viewPlugin);
+      const specs = update.state.facet(viewPlugin);
     if (prevSpecs != specs) {
-      let newPlugins = [];
-      for (let spec of specs) {
-        let found = prevSpecs.indexOf(spec);
+      const newPlugins = [];
+      for (const spec of specs) {
+        const found = prevSpecs.indexOf(spec);
         if (found < 0) {
           newPlugins.push(new PluginInstance(spec));
         } else {
-          let plugin = this.plugins[found];
+          const plugin = this.plugins[found];
           plugin.mustUpdate = update;
           newPlugins.push(plugin);
         }
       }
-      for (let plugin of this.plugins)
+      for (const plugin of this.plugins)
         if (plugin.mustUpdate != update) plugin.destroy(this);
       this.plugins = newPlugins;
       this.pluginMap.clear();
     } else {
-      for (let p of this.plugins) p.mustUpdate = update;
+      for (const p of this.plugins) p.mustUpdate = update;
     }
     for (let i = 0; i < this.plugins.length; i++) this.plugins[i].update(this);
     if (prevSpecs != specs) this.inputState.ensureHandlers(this.plugins);
   }
 
   private docViewUpdate() {
-    for (let plugin of this.plugins) {
-      let val = plugin.value;
+    for (const plugin of this.plugins) {
+      const val = plugin.value;
       if (val && val.docViewUpdate) {
         try {
           val.docViewUpdate(this);
@@ -569,8 +569,8 @@ export class EditorView {
     if (flush) this.observer.forceFlush();
 
     let updated: ViewUpdate | null = null;
-    let sDOM = this.scrollDOM,
-      scrollTop = sDOM.scrollTop * this.scaleY;
+    const sDOM = this.scrollDOM;
+      let scrollTop = sDOM.scrollTop * this.scaleY;
     let { scrollAnchorPos, scrollAnchorHeight } = this.viewState;
     if (Math.abs(scrollTop - this.viewState.scrollTop) > 1)
       scrollAnchorHeight = -1;
@@ -583,13 +583,13 @@ export class EditorView {
             scrollAnchorPos = -1;
             scrollAnchorHeight = this.viewState.heightMap.height;
           } else {
-            let block = this.viewState.scrollAnchorAt(scrollTop);
+            const block = this.viewState.scrollAnchorAt(scrollTop);
             scrollAnchorPos = block.from;
             scrollAnchorHeight = block.top;
           }
         }
         this.updateState = UpdateState.Measuring;
-        let changed = this.viewState.measure(this);
+        const changed = this.viewState.measure(this);
         if (
           !changed &&
           !this.measureRequests.length &&
@@ -608,7 +608,7 @@ export class EditorView {
         // Only run measure requests in this cycle when the viewport didn't change
         if (!(changed & UpdateFlag.Viewport))
           [this.measureRequests, measuring] = [measuring, this.measureRequests];
-        let measured = measuring.map((m) => {
+        const measured = measuring.map((m) => {
           try {
             return m.read(this);
           } catch (e) {
@@ -616,8 +616,8 @@ export class EditorView {
             return BadMeasure;
           }
         });
-        let update = ViewUpdate.create(this, this.state, []),
-          redrawn = false;
+        const update = ViewUpdate.create(this, this.state, []);
+          let redrawn = false;
         update.flags |= changed;
         if (!updated) updated = update;
         else updated.flags |= changed;
@@ -632,7 +632,7 @@ export class EditorView {
         for (let i = 0; i < measuring.length; i++)
           if (measured[i] != BadMeasure) {
             try {
-              let m = measuring[i];
+              const m = measuring[i];
               if (m.write) m.write(measured[i], this);
             } catch (e) {
               logException(this.state, e);
@@ -647,11 +647,11 @@ export class EditorView {
               scrollAnchorHeight = -1;
               continue;
             } else {
-              let newAnchorHeight =
+              const newAnchorHeight =
                 scrollAnchorPos < 0
                   ? this.viewState.heightMap.height
                   : this.viewState.lineBlockAt(scrollAnchorPos).top;
-              let diff = newAnchorHeight - scrollAnchorHeight;
+              const diff = newAnchorHeight - scrollAnchorHeight;
               if (diff > 1 || diff < -1) {
                 scrollTop = scrollTop + diff;
                 sDOM.scrollTop = scrollTop / this.scaleY;
@@ -669,7 +669,7 @@ export class EditorView {
     }
 
     if (updated && !updated.empty)
-      for (let listener of this.state.facet(updateListener)) listener(updated);
+      for (const listener of this.state.facet(updateListener)) listener(updated);
   }
 
   /// Get the CSS classes for the currently active editor themes.
@@ -684,13 +684,13 @@ export class EditorView {
   }
 
   private updateAttrs() {
-    let editorAttrs = attrsFromFacet(this, editorAttributes, {
+    const editorAttrs = attrsFromFacet(this, editorAttributes, {
       class:
         'cm-editor' +
         (this.hasFocus ? ' cm-focused ' : ' ') +
         this.themeClasses,
     });
-    let contentAttrs: Attrs = {
+    const contentAttrs: Attrs = {
       spellcheck: 'false',
       autocorrect: 'off',
       autocapitalize: 'off',
@@ -704,13 +704,13 @@ export class EditorView {
     if (this.state.readOnly) contentAttrs['aria-readonly'] = 'true';
     attrsFromFacet(this, contentAttributes, contentAttrs);
 
-    let changed = this.observer.ignore(() => {
-      let changedContent = updateAttrs(
+    const changed = this.observer.ignore(() => {
+      const changedContent = updateAttrs(
         this.contentDOM,
         this.contentAttrs,
         contentAttrs,
       );
-      let changedEditor = updateAttrs(this.dom, this.editorAttrs, editorAttrs);
+      const changedEditor = updateAttrs(this.dom, this.editorAttrs, editorAttrs);
       return changedContent || changedEditor;
     });
     this.editorAttrs = editorAttrs;
@@ -720,19 +720,19 @@ export class EditorView {
 
   private showAnnouncements(trs: readonly Transaction[]) {
     let first = true;
-    for (let tr of trs)
-      for (let effect of tr.effects)
+    for (const tr of trs)
+      for (const effect of tr.effects)
         if (effect.is(EditorView.announce)) {
           if (first) this.announceDOM.textContent = '';
           first = false;
-          let div = this.announceDOM.appendChild(document.createElement('div'));
+          const div = this.announceDOM.appendChild(document.createElement('div'));
           div.textContent = effect.value;
         }
   }
 
   private mountStyles() {
     this.styleModules = this.state.facet(styleModule);
-    let nonce = this.state.facet(EditorView.cspNonce);
+    const nonce = this.state.facet(EditorView.cspNonce);
     StyleModule.mount(
       this.root,
       this.styleModules.concat(baseTheme).reverse(),
@@ -896,9 +896,9 @@ export class EditorView {
   /// start or end (which is simply at `line.from`/`line.to`) if text
   /// at the start or end goes against the line's base text direction.
   visualLineSide(line: Line, end: boolean) {
-    let order = this.bidiSpans(line),
-      dir = this.textDirectionAt(line.from);
-    let span = order[end ? order.length - 1 : 0];
+    const order = this.bidiSpans(line);
+      const dir = this.textDirectionAt(line.from);
+    const span = order[end ? order.length - 1 : 0];
     return EditorSelection.cursor(
       span.side(end, dir) + line.from,
       span.forward(!end, dir) ? 1 : -1,
@@ -975,11 +975,11 @@ export class EditorView {
   /// another strategy to get reasonable coordinates).
   coordsAtPos(pos: number, side: -1 | 1 = 1): Rect | null {
     this.readMeasured();
-    let rect = this.docView.coordsAt(pos, side);
+    const rect = this.docView.coordsAt(pos, side);
     if (!rect || rect.left == rect.right) return rect;
-    let line = this.state.doc.lineAt(pos),
-      order = this.bidiSpans(line);
-    let span = order[BidiSpan.find(order, pos - line.from, -1, side)];
+    const line = this.state.doc.lineAt(pos);
+      const order = this.bidiSpans(line);
+    const span = order[BidiSpan.find(order, pos - line.from, -1, side)];
     return flattenRect(rect, (span.dir == Direction.LTR) == side > 0);
   }
 
@@ -1021,7 +1021,7 @@ export class EditorView {
   /// [`textDirection`](#view.EditorView.textDirection). Note that
   /// this may trigger a DOM layout.
   textDirectionAt(pos: number) {
-    let perLine = this.state.facet(perLineTextDirection);
+    const perLine = this.state.facet(perLineTextDirection);
     if (!perLine || pos < this.viewport.from || pos > this.viewport.to)
       return this.textDirection;
     this.readMeasured();
@@ -1044,9 +1044,9 @@ export class EditorView {
   /// rightmost spans come first.
   bidiSpans(line: Line) {
     if (line.length > MaxBidiLine) return trivialOrder(line.length);
-    let dir = this.textDirectionAt(line.from),
-      isolates: readonly Isolate[] | undefined;
-    for (let entry of this.bidiCache) {
+    const dir = this.textDirectionAt(line.from);
+      let isolates: readonly Isolate[] | undefined;
+    for (const entry of this.bidiCache) {
       if (
         entry.from == line.from &&
         entry.dir == dir &&
@@ -1059,7 +1059,7 @@ export class EditorView {
         return entry.order;
     }
     if (!isolates) isolates = getIsolatedRanges(this, line);
-    let order = computeOrder(line.text, dir, isolates);
+    const order = computeOrder(line.text, dir, isolates);
     this.bidiCache.push(
       new CachedOrder(line.from, line.to, dir, isolates, true, order),
     );
@@ -1107,7 +1107,7 @@ export class EditorView {
   /// calling this.
   destroy() {
     if (this.root.activeElement == this.contentDOM) this.contentDOM.blur();
-    for (let plugin of this.plugins) plugin.destroy(this);
+    for (const plugin of this.plugins) plugin.destroy(this);
     this.plugins = [];
     this.inputState.destroy();
     this.docView.destroy();
@@ -1146,7 +1146,7 @@ export class EditorView {
   ): StateEffect<unknown> {
     return scrollIntoView.of(
       new ScrollTarget(
-        typeof pos == 'number' ? EditorSelection.cursor(pos) : pos,
+        typeof pos === 'number' ? EditorSelection.cursor(pos) : pos,
         options.y,
         options.x,
         options.yMargin,
@@ -1166,8 +1166,8 @@ export class EditorView {
   /// not scroll to the expected position. You can
   /// [map](#state.StateEffect.map) the effect to account for changes.
   scrollSnapshot() {
-    let { scrollTop, scrollLeft } = this.scrollDOM;
-    let ref = this.viewState.scrollAnchorAt(scrollTop);
+    const { scrollTop, scrollLeft } = this.scrollDOM;
+    const ref = this.viewState.scrollAnchorAt(scrollTop);
     return scrollIntoView.of(
       new ScrollTarget(
         EditorSelection.cursor(ref.from),
@@ -1192,7 +1192,7 @@ export class EditorView {
   setTabFocusMode(to?: boolean | number) {
     if (to == null)
       this.inputState.tabFocusMode = this.inputState.tabFocusMode < 0 ? 0 : -1;
-    else if (typeof to == 'boolean') this.inputState.tabFocusMode = to ? 0 : -1;
+    else if (typeof to === 'boolean') this.inputState.tabFocusMode = to ? 0 : -1;
     else if (this.inputState.tabFocusMode != 0)
       this.inputState.tabFocusMode = Date.now() + to;
   }
@@ -1364,8 +1364,8 @@ export class EditorView {
     spec: { [selector: string]: StyleSpec },
     options?: { dark?: boolean },
   ): Extension {
-    let prefix = StyleModule.newName();
-    let result = [
+    const prefix = StyleModule.newName();
+    const result = [
       theme.of(prefix),
       styleModule.of(buildTheme(`.${prefix}`, spec)),
     ];
@@ -1422,8 +1422,8 @@ export class EditorView {
   /// Retrieve an editor view instance from the view's DOM
   /// representation.
   static findFromDOM(dom: HTMLElement): EditorView | null {
-    let content = dom.querySelector('.cm-content');
-    let cView = (content && ContentView.get(content)) || ContentView.get(dom);
+    const content = dom.querySelector('.cm-content');
+    const cView = (content && ContentView.get(content)) || ContentView.get(dom);
     return (cView?.rootView as DocView)?.view || null;
   }
 }
@@ -1464,10 +1464,10 @@ class CachedOrder {
 
   static update(cache: CachedOrder[], changes: ChangeDesc) {
     if (changes.empty && !cache.some((c) => c.fresh)) return cache;
-    let result = [],
-      lastDir = cache.length ? cache[cache.length - 1].dir : Direction.LTR;
+    const result = [];
+      const lastDir = cache.length ? cache[cache.length - 1].dir : Direction.LTR;
     for (let i = Math.max(0, cache.length - 10); i < cache.length; i++) {
-      let entry = cache[i];
+      const entry = cache[i];
       if (entry.dir == lastDir && !changes.touchesRange(entry.from, entry.to))
         result.push(
           new CachedOrder(
@@ -1494,8 +1494,8 @@ function attrsFromFacet(
     i >= 0;
     i--
   ) {
-    let source = sources[i],
-      value = typeof source == 'function' ? source(view) : source;
+    const source = sources[i];
+      const value = typeof source === 'function' ? source(view) : source;
     if (value) combineAttrs(value, base);
   }
   return base;

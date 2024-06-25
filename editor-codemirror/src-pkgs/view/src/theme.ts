@@ -1,5 +1,5 @@
 import { Facet } from '@codemirror/state';
-import { StyleModule, StyleSpec } from 'style-mod';
+import { StyleModule, type StyleSpec } from 'style-mod';
 
 export const theme = Facet.define<string, string>({
   combine: (strs) => strs.join(' '),
@@ -9,9 +9,9 @@ export const darkTheme = Facet.define<boolean, boolean>({
   combine: (values) => values.indexOf(true) > -1,
 });
 
-export const baseThemeID = StyleModule.newName(),
-  baseLightID = StyleModule.newName(),
-  baseDarkID = StyleModule.newName();
+export const baseThemeID = StyleModule.newName();
+  export const baseLightID = StyleModule.newName();
+  export const baseDarkID = StyleModule.newName();
 
 export const lightDarkIDs = {
   '&light': '.' + baseLightID,

@@ -1,13 +1,13 @@
 import {
   EditorSelection,
-  Extension,
+  type Extension,
   Facet,
   combineConfig,
   Prec,
-  EditorState,
+  type EditorState,
 } from '@codemirror/state';
-import { StyleSpec } from 'style-mod';
-import { ViewUpdate, nativeSelectionHidden } from './extension';
+import type { StyleSpec } from 'style-mod';
+import { type ViewUpdate, nativeSelectionHidden } from './extension';
 import { EditorView } from './editorview';
 import { layer, RectangleMarker } from './layer';
 import browser from './browser';
@@ -85,19 +85,19 @@ function configChanged(update: ViewUpdate) {
 const cursorLayer = layer({
   above: true,
   markers(view) {
-    let { state } = view,
-      conf = state.facet(selectionConfig);
-    let cursors = [];
-    for (let r of state.selection.ranges) {
-      let prim = r == state.selection.main;
+    const { state } = view;
+      const conf = state.facet(selectionConfig);
+    const cursors = [];
+    for (const r of state.selection.ranges) {
+      const prim = r == state.selection.main;
       if (r.empty ? !prim || CanHidePrimary : conf.drawRangeCursor) {
-        let className = prim
+        const className = prim
           ? 'cm-cursor cm-cursor-primary'
           : 'cm-cursor cm-cursor-secondary';
-        let cursor = r.empty
+        const cursor = r.empty
           ? r
           : EditorSelection.cursor(r.head, r.head > r.anchor ? -1 : 1);
-        for (let piece of RectangleMarker.forRange(view, className, cursor))
+        for (const piece of RectangleMarker.forRange(view, className, cursor))
           cursors.push(piece);
       }
     }
@@ -107,7 +107,7 @@ const cursorLayer = layer({
     if (update.transactions.some((tr) => tr.selection))
       dom.style.animationName =
         dom.style.animationName == 'cm-blink' ? 'cm-blink2' : 'cm-blink';
-    let confChange = configChanged(update);
+    const confChange = configChanged(update);
     if (confChange) setBlinkRate(update.state, dom);
     return update.docChanged || update.selectionSet || confChange;
   },

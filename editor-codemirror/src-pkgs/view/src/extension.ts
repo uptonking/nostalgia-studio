@@ -1,23 +1,23 @@
 import {
-  EditorState,
-  Transaction,
+  type EditorState,
+  type Transaction,
   ChangeSet,
-  ChangeDesc,
+  type ChangeDesc,
   Facet,
-  Line,
+  type Line,
   StateEffect,
-  Extension,
-  SelectionRange,
+  type Extension,
+  type SelectionRange,
   RangeSet,
   EditorSelection,
 } from '@codemirror/state';
-import { StyleModule } from 'style-mod';
-import { DecorationSet, Decoration } from './decoration';
-import { EditorView, DOMEventHandlers } from './editorview';
-import { Attrs } from './attributes';
-import { Isolate, autoDirection } from './bidi';
-import { Rect, ScrollStrategy } from './dom';
-import { MakeSelectionStyle } from './input';
+import type { StyleModule } from 'style-mod';
+import { type DecorationSet, Decoration } from './decoration';
+import type { EditorView, DOMEventHandlers } from './editorview';
+import type { Attrs } from './attributes';
+import { type Isolate, autoDirection } from './bidi';
+import type { Rect, ScrollStrategy } from './dom';
+import type { MakeSelectionStyle } from './input';
 
 /// Command functions are used in key bindings and other types of user
 /// actions. Given an editor view, they check whether their effect can
@@ -139,7 +139,7 @@ export function logException(
   exception: any,
   context?: string,
 ) {
-  let handler = state.facet(exceptionSink);
+  const handler = state.facet(exceptionSink);
   if (handler.length) handler[0](exception);
   else if (window.onerror)
     window.onerror(String(exception), context, undefined, undefined, exception);
@@ -243,11 +243,11 @@ export class ViewPlugin<V extends PluginValue> {
       eventHandlers,
       eventObservers,
       (plugin) => {
-        let ext = [viewPlugin.of(plugin)];
+        const ext = [viewPlugin.of(plugin)];
         if (deco)
           ext.push(
             decorations.of((view) => {
-              let pluginInst = view.plugin(plugin);
+              const pluginInst = view.plugin(plugin);
               return pluginInst ? deco(pluginInst) : Decoration.none;
             }),
           );
@@ -290,7 +290,7 @@ export class PluginInstance {
         }
       }
     } else if (this.mustUpdate) {
-      let update = this.mustUpdate;
+      const update = this.mustUpdate;
       this.mustUpdate = null;
       if (this.value.update) {
         try {
@@ -360,21 +360,21 @@ export function getIsolatedRanges(
   view: EditorView,
   line: Line,
 ): readonly Isolate[] {
-  let isolates = view.state.facet(bidiIsolatedRanges);
+  const isolates = view.state.facet(bidiIsolatedRanges);
   if (!isolates.length) return isolates as any[];
-  let sets = isolates.map<DecorationSet>((i) =>
+  const sets = isolates.map<DecorationSet>((i) =>
     i instanceof Function ? i(view) : i,
   );
-  let result: Isolate[] = [];
+  const result: Isolate[] = [];
   RangeSet.spans(sets, line.from, line.to, {
     point() {},
     span(fromDoc, toDoc, active, open) {
-      let from = fromDoc - line.from,
-        to = toDoc - line.from;
+      const from = fromDoc - line.from;
+        const to = toDoc - line.from;
       let level = result;
       for (let i = active.length - 1; i >= 0; i--, open--) {
-        let direction = active[i].spec.bidiIsolate,
-          update;
+        let direction = active[i].spec.bidiIsolate;
+          let update;
         if (direction == null) direction = autoDirection(line.text, from, to);
         if (
           open > 0 &&
@@ -385,7 +385,7 @@ export function getIsolatedRanges(
           update.to = to;
           level = update.inner as Isolate[];
         } else {
-          let add = { from, to, direction, inner: [] };
+          const add = { from, to, direction, inner: [] };
           level.push(add);
           level = add.inner;
         }
@@ -399,12 +399,12 @@ export const scrollMargins =
   Facet.define<(view: EditorView) => Partial<Rect> | null>();
 
 export function getScrollMargins(view: EditorView) {
-  let left = 0,
-    right = 0,
-    top = 0,
-    bottom = 0;
-  for (let source of view.state.facet(scrollMargins)) {
-    let m = source(view);
+  let left = 0;
+    let right = 0;
+    let top = 0;
+    let bottom = 0;
+  for (const source of view.state.facet(scrollMargins)) {
+    const m = source(view);
     if (m) {
       if (m.left != null) left = Math.max(left, m.left);
       if (m.right != null) right = Math.max(right, m.right);
@@ -442,10 +442,10 @@ export class ChangedRange {
   }
 
   addToSet(set: ChangedRange[]): ChangedRange[] {
-    let i = set.length,
-      me: ChangedRange = this;
+    let i = set.length;
+      let me: ChangedRange = this;
     for (; i > 0; i--) {
-      let range = set[i - 1];
+      const range = set[i - 1];
       if (range.fromA > me.toA) continue;
       if (range.toA < me.fromA) break;
       me = me.join(range);
@@ -460,16 +460,16 @@ export class ChangedRange {
     ranges: number[],
   ): readonly ChangedRange[] {
     if (ranges.length == 0) return diff;
-    let result: ChangedRange[] = [];
+    const result: ChangedRange[] = [];
     for (let dI = 0, rI = 0, posA = 0, posB = 0; ; dI++) {
-      let next = dI == diff.length ? null : diff[dI],
-        off = posA - posB;
-      let end = next ? next.fromB : 1e9;
+      const next = dI == diff.length ? null : diff[dI];
+        const off = posA - posB;
+      const end = next ? next.fromB : 1e9;
       while (rI < ranges.length && ranges[rI] < end) {
-        let from = ranges[rI],
-          to = ranges[rI + 1];
-        let fromB = Math.max(posB, from),
-          toB = Math.min(end, to);
+        const from = ranges[rI];
+          const to = ranges[rI + 1];
+        const fromB = Math.max(posB, from);
+          const toB = Math.min(end, to);
         if (fromB <= toB)
           new ChangedRange(fromB + off, toB + off, fromB, toB).addToSet(result);
         if (to > end) break;
@@ -507,9 +507,9 @@ export class ViewUpdate {
   ) {
     this.startState = view.state;
     this.changes = ChangeSet.empty(this.startState.doc.length);
-    for (let tr of transactions)
+    for (const tr of transactions)
       this.changes = this.changes.compose(tr.changes);
-    let changedRanges: ChangedRange[] = [];
+    const changedRanges: ChangedRange[] = [];
     this.changes.iterChangedRanges((fromA, toA, fromB, toB) =>
       changedRanges.push(new ChangedRange(fromA, toA, fromB, toB)),
     );

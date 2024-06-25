@@ -21,7 +21,7 @@ try {
 function hasWordChar(str: string): boolean {
   if (wordChar) return wordChar.test(str);
   for (let i = 0; i < str.length; i++) {
-    let ch = str[i];
+    const ch = str[i];
     if (
       /\w/.test(ch) ||
       (ch > '\x80' &&

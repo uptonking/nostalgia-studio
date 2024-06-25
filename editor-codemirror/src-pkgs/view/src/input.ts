@@ -1,23 +1,23 @@
 import {
   EditorSelection,
   EditorState,
-  SelectionRange,
-  RangeSet,
+  type SelectionRange,
+  type RangeSet,
   Annotation,
-  Text,
+  type Text,
 } from '@codemirror/state';
-import { EditorView } from './editorview';
+import type { EditorView } from './editorview';
 import { ContentView } from './contentview';
 import { LineView } from './blockview';
 import {
-  ViewUpdate,
-  PluginValue,
+  type ViewUpdate,
+  type PluginValue,
   clickAddsSelectionRange,
   dragMovesSelection as dragBehavior,
   atomicRanges,
   logException,
   mouseSelectionStyle,
-  PluginInstance,
+  type PluginInstance,
   focusChangeEffect,
   getScrollMargins,
 } from './extension';
@@ -26,7 +26,7 @@ import { groupAt, skipAtomicRanges } from './cursor';
 import {
   getSelection,
   focusPreventScroll,
-  Rect,
+  type Rect,
   dispatchKey,
   scrollableParent,
 } from './dom';
@@ -117,10 +117,10 @@ export class InputState {
   }
 
   runHandlers(type: string, event: Event) {
-    let handlers = this.handlers[type];
+    const handlers = this.handlers[type];
     if (handlers) {
-      for (let observer of handlers.observers) observer(this.view, event);
-      for (let handler of handlers.handlers) {
+      for (const observer of handlers.observers) observer(this.view, event);
+      for (const handler of handlers.handlers) {
         if (event.defaultPrevented) break;
         if (handler(this.view, event)) {
           event.preventDefault();
@@ -131,12 +131,12 @@ export class InputState {
   }
 
   ensureHandlers(plugins: readonly PluginInstance[]) {
-    let handlers = computeHandlers(plugins),
-      prev = this.handlers,
-      dom = this.view.contentDOM;
-    for (let type in handlers)
+    const handlers = computeHandlers(plugins);
+      const prev = this.handlers;
+      const dom = this.view.contentDOM;
+    for (const type in handlers)
       if (type != 'scroll') {
-        let passive = !handlers[type].handlers.length;
+        const passive = !handlers[type].handlers.length;
         let exists: (typeof prev)['type'] | null = prev[type];
         if (exists && passive != !exists.handlers.length) {
           dom.removeEventListener(type, this.handleEvent);
@@ -144,7 +144,7 @@ export class InputState {
         }
         if (!exists) dom.addEventListener(type, this.handleEvent, { passive });
       }
-    for (let type in prev)
+    for (const type in prev)
       if (type != 'scroll' && !handlers[type])
         dom.removeEventListener(type, this.handleEvent);
     this.handlers = handlers;
@@ -208,7 +208,7 @@ export class InputState {
   }
 
   flushIOSKey(change?: { from: number; to: number; insert: Text }) {
-    let key = this.pendingIOSKey;
+    const key = this.pendingIOSKey;
     if (!key) return false;
     // This looks like an autocorrection before Enter
     if (
@@ -287,7 +287,7 @@ function bindHandler(
 }
 
 function computeHandlers(plugins: readonly PluginInstance[]) {
-  let result: {
+  const result: {
     [event: string]: {
       observers: HandlerFunction[];
       handlers: HandlerFunction[];
@@ -296,21 +296,21 @@ function computeHandlers(plugins: readonly PluginInstance[]) {
   function record(type: string) {
     return result[type] || (result[type] = { observers: [], handlers: [] });
   }
-  for (let plugin of plugins) {
-    let spec = plugin.spec;
+  for (const plugin of plugins) {
+    const spec = plugin.spec;
     if (spec && spec.domEventHandlers)
-      for (let type in spec.domEventHandlers) {
-        let f = spec.domEventHandlers[type];
+      for (const type in spec.domEventHandlers) {
+        const f = spec.domEventHandlers[type];
         if (f) record(type).handlers.push(bindHandler(plugin.value!, f));
       }
     if (spec && spec.domEventObservers)
-      for (let type in spec.domEventObservers) {
-        let f = spec.domEventObservers[type];
+      for (const type in spec.domEventObservers) {
+        const f = spec.domEventObservers[type];
         if (f) record(type).observers.push(bindHandler(plugin.value!, f));
       }
   }
-  for (let type in handlers) record(type).handlers.push(handlers[type]);
-  for (let type in observers) record(type).observers.push(observers[type]);
+  for (const type in handlers) record(type).handlers.push(handlers[type]);
+  for (const type in observers) record(type).observers.push(observers[type]);
   return result;
 }
 
@@ -394,7 +394,7 @@ class MouseSelection {
     this.lastEvent = startEvent;
     this.scrollParent = scrollableParent(view.contentDOM);
     this.atoms = view.state.facet(atomicRanges).map((f) => f(view));
-    let doc = view.contentDOM.ownerDocument!;
+    const doc = view.contentDOM.ownerDocument!;
     doc.addEventListener('mousemove', (this.move = this.move.bind(this)));
     doc.addEventListener('mouseup', (this.up = this.up.bind(this)));
 
@@ -423,15 +423,15 @@ class MouseSelection {
       return;
     this.select((this.lastEvent = event));
 
-    let sx = 0,
-      sy = 0;
-    let rect = this.scrollParent?.getBoundingClientRect() || {
+    let sx = 0;
+      let sy = 0;
+    const rect = this.scrollParent?.getBoundingClientRect() || {
       left: 0,
       top: 0,
       right: this.view.win.innerWidth,
       bottom: this.view.win.innerHeight,
     };
-    let margins = getScrollMargins(this.view);
+    const margins = getScrollMargins(this.view);
 
     if (event.clientX - margins.left <= rect.left + dragScrollMargin)
       sx = -dragScrollSpeed(rect.left - event.clientX);
@@ -452,7 +452,7 @@ class MouseSelection {
 
   destroy() {
     this.setScrollSpeed(0, 0);
-    let doc = this.view.contentDOM.ownerDocument!;
+    const doc = this.view.contentDOM.ownerDocument!;
     doc.removeEventListener('mousemove', this.move);
     doc.removeEventListener('mouseup', this.up);
     this.view.inputState.mouseSelection = this.view.inputState.draggedContent =
@@ -483,14 +483,14 @@ class MouseSelection {
   skipAtoms(sel: EditorSelection) {
     let ranges = null;
     for (let i = 0; i < sel.ranges.length; i++) {
-      let range = sel.ranges[i],
-        updated = null;
+      const range = sel.ranges[i];
+        let updated = null;
       if (range.empty) {
-        let pos = skipAtomicRanges(this.atoms, range.from, 0);
+        const pos = skipAtomicRanges(this.atoms, range.from, 0);
         if (pos != range.from) updated = EditorSelection.cursor(pos, -1);
       } else {
-        let from = skipAtomicRanges(this.atoms, range.from, -1);
-        let to = skipAtomicRanges(this.atoms, range.to, 1);
+        const from = skipAtomicRanges(this.atoms, range.from, -1);
+        const to = skipAtomicRanges(this.atoms, range.to, 1);
         if (from != range.from || to != range.to)
           updated = EditorSelection.range(
             range.from == range.anchor ? from : to,
@@ -506,8 +506,8 @@ class MouseSelection {
   }
 
   select(event: MouseEvent) {
-    let { view } = this,
-      selection = this.skipAtoms(
+    const { view } = this;
+      const selection = this.skipAtoms(
         this.style.get(event, this.extend, this.multiple),
       );
     if (
@@ -530,7 +530,7 @@ class MouseSelection {
 }
 
 function addsSelectionRange(view: EditorView, event: MouseEvent) {
-  let facet = view.state.facet(clickAddsSelectionRange);
+  const facet = view.state.facet(clickAddsSelectionRange);
   return facet.length
     ? facet[0](event)
     : browser.mac
@@ -539,7 +539,7 @@ function addsSelectionRange(view: EditorView, event: MouseEvent) {
 }
 
 function dragMovesSelection(view: EditorView, event: MouseEvent) {
-  let facet = view.state.facet(dragBehavior);
+  const facet = view.state.facet(dragBehavior);
   return facet.length
     ? facet[0](event)
     : browser.mac
@@ -548,15 +548,15 @@ function dragMovesSelection(view: EditorView, event: MouseEvent) {
 }
 
 function isInPrimarySelection(view: EditorView, event: MouseEvent) {
-  let { main } = view.state.selection;
+  const { main } = view.state.selection;
   if (main.empty) return false;
   // On boundary clicks, check whether the coordinates are inside the
   // selection's client rectangles
-  let sel = getSelection(view.root);
+  const sel = getSelection(view.root);
   if (!sel || sel.rangeCount == 0) return true;
-  let rects = sel.getRangeAt(0).getClientRects();
+  const rects = sel.getRangeAt(0).getClientRects();
   for (let i = 0; i < rects.length; i++) {
-    let rect = rects[i];
+    const rect = rects[i];
     if (
       rect.left <= event.clientX &&
       rect.right >= event.clientX &&
@@ -599,9 +599,9 @@ const brokenClipboardAPI =
   (browser.ios && browser.webkit_version < 604);
 
 function capturePaste(view: EditorView) {
-  let parent = view.dom.parentNode;
+  const parent = view.dom.parentNode;
   if (!parent) return;
-  let target = parent.appendChild(document.createElement('textarea'));
+  const target = parent.appendChild(document.createElement('textarea'));
   target.style.cssText = 'position: fixed; left: -10000px; top: 10px';
   target.focus();
   setTimeout(() => {
@@ -612,22 +612,22 @@ function capturePaste(view: EditorView) {
 }
 
 function doPaste(view: EditorView, input: string) {
-  let { state } = view,
-    changes,
-    i = 1,
-    text = state.toText(input);
-  let byLine = text.lines == state.selection.ranges.length;
-  let linewise =
+  const { state } = view;
+    let changes;
+    let i = 1;
+    const text = state.toText(input);
+  const byLine = text.lines == state.selection.ranges.length;
+  const linewise =
     lastLinewiseCopy != null &&
     state.selection.ranges.every((r) => r.empty) &&
     lastLinewiseCopy == text.toString();
   if (linewise) {
     let lastLine = -1;
     changes = state.changeByRange((range) => {
-      let line = state.doc.lineAt(range.from);
+      const line = state.doc.lineAt(range.from);
       if (line.from == lastLine) return { range };
       lastLine = line.from;
-      let insert = state.toText(
+      const insert = state.toText(
         (byLine ? text.line(i++).text : input) + state.lineBreak,
       );
       return {
@@ -637,7 +637,7 @@ function doPaste(view: EditorView, input: string) {
     });
   } else if (byLine) {
     changes = state.changeByRange((range) => {
-      let line = text.line(i++);
+      const line = text.line(i++);
       return {
         changes: { from: range.from, to: range.to, insert: line.text },
         range: EditorSelection.cursor(range.from + line.length),
@@ -677,24 +677,24 @@ handlers.mousedown = (view, event: MouseEvent) => {
   view.observer.flush();
   if (view.inputState.lastTouchTime > Date.now() - 2000) return false; // Ignore touch interaction
   let style: MouseSelectionStyle | null = null;
-  for (let makeStyle of view.state.facet(mouseSelectionStyle)) {
+  for (const makeStyle of view.state.facet(mouseSelectionStyle)) {
     style = makeStyle(view, event);
     if (style) break;
   }
   if (!style && event.button == 0) style = basicMouseSelection(view, event);
   if (style) {
-    let mustFocus = !view.hasFocus;
+    const mustFocus = !view.hasFocus;
     view.inputState.startMouseSelection(
       new MouseSelection(view, event, style, mustFocus),
     );
     if (mustFocus)
       view.observer.ignore(() => {
         focusPreventScroll(view.contentDOM);
-        let active = view.root.activeElement;
+        const active = view.root.activeElement;
         if (active && !active.contains(view.contentDOM))
           (active as HTMLElement).blur();
       });
-    let mouseSel = view.inputState.mouseSelection;
+    const mouseSel = view.inputState.mouseSelection;
     if (mouseSel) {
       mouseSel.start(event);
       return mouseSel.dragging === false;
@@ -717,34 +717,34 @@ function rangeForClick(
     return groupAt(view.state, pos, bias);
   } else {
     // Triple click
-    let visual = LineView.find(view.docView, pos),
-      line = view.state.doc.lineAt(visual ? visual.posAtEnd : pos);
-    let from = visual ? visual.posAtStart : line.from,
-      to = visual ? visual.posAtEnd : line.to;
+    const visual = LineView.find(view.docView, pos);
+      const line = view.state.doc.lineAt(visual ? visual.posAtEnd : pos);
+    const from = visual ? visual.posAtStart : line.from;
+      let to = visual ? visual.posAtEnd : line.to;
     if (to < view.state.doc.length && to == line.to) to++;
     return EditorSelection.range(from, to);
   }
 }
 
-let insideY = (y: number, rect: Rect) => y >= rect.top && y <= rect.bottom;
-let inside = (x: number, y: number, rect: Rect) =>
+const insideY = (y: number, rect: Rect) => y >= rect.top && y <= rect.bottom;
+const inside = (x: number, y: number, rect: Rect) =>
   insideY(y, rect) && x >= rect.left && x <= rect.right;
 
 // Try to determine, for the given coordinates, associated with the
 // given position, whether they are related to the element before or
 // the element after the position.
 function findPositionSide(view: EditorView, pos: number, x: number, y: number) {
-  let line = LineView.find(view.docView, pos);
+  const line = LineView.find(view.docView, pos);
   if (!line) return 1;
-  let off = pos - line.posAtStart;
+  const off = pos - line.posAtStart;
   // Line boundaries point into the line
   if (off == 0) return 1;
   if (off == line.length) return -1;
 
   // Positions on top of an element point at that element
-  let before = line.coordsAt(off, -1);
+  const before = line.coordsAt(off, -1);
   if (before && inside(x, y, before)) return -1;
-  let after = line.coordsAt(off, 1);
+  const after = line.coordsAt(off, 1);
   if (after && inside(x, y, after)) return 1;
   // This is probably a line wrap point. Pick before if the point is
   // beside it.
@@ -755,7 +755,7 @@ function queryPos(
   view: EditorView,
   event: MouseEvent,
 ): { pos: number; bias: 1 | -1 } {
-  let pos = view.posAtCoords({ x: event.clientX, y: event.clientY }, false);
+  const pos = view.posAtCoords({ x: event.clientX, y: event.clientY }, false);
   return {
     pos,
     bias: findPositionSide(view, pos, event.clientX, event.clientY),
@@ -763,14 +763,14 @@ function queryPos(
 }
 
 const BadMouseDetail = browser.ie && browser.ie_version <= 11;
-let lastMouseDown: MouseEvent | null = null,
-  lastMouseDownCount = 0,
-  lastMouseDownTime = 0;
+let lastMouseDown: MouseEvent | null = null;
+  let lastMouseDownCount = 0;
+  let lastMouseDownTime = 0;
 
 function getClickType(event: MouseEvent) {
   if (!BadMouseDetail) return event.detail;
-  let last = lastMouseDown,
-    lastTime = lastMouseDownTime;
+  const last = lastMouseDown;
+    const lastTime = lastMouseDownTime;
   lastMouseDown = event;
   lastMouseDownTime = Date.now();
   return (lastMouseDownCount =
@@ -783,8 +783,8 @@ function getClickType(event: MouseEvent) {
 }
 
 function basicMouseSelection(view: EditorView, event: MouseEvent) {
-  let start = queryPos(view, event),
-    type = getClickType(event);
+  const start = queryPos(view, event);
+    const type = getClickType(event);
   let startSel = view.state.selection;
   return {
     update(update) {
@@ -794,13 +794,13 @@ function basicMouseSelection(view: EditorView, event: MouseEvent) {
       }
     },
     get(event, extend, multiple) {
-      let cur = queryPos(view, event),
-        removed;
+      const cur = queryPos(view, event);
+        let removed;
       let range = rangeForClick(view, cur.pos, cur.bias, type);
       if (start.pos != cur.pos && !extend) {
-        let startRange = rangeForClick(view, start.pos, start.bias, type);
-        let from = Math.min(startRange.from, range.from),
-          to = Math.max(startRange.to, range.to);
+        const startRange = rangeForClick(view, start.pos, start.bias, type);
+        const from = Math.min(startRange.from, range.from);
+          const to = Math.max(startRange.to, range.to);
         range =
           from < range.from
             ? EditorSelection.range(from, to)
@@ -825,7 +825,7 @@ function basicMouseSelection(view: EditorView, event: MouseEvent) {
 
 function removeRangeAround(sel: EditorSelection, pos: number) {
   for (let i = 0; i < sel.ranges.length; i++) {
-    let { from, to } = sel.ranges[i];
+    const { from, to } = sel.ranges[i];
     if (from <= pos && to >= pos)
       return EditorSelection.create(
         sel.ranges.slice(0, i).concat(sel.ranges.slice(i + 1)),
@@ -840,15 +840,15 @@ handlers.dragstart = (view, event: DragEvent) => {
     selection: { main: range },
   } = view.state;
   if ((event.target as HTMLElement).draggable) {
-    let cView = view.docView.nearest(event.target as HTMLElement);
+    const cView = view.docView.nearest(event.target as HTMLElement);
     if (cView && cView.isWidget) {
-      let from = cView.posAtStart,
-        to = from + cView.length;
+      const from = cView.posAtStart;
+        const to = from + cView.length;
       if (from >= range.to || to <= range.from)
         range = EditorSelection.range(from, to);
     }
   }
-  let { inputState } = view;
+  const { inputState } = view;
   if (inputState.mouseSelection) inputState.mouseSelection.dragging = true;
   inputState.draggedContent = range;
 
@@ -874,15 +874,15 @@ function dropText(
   direct: boolean,
 ) {
   if (!text) return;
-  let dropPos = view.posAtCoords({ x: event.clientX, y: event.clientY }, false);
+  const dropPos = view.posAtCoords({ x: event.clientX, y: event.clientY }, false);
 
-  let { draggedContent } = view.inputState;
-  let del =
+  const { draggedContent } = view.inputState;
+  const del =
     direct && draggedContent && dragMovesSelection(view, event)
       ? { from: draggedContent.from, to: draggedContent.to }
       : null;
-  let ins = { from: dropPos, insert: text };
-  let changes = view.state.changes(del ? [del, ins] : ins);
+  const ins = { from: dropPos, insert: text };
+  const changes = view.state.changes(del ? [del, ins] : ins);
 
   view.focus();
   view.dispatch({
@@ -900,12 +900,12 @@ handlers.drop = (view, event: DragEvent) => {
   if (!event.dataTransfer) return false;
   if (view.state.readOnly) return true;
 
-  let files = event.dataTransfer.files;
+  const files = event.dataTransfer.files;
   if (files && files.length) {
     // For a file drop, read the file's text.
-    let text = Array(files.length),
-      read = 0;
-    let finishFile = () => {
+    const text = Array(files.length);
+      let read = 0;
+    const finishFile = () => {
       if (++read == files.length)
         dropText(
           view,
@@ -915,7 +915,7 @@ handlers.drop = (view, event: DragEvent) => {
         );
     };
     for (let i = 0; i < files.length; i++) {
-      let reader = new FileReader();
+      const reader = new FileReader();
       reader.onerror = finishFile;
       reader.onload = () => {
         if (!/[\x00-\x08\x0e-\x1f]{2}/.test(reader.result as string))
@@ -926,7 +926,7 @@ handlers.drop = (view, event: DragEvent) => {
     }
     return true;
   } else {
-    let text = event.dataTransfer.getData('Text');
+    const text = event.dataTransfer.getData('Text');
     if (text) {
       dropText(view, event, text, true);
       return true;
@@ -938,7 +938,7 @@ handlers.drop = (view, event: DragEvent) => {
 handlers.paste = (view: EditorView, event: ClipboardEvent) => {
   if (view.state.readOnly) return true;
   view.observer.flush();
-  let data = brokenClipboardAPI ? null : event.clipboardData;
+  const data = brokenClipboardAPI ? null : event.clipboardData;
   if (data) {
     doPaste(view, data.getData('text/plain') || data.getData('text/uri-list'));
     return true;
@@ -951,9 +951,9 @@ handlers.paste = (view: EditorView, event: ClipboardEvent) => {
 function captureCopy(view: EditorView, text: string) {
   // The extra wrapper is somehow necessary on IE/Edge to prevent the
   // content from being mangled when it is put onto the clipboard
-  let parent = view.dom.parentNode;
+  const parent = view.dom.parentNode;
   if (!parent) return;
-  let target = parent.appendChild(document.createElement('textarea'));
+  const target = parent.appendChild(document.createElement('textarea'));
   target.style.cssText = 'position: fixed; left: -10000px; top: 10px';
   target.value = text;
   target.focus();
@@ -966,10 +966,10 @@ function captureCopy(view: EditorView, text: string) {
 }
 
 function copiedRange(state: EditorState) {
-  let content = [],
-    ranges: { from: number; to: number }[] = [],
-    linewise = false;
-  for (let range of state.selection.ranges)
+  const content = [];
+    const ranges: { from: number; to: number }[] = [];
+    let linewise = false;
+  for (const range of state.selection.ranges)
     if (!range.empty) {
       content.push(state.sliceDoc(range.from, range.to));
       ranges.push(range);
@@ -977,8 +977,8 @@ function copiedRange(state: EditorState) {
   if (!content.length) {
     // Nothing selected, do a line-wise copy
     let upto = -1;
-    for (let { from } of state.selection.ranges) {
-      let line = state.doc.lineAt(from);
+    for (const { from } of state.selection.ranges) {
+      const line = state.doc.lineAt(from);
       if (line.number > upto) {
         content.push(line.text);
         ranges.push({
@@ -997,7 +997,7 @@ function copiedRange(state: EditorState) {
 let lastLinewiseCopy: string | null = null;
 
 handlers.copy = handlers.cut = (view, event: ClipboardEvent) => {
-  let { text, ranges, linewise } = copiedRange(view.state);
+  const { text, ranges, linewise } = copiedRange(view.state);
   if (!text && !linewise) return false;
   lastLinewiseCopy = linewise ? text : null;
 
@@ -1007,7 +1007,7 @@ handlers.copy = handlers.cut = (view, event: ClipboardEvent) => {
       scrollIntoView: true,
       userEvent: 'delete.cut',
     });
-  let data = brokenClipboardAPI ? null : event.clipboardData;
+  const data = brokenClipboardAPI ? null : event.clipboardData;
   if (data) {
     data.clearData();
     data.setData('text/plain', text);
@@ -1021,9 +1021,9 @@ handlers.copy = handlers.cut = (view, event: ClipboardEvent) => {
 export const isFocusChange = Annotation.define<boolean>();
 
 export function focusChangeTransaction(state: EditorState, focus: boolean) {
-  let effects = [];
-  for (let getEffect of state.facet(focusChangeEffect)) {
-    let effect = getEffect(state, focus);
+  const effects = [];
+  for (const getEffect of state.facet(focusChangeEffect)) {
+    const effect = getEffect(state, focus);
     if (effect) effects.push(effect);
   }
   return effects
@@ -1033,9 +1033,9 @@ export function focusChangeTransaction(state: EditorState, focus: boolean) {
 
 function updateForFocusChange(view: EditorView) {
   setTimeout(() => {
-    let focus = view.hasFocus;
+    const focus = view.hasFocus;
     if (focus != view.inputState.notifiedFocused) {
-      let tr = focusChangeTransaction(view.state, focus);
+      const tr = focusChangeTransaction(view.state, focus);
       if (tr) view.dispatch(tr);
       else view.update([]);
     }
@@ -1115,7 +1115,7 @@ handlers.beforeinput = (view, event) => {
   ) {
     view.observer.delayAndroidKey(pending.key, pending.keyCode);
     if (pending.key == 'Backspace' || pending.key == 'Delete') {
-      let startViewHeight = window.visualViewport?.height || 0;
+      const startViewHeight = window.visualViewport?.height || 0;
       setTimeout(() => {
         // Backspacing near uneditable nodes on Chrome Android sometimes
         // closes the virtual keyboard. This tries to crudely detect

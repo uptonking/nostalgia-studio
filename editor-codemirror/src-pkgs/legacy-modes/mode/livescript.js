@@ -1,10 +1,10 @@
-var tokenBase = function (stream, state) {
-  var next_rule = state.next || 'start';
+const tokenBase = function (stream, state) {
+  const next_rule = state.next || 'start';
   if (next_rule) {
     state.next = state.next;
-    var nr = Rules[next_rule];
+    const nr = Rules[next_rule];
     if (nr.splice) {
-      for (var i$ = 0; i$ < nr.length; ++i$) {
+      for (let i$ = 0; i$ < nr.length; ++i$) {
         var r = nr[i$];
         if (r.regex && stream.match(r.regex)) {
           state.next = r.next || state.next;
@@ -28,15 +28,15 @@ var tokenBase = function (stream, state) {
   return 'error';
 };
 
-var identifier =
+const identifier =
   '(?![\\d\\s])[$\\w\\xAA-\\uFFDC](?:(?!\\s)[$\\w\\xAA-\\uFFDC]|-[A-Za-z])*';
-var indenter = RegExp(
+const indenter = RegExp(
   '(?:[({[=:]|[-~]>|\\b(?:e(?:lse|xport)|d(?:o|efault)|t(?:ry|hen)|finally|import(?:\\s*all)?|const|var|let|new|catch(?:\\s*' +
     identifier +
     ')?))\\s*$',
 );
-var keywordend = '(?![$\\w]|-[A-Za-z]|\\s*:(?![:=]))';
-var stringfill = {
+const keywordend = '(?![$\\w]|-[A-Za-z]|\\s*:(?![:=]))';
+const stringfill = {
   token: 'string',
   regex: '.+',
 };
@@ -268,10 +268,10 @@ var Rules = {
     stringfill,
   ],
 };
-for (var idx in Rules) {
-  var r = Rules[idx];
+for (const idx in Rules) {
+  const r = Rules[idx];
   if (r.splice) {
-    for (var i = 0, len = r.length; i < len; ++i) {
+    for (let i = 0, len = r.length; i < len; ++i) {
       var rr = r[i];
       if (typeof rr.regex === 'string') {
         Rules[idx][i].regex = new RegExp('^' + rr.regex);
@@ -300,7 +300,7 @@ export const liveScript = {
     return style.replace(/\./g, ' ');
   },
   indent: function (state) {
-    var indentation = state.lastToken.indent;
+    let indentation = state.lastToken.indent;
     if (state.lastToken.content.match(indenter)) {
       indentation += 2;
     }

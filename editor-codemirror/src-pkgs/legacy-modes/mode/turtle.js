@@ -1,14 +1,14 @@
-var curPunc;
+let curPunc;
 
 function wordRegexp(words) {
   return new RegExp('^(?:' + words.join('|') + ')$', 'i');
 }
-var ops = wordRegexp([]);
-var keywords = wordRegexp(['@prefix', '@base', 'a']);
-var operatorChars = /[*+\-<>=&|]/;
+const ops = wordRegexp([]);
+const keywords = wordRegexp(['@prefix', '@base', 'a']);
+const operatorChars = /[*+\-<>=&|]/;
 
 function tokenBase(stream, state) {
-  var ch = stream.next();
+  const ch = stream.next();
   curPunc = null;
   if (ch == '<' && !stream.match(/^[\s\u00a0=]/, false)) {
     stream.match(/^[^\s\u00a0>]*>?/);
@@ -53,8 +53,8 @@ function tokenBase(stream, state) {
 
 function tokenLiteral(quote) {
   return function (stream, state) {
-    var escaped = false,
-      ch;
+    let escaped = false;
+      let ch;
     while ((ch = stream.next()) != null) {
       if (ch == quote && !escaped) {
         state.tokenize = tokenBase;
@@ -92,7 +92,7 @@ export const turtle = {
       state.indent = stream.indentation();
     }
     if (stream.eatSpace()) return null;
-    var style = state.tokenize(stream, state);
+    const style = state.tokenize(stream, state);
 
     if (
       style != 'comment' &&
@@ -129,12 +129,12 @@ export const turtle = {
   },
 
   indent: function (state, textAfter, cx) {
-    var firstChar = textAfter && textAfter.charAt(0);
-    var context = state.context;
+    const firstChar = textAfter && textAfter.charAt(0);
+    let context = state.context;
     if (/[\]\}]/.test(firstChar))
       while (context && context.type == 'pattern') context = context.prev;
 
-    var closing = context && firstChar == context.type;
+    const closing = context && firstChar == context.type;
     if (!context) return 0;
     else if (context.type == 'pattern') return context.col;
     else if (context.align) return context.col + (closing ? 0 : 1);

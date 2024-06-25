@@ -1,5 +1,5 @@
-var atoms = ['false', 'nil', 'true'];
-var specialForms = [
+const atoms = ['false', 'nil', 'true'];
+const specialForms = [
   '.',
   'catch',
   'def',
@@ -15,7 +15,7 @@ var specialForms = [
   'try',
   'var',
 ];
-var coreSymbols = [
+const coreSymbols = [
   '*',
   "*'",
   '*1',
@@ -668,7 +668,7 @@ var coreSymbols = [
   'zero?',
   'zipmap',
 ];
-var haveBodyParameter = [
+const haveBodyParameter = [
   '->',
   '->>',
   'as->',
@@ -734,20 +734,20 @@ var haveBodyParameter = [
   'with-redefs-fn',
 ];
 
-var atom = createLookupMap(atoms);
-var specialForm = createLookupMap(specialForms);
-var coreSymbol = createLookupMap(coreSymbols);
-var hasBodyParameter = createLookupMap(haveBodyParameter);
-var delimiter = /^(?:[\\\[\]\s"(),;@^`{}~]|$)/;
-var numberLiteral =
+const atom = createLookupMap(atoms);
+const specialForm = createLookupMap(specialForms);
+const coreSymbol = createLookupMap(coreSymbols);
+const hasBodyParameter = createLookupMap(haveBodyParameter);
+const delimiter = /^(?:[\\\[\]\s"(),;@^`{}~]|$)/;
+const numberLiteral =
   /^(?:[+\-]?\d+(?:(?:N|(?:[eE][+\-]?\d+))|(?:\.?\d*(?:M|(?:[eE][+\-]?\d+))?)|\/\d+|[xX][0-9a-fA-F]+|r[0-9a-zA-Z]+)?(?=[\\\[\]\s"#'(),;@^`{}~]|$))/;
-var characterLiteral =
+const characterLiteral =
   /^(?:\\(?:backspace|formfeed|newline|return|space|tab|o[0-7]{3}|u[0-9A-Fa-f]{4}|x[0-9A-Fa-f]{4}|.)?(?=[\\\[\]\s"(),;@^`{}~]|$))/;
 
 // simple-namespace := /^[^\\\/\[\]\d\s"#'(),;@^`{}~.][^\\\[\]\s"(),;@^`{}~.\/]*/
 // simple-symbol    := /^(?:\/|[^\\\/\[\]\d\s"#'(),;@^`{}~][^\\\[\]\s"(),;@^`{}~]*)/
 // qualified-symbol := (<simple-namespace>(<.><simple-namespace>)*</>)?<simple-symbol>
-var qualifiedSymbol =
+const qualifiedSymbol =
   /^(?:(?:[^\\\/\[\]\d\s"#'(),;@^`{}~.][^\\\[\]\s"(),;@^`{}~.\/]*(?:\.[^\\\/\[\]\d\s"#'(),;@^`{}~.][^\\\[\]\s"(),;@^`{}~.\/]*)*\/)?(?:\/|[^\\\/\[\]\d\s"#'(),;@^`{}~][^\\\[\]\s"(),;@^`{}~]*)*(?=[\\\[\]\s"(),;@^`{}~]|$))/;
 
 function base(stream, state) {
@@ -763,8 +763,8 @@ function base(stream, state) {
   }
   if (stream.eat(/^[#'@^`~]/)) return [null, 'meta'];
 
-  var matches = stream.match(qualifiedSymbol);
-  var symbol = matches && matches[0];
+  const matches = stream.match(qualifiedSymbol);
+  const symbol = matches && matches[0];
 
   if (!symbol) {
     // advance stream by at least one character so we don't get stuck.
@@ -786,8 +786,8 @@ function base(stream, state) {
 }
 
 function inString(stream, state) {
-  var escaped = false,
-    next;
+  let escaped = false;
+    let next;
 
   while ((next = stream.next())) {
     if (next === '"' && !escaped) {
@@ -801,8 +801,8 @@ function inString(stream, state) {
 }
 
 function inComment(stream, state) {
-  var parenthesisCount = 1;
-  var next;
+  let parenthesisCount = 1;
+  let next;
 
   while ((next = stream.next())) {
     if (next === ')') parenthesisCount--;
@@ -818,9 +818,9 @@ function inComment(stream, state) {
 }
 
 function createLookupMap(words) {
-  var obj = {};
+  const obj = {};
 
-  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
+  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
 
   return obj;
 }
@@ -844,10 +844,10 @@ export const clojure = {
     if (stream.sol() && typeof state.ctx.indentTo !== 'number')
       state.ctx.indentTo = state.ctx.start + 1;
 
-    var typeStylePair = state.tokenize(stream, state);
-    var type = typeStylePair[0];
-    var style = typeStylePair[1];
-    var current = stream.current();
+    const typeStylePair = state.tokenize(stream, state);
+    const type = typeStylePair[0];
+    const style = typeStylePair[1];
+    const current = stream.current();
 
     if (type !== 'space') {
       if (state.lastToken === '(' && state.ctx.indentTo === null) {
@@ -869,7 +869,7 @@ export const clojure = {
   },
 
   indent: function (state) {
-    var i = state.ctx.indentTo;
+    const i = state.ctx.indentTo;
 
     return typeof i === 'number' ? i : state.ctx.start + 1;
   },

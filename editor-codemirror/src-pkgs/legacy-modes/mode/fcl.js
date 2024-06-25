@@ -1,4 +1,4 @@
-var keywords = {
+const keywords = {
   term: true,
   method: true,
   accu: true,
@@ -11,7 +11,7 @@ var keywords = {
   default: true,
 };
 
-var start_blocks = {
+const start_blocks = {
   var_input: true,
   var_output: true,
   fuzzify: true,
@@ -20,7 +20,7 @@ var start_blocks = {
   ruleblock: true,
 };
 
-var end_blocks = {
+const end_blocks = {
   end_ruleblock: true,
   end_defuzzify: true,
   end_function_block: true,
@@ -28,7 +28,7 @@ var end_blocks = {
   end_var: true,
 };
 
-var atoms = {
+const atoms = {
   true: true,
   false: true,
   nan: true,
@@ -39,10 +39,10 @@ var atoms = {
   cogs: true,
 };
 
-var isOperatorChar = /[+\-*&^%:=<>!|\/]/;
+const isOperatorChar = /[+\-*&^%:=<>!|\/]/;
 
 function tokenBase(stream, state) {
-  var ch = stream.next();
+  const ch = stream.next();
 
   if (/[\d\.]/.test(ch)) {
     if (ch == '.') {
@@ -71,7 +71,7 @@ function tokenBase(stream, state) {
   }
   stream.eatWhile(/[\w\$_\xa1-\uffff]/);
 
-  var cur = stream.current().toLowerCase();
+  const cur = stream.current().toLowerCase();
   if (
     keywords.propertyIsEnumerable(cur) ||
     start_blocks.propertyIsEnumerable(cur) ||
@@ -84,8 +84,8 @@ function tokenBase(stream, state) {
 }
 
 function tokenComment(stream, state) {
-  var maybeEnd = false,
-    ch;
+  let maybeEnd = false;
+    let ch;
   while ((ch = stream.next())) {
     if ((ch == '/' || ch == ')') && maybeEnd) {
       state.tokenize = tokenBase;
@@ -116,7 +116,7 @@ function pushContext(state, col, type) {
 
 function popContext(state) {
   if (!state.context.prev) return;
-  var t = state.context.type;
+  const t = state.context.type;
   if (t == 'end_block') state.indented = state.context.indented;
   return (state.context = state.context.prev);
 }
@@ -135,7 +135,7 @@ export const fcl = {
   },
 
   token: function (stream, state) {
-    var ctx = state.context;
+    const ctx = state.context;
     if (stream.sol()) {
       if (ctx.align == null) ctx.align = false;
       state.indented = stream.indentation();
@@ -143,11 +143,11 @@ export const fcl = {
     }
     if (stream.eatSpace()) return null;
 
-    var style = (state.tokenize || tokenBase)(stream, state);
+    const style = (state.tokenize || tokenBase)(stream, state);
     if (style == 'comment') return style;
     if (ctx.align == null) ctx.align = true;
 
-    var cur = stream.current().toLowerCase();
+    const cur = stream.current().toLowerCase();
 
     if (start_blocks.propertyIsEnumerable(cur))
       pushContext(state, stream.column(), 'end_block');
@@ -159,9 +159,9 @@ export const fcl = {
 
   indent: function (state, textAfter, cx) {
     if (state.tokenize != tokenBase && state.tokenize != null) return 0;
-    var ctx = state.context;
+    const ctx = state.context;
 
-    var closing = end_blocks.propertyIsEnumerable(textAfter);
+    const closing = end_blocks.propertyIsEnumerable(textAfter);
     if (ctx.align) return ctx.column + (closing ? 0 : 1);
     else return ctx.indented + (closing ? 0 : cx.unit);
   },

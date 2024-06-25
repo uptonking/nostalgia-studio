@@ -35,11 +35,11 @@ export class FuzzyMatcher {
 
   constructor(readonly pattern: string) {
     for (let p = 0; p < pattern.length; ) {
-      let char = codePointAt(pattern, p),
-        size = codePointSize(char);
+      const char = codePointAt(pattern, p);
+        const size = codePointSize(char);
       this.chars.push(char);
-      let part = pattern.slice(p, p + size),
-        upper = part.toUpperCase();
+      const part = pattern.slice(p, p + size);
+        const upper = part.toUpperCase();
       this.folded.push(
         codePointAt(upper == part ? part.toLowerCase() : upper, 0),
       );
@@ -64,30 +64,30 @@ export class FuzzyMatcher {
   match(word: string): { score: number; matched: readonly number[] } | null {
     if (this.pattern.length == 0) return this.ret(Penalty.NotFull, []);
     if (word.length < this.pattern.length) return null;
-    let { chars, folded, any, precise, byWord } = this;
+    const { chars, folded, any, precise, byWord } = this;
     // For single-character queries, only match when they occur right
     // at the start
     if (chars.length == 1) {
-      let first = codePointAt(word, 0),
-        firstSize = codePointSize(first);
+      const first = codePointAt(word, 0);
+        const firstSize = codePointSize(first);
       let score = firstSize == word.length ? 0 : Penalty.NotFull;
       if (first == chars[0]) {
       } else if (first == folded[0]) score += Penalty.CaseFold;
       else return null;
       return this.ret(score, [0, firstSize]);
     }
-    let direct = word.indexOf(this.pattern);
+    const direct = word.indexOf(this.pattern);
     if (direct == 0)
       return this.ret(
         word.length == this.pattern.length ? 0 : Penalty.NotFull,
         [0, this.pattern.length],
       );
 
-    let len = chars.length,
-      anyTo = 0;
+    const len = chars.length;
+      let anyTo = 0;
     if (direct < 0) {
       for (let i = 0, e = Math.min(word.length, 200); i < e && anyTo < len; ) {
-        let next = codePointAt(word, i);
+        const next = codePointAt(word, i);
         if (next == chars[anyTo] || next == folded[anyTo]) any[anyTo++] = i;
         i += codePointSize(next);
       }
@@ -101,21 +101,21 @@ export class FuzzyMatcher {
     // Tracks whether there is a match that hits only characters that
     // appear to be starting words. `byWordFolded` is set to true when
     // a case folded character is encountered in such a match
-    let byWordTo = 0,
-      byWordFolded = false;
+    let byWordTo = 0;
+      let byWordFolded = false;
     // If we've found a partial adjacent match, these track its state
-    let adjacentTo = 0,
-      adjacentStart = -1,
-      adjacentEnd = -1;
-    let hasLower = /[a-z]/.test(word),
-      wordAdjacent = true;
+    let adjacentTo = 0;
+      let adjacentStart = -1;
+      let adjacentEnd = -1;
+    const hasLower = /[a-z]/.test(word);
+      let wordAdjacent = true;
     // Go over the option's text, scanning for the various kinds of matches
     for (
       let i = 0, e = Math.min(word.length, 200), prevType = Tp.NonWord;
       i < e && byWordTo < len;
 
     ) {
-      let next = codePointAt(word, i);
+      const next = codePointAt(word, i);
       if (direct < 0) {
         if (preciseTo < len && next == chars[preciseTo])
           precise[preciseTo++] = i;
@@ -129,8 +129,8 @@ export class FuzzyMatcher {
           }
         }
       }
-      let ch,
-        type =
+      let ch;
+        const type =
           next < 0xff
             ? (next >= 48 && next <= 57) || (next >= 97 && next <= 122)
               ? Tp.Lower
@@ -200,10 +200,10 @@ export class FuzzyMatcher {
   }
 
   result(score: number, positions: number[], word: string) {
-    let result: number[] = [],
-      i = 0;
-    for (let pos of positions) {
-      let to = pos + (this.astral ? codePointSize(codePointAt(word, pos)) : 1);
+    const result: number[] = [];
+      let i = 0;
+    for (const pos of positions) {
+      const to = pos + (this.astral ? codePointSize(codePointAt(word, pos)) : 1);
       if (i && result[i - 1] == pos) result[i - 1] = to;
       else {
         result[i++] = pos;
@@ -225,8 +225,8 @@ export class StrictMatcher {
 
   match(word: string): { score: number; matched: readonly number[] } | null {
     if (word.length < this.pattern.length) return null;
-    let start = word.slice(0, this.pattern.length);
-    let match =
+    const start = word.slice(0, this.pattern.length);
+    const match =
       start == this.pattern
         ? 0
         : start.toLowerCase() == this.folded

@@ -1,7 +1,7 @@
-import { Completion, CompletionSource } from './completion';
+import type { Completion, CompletionSource } from './completion';
 import { Info } from './theme';
-import { Facet, combineConfig, EditorState } from '@codemirror/state';
-import { EditorView, Rect, Direction } from '@codemirror/view';
+import { Facet, combineConfig, type EditorState } from '@codemirror/state';
+import { type EditorView, type Rect, Direction } from '@codemirror/view';
 
 export interface CompletionConfig {
   /// When enabled (defaults to true), autocompletion will start
@@ -156,16 +156,16 @@ function defaultPositionInfo(
   space: Rect,
   tooltip: HTMLElement,
 ) {
-  let rtl = view.textDirection == Direction.RTL,
-    left = rtl,
-    narrow = false;
-  let side = 'top',
-    offset,
-    maxWidth;
-  let spaceLeft = list.left - space.left,
-    spaceRight = space.right - list.right;
-  let infoWidth = info.right - info.left,
-    infoHeight = info.bottom - info.top;
+  const rtl = view.textDirection == Direction.RTL;
+    let left = rtl;
+    let narrow = false;
+  let side = 'top';
+    let offset;
+    let maxWidth;
+  const spaceLeft = list.left - space.left;
+    const spaceRight = space.right - list.right;
+  const infoWidth = info.right - info.left;
+    const infoHeight = info.bottom - info.top;
   if (left && spaceLeft < Math.min(infoWidth, spaceRight)) left = false;
   else if (!left && spaceRight < Math.min(infoWidth, spaceLeft)) left = true;
   if (infoWidth <= (left ? spaceLeft : spaceRight)) {
@@ -179,7 +179,7 @@ function defaultPositionInfo(
       Info.Width,
       (rtl ? list.right : space.right - list.left) - Info.Margin,
     );
-    let spaceBelow = space.bottom - list.bottom;
+    const spaceBelow = space.bottom - list.bottom;
     if (spaceBelow >= infoHeight || spaceBelow > list.top) {
       // Below the completion
       offset = option.bottom - list.top;
@@ -189,8 +189,8 @@ function defaultPositionInfo(
       offset = list.bottom - option.top;
     }
   }
-  let scaleY = (list.bottom - list.top) / tooltip.offsetHeight;
-  let scaleX = (list.right - list.left) / tooltip.offsetWidth;
+  const scaleY = (list.bottom - list.top) / tooltip.offsetHeight;
+  const scaleX = (list.right - list.left) / tooltip.offsetWidth;
   return {
     style: `${side}: ${offset / scaleY}px; max-width: ${maxWidth / scaleX}px`,
     class:

@@ -1,28 +1,28 @@
 import {
   Decoration,
-  DecorationSet,
+  type DecorationSet,
   WidgetType,
   EditorView,
   keymap,
-  KeyBinding,
+  type KeyBinding,
 } from '@codemirror/view';
 import {
   StateField,
   StateEffect,
-  ChangeDesc,
-  EditorState,
+  type ChangeDesc,
+  type EditorState,
   EditorSelection,
   Transaction,
-  TransactionSpec,
+  type TransactionSpec,
   Text,
-  StateCommand,
+  type StateCommand,
   Prec,
   Facet,
   MapMode,
 } from '@codemirror/state';
 import { indentUnit } from '@codemirror/language';
 import { baseTheme } from './theme';
-import { Completion, pickedCompletion } from './completion';
+import { type Completion, pickedCompletion } from './completion';
 
 class FieldPos {
   constructor(
@@ -41,8 +41,8 @@ class FieldRange {
   ) {}
 
   map(changes: ChangeDesc) {
-    let from = changes.mapPos(this.from, -1, MapMode.TrackDel);
-    let to = changes.mapPos(this.to, 1, MapMode.TrackDel);
+    const from = changes.mapPos(this.from, -1, MapMode.TrackDel);
+    const to = changes.mapPos(this.to, 1, MapMode.TrackDel);
     return from == null || to == null
       ? null
       : new FieldRange(this.field, from, to);
@@ -56,14 +56,14 @@ class Snippet {
   ) {}
 
   instantiate(state: EditorState, pos: number) {
-    let text = [],
-      lineStart = [pos];
-    let lineObj = state.doc.lineAt(pos),
-      baseIndent = /^\s*/.exec(lineObj.text)![0];
+    const text = [];
+      const lineStart = [pos];
+    const lineObj = state.doc.lineAt(pos);
+      const baseIndent = /^\s*/.exec(lineObj.text)![0];
     for (let line of this.lines) {
       if (text.length) {
-        let indent = baseIndent,
-          tabs = /^\t*/.exec(line)![0].length;
+        let indent = baseIndent;
+          const tabs = /^\t*/.exec(line)![0].length;
         for (let i = 0; i < tabs; i++) indent += state.facet(indentUnit);
         lineStart.push(pos + indent.length - tabs);
         line = indent + line.slice(tabs);
@@ -71,7 +71,7 @@ class Snippet {
       text.push(line);
       pos += line.length + 1;
     }
-    let ranges = this.fieldPositions.map(
+    const ranges = this.fieldPositions.map(
       (pos) =>
         new FieldRange(
           pos.field,
@@ -83,18 +83,18 @@ class Snippet {
   }
 
   static parse(template: string) {
-    let fields: { seq: number | null; name: string }[] = [];
-    let lines = [],
-      positions: FieldPos[] = [],
-      m;
+    const fields: { seq: number | null; name: string }[] = [];
+    const lines = [];
+      const positions: FieldPos[] = [];
+      let m;
     for (let line of template.split(/\r\n?|\n/)) {
       while (
         (m = /[#$]\{(?:(\d+)(?::([^}]*))?|((?:\\[{}]|[^}])*))\}/.exec(line))
       ) {
-        let seq = m[1] ? +m[1] : null,
-          rawName = m[2] || m[3] || '',
-          found = -1;
-        let name = rawName.replace(/\\[{}]/g, (m) => m[1]);
+        const seq = m[1] ? Number(m[1]) : null;
+          const rawName = m[2] || m[3] || '';
+          let found = -1;
+        const name = rawName.replace(/\\[{}]/g, (m) => m[1]);
         for (let i = 0; i < fields.length; i++) {
           if (
             seq != null
@@ -114,7 +114,7 @@ class Snippet {
             i++;
           fields.splice(i, 0, { seq, name });
           found = i;
-          for (let pos of positions) if (pos.field >= found) pos.field++;
+          for (const pos of positions) if (pos.field >= found) pos.field++;
         }
         positions.push(
           new FieldPos(found, lines.length, m.index, m.index + name.length),
@@ -123,7 +123,7 @@ class Snippet {
           line.slice(0, m.index) + rawName + line.slice(m.index + m[0].length);
       }
       line = line.replace(/\\([{}])/g, (_, brace, index) => {
-        for (let pos of positions)
+        for (const pos of positions)
           if (pos.line == lines.length && pos.from > index) {
             pos.from--;
             pos.to--;
@@ -136,10 +136,10 @@ class Snippet {
   }
 }
 
-let fieldMarker = Decoration.widget({
+const fieldMarker = Decoration.widget({
   widget: new (class extends WidgetType {
     toDOM() {
-      let span = document.createElement('span');
+      const span = document.createElement('span');
       span.className = 'cm-snippetFieldPosition';
       return span;
     }
@@ -148,7 +148,7 @@ let fieldMarker = Decoration.widget({
     }
   })(),
 });
-let fieldRange = Decoration.mark({ class: 'cm-snippetField' });
+const fieldRange = Decoration.mark({ class: 'cm-snippetField' });
 
 class ActiveSnippet {
   deco: DecorationSet;
@@ -165,9 +165,9 @@ class ActiveSnippet {
   }
 
   map(changes: ChangeDesc) {
-    let ranges = [];
-    for (let r of this.ranges) {
-      let mapped = r.map(changes);
+    const ranges = [];
+    for (const r of this.ranges) {
+      const mapped = r.map(changes);
       if (!mapped) return null;
       ranges.push(mapped);
     }
@@ -198,7 +198,7 @@ const snippetState = StateField.define<ActiveSnippet | null>({
   },
 
   update(value, tr) {
-    for (let effect of tr.effects) {
+    for (const effect of tr.effects) {
       if (effect.is(setActive)) return effect.value;
       if (effect.is(moveToField) && value)
         return new ActiveSnippet(value.ranges, effect.value);
@@ -250,15 +250,15 @@ function fieldSelection(ranges: readonly FieldRange[], field: number) {
 /// in front of it. This will be removed and the brace will not be
 /// interpreted as indicating a placeholder.
 export function snippet(template: string) {
-  let snippet = Snippet.parse(template);
+  const snippet = Snippet.parse(template);
   return (
     editor: { state: EditorState; dispatch: (tr: Transaction) => void },
     completion: Completion | null,
     from: number,
     to: number,
   ) => {
-    let { text, ranges } = snippet.instantiate(editor.state, from);
-    let spec: TransactionSpec = {
+    const { text, ranges } = snippet.instantiate(editor.state, from);
+    const spec: TransactionSpec = {
       changes: { from, to, insert: Text.of(text) },
       scrollIntoView: true,
       annotations: completion
@@ -270,8 +270,8 @@ export function snippet(template: string) {
     };
     if (ranges.length) spec.selection = fieldSelection(ranges, 0);
     if (ranges.some((r) => r.field > 0)) {
-      let active = new ActiveSnippet(ranges, 0);
-      let effects: StateEffect<unknown>[] = (spec.effects = [
+      const active = new ActiveSnippet(ranges, 0);
+      const effects: StateEffect<unknown>[] = (spec.effects = [
         setActive.of(active),
       ]);
       if (editor.state.field(snippetState, false) === undefined)
@@ -290,10 +290,10 @@ export function snippet(template: string) {
 
 function moveField(dir: 1 | -1): StateCommand {
   return ({ state, dispatch }) => {
-    let active = state.field(snippetState, false);
+    const active = state.field(snippetState, false);
     if (!active || (dir < 0 && active.active == 0)) return false;
-    let next = active.active + dir,
-      last = dir > 0 && !active.ranges.some((r) => r.field == next + dir);
+    const next = active.active + dir;
+      const last = dir > 0 && !active.ranges.some((r) => r.field == next + dir);
     dispatch(
       state.update({
         selection: fieldSelection(active.ranges, next),
@@ -309,7 +309,7 @@ function moveField(dir: 1 | -1): StateCommand {
 
 /// A command that clears the active snippet, if any.
 export const clearSnippet: StateCommand = ({ state, dispatch }) => {
-  let active = state.field(snippetState, false);
+  const active = state.field(snippetState, false);
   if (!active) return false;
   dispatch(state.update({ effects: setActive.of(null) }));
   return true;
@@ -324,15 +324,15 @@ export const prevSnippetField = moveField(-1);
 /// Check if there is an active snippet with a next field for
 /// `nextSnippetField` to move to.
 export function hasNextSnippetField(state: EditorState) {
-  let active = state.field(snippetState, false);
-  return !!(active && active.ranges.some((r) => r.field == active!.active + 1));
+  const active = state.field(snippetState, false);
+  return Boolean(active && active.ranges.some((r) => r.field == active!.active + 1));
 }
 
 /// Returns true if there is an active snippet and a previous field
 /// for `prevSnippetField` to move to.
 export function hasPrevSnippetField(state: EditorState) {
-  let active = state.field(snippetState, false);
-  return !!(active && active.active > 0);
+  const active = state.field(snippetState, false);
+  return Boolean(active && active.active > 0);
 }
 
 const defaultSnippetKeymap = [
@@ -370,14 +370,14 @@ export function snippetCompletion(
 
 const snippetPointerHandler = EditorView.domEventHandlers({
   mousedown(event, view) {
-    let active = view.state.field(snippetState, false),
-      pos: number | null;
+    const active = view.state.field(snippetState, false);
+      let pos: number | null;
     if (
       !active ||
       (pos = view.posAtCoords({ x: event.clientX, y: event.clientY })) == null
     )
       return false;
-    let match = active.ranges.find((r) => r.from <= pos! && r.to >= pos!);
+    const match = active.ranges.find((r) => r.from <= pos! && r.to >= pos!);
     if (!match || match.field == active.active) return false;
     view.dispatch({
       selection: fieldSelection(active.ranges, match.field),

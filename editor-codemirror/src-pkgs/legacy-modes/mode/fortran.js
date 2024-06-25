@@ -1,12 +1,12 @@
 function words(array) {
-  var keys = {};
-  for (var i = 0; i < array.length; ++i) {
+  const keys = {};
+  for (let i = 0; i < array.length; ++i) {
     keys[array[i]] = true;
   }
   return keys;
 }
 
-var keywords = words([
+const keywords = words([
   'abstract',
   'accept',
   'allocatable',
@@ -99,7 +99,7 @@ var keywords = words([
   'while',
   'write',
 ]);
-var builtins = words([
+const builtins = words([
   'abort',
   'abs',
   'access',
@@ -364,7 +364,7 @@ var builtins = words([
   'zsqrt',
 ]);
 
-var dataTypes = words([
+const dataTypes = words([
   'c_bool',
   'c_char',
   'c_double',
@@ -402,15 +402,15 @@ var dataTypes = words([
   'logical',
   'real',
 ]);
-var isOperatorChar = /[+\-*&=<>\/\:]/;
-var litOperator = /^\.(and|or|eq|lt|le|gt|ge|ne|not|eqv|neqv)\./i;
+const isOperatorChar = /[+\-*&=<>\/\:]/;
+const litOperator = /^\.(and|or|eq|lt|le|gt|ge|ne|not|eqv|neqv)\./i;
 
 function tokenBase(stream, state) {
   if (stream.match(litOperator)) {
     return 'operator';
   }
 
-  var ch = stream.next();
+  const ch = stream.next();
   if (ch == '!') {
     stream.skipToEnd();
     return 'comment';
@@ -431,7 +431,7 @@ function tokenBase(stream, state) {
     return 'operator';
   }
   stream.eatWhile(/[\w\$_]/);
-  var word = stream.current().toLowerCase();
+  const word = stream.current().toLowerCase();
 
   if (keywords.hasOwnProperty(word)) {
     return 'keyword';
@@ -444,9 +444,9 @@ function tokenBase(stream, state) {
 
 function tokenString(quote) {
   return function (stream, state) {
-    var escaped = false,
-      next,
-      end = false;
+    let escaped = false;
+      let next;
+      let end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -469,7 +469,7 @@ export const fortran = {
 
   token: function (stream, state) {
     if (stream.eatSpace()) return null;
-    var style = (state.tokenize || tokenBase)(stream, state);
+    const style = (state.tokenize || tokenBase)(stream, state);
     if (style == 'comment' || style == 'meta') return style;
     return style;
   },

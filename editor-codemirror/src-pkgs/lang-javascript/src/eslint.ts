@@ -1,6 +1,6 @@
-import { Diagnostic } from '@codemirror/lint';
-import { Text } from '@codemirror/state';
-import { EditorView } from '@codemirror/view';
+import type { Diagnostic } from '@codemirror/lint';
+import type { Text } from '@codemirror/state';
+import type { EditorView } from '@codemirror/view';
 import { javascriptLanguage } from './javascript';
 
 /// Connects an [ESLint](https://eslint.org/) linter to CodeMirror's
@@ -35,16 +35,16 @@ export function esLint(eslint: any, config?: any) {
   }
 
   return (view: EditorView) => {
-    let { state } = view,
-      found: Diagnostic[] = [];
-    for (let { from, to } of javascriptLanguage.findRegions(state)) {
-      let fromLine = state.doc.lineAt(from),
-        offset = {
+    const { state } = view;
+      const found: Diagnostic[] = [];
+    for (const { from, to } of javascriptLanguage.findRegions(state)) {
+      const fromLine = state.doc.lineAt(from);
+        const offset = {
           line: fromLine.number - 1,
           col: from - fromLine.from,
           pos: from,
         };
-      for (let d of eslint.verify(state.sliceDoc(from, to), config))
+      for (const d of eslint.verify(state.sliceDoc(from, to), config))
         found.push(translateDiagnostic(d, state.doc, offset));
     }
     return found;
@@ -67,8 +67,8 @@ function translateDiagnostic(
   doc: Text,
   offset: { line: number; col: number; pos: number },
 ): Diagnostic {
-  let start = mapPos(input.line, input.column, doc, offset);
-  let result: Diagnostic = {
+  const start = mapPos(input.line, input.column, doc, offset);
+  const result: Diagnostic = {
     from: start,
     to:
       input.endLine != null && input.endColumn != 1
@@ -79,9 +79,9 @@ function translateDiagnostic(
     severity: input.severity == 1 ? 'warning' : 'error',
   };
   if (input.fix) {
-    let { range, text } = input.fix,
-      from = range[0] + offset.pos - start,
-      to = range[1] + offset.pos - start;
+    const { range, text } = input.fix;
+      const from = range[0] + offset.pos - start;
+      const to = range[1] + offset.pos - start;
     result.actions = [
       {
         name: 'fix',

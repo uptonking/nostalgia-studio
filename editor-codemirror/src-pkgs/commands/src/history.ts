@@ -1,18 +1,18 @@
 import {
   combineConfig,
-  EditorState,
+  type EditorState,
   Transaction,
   StateField,
-  StateCommand,
+  type StateCommand,
   StateEffect,
   Facet,
   Annotation,
-  Extension,
+  type Extension,
   ChangeSet,
   ChangeDesc,
   EditorSelection,
 } from '@codemirror/state';
-import { KeyBinding, EditorView } from '@codemirror/view';
+import { type KeyBinding, EditorView } from '@codemirror/view';
 
 const enum BranchName {
   Done,
@@ -77,12 +77,12 @@ const historyField_ = StateField.define({
   },
 
   update(state: HistoryState, tr: Transaction): HistoryState {
-    let config = tr.state.facet(historyConfig);
+    const config = tr.state.facet(historyConfig);
 
-    let fromHist = tr.annotation(fromHistory);
+    const fromHist = tr.annotation(fromHistory);
     if (fromHist) {
-      let item = HistEvent.fromTransaction(tr, fromHist.selection),
-        from = fromHist.side;
+      const item = HistEvent.fromTransaction(tr, fromHist.selection);
+        const from = fromHist.side;
       let other = from == BranchName.Done ? state.undone : state.done;
       if (item)
         other = updateBranch(other, other.length, config.minDepth, item);
@@ -93,15 +93,15 @@ const historyField_ = StateField.define({
       );
     }
 
-    let isolate = tr.annotation(isolateHistory);
+    const isolate = tr.annotation(isolateHistory);
     if (isolate == 'full' || isolate == 'before') state = state.isolate();
 
     if (tr.annotation(Transaction.addToHistory) === false)
       return !tr.changes.empty ? state.addMapping(tr.changes.desc) : state;
 
-    let event = HistEvent.fromTransaction(tr);
-    let time = tr.annotation(Transaction.time)!,
-      userEvent = tr.annotation(Transaction.userEvent);
+    const event = HistEvent.fromTransaction(tr);
+    const time = tr.annotation(Transaction.time)!;
+      const userEvent = tr.annotation(Transaction.userEvent);
     if (event) state = state.addChanges(event, time, userEvent, config, tr);
     else if (tr.selection)
       state = state.addSelection(
@@ -137,7 +137,7 @@ export function history(config: HistoryConfig = {}): Extension {
     historyConfig.of(config),
     EditorView.domEventHandlers({
       beforeinput(e, view) {
-        let command =
+        const command =
           e.inputType == 'historyUndo'
             ? undo
             : e.inputType == 'historyRedo'
@@ -167,9 +167,9 @@ function cmd(side: BranchName, selection: boolean): StateCommand {
     dispatch: (tr: Transaction) => void;
   }) {
     if (!selection && state.readOnly) return false;
-    let historyState = state.field(historyField_, false);
+    const historyState = state.field(historyField_, false);
     if (!historyState) return false;
-    let tr = historyState.pop(side, state, selection);
+    const tr = historyState.pop(side, state, selection);
     if (!tr) return false;
     dispatch(tr);
     return true;
@@ -191,9 +191,9 @@ export const redoSelection = cmd(BranchName.Undone, true);
 
 function depth(side: BranchName) {
   return function (state: EditorState): number {
-    let histState = state.field(historyField_, false);
+    const histState = state.field(historyField_, false);
     if (!histState) return 0;
-    let branch = side == BranchName.Done ? histState.done : histState.undone;
+    const branch = side == BranchName.Done ? histState.done : histState.undone;
     return branch.length - (branch.length && !branch[0].changes ? 1 : 0);
   };
 }
@@ -259,8 +259,8 @@ class HistEvent {
   // there are no changes or effects in the transaction.
   static fromTransaction(tr: Transaction, selection?: EditorSelection) {
     let effects: readonly StateEffect<any>[] = none;
-    for (let invert of tr.startState.facet(invertedEffects)) {
-      let result = invert(tr);
+    for (const invert of tr.startState.facet(invertedEffects)) {
+      const result = invert(tr);
       if (result.length) effects = effects.concat(result);
     }
     if (!effects.length && tr.changes.empty) return null;
@@ -286,20 +286,20 @@ function updateBranch(
   maxLen: number,
   newEvent: HistEvent,
 ) {
-  let start = to + 1 > maxLen + 20 ? to - maxLen - 1 : 0;
-  let newBranch = branch.slice(start, to);
+  const start = to + 1 > maxLen + 20 ? to - maxLen - 1 : 0;
+  const newBranch = branch.slice(start, to);
   newBranch.push(newEvent);
   return newBranch;
 }
 
 function isAdjacent(a: ChangeDesc, b: ChangeDesc): boolean {
-  let ranges: number[] = [],
-    isAdjacent = false;
+  const ranges: number[] = [];
+    let isAdjacent = false;
   a.iterChangedRanges((f, t) => ranges.push(f, t));
   b.iterChangedRanges((_f, _t, f, t) => {
     for (let i = 0; i < ranges.length; ) {
-      let from = ranges[i++],
-        to = ranges[i++];
+      const from = ranges[i++];
+        const to = ranges[i++];
       if (t >= from && f <= to) isAdjacent = true;
     }
   });
@@ -325,8 +325,8 @@ function addSelection(branch: Branch, selection: EditorSelection) {
   if (!branch.length) {
     return [HistEvent.selection([selection])];
   } else {
-    let lastEvent = branch[branch.length - 1];
-    let sels = lastEvent.selectionsAfter.slice(
+    const lastEvent = branch[branch.length - 1];
+    const sels = lastEvent.selectionsAfter.slice(
       Math.max(0, lastEvent.selectionsAfter.length - MaxSelectionsPerEvent),
     );
     if (sels.length && sels[sels.length - 1].eq(selection)) return branch;
@@ -342,8 +342,8 @@ function addSelection(branch: Branch, selection: EditorSelection) {
 
 // Assumes the top item has one or more selectionAfter values
 function popSelection(branch: Branch): Branch {
-  let last = branch[branch.length - 1];
-  let newBranch = branch.slice();
+  const last = branch[branch.length - 1];
+  const newBranch = branch.slice();
   newBranch[branch.length - 1] = last.setSelAfter(
     last.selectionsAfter.slice(0, last.selectionsAfter.length - 1),
   );
@@ -355,13 +355,13 @@ function popSelection(branch: Branch): Branch {
 // propagate the mapping to the next item.
 function addMappingToBranch(branch: Branch, mapping: ChangeDesc) {
   if (!branch.length) return branch;
-  let length = branch.length,
-    selections = none;
+  let length = branch.length;
+    let selections = none;
   while (length) {
-    let event = mapEvent(branch[length - 1], mapping, selections);
+    const event = mapEvent(branch[length - 1], mapping, selections);
     if ((event.changes && !event.changes.empty) || event.effects.length) {
       // Event survived mapping
-      let result = branch.slice(0, length);
+      const result = branch.slice(0, length);
       result[length - 1] = event;
       return result;
     } else {
@@ -379,7 +379,7 @@ function mapEvent(
   mapping: ChangeDesc,
   extraSelections: readonly EditorSelection[],
 ) {
-  let selections = conc(
+  const selections = conc(
     event.selectionsAfter.length
       ? event.selectionsAfter.map((s) => s.map(mapping))
       : none,
@@ -388,9 +388,9 @@ function mapEvent(
   // Change-less events don't store mappings (they are always the last event in a branch)
   if (!event.changes) return HistEvent.selection(selections);
 
-  let mappedChanges = event.changes.map(mapping),
-    before = mapping.mapDesc(event.changes, true);
-  let fullMapping = event.mapped ? event.mapped.composeDesc(before) : before;
+  const mappedChanges = event.changes.map(mapping);
+    const before = mapping.mapDesc(event.changes, true);
+  const fullMapping = event.mapped ? event.mapped.composeDesc(before) : before;
   return new HistEvent(
     mappedChanges,
     StateEffect.mapEffects(event.effects, mapping),
@@ -421,8 +421,8 @@ class HistoryState {
     config: Required<HistoryConfig>,
     tr: Transaction,
   ): HistoryState {
-    let done = this.done,
-      lastEvent = done[done.length - 1];
+    let done = this.done;
+      const lastEvent = done[done.length - 1];
     if (
       lastEvent &&
       lastEvent.changes &&
@@ -459,7 +459,7 @@ class HistoryState {
     userEvent: string | undefined,
     newGroupDelay: number,
   ) {
-    let last = this.done.length
+    const last = this.done.length
       ? this.done[this.done.length - 1].selectionsAfter
       : none;
     if (
@@ -493,10 +493,10 @@ class HistoryState {
     state: EditorState,
     onlySelection: boolean,
   ): Transaction | null {
-    let branch = side == BranchName.Done ? this.done : this.undone;
+    const branch = side == BranchName.Done ? this.done : this.undone;
     if (branch.length == 0) return null;
-    let event = branch[branch.length - 1],
-      selection = event.selectionsAfter[0] || state.selection;
+    const event = branch[branch.length - 1];
+      const selection = event.selectionsAfter[0] || state.selection;
     if (onlySelection && event.selectionsAfter.length) {
       return state.update({
         selection: event.selectionsAfter[event.selectionsAfter.length - 1],

@@ -1,8 +1,8 @@
 import {
-  ChangeSet,
+  type ChangeSet,
   RangeSet,
   findClusterBreak,
-  SelectionRange,
+  type SelectionRange,
 } from '@codemirror/state';
 import {
   ContentView,
@@ -11,13 +11,13 @@ import {
   DOMPos,
   replaceRange,
 } from './contentview';
-import { BlockView, LineView, BlockWidgetView } from './blockview';
+import { type BlockView, LineView, BlockWidgetView } from './blockview';
 import { TextView, MarkView } from './inlineview';
 import { ContentBuilder } from './buildview';
 import browser from './browser';
 import {
   Decoration,
-  DecorationSet,
+  type DecorationSet,
   WidgetType,
   addRange,
   MarkDecoration,
@@ -26,27 +26,27 @@ import { getAttrs } from './attributes';
 import {
   clientRectsFor,
   isEquivalentPosition,
-  Rect,
+  type Rect,
   scrollRectIntoView,
   getSelection,
   hasSelection,
   textRange,
-  DOMSelectionState,
+  type DOMSelectionState,
   textNodeBefore,
   textNodeAfter,
 } from './dom';
 import {
-  ViewUpdate,
+  type ViewUpdate,
   decorations as decorationsFacet,
   outerDecorations,
   ChangedRange,
-  ScrollTarget,
+  type ScrollTarget,
   scrollHandler,
   getScrollMargins,
   logException,
   setEditContextFormatting,
 } from './extension';
-import { EditorView } from './editorview';
+import type { EditorView } from './editorview';
 import { Direction } from './bidi';
 
 type Composition = {
@@ -139,7 +139,7 @@ export class DocView extends ContentView {
       )
         readCompositionAt = update.state.selection.main.head;
     }
-    let composition =
+    const composition =
       readCompositionAt > -1
         ? findCompositionRange(this.view, update.changes, readCompositionAt)
         : null;
@@ -147,7 +147,7 @@ export class DocView extends ContentView {
 
     if (this.hasComposition) {
       this.markedForComposition.clear();
-      let { from, to } = this.hasComposition;
+      const { from, to } = this.hasComposition;
       changedRanges = new ChangedRange(
         from,
         to,
@@ -172,9 +172,9 @@ export class DocView extends ContentView {
     )
       this.forceSelection = true;
 
-    let prevDeco = this.decorations,
-      deco = this.updateDeco();
-    let decoDiff = findChangedDeco(prevDeco, deco, update.changes);
+    const prevDeco = this.decorations;
+      const deco = this.updateDeco();
+    const decoDiff = findChangedDeco(prevDeco, deco, update.changes);
     changedRanges = ChangedRange.extendWithRanges(changedRanges, decoDiff);
 
     if (!(this.flags & ViewFlag.Dirty) && changedRanges.length == 0) {
@@ -200,7 +200,7 @@ export class DocView extends ContentView {
     this.view.viewState.mustMeasureContent = true;
     this.updateChildren(changes, oldLength, composition);
 
-    let { observer } = this.view;
+    const { observer } = this.view;
     observer.ignore(() => {
       // Lock the height during redrawing, since Chrome sometimes
       // messes with the scroll position during DOM mutation (though
@@ -213,7 +213,7 @@ export class DocView extends ContentView {
       // around the selection, get confused and report a different
       // selection from the one it displays (issue #218). This tries
       // to detect that situation.
-      let track =
+      const track =
         browser.chrome || browser.ios
           ? { node: observer.selectionRange.focusNode!, written: false }
           : undefined;
@@ -229,12 +229,12 @@ export class DocView extends ContentView {
     this.markedForComposition.forEach(
       (cView) => (cView.flags &= ~ViewFlag.Composition),
     );
-    let gaps = [];
+    const gaps = [];
     if (
       this.view.viewport.from ||
       this.view.viewport.to < this.view.state.doc.length
     )
-      for (let child of this.children)
+      for (const child of this.children)
         if (
           child instanceof BlockWidgetView &&
           child.widget instanceof BlockGapWidget
@@ -248,31 +248,31 @@ export class DocView extends ContentView {
     oldLength: number,
     composition: Composition | null,
   ) {
-    let ranges = composition
+    const ranges = composition
       ? composition.range.addToSet(changes.slice())
       : changes;
-    let cursor = this.childCursor(oldLength);
+    const cursor = this.childCursor(oldLength);
     for (let i = ranges.length - 1; ; i--) {
-      let next = i >= 0 ? ranges[i] : null;
+      const next = i >= 0 ? ranges[i] : null;
       if (!next) break;
-      let { fromA, toA, fromB, toB } = next,
-        content,
-        breakAtStart,
-        openStart,
-        openEnd;
+      const { fromA, toA, fromB, toB } = next;
+        let content;
+        let breakAtStart;
+        let openStart;
+        let openEnd;
       if (
         composition &&
         composition.range.fromB < toB &&
         composition.range.toB > fromB
       ) {
-        let before = ContentBuilder.build(
+        const before = ContentBuilder.build(
           this.view.state.doc,
           fromB,
           composition.range.fromB,
           this.decorations,
           this.dynamicDecorationMap,
         );
-        let after = ContentBuilder.build(
+        const after = ContentBuilder.build(
           this.view.state.doc,
           composition.range.toB,
           toB,
@@ -282,7 +282,7 @@ export class DocView extends ContentView {
         breakAtStart = before.breakAtStart;
         openStart = before.openStart;
         openEnd = after.openEnd;
-        let compLine = this.compositionView(composition);
+        const compLine = this.compositionView(composition);
         if (after.breakAtStart) {
           compLine.breakAfter = 1;
         } else if (
@@ -322,8 +322,8 @@ export class DocView extends ContentView {
           this.dynamicDecorationMap,
         ));
       }
-      let { i: toI, off: toOff } = cursor.findPos(toA, 1);
-      let { i: fromI, off: fromOff } = cursor.findPos(fromA, -1);
+      const { i: toI, off: toOff } = cursor.findPos(toA, 1);
+      const { i: fromI, off: fromOff } = cursor.findPos(fromA, -1);
       replaceRange(
         this,
         fromI,
@@ -341,8 +341,8 @@ export class DocView extends ContentView {
 
   private updateEditContextFormatting(update: ViewUpdate) {
     this.editContextFormatting = this.editContextFormatting.map(update.changes);
-    for (let tr of update.transactions)
-      for (let effect of tr.effects)
+    for (const tr of update.transactions)
+      for (const effect of tr.effects)
         if (effect.is(setEditContextFormatting)) {
           this.editContextFormatting = effect.value;
         }
@@ -351,22 +351,22 @@ export class DocView extends ContentView {
   private compositionView(composition: Composition) {
     let cur: ContentView = new TextView(composition.text.nodeValue!);
     cur.flags |= ViewFlag.Composition;
-    for (let { deco } of composition.marks)
+    for (const { deco } of composition.marks)
       cur = new MarkView(deco, [cur], cur.length);
-    let line = new LineView();
+    const line = new LineView();
     line.append(cur, 0);
     return line;
   }
 
   private fixCompositionDOM(composition: Composition) {
-    let fix = (dom: Node, cView: ContentView) => {
+    const fix = (dom: Node, cView: ContentView) => {
       cView.flags |=
         ViewFlag.Composition |
         (cView.children.some((c) => c.flags & ViewFlag.Dirty)
           ? ViewFlag.ChildDirty
           : 0);
       this.markedForComposition.add(cView);
-      let prev = ContentView.get(dom);
+      const prev = ContentView.get(dom);
       if (prev && prev != cView) prev.dom = null;
       cView.setDOM(dom);
     };
@@ -384,9 +384,9 @@ export class DocView extends ContentView {
   updateSelection(mustRead = false, fromPointer = false) {
     if (mustRead || !this.view.observer.selectionRange.focusNode)
       this.view.observer.readSelectionRange();
-    let activeElt = this.view.root.activeElement,
-      focused = activeElt == this.dom;
-    let selectionNotFocus =
+    const activeElt = this.view.root.activeElement;
+      const focused = activeElt == this.dom;
+    const selectionNotFocus =
       !focused &&
       hasSelection(this.dom, this.view.observer.selectionRange) &&
       !(activeElt && this.dom.contains(activeElt));
@@ -394,7 +394,7 @@ export class DocView extends ContentView {
     let force = this.forceSelection;
     this.forceSelection = false;
 
-    let main = this.view.state.selection.main;
+    const main = this.view.state.selection.main;
     let anchor = this.moveToLine(this.domAtPos(main.anchor));
     let head = main.empty ? anchor : this.moveToLine(this.domAtPos(main.head));
 
@@ -406,7 +406,7 @@ export class DocView extends ContentView {
       !this.hasComposition &&
       betweenUneditable(anchor)
     ) {
-      let dummy = document.createTextNode('');
+      const dummy = document.createTextNode('');
       this.view.observer.ignore(() =>
         anchor.node.insertBefore(
           dummy,
@@ -417,7 +417,7 @@ export class DocView extends ContentView {
       force = true;
     }
 
-    let domSel = this.view.observer.selectionRange;
+    const domSel = this.view.observer.selectionRange;
     // If the selection is already here, or in an equivalent position, don't touch it
     if (
       force ||
@@ -450,15 +450,15 @@ export class DocView extends ContentView {
           this.dom.blur();
           this.dom.focus({ preventScroll: true });
         }
-        let rawSel = getSelection(this.view.root);
+        const rawSel = getSelection(this.view.root);
         if (!rawSel) {
           // No DOM selection for some reason—do nothing
         } else if (main.empty) {
           // Work around https://bugzilla.mozilla.org/show_bug.cgi?id=1612076
           if (browser.gecko) {
-            let nextTo = nextToUneditable(anchor.node, anchor.offset);
+            const nextTo = nextToUneditable(anchor.node, anchor.offset);
             if (nextTo && nextTo != (NextTo.Before | NextTo.After)) {
-              let text = (
+              const text = (
                 nextTo == NextTo.Before ? textNodeBefore : textNodeAfter
               )(anchor.node, anchor.offset);
               if (text) anchor = new DOMPos(text.node, text.offset);
@@ -483,7 +483,7 @@ export class DocView extends ContentView {
           } catch (_) {}
         } else {
           // Primitive (IE) way
-          let range = document.createRange();
+          const range = document.createRange();
           if (main.anchor > main.head) [anchor, head] = [head, anchor];
           range.setEnd(head.node, head.offset);
           range.setStart(anchor.node, anchor.offset);
@@ -525,20 +525,20 @@ export class DocView extends ContentView {
 
   enforceCursorAssoc() {
     if (this.hasComposition) return;
-    let { view } = this,
-      cursor = view.state.selection.main;
-    let sel = getSelection(view.root);
-    let { anchorNode, anchorOffset } = view.observer.selectionRange;
+    const { view } = this;
+      const cursor = view.state.selection.main;
+    const sel = getSelection(view.root);
+    const { anchorNode, anchorOffset } = view.observer.selectionRange;
     if (!sel || !cursor.empty || !cursor.assoc || !sel.modify) return;
-    let line = LineView.find(this, cursor.head);
+    const line = LineView.find(this, cursor.head);
     if (!line) return;
-    let lineStart = line.posAtStart;
+    const lineStart = line.posAtStart;
     if (cursor.head == lineStart || cursor.head == lineStart + line.length)
       return;
-    let before = this.coordsAt(cursor.head, -1),
-      after = this.coordsAt(cursor.head, 1);
+    const before = this.coordsAt(cursor.head, -1);
+      const after = this.coordsAt(cursor.head, 1);
     if (!before || !after || before.bottom > after.top) return;
-    let dom = this.domAtPos(cursor.head + cursor.assoc);
+    const dom = this.domAtPos(cursor.head + cursor.assoc);
     sel.collapse(dom.node, dom.offset);
     sel.modify(
       'move',
@@ -548,7 +548,7 @@ export class DocView extends ContentView {
     // This can go wrong in corner cases like single-character lines,
     // so check and reset if necessary.
     view.observer.readSelectionRange();
-    let newRange = view.observer.selectionRange;
+    const newRange = view.observer.selectionRange;
     if (
       view.docView.posFromDOM(newRange.anchorNode!, newRange.anchorOffset) !=
       cursor.from
@@ -561,15 +561,15 @@ export class DocView extends ContentView {
   moveToLine(pos: DOMPos) {
     // Block widgets will return positions before/after them, which
     // are thus directly in the document DOM element.
-    let dom = this.dom!,
-      newPos;
+    const dom = this.dom!;
+      let newPos;
     if (pos.node != dom) return pos;
     for (let i = pos.offset; !newPos && i < dom.childNodes.length; i++) {
-      let view = ContentView.get(dom.childNodes[i]);
+      const view = ContentView.get(dom.childNodes[i]);
       if (view instanceof LineView) newPos = view.domAtPos(0);
     }
     for (let i = pos.offset - 1; !newPos && i >= 0; i--) {
-      let view = ContentView.get(dom.childNodes[i]);
+      const view = ContentView.get(dom.childNodes[i]);
       if (view instanceof LineView) newPos = view.domAtPos(view.length);
     }
     return newPos ? new DOMPos(newPos.node, newPos.offset, true) : pos;
@@ -577,7 +577,7 @@ export class DocView extends ContentView {
 
   nearest(dom: Node): ContentView | null {
     for (let cur: Node | null = dom; cur; ) {
-      let domView = ContentView.get(cur);
+      const domView = ContentView.get(cur);
       if (domView && domView.rootView == this) return domView;
       cur = cur.parentNode;
     }
@@ -585,7 +585,7 @@ export class DocView extends ContentView {
   }
 
   posFromDOM(node: Node, offset: number): number {
-    let view = this.nearest(node);
+    const view = this.nearest(node);
     if (!view)
       throw new RangeError(
         'Trying to find position for a DOM position outside of the document',
@@ -596,7 +596,7 @@ export class DocView extends ContentView {
   domAtPos(pos: number): DOMPos {
     let { i, off } = this.childCursor().findPos(pos, -1);
     for (; i < this.children.length - 1; ) {
-      let child = this.children[i];
+      const child = this.children[i];
       if (off < child.length || child instanceof LineView) break;
       i++;
       off = 0;
@@ -605,12 +605,12 @@ export class DocView extends ContentView {
   }
 
   coordsAt(pos: number, side: number): Rect | null {
-    let best = null,
-      bestPos = 0;
+    let best = null;
+      let bestPos = 0;
     for (let off = this.length, i = this.children.length - 1; i >= 0; i--) {
-      let child = this.children[i],
-        end = off - child.breakAfter,
-        start = end - child.length;
+      const child = this.children[i];
+        const end = off - child.breakAfter;
+        const start = end - child.length;
       if (end < pos) break;
       if (
         start <= pos &&
@@ -638,8 +638,8 @@ export class DocView extends ContentView {
   }
 
   coordsForChar(pos: number) {
-    let { i, off } = this.childPos(pos, 1),
-      child: ContentView = this.children[i];
+    let { i, off } = this.childPos(pos, 1);
+      let child: ContentView = this.children[i];
     if (!(child instanceof LineView)) return null;
     while (child.children.length) {
       let { i, off: childOff } = child.childPos(off, 1);
@@ -650,11 +650,11 @@ export class DocView extends ContentView {
       off = childOff;
     }
     if (!(child instanceof TextView)) return null;
-    let end = findClusterBreak(child.text, off);
+    const end = findClusterBreak(child.text, off);
     if (end == off) return null;
-    let rects = textRange(child.dom as Text, off, end).getClientRects();
+    const rects = textRange(child.dom as Text, off, end).getClientRects();
     for (let i = 0; i < rects.length; i++) {
-      let rect = rects[i];
+      const rect = rects[i];
       if (
         i == rects.length - 1 ||
         (rect.top < rect.bottom && rect.left < rect.right)
@@ -665,27 +665,27 @@ export class DocView extends ContentView {
   }
 
   measureVisibleLineHeights(viewport: { from: number; to: number }) {
-    let result = [],
-      { from, to } = viewport;
-    let contentWidth = this.view.contentDOM.clientWidth;
-    let isWider =
+    const result = [];
+      const { from, to } = viewport;
+    const contentWidth = this.view.contentDOM.clientWidth;
+    const isWider =
       contentWidth >
       Math.max(this.view.scrollDOM.clientWidth, this.minWidth) + 1;
-    let widest = -1,
-      ltr = this.view.textDirection == Direction.LTR;
+    let widest = -1;
+      const ltr = this.view.textDirection == Direction.LTR;
     for (let pos = 0, i = 0; i < this.children.length; i++) {
-      let child = this.children[i],
-        end = pos + child.length;
+      const child = this.children[i];
+        const end = pos + child.length;
       if (end > to) break;
       if (pos >= from) {
-        let childRect = child.dom!.getBoundingClientRect();
+        const childRect = child.dom!.getBoundingClientRect();
         result.push(childRect.height);
         if (isWider) {
-          let last = child.dom!.lastChild;
-          let rects = last ? clientRectsFor(last) : [];
+          const last = child.dom!.lastChild;
+          const rects = last ? clientRectsFor(last) : [];
           if (rects.length) {
-            let rect = rects[rects.length - 1];
-            let width = ltr
+            const rect = rects[rects.length - 1];
+            const width = ltr
               ? rect.right - childRect.left
               : childRect.right - rect.left;
             if (width > widest) {
@@ -703,7 +703,7 @@ export class DocView extends ContentView {
   }
 
   textDirectionAt(pos: number) {
-    let { i } = this.childPos(pos, 1);
+    const { i } = this.childPos(pos, 1);
     return getComputedStyle(this.children[i].dom!).direction == 'rtl'
       ? Direction.RTL
       : Direction.LTR;
@@ -714,24 +714,24 @@ export class DocView extends ContentView {
     charWidth: number;
     textHeight: number;
   } {
-    for (let child of this.children) {
+    for (const child of this.children) {
       if (child instanceof LineView) {
-        let measure = child.measureTextSize();
+        const measure = child.measureTextSize();
         if (measure) return measure;
       }
     }
     // If no workable line exists, force a layout of a measurable element
-    let dummy = document.createElement('div'),
-      lineHeight!: number,
-      charWidth!: number,
-      textHeight!: number;
+    const dummy = document.createElement('div');
+      let lineHeight!: number;
+      let charWidth!: number;
+      let textHeight!: number;
     dummy.className = 'cm-line';
     dummy.style.width = '99999px';
     dummy.style.position = 'absolute';
     dummy.textContent = 'abc def ghi jkl mno pqr stu';
     this.view.observer.ignore(() => {
       this.dom.appendChild(dummy);
-      let rect = clientRectsFor(dummy.firstChild!)[0];
+      const rect = clientRectsFor(dummy.firstChild!)[0];
       lineHeight = dummy.getBoundingClientRect().height;
       charWidth = rect ? rect.width / 27 : 7;
       textHeight = rect ? rect.height : lineHeight;
@@ -750,13 +750,13 @@ export class DocView extends ContentView {
   }
 
   computeBlockGapDeco(): DecorationSet {
-    let deco = [],
-      vs = this.view.viewState;
+    const deco = [];
+      const vs = this.view.viewState;
     for (let pos = 0, i = 0; ; i++) {
-      let next = i == vs.viewports.length ? null : vs.viewports[i];
-      let end = next ? next.from - 1 : this.length;
+      const next = i == vs.viewports.length ? null : vs.viewports[i];
+      const end = next ? next.from - 1 : this.length;
       if (end > pos) {
-        let height =
+        const height =
           (vs.lineBlockAt(end).bottom - vs.lineBlockAt(pos).top) /
           this.view.scaleY;
         deco.push(
@@ -776,15 +776,15 @@ export class DocView extends ContentView {
 
   updateDeco() {
     let i = 1;
-    let allDeco = this.view.state.facet(decorationsFacet).map((d) => {
-      let dynamic = (this.dynamicDecorationMap[i++] = typeof d == 'function');
+    const allDeco = this.view.state.facet(decorationsFacet).map((d) => {
+      const dynamic = (this.dynamicDecorationMap[i++] = typeof d === 'function');
       return dynamic
         ? (d as (view: EditorView) => DecorationSet)(this.view)
         : (d as DecorationSet);
     });
-    let dynamicOuter = false,
-      outerDeco = this.view.state.facet(outerDecorations).map((d, i) => {
-        let dynamic = typeof d == 'function';
+    let dynamicOuter = false;
+      const outerDeco = this.view.state.facet(outerDecorations).map((d, i) => {
+        const dynamic = typeof d === 'function';
         if (dynamic) dynamicOuter = true;
         return dynamic
           ? (d as (view: EditorView) => DecorationSet)(this.view)
@@ -806,13 +806,13 @@ export class DocView extends ContentView {
 
   scrollIntoView(target: ScrollTarget) {
     if (target.isSnapshot) {
-      let ref = this.view.viewState.lineBlockAt(target.range.head);
+      const ref = this.view.viewState.lineBlockAt(target.range.head);
       this.view.scrollDOM.scrollTop = ref.top - target.yMargin;
       this.view.scrollDOM.scrollLeft = target.xMargin;
       return;
     }
 
-    for (let handler of this.view.state.facet(scrollHandler)) {
+    for (const handler of this.view.state.facet(scrollHandler)) {
       try {
         if (handler(this.view, target.range, target)) return true;
       } catch (e) {
@@ -820,12 +820,12 @@ export class DocView extends ContentView {
       }
     }
 
-    let { range } = target;
+    const { range } = target;
     let rect = this.coordsAt(
         range.head,
         range.empty ? range.assoc : range.head > range.anchor ? -1 : 1,
-      ),
-      other;
+      );
+      let other;
     if (!rect) return;
     if (
       !range.empty &&
@@ -838,14 +838,14 @@ export class DocView extends ContentView {
         bottom: Math.max(rect.bottom, other.bottom),
       };
 
-    let margins = getScrollMargins(this.view);
-    let targetRect = {
+    const margins = getScrollMargins(this.view);
+    const targetRect = {
       left: rect.left - margins.left,
       top: rect.top - margins.top,
       right: rect.right + margins.right,
       bottom: rect.bottom + margins.bottom,
     };
-    let { offsetWidth, offsetHeight } = this.view.scrollDOM;
+    const { offsetWidth, offsetHeight } = this.view.scrollDOM;
     scrollRectIntoView(
       this.view.scrollDOM,
       targetRect,
@@ -881,7 +881,7 @@ class BlockGapWidget extends WidgetType {
   }
 
   toDOM() {
-    let elt = document.createElement('div');
+    const elt = document.createElement('div');
     elt.className = 'cm-gap';
     this.updateDOM(elt);
     return elt;
@@ -913,13 +913,13 @@ export function findCompositionNode(
   view: EditorView,
   headPos: number,
 ): { from: number; to: number; node: Text } | null {
-  let sel = view.observer.selectionRange;
+  const sel = view.observer.selectionRange;
   if (!sel.focusNode) return null;
-  let textBefore = textNodeBefore(sel.focusNode, sel.focusOffset);
-  let textAfter = textNodeAfter(sel.focusNode, sel.focusOffset);
+  const textBefore = textNodeBefore(sel.focusNode, sel.focusOffset);
+  const textAfter = textNodeAfter(sel.focusNode, sel.focusOffset);
   let textNode = textBefore || textAfter;
   if (textAfter && textBefore && textAfter.node != textBefore.node) {
-    let descAfter = ContentView.get(textAfter.node);
+    const descAfter = ContentView.get(textAfter.node);
     if (
       !descAfter ||
       (descAfter instanceof TextView &&
@@ -927,7 +927,7 @@ export function findCompositionNode(
     ) {
       textNode = textAfter;
     } else if (view.docView.lastCompositionAfterCursor) {
-      let descBefore = ContentView.get(textBefore.node);
+      const descBefore = ContentView.get(textBefore.node);
       if (
         !(
           !descBefore ||
@@ -941,7 +941,7 @@ export function findCompositionNode(
   view.docView.lastCompositionAfterCursor = textNode != textBefore;
 
   if (!textNode) return null;
-  let from = headPos - textNode.offset;
+  const from = headPos - textNode.offset;
   return {
     from,
     to: from + textNode.node.nodeValue!.length,
@@ -954,23 +954,23 @@ function findCompositionRange(
   changes: ChangeSet,
   headPos: number,
 ): Composition | null {
-  let found = findCompositionNode(view, headPos);
+  const found = findCompositionNode(view, headPos);
   if (!found) return null;
-  let { node: textNode, from, to } = found,
-    text = textNode.nodeValue!;
+  const { node: textNode, from, to } = found;
+    const text = textNode.nodeValue!;
   // Don't try to preserve multi-line compositions
   if (/[\n\r]/.test(text)) return null;
   if (view.state.doc.sliceString(found.from, found.to) != text) return null;
 
-  let inv = changes.invertedDesc;
-  let range = new ChangedRange(inv.mapPos(from), inv.mapPos(to), from, to);
-  let marks: { node: HTMLElement; deco: MarkDecoration }[] = [];
+  const inv = changes.invertedDesc;
+  const range = new ChangedRange(inv.mapPos(from), inv.mapPos(to), from, to);
+  const marks: { node: HTMLElement; deco: MarkDecoration }[] = [];
   for (
     let parent = textNode.parentNode as HTMLElement;
     ;
     parent = parent.parentNode as HTMLElement
   ) {
-    let parentView = ContentView.get(parent);
+    const parentView = ContentView.get(parent);
     if (parentView instanceof MarkView)
       marks.push({ node: parent, deco: parentView.mark });
     else if (
@@ -1024,7 +1024,7 @@ function findChangedDeco(
   b: readonly DecorationSet[],
   diff: ChangeSet,
 ) {
-  let comp = new DecorationComparator();
+  const comp = new DecorationComparator();
   RangeSet.compare(a, b, diff, comp);
   return comp.changes;
 }

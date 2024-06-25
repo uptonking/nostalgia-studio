@@ -1,18 +1,18 @@
-var specialChars = /[+\-\/\\*~<>=@%|&?!.,:;^]/;
-var keywords = /true|false|nil|self|super|thisContext/;
+const specialChars = /[+\-\/\\*~<>=@%|&?!.,:;^]/;
+const keywords = /true|false|nil|self|super|thisContext/;
 
-var Context = function (tokenizer, parent) {
+const Context = function (tokenizer, parent) {
   this.next = tokenizer;
   this.parent = parent;
 };
 
-var Token = function (name, context, eos) {
+const Token = function (name, context, eos) {
   this.name = name;
   this.context = context;
   this.eos = eos;
 };
 
-var State = function () {
+const State = function () {
   this.context = new Context(next, null);
   this.expectVariable = true;
   this.indentation = 0;
@@ -25,8 +25,8 @@ State.prototype.userIndent = function (indentation, indentUnit) {
 };
 
 var next = function (stream, context, state) {
-  var token = new Token(null, context, false);
-  var aChar = stream.next();
+  let token = new Token(null, context, false);
+  const aChar = stream.next();
 
   if (aChar === '"') {
     token = nextComment(stream, new Context(nextComment, context));
@@ -98,8 +98,8 @@ var nextSymbol = function (stream, context) {
 };
 
 var nextTemporaries = function (stream, context) {
-  var token = new Token(null, context, false);
-  var aChar = stream.next();
+  const token = new Token(null, context, false);
+  const aChar = stream.next();
 
   if (aChar === '|') {
     token.context = context.parent;
@@ -126,7 +126,7 @@ export const smalltalk = {
       return null;
     }
 
-    var token = state.context.next(stream, state.context, state);
+    const token = state.context.next(stream, state.context, state);
     state.context = token.context;
     state.expectVariable = token.eos;
 
@@ -138,7 +138,7 @@ export const smalltalk = {
   },
 
   indent: function (state, textAfter, cx) {
-    var i =
+    const i =
       state.context.next === next && textAfter && textAfter.charAt(0) === ']'
         ? -1
         : state.userIndentationDelta;

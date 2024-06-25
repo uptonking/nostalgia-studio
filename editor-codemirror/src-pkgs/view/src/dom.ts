@@ -64,7 +64,7 @@ export function isEquivalentPosition(
 }
 
 export function domIndex(node: Node): number {
-  for (var index = 0; ; index++) {
+  for (let index = 0; ; index++) {
     node = node.previousSibling!;
     if (!node) return index;
   }
@@ -88,7 +88,7 @@ function scanFor(
     if (node == targetNode && off == targetOff) return true;
     if (off == (dir < 0 ? 0 : maxOffset(node))) {
       if (node.nodeName == 'DIV') return false;
-      let parent = node.parentNode;
+      const parent = node.parentNode;
       if (!parent || parent.nodeType != 1) return false;
       off = domIndex(node) + (dir < 0 ? 0 : 1);
       node = parent;
@@ -119,12 +119,12 @@ export interface Rect {
 }
 
 export function flattenRect(rect: Rect, left: boolean) {
-  let x = left ? rect.left : rect.right;
+  const x = left ? rect.left : rect.right;
   return { left: x, right: x, top: rect.top, bottom: rect.bottom };
 }
 
 function windowRect(win: Window): Rect {
-  let vp = win.visualViewport;
+  const vp = win.visualViewport;
   if (vp)
     return {
       left: 0,
@@ -165,16 +165,16 @@ export function scrollRectIntoView(
   yMargin: number,
   ltr: boolean,
 ) {
-  let doc = dom.ownerDocument!,
-    win = doc.defaultView || window;
+  const doc = dom.ownerDocument!;
+    const win = doc.defaultView || window;
 
   for (let cur: any = dom, stop = false; cur && !stop; ) {
     if (cur.nodeType == 1) {
       // Element
-      let bounding: Rect,
-        top = cur == doc.body;
-      let scaleX = 1,
-        scaleY = 1;
+      let bounding: Rect;
+        const top = cur == doc.body;
+      let scaleX = 1;
+        let scaleY = 1;
       if (top) {
         bounding = windowRect(win);
       } else {
@@ -187,7 +187,7 @@ export function scrollRectIntoView(
           cur = cur.assignedSlot || cur.parentNode;
           continue;
         }
-        let rect = cur.getBoundingClientRect();
+        const rect = cur.getBoundingClientRect();
         ({ scaleX, scaleY } = getScale(cur, rect));
         // Make sure scrollbar width isn't included in the rectangle
         bounding = {
@@ -198,8 +198,8 @@ export function scrollRectIntoView(
         };
       }
 
-      let moveX = 0,
-        moveY = 0;
+      let moveX = 0;
+        let moveY = 0;
       if (y == 'nearest') {
         if (rect.top < bounding.top) {
           moveY = -(bounding.top - rect.top + yMargin);
@@ -211,9 +211,9 @@ export function scrollRectIntoView(
             moveY = -(bounding.top + moveY - rect.top + yMargin);
         }
       } else {
-        let rectHeight = rect.bottom - rect.top,
-          boundingHeight = bounding.bottom - bounding.top;
-        let targetTop =
+        const rectHeight = rect.bottom - rect.top;
+          const boundingHeight = bounding.bottom - bounding.top;
+        const targetTop =
           y == 'center' && rectHeight <= boundingHeight
             ? rect.top + rectHeight / 2 - boundingHeight / 2
             : y == 'start' || (y == 'center' && side < 0)
@@ -232,7 +232,7 @@ export function scrollRectIntoView(
             moveX = -(bounding.left + moveX - rect.left + xMargin);
         }
       } else {
-        let targetLeft =
+        const targetLeft =
           x == 'center'
             ? rect.left +
               (rect.right - rect.left) / 2 -
@@ -246,15 +246,15 @@ export function scrollRectIntoView(
         if (top) {
           win.scrollBy(moveX, moveY);
         } else {
-          let movedX = 0,
-            movedY = 0;
+          let movedX = 0;
+            let movedY = 0;
           if (moveY) {
-            let start = cur.scrollTop;
+            const start = cur.scrollTop;
             cur.scrollTop += moveY / scaleY;
             movedY = (cur.scrollTop - start) * scaleY;
           }
           if (moveX) {
-            let start = cur.scrollLeft;
+            const start = cur.scrollLeft;
             cur.scrollLeft += moveX / scaleX;
             movedX = (cur.scrollLeft - start) * scaleX;
           }
@@ -280,7 +280,7 @@ export function scrollRectIntoView(
 }
 
 export function scrollableParent(dom: HTMLElement) {
-  let doc = dom.ownerDocument;
+  const doc = dom.ownerDocument;
   for (let cur = dom.parentNode as HTMLElement | null; cur; ) {
     if (cur == doc.body) {
       break;
@@ -323,7 +323,7 @@ export class DOMSelectionState implements SelectionRange {
   }
 
   setRange(range: SelectionRange) {
-    let { anchorNode, focusNode } = range;
+    const { anchorNode, focusNode } = range;
     // Clip offsets to node size to avoid crashes when Safari reports bogus offsets (#1152)
     this.set(
       anchorNode,
@@ -353,7 +353,7 @@ export function focusPreventScroll(dom: HTMLElement) {
   if ((dom as any).setActive) return (dom as any).setActive(); // in IE
   if (preventScrollSupported) return dom.focus(preventScrollSupported);
 
-  let stack = [];
+  const stack = [];
   for (let cur: Node | null = dom; cur; cur = cur.parentNode) {
     stack.push(cur, (cur as any).scrollTop, (cur as any).scrollLeft);
     if (cur == cur.ownerDocument) break;
@@ -371,9 +371,9 @@ export function focusPreventScroll(dom: HTMLElement) {
   if (!preventScrollSupported) {
     preventScrollSupported = false;
     for (let i = 0; i < stack.length; ) {
-      let elt = stack[i++] as HTMLElement,
-        top = stack[i++] as number,
-        left = stack[i++] as number;
+      const elt = stack[i++] as HTMLElement;
+        const top = stack[i++] as number;
+        const left = stack[i++] as number;
       if (elt.scrollTop != top) elt.scrollTop = top;
       if (elt.scrollLeft != left) elt.scrollLeft = left;
     }
@@ -383,7 +383,7 @@ export function focusPreventScroll(dom: HTMLElement) {
 let scratchRange: Range | null;
 
 export function textRange(node: Text, from: number, to = from) {
-  let range = scratchRange || (scratchRange = document.createRange());
+  const range = scratchRange || (scratchRange = document.createRange());
   range.setEnd(node, to);
   range.setStart(node, from);
   return range;
@@ -395,7 +395,7 @@ export function dispatchKey(
   code: number,
   mods?: KeyboardEvent,
 ): boolean {
-  let options: KeyboardEventInit = {
+  const options: KeyboardEventInit = {
     key: name,
     code: name,
     keyCode: code,
@@ -409,10 +409,10 @@ export function dispatchKey(
       shiftKey: options.shiftKey,
       metaKey: options.metaKey,
     } = mods);
-  let down = new KeyboardEvent('keydown', options);
+  const down = new KeyboardEvent('keydown', options);
   (down as any).synthetic = true;
   elt.dispatchEvent(down);
-  let up = new KeyboardEvent('keyup', options);
+  const up = new KeyboardEvent('keyup', options);
   (up as any).synthetic = true;
   elt.dispatchEvent(up);
   return down.defaultPrevented || up.defaultPrevented;
@@ -437,8 +437,8 @@ export function clearAttributes(node: HTMLElement) {
 }
 
 export function atElementStart(doc: HTMLElement, selection: SelectionRange) {
-  let node = selection.focusNode,
-    offset = selection.focusOffset;
+  let node = selection.focusNode;
+    let offset = selection.focusOffset;
   if (!node || selection.anchorNode != node || selection.anchorOffset != offset)
     return false;
   // Safari can report bogus offsets (#1152)
@@ -446,7 +446,7 @@ export function atElementStart(doc: HTMLElement, selection: SelectionRange) {
   for (;;) {
     if (offset) {
       if (node.nodeType != 1) return false;
-      let prev: Node = node.childNodes[offset - 1];
+      const prev: Node = node.childNodes[offset - 1];
       if ((prev as HTMLElement).contentEditable == 'false') offset--;
       else {
         node = prev;

@@ -1,16 +1,16 @@
 import { javascript } from './javascript.js';
 
-var ATTRS_NEST = {
+const ATTRS_NEST = {
   '{': '}',
   '(': ')',
   '[': ']',
 };
 
 function defaultCopyState(state) {
-  if (typeof state != 'object') return state;
-  let newState = {};
-  for (let prop in state) {
-    let val = state[prop];
+  if (typeof state !== 'object') return state;
+  const newState = {};
+  for (const prop in state) {
+    const val = state[prop];
     newState[prop] = val instanceof Array ? val.slice() : val;
   }
   return newState;
@@ -51,7 +51,7 @@ class State {
   }
 
   copy() {
-    var res = new State(this.indentUnit);
+    const res = new State(this.indentUnit);
     res.javaScriptLine = this.javaScriptLine;
     res.javaScriptLineExcludesColon = this.javaScriptLineExcludesColon;
     res.javaScriptArguments = this.javaScriptArguments;
@@ -90,7 +90,7 @@ function javaScript(stream, state) {
       state.javaScriptLineExcludesColon = false;
       return;
     }
-    var tok = javascript.token(stream, state.jsState);
+    const tok = javascript.token(stream, state.jsState);
     if (stream.eol()) state.javaScriptLine = false;
     return tok || true;
   }
@@ -111,7 +111,7 @@ function javaScriptArguments(stream, state) {
       return;
     }
 
-    var tok = javascript.token(stream, state.jsState);
+    const tok = javascript.token(stream, state.jsState);
     return tok || true;
   }
 }
@@ -216,7 +216,7 @@ function includeFiltered(stream, state) {
 
 function includeFilteredContinued(stream, state) {
   if (state.isIncludeFiltered) {
-    var tok = filter(stream, state);
+    const tok = filter(stream, state);
     state.isIncludeFiltered = false;
     state.restOfLine = 'string';
     return tok;
@@ -291,7 +291,7 @@ function whileStatement(stream, state) {
 }
 
 function tag(stream, state) {
-  var captures;
+  let captures;
   if ((captures = stream.match(/^(\w(?:[-:\w]*\w)?)\/?/))) {
     state.lastTag = captures[1].toLowerCase();
     return 'tag';
@@ -363,7 +363,7 @@ function attrsContinued(stream, state) {
       return 'attribute';
     }
 
-    var tok = javascript.token(stream, state.jsState);
+    const tok = javascript.token(stream, state.jsState);
     if (
       state.attrsNest.length === 0 &&
       (tok === 'string' || tok === 'variable' || tok === 'keyword')
@@ -449,7 +449,7 @@ function restOfLine(stream, state) {
   }
   if (state.restOfLine) {
     stream.skipToEnd();
-    var tok = state.restOfLine;
+    const tok = state.restOfLine;
     state.restOfLine = '';
     return tok;
   }
@@ -462,7 +462,7 @@ function copyState(state) {
   return state.copy();
 }
 function nextToken(stream, state) {
-  var tok =
+  const tok =
     restOfLine(stream, state) ||
     interpolationContinued(stream, state) ||
     includeFilteredContinued(stream, state) ||

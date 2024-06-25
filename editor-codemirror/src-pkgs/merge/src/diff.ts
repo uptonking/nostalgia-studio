@@ -38,28 +38,28 @@ function findDiff(
   if (a == b) return [];
 
   // Remove identical prefix and suffix
-  let prefix = commonPrefix(a, fromA, toA, b, fromB, toB);
-  let suffix = commonSuffix(a, fromA + prefix, toA, b, fromB + prefix, toB);
+  const prefix = commonPrefix(a, fromA, toA, b, fromB, toB);
+  const suffix = commonSuffix(a, fromA + prefix, toA, b, fromB + prefix, toB);
   fromA += prefix;
   toA -= suffix;
   fromB += prefix;
   toB -= suffix;
-  let lenA = toA - fromA,
-    lenB = toB - fromB;
+  const lenA = toA - fromA;
+    const lenB = toB - fromB;
   // Nothing left in one of them
   if (!lenA || !lenB) return [new Change(fromA, toA, fromB, toB)];
 
   // Try to find one string in the other to cover cases with just 2
   // deletions/insertions.
   if (lenA > lenB) {
-    let found = a.slice(fromA, toA).indexOf(b.slice(fromB, toB));
+    const found = a.slice(fromA, toA).indexOf(b.slice(fromB, toB));
     if (found > -1)
       return [
         new Change(fromA, fromA + found, fromB, fromB),
         new Change(fromA + found + lenB, toA, toB, toB),
       ];
   } else if (lenB > lenA) {
-    let found = b.slice(fromB, toB).indexOf(a.slice(fromA, toA));
+    const found = b.slice(fromB, toB).indexOf(a.slice(fromA, toA));
     if (found > -1)
       return [
         new Change(fromA, fromA, fromB, fromB + found),
@@ -73,9 +73,9 @@ function findDiff(
 
   // Try to split the problem in two by finding a substring of one of
   // the strings in the other.
-  let half = halfMatch(a, fromA, toA, b, fromB, toB);
+  const half = halfMatch(a, fromA, toA, b, fromB, toB);
   if (half) {
-    let [sharedA, sharedB, sharedLen] = half;
+    const [sharedA, sharedB, sharedLen] = half;
     return findDiff(a, fromA, sharedA, b, fromB, sharedB).concat(
       findDiff(a, sharedA + sharedLen, toA, b, sharedB + sharedLen, toB),
     );
@@ -97,25 +97,25 @@ function findSnake(
   fromB: number,
   toB: number,
 ): Change[] {
-  let lenA = toA - fromA,
-    lenB = toB - fromB;
+  const lenA = toA - fromA;
+    const lenB = toB - fromB;
   if (scanLimit < 1e9 && Math.min(lenA, lenB) > scanLimit * 16) {
     if (Math.min(lenA, lenB) > scanLimit * 64)
       return [new Change(fromA, toA, fromB, toB)];
     return crudeMatch(a, fromA, toA, b, fromB, toB);
   }
-  let off = Math.ceil((lenA + lenB) / 2);
+  const off = Math.ceil((lenA + lenB) / 2);
   frontier1.reset(off);
   frontier2.reset(off);
-  let match1 = (x: number, y: number) =>
+  const match1 = (x: number, y: number) =>
     a.charCodeAt(fromA + x) == b.charCodeAt(fromB + y);
-  let match2 = (x: number, y: number) =>
+  const match2 = (x: number, y: number) =>
     a.charCodeAt(toA - x - 1) == b.charCodeAt(toB - y - 1);
-  let test1 = (lenA - lenB) % 2 != 0 ? frontier2 : null,
-    test2 = test1 ? null : frontier1;
+  const test1 = (lenA - lenB) % 2 != 0 ? frontier2 : null;
+    const test2 = test1 ? null : frontier1;
   for (let depth = 0; depth < off; depth++) {
     if (depth > scanLimit) return crudeMatch(a, fromA, toA, b, fromB, toB);
-    let done =
+    const done =
       frontier1.advance(depth, lenA, lenB, off, test1, false, match1) ||
       frontier2.advance(depth, lenA, lenB, off, test2, true, match2);
     if (done)
@@ -157,7 +157,7 @@ class Frontier {
     match: (a: number, b: number) => boolean,
   ) {
     for (let k = -depth + this.start; k <= depth - this.end; k += 2) {
-      let off = vOff + k;
+      const off = vOff + k;
       let x =
         k == -depth || (k != depth && this.vec[off - 1] < this.vec[off + 1])
           ? this.vec[off + 1]
@@ -173,13 +173,13 @@ class Frontier {
       } else if (y > lenY) {
         this.start += 2;
       } else if (other) {
-        let offOther = vOff + (lenX - lenY) - k;
+        const offOther = vOff + (lenX - lenY) - k;
         if (offOther >= 0 && offOther < this.len && other.vec[offOther] != -1) {
           if (!fromBack) {
-            let xOther = lenX - other.vec[offOther];
+            const xOther = lenX - other.vec[offOther];
             if (x >= xOther) return [x, y];
           } else {
-            let xOther = other.vec[offOther];
+            const xOther = other.vec[offOther];
             if (xOther >= lenX - x) return [xOther, vOff + xOther - offOther];
           }
         }
@@ -190,8 +190,8 @@ class Frontier {
 }
 
 // Reused across calls to avoid growing the vectors again and again
-const frontier1 = new Frontier(),
-  frontier2 = new Frontier();
+const frontier1 = new Frontier();
+  const frontier2 = new Frontier();
 
 // Given a position in both strings, recursively call `findDiff` with
 // the sub-problems before and after that position. Make sure cut
@@ -216,8 +216,8 @@ function bisect(
 }
 
 function chunkSize(lenA: number, lenB: number) {
-  let size = 1,
-    max = Math.min(lenA, lenB);
+  let size = 1;
+    const max = Math.min(lenA, lenB);
   while (size < max) size = size << 1;
   return size;
 }
@@ -241,8 +241,8 @@ function commonPrefix(
     return 0;
   let chunk = chunkSize(toA - fromA, toB - fromB);
   for (let pA = fromA, pB = fromB; ; ) {
-    let endA = pA + chunk,
-      endB = pB + chunk;
+    const endA = pA + chunk;
+      const endB = pB + chunk;
     if (endA > toA || endB > toB || a.slice(pA, endA) != b.slice(pB, endB)) {
       if (chunk == 1) return pA - fromA - (validIndex(a, pA) ? 0 : 1);
       chunk = chunk >> 1;
@@ -272,8 +272,8 @@ function commonSuffix(
     return 0;
   let chunk = chunkSize(toA - fromA, toB - fromB);
   for (let pA = toA, pB = toB; ; ) {
-    let sA = pA - chunk,
-      sB = pB - chunk;
+    const sA = pA - chunk;
+      const sB = pB - chunk;
     if (sA < fromA || sB < fromB || a.slice(sA, pA) != b.slice(sB, pB)) {
       if (chunk == 1) return toA - pA - (validIndex(a, pA) ? 0 : 1);
       chunk = chunk >> 1;
@@ -297,7 +297,7 @@ function findMatch(
   size: number,
   divideTo: number,
 ): [number, number, number] | null {
-  let rangeB = b.slice(fromB, toB);
+  const rangeB = b.slice(fromB, toB);
 
   // Try some substrings of A of length `size` and see if they exist
   // in B.
@@ -309,10 +309,10 @@ function findMatch(
       let end = start + size;
       if (!validIndex(a, end)) end += end == start + 1 ? 1 : -1;
       if (end >= toA) break;
-      let seed = a.slice(start, end);
+      const seed = a.slice(start, end);
       let found = -1;
       while ((found = rangeB.indexOf(seed, found + 1)) != -1) {
-        let prefixAfter = commonPrefix(
+        const prefixAfter = commonPrefix(
           a,
           end,
           toA,
@@ -320,7 +320,7 @@ function findMatch(
           fromB + found + seed.length,
           toB,
         );
-        let suffixBefore = commonSuffix(
+        const suffixBefore = commonSuffix(
           a,
           fromA,
           start,
@@ -328,7 +328,7 @@ function findMatch(
           fromB,
           fromB + found,
         );
-        let length = seed.length + prefixAfter + suffixBefore;
+        const length = seed.length + prefixAfter + suffixBefore;
         if (!best || best[2] < length)
           best = [start - suffixBefore, fromB + found - suffixBefore, length];
       }
@@ -350,10 +350,10 @@ function halfMatch(
   fromB: number,
   toB: number,
 ): [number, number, number] | null {
-  let lenA = toA - fromA,
-    lenB = toB - fromB;
+  const lenA = toA - fromA;
+    const lenB = toB - fromB;
   if (lenA < lenB) {
-    let result = halfMatch(b, fromB, toB, a, fromA, toA);
+    const result = halfMatch(b, fromB, toB, a, fromA, toA);
     return result && [result[1], result[0], result[2]];
   }
   // From here a is known to be at least as long as b
@@ -369,17 +369,17 @@ function crudeMatch(
   fromB: number,
   toB: number,
 ): Change[] {
-  let lenA = toA - fromA,
-    lenB = toB - fromB;
+  const lenA = toA - fromA;
+    const lenB = toB - fromB;
   let result;
   if (lenA < lenB) {
-    let inv = findMatch(b, fromB, toB, a, fromA, toA, Math.floor(lenA / 6), 50);
+    const inv = findMatch(b, fromB, toB, a, fromA, toA, Math.floor(lenA / 6), 50);
     result = inv && [inv[1], inv[0], inv[2]];
   } else {
     result = findMatch(a, fromA, toA, b, fromB, toB, Math.floor(lenB / 6), 50);
   }
   if (!result) return [new Change(fromA, toA, fromB, toB)];
-  let [sharedA, sharedB, sharedLen] = result;
+  const [sharedA, sharedB, sharedLen] = result;
   return findDiff(a, fromA, sharedA, b, fromB, sharedB).concat(
     findDiff(a, sharedA + sharedLen, toA, b, sharedB + sharedLen, toB),
   );
@@ -387,8 +387,8 @@ function crudeMatch(
 
 function mergeAdjacent(changes: Change[], minGap: number) {
   for (let i = 1; i < changes.length; i++) {
-    let prev = changes[i - 1],
-      cur = changes[i];
+    const prev = changes[i - 1];
+      const cur = changes[i];
     if (prev.toA > cur.fromA - minGap && prev.toB > cur.fromB - minGap) {
       changes[i - 1] = new Change(prev.fromA, cur.toA, prev.fromB, cur.toB);
       changes.splice(i--, 1);
@@ -404,9 +404,9 @@ function normalize(a: string, b: string, changes: Change[]) {
     // Move unchanged ranges that can be fully moved across an
     // adjacent insertion/deletion, to simplify the diff.
     for (let i = 0; i < changes.length; i++) {
-      let ch = changes[i],
-        pre,
-        post;
+      let ch = changes[i];
+        let pre;
+        let post;
       // The half-match heuristic sometimes produces non-minimal
       // diffs. Strip matching pre- and post-fixes again here.
       if ((pre = commonPrefix(a, ch.fromA, ch.toA, b, ch.fromB, ch.toB)))
@@ -423,15 +423,15 @@ function normalize(a: string, b: string, changes: Change[]) {
           ch.fromB,
           ch.toB - post,
         );
-      let lenA = ch.toA - ch.fromA,
-        lenB = ch.toB - ch.fromB;
+      const lenA = ch.toA - ch.fromA;
+        const lenB = ch.toB - ch.fromB;
       // Only look at plain insertions/deletions
       if (lenA && lenB) continue;
-      let beforeLen = ch.fromA - (i ? changes[i - 1].toA : 0);
-      let afterLen =
+      const beforeLen = ch.fromA - (i ? changes[i - 1].toA : 0);
+      const afterLen =
         (i < changes.length - 1 ? changes[i + 1].fromA : a.length) - ch.toA;
       if (!beforeLen || !afterLen) continue;
-      let text = lenA ? a.slice(ch.fromA, ch.toA) : b.slice(ch.fromB, ch.toB);
+      const text = lenA ? a.slice(ch.fromA, ch.toA) : b.slice(ch.fromB, ch.toB);
       if (
         beforeLen <= text.length &&
         a.slice(ch.fromA - beforeLen, ch.fromA) ==
@@ -468,14 +468,14 @@ function normalize(a: string, b: string, changes: Change[]) {
 function makePresentable(changes: Change[], a: string, b: string) {
   for (let posA = 0, i = 0; i < changes.length; i++) {
     let change = changes[i];
-    let lenA = change.toA - change.fromA,
-      lenB = change.toB - change.fromB;
+    const lenA = change.toA - change.fromA;
+      const lenB = change.toB - change.fromB;
     // Don't touch short insertions or deletions.
     if ((lenA && lenB) || lenA > 3 || lenB > 3) {
-      let nextChangeA =
+      const nextChangeA =
         i == changes.length - 1 ? a.length : changes[i + 1].fromA;
-      let maxScanBefore = change.fromA - posA,
-        maxScanAfter = nextChangeA - change.toA;
+      const maxScanBefore = change.fromA - posA;
+        const maxScanAfter = nextChangeA - change.toA;
       let boundBefore = findWordBoundaryBefore(
         a,
         change.fromA,
@@ -486,14 +486,14 @@ function makePresentable(changes: Change[], a: string, b: string) {
         change.toA,
         Math.min(maxScanAfter, 5),
       );
-      let lenBefore = change.fromA - boundBefore,
-        lenAfter = boundAfter - change.toA;
+      let lenBefore = change.fromA - boundBefore;
+        let lenAfter = boundAfter - change.toA;
       if (!lenA || !lenB) {
-        let changeLen = Math.max(lenA, lenB);
-        let [changeText, changeFrom, changeTo] = lenA
+        const changeLen = Math.max(lenA, lenB);
+        const [changeText, changeFrom, changeTo] = lenA
           ? [a, change.fromA, change.toA]
           : [b, change.fromB, change.toB];
-        let indentBefore, indentLen;
+        let indentBefore; let indentLen;
         // An insertion or deletion that falls inside words on both
         // sides can maybe be moved to align with word boundaries.
         if (lenBefore && lenAfter) {
@@ -588,7 +588,7 @@ function asciiWordChar(code: number) {
 
 function wordCharAfter(s: string, pos: number) {
   if (pos == s.length) return 0;
-  let next = s.charCodeAt(pos);
+  const next = s.charCodeAt(pos);
   if (next < 192) return asciiWordChar(next) ? 1 : 0;
   if (!wordChar) return 0;
   if (!isSurrogate1(next) || pos == s.length - 1)
@@ -598,7 +598,7 @@ function wordCharAfter(s: string, pos: number) {
 
 function wordCharBefore(s: string, pos: number) {
   if (!pos) return 0;
-  let prev = s.charCodeAt(pos - 1);
+  const prev = s.charCodeAt(pos - 1);
   if (prev < 192) return asciiWordChar(prev) ? 1 : 0;
   if (!wordChar) return 0;
   if (!isSurrogate2(prev) || pos == 1)
@@ -609,7 +609,7 @@ function wordCharBefore(s: string, pos: number) {
 function findWordBoundaryAfter(s: string, pos: number, max: number) {
   if (pos == s.length || !wordCharBefore(s, pos)) return pos;
   for (let cur = pos, end = pos + max; ; ) {
-    let size = wordCharAfter(s, cur);
+    const size = wordCharAfter(s, cur);
     if (!size) return cur;
     cur += size;
     if (cur > end) return pos;
@@ -619,7 +619,7 @@ function findWordBoundaryAfter(s: string, pos: number, max: number) {
 function findWordBoundaryBefore(s: string, pos: number, max: number) {
   if (!pos || !wordCharAfter(s, pos)) return pos;
   for (let cur = pos, end = pos - max; ; ) {
-    let size = wordCharBefore(s, cur);
+    const size = wordCharBefore(s, cur);
     if (!size) return cur;
     cur -= size;
     if (cur < end) return pos;
@@ -628,7 +628,7 @@ function findWordBoundaryBefore(s: string, pos: number, max: number) {
 
 function findIndentBefore(s: string, pos: number, max: number) {
   for (let cur = pos, end = pos - max; ; ) {
-    let next = cur ? s.charCodeAt(cur - 1) : 10;
+    const next = cur ? s.charCodeAt(cur - 1) : 10;
     if (next == 10) return cur;
     cur--;
     if (cur < end || (next != 32 && next != 9)) return pos;

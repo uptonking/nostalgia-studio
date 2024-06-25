@@ -1,4 +1,4 @@
-var rfc2822 = [
+const rfc2822 = [
   'From',
   'Sender',
   'Reply-To',
@@ -17,17 +17,17 @@ var rfc2822 = [
   'Return-Path',
   'Received',
 ];
-var rfc2822NoEmail = ['Date', 'Subject', 'Comments', 'Keywords', 'Resent-Date'];
+const rfc2822NoEmail = ['Date', 'Subject', 'Comments', 'Keywords', 'Resent-Date'];
 
-var whitespace = /^[ \t]/;
-var separator = /^From /; // See RFC 4155
-var rfc2822Header = new RegExp('^(' + rfc2822.join('|') + '): ');
-var rfc2822HeaderNoEmail = new RegExp('^(' + rfc2822NoEmail.join('|') + '): ');
-var header = /^[^:]+:/; // Optional fields defined in RFC 2822
-var email = /^[^ ]+@[^ ]+/;
-var untilEmail = /^.*?(?=[^ ]+?@[^ ]+)/;
-var bracketedEmail = /^<.*?>/;
-var untilBracketedEmail = /^.*?(?=<.*>)/;
+const whitespace = /^[ \t]/;
+const separator = /^From /; // See RFC 4155
+const rfc2822Header = new RegExp('^(' + rfc2822.join('|') + '): ');
+const rfc2822HeaderNoEmail = new RegExp('^(' + rfc2822NoEmail.join('|') + '): ');
+const header = /^[^:]+:/; // Optional fields defined in RFC 2822
+const email = /^[^ ]+@[^ ]+/;
+const untilEmail = /^.*?(?=[^ ]+?@[^ ]+)/;
+const bracketedEmail = /^<.*?>/;
+const untilBracketedEmail = /^.*?(?=<.*>)/;
 
 function styleForHeader(header) {
   if (header === 'Subject') return 'header';
@@ -52,8 +52,8 @@ function readToken(stream, state) {
       return 'atom';
     }
 
-    var match;
-    var emailPermitted = false;
+    let match;
+    let emailPermitted = false;
     if (
       (match = stream.match(rfc2822HeaderNoEmail)) ||
       ((emailPermitted = true) && (match = stream.match(rfc2822Header)))
@@ -87,7 +87,7 @@ function readToken(stream, state) {
   }
 
   if (state.inHeader) {
-    var style = styleForHeader(state.header);
+    const style = styleForHeader(state.header);
 
     if (state.emailPermitted) {
       if (stream.match(bracketedEmail)) return style + ' link';

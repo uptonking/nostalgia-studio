@@ -1,5 +1,5 @@
-import { ChangeSet, ChangeDesc, ChangeSpec } from './change';
-import { EditorState } from './state';
+import { ChangeSet, type ChangeDesc, type ChangeSpec } from './change';
+import type { EditorState } from './state';
 import { EditorSelection, checkSelection } from './selection';
 import {
   changeFilter,
@@ -7,8 +7,8 @@ import {
   transactionExtender,
   lineSeparator,
 } from './extension';
-import { Extension } from './facet';
-import { Text } from './text';
+import type { Extension } from './facet';
+import type { Text } from './text';
 
 /// Annotations are tagged values that are used to add metadata to
 /// transactions in an extensible way. They should be used to model
@@ -89,7 +89,7 @@ export class StateEffect<Value> {
   /// Map this effect through a position mapping. Will return
   /// `undefined` when that ends up deleting the effect.
   map(mapping: ChangeDesc): StateEffect<Value> | undefined {
-    let mapped = this.type.map(this.value, mapping);
+    const mapped = this.type.map(this.value, mapping);
     return mapped === undefined
       ? undefined
       : mapped == this.value
@@ -117,9 +117,9 @@ export class StateEffect<Value> {
   /// Map an array of effects through a change set.
   static mapEffects(effects: readonly StateEffect<any>[], mapping: ChangeDesc) {
     if (!effects.length) return effects;
-    let result = [];
-    for (let effect of effects) {
-      let mapped = effect.map(mapping);
+    const result = [];
+    for (const effect of effects) {
+      const mapped = effect.map(mapping);
       if (mapped) result.push(mapped);
     }
     return result;
@@ -255,7 +255,7 @@ export class Transaction {
 
   /// Get the value of the given annotation type, if any.
   annotation<T>(type: AnnotationType<T>): T | undefined {
-    for (let ann of this.annotations) if (ann.type == type) return ann.value;
+    for (const ann of this.annotations) if (ann.type == type) return ann.value;
     return undefined;
   }
 
@@ -278,14 +278,12 @@ export class Transaction {
   /// has `"select.pointer"` as user event, `"select"` and
   /// `"select.pointer"` will match it.
   isUserEvent(event: string): boolean {
-    let e = this.annotation(Transaction.userEvent);
-    return !!(
-      e &&
+    const e = this.annotation(Transaction.userEvent);
+    return Boolean(e &&
       (e == event ||
         (e.length > event.length &&
           e.slice(0, event.length) == event &&
-          e[event.length] == '.'))
-    );
+          e[event.length] == '.')));
   }
 
   /// Annotation used to store transaction timestamps. Automatically
@@ -330,9 +328,9 @@ export class Transaction {
 }
 
 function joinRanges(a: readonly number[], b: readonly number[]) {
-  let result = [];
+  const result = [];
   for (let iA = 0, iB = 0; ; ) {
-    let from, to;
+    let from; let to;
     if (iA < a.length && (iB == b.length || b[iB] >= a[iA])) {
       from = a[iA++];
       to = a[iA++];
@@ -359,7 +357,7 @@ function mergeTransaction(
   b: ResolvedSpec,
   sequential: boolean,
 ): ResolvedSpec {
-  let mapForA, mapForB, changes;
+  let mapForA; let mapForB; let changes;
   if (sequential) {
     mapForA = b.changes;
     mapForB = ChangeSet.empty(b.changes.length);
@@ -389,8 +387,8 @@ function resolveTransactionInner(
   spec: TransactionSpec,
   docSize: number,
 ): ResolvedSpec {
-  let sel = spec.selection,
-    annotations = asArray(spec.annotations);
+  const sel = spec.selection;
+    let annotations = asArray(spec.annotations);
   if (spec.userEvent)
     annotations = annotations.concat(Transaction.userEvent.of(spec.userEvent));
   return {
@@ -405,7 +403,7 @@ function resolveTransactionInner(
         : EditorSelection.single(sel.anchor, sel.head)),
     effects: asArray(spec.effects),
     annotations,
-    scrollIntoView: !!spec.scrollIntoView,
+    scrollIntoView: Boolean(spec.scrollIntoView),
   };
 }
 
@@ -422,7 +420,7 @@ export function resolveTransaction(
   if (specs.length && specs[0].filter === false) filter = false;
   for (let i = 1; i < specs.length; i++) {
     if (specs[i].filter === false) filter = false;
-    let seq = !!specs[i].sequential;
+    const seq = Boolean(specs[i].sequential);
     s = mergeTransaction(
       s,
       resolveTransactionInner(
@@ -433,7 +431,7 @@ export function resolveTransaction(
       seq,
     );
   }
-  let tr = Transaction.create(
+  const tr = Transaction.create(
     state,
     s.changes,
     s.selection,
@@ -446,12 +444,12 @@ export function resolveTransaction(
 
 // Finish a transaction by applying filters if necessary.
 function filterTransaction(tr: Transaction) {
-  let state = tr.startState;
+  const state = tr.startState;
 
   // Change filters
   let result: boolean | readonly number[] = true;
-  for (let filter of state.facet(changeFilter)) {
-    let value = filter(tr);
+  for (const filter of state.facet(changeFilter)) {
+    const value = filter(tr);
     if (value === false) {
       result = false;
       break;
@@ -460,12 +458,12 @@ function filterTransaction(tr: Transaction) {
       result = result === true ? value : joinRanges(result, value);
   }
   if (result !== true) {
-    let changes, back;
+    let changes; let back;
     if (result === false) {
       back = tr.changes.invertedDesc;
       changes = ChangeSet.empty(state.doc.length);
     } else {
-      let filtered = tr.changes.filter(result);
+      const filtered = tr.changes.filter(result);
       changes = filtered.changes;
       back = filtered.filtered.mapDesc(filtered.changes).invertedDesc;
     }
@@ -480,9 +478,9 @@ function filterTransaction(tr: Transaction) {
   }
 
   // Transaction filters
-  let filters = state.facet(transactionFilter);
+  const filters = state.facet(transactionFilter);
   for (let i = filters.length - 1; i >= 0; i--) {
-    let filtered = filters[i](tr);
+    const filtered = filters[i](tr);
     if (filtered instanceof Transaction) tr = filtered;
     else if (
       Array.isArray(filtered) &&
@@ -496,11 +494,11 @@ function filterTransaction(tr: Transaction) {
 }
 
 function extendTransaction(tr: Transaction) {
-  let state = tr.startState,
-    extenders = state.facet(transactionExtender),
-    spec: ResolvedSpec = tr;
+  const state = tr.startState;
+    const extenders = state.facet(transactionExtender);
+    let spec: ResolvedSpec = tr;
   for (let i = extenders.length - 1; i >= 0; i--) {
-    let extension = extenders[i](tr);
+    const extension = extenders[i](tr);
     if (extension && Object.keys(extension).length)
       spec = mergeTransaction(
         spec,

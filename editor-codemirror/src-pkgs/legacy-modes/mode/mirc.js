@@ -1,10 +1,10 @@
 function parseWords(str) {
-  var obj = {},
-    words = str.split(' ');
-  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
+  const obj = {};
+    const words = str.split(' ');
+  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
-var specials = parseWords(
+const specials = parseWords(
   '$! $$ $& $? $+ $abook $abs $active $activecid ' +
     '$activewid $address $addtok $agent $agentname $agentstat $agentver ' +
     '$alias $and $anick $ansi2mirc $aop $appactive $appstate $asc $asctime ' +
@@ -42,7 +42,7 @@ var specials = parseWords(
     '$ulist $upper $uptime $url $usermode $v1 $v2 $var $vcmd $vcmdstat $vcmdver ' +
     '$version $vnick $vol $wid $width $wildsite $wildtok $window $wrap $xor',
 );
-var keywords = parseWords(
+const keywords = parseWords(
   'abook ajinvite alias aline ame amsg anick aop auser autojoin avoice ' +
     'away background ban bcopy beep bread break breplace bset btrunc bunset bwrite ' +
     'channel clear clearall cline clipboard close cnick color comclose comopen ' +
@@ -69,18 +69,18 @@ var keywords = parseWords(
     'elseif else goto menu nicklist status title icon size option text edit ' +
     'button check radio box scroll list combo link tab item',
 );
-var functions = parseWords(
+const functions = parseWords(
   'if elseif else and not or eq ne in ni for foreach while switch',
 );
-var isOperatorChar = /[+\-*&%=<>!?^\/\|]/;
+const isOperatorChar = /[+\-*&%=<>!?^\/\|]/;
 function chain(stream, state, f) {
   state.tokenize = f;
   return f(stream, state);
 }
 function tokenBase(stream, state) {
-  var beforeParams = state.beforeParams;
+  const beforeParams = state.beforeParams;
   state.beforeParams = false;
-  var ch = stream.next();
+  const ch = stream.next();
   if (/[\[\]{}\(\),\.]/.test(ch)) {
     if (ch == '(' && beforeParams) state.inParams = true;
     else if (ch == ')') state.inParams = false;
@@ -122,7 +122,7 @@ function tokenBase(stream, state) {
     return 'operator';
   } else {
     stream.eatWhile(/[\w\$_{}]/);
-    var word = stream.current().toLowerCase();
+    const word = stream.current().toLowerCase();
     if (keywords && keywords.propertyIsEnumerable(word)) return 'keyword';
     if (functions && functions.propertyIsEnumerable(word)) {
       state.beforeParams = true;
@@ -132,8 +132,8 @@ function tokenBase(stream, state) {
   }
 }
 function tokenComment(stream, state) {
-  var maybeEnd = false,
-    ch;
+  let maybeEnd = false;
+    let ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = tokenBase;
@@ -144,8 +144,8 @@ function tokenComment(stream, state) {
   return 'comment';
 }
 function tokenUnparsed(stream, state) {
-  var maybeEnd = 0,
-    ch;
+  let maybeEnd = 0;
+    let ch;
   while ((ch = stream.next())) {
     if (ch == ';' && maybeEnd == 2) {
       state.tokenize = tokenBase;

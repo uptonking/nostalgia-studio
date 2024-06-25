@@ -1,12 +1,12 @@
-var words = {};
+const words = {};
 function define(style, dict) {
-  for (var i = 0; i < dict.length; i++) {
+  for (let i = 0; i < dict.length; i++) {
     words[dict[i]] = style;
   }
 }
 
-var commonAtoms = ['true', 'false'];
-var commonKeywords = [
+const commonAtoms = ['true', 'false'];
+const commonKeywords = [
   'if',
   'then',
   'do',
@@ -27,7 +27,7 @@ var commonKeywords = [
   'export',
   'function',
 ];
-var commonCommands = [
+const commonCommands = [
   'ab',
   'awk',
   'bash',
@@ -104,8 +104,8 @@ define('builtin', commonCommands);
 function tokenBase(stream, state) {
   if (stream.eatSpace()) return null;
 
-  var sol = stream.sol();
-  var ch = stream.next();
+  const sol = stream.sol();
+  const ch = stream.next();
 
   if (ch === '\\') {
     stream.next();
@@ -137,7 +137,7 @@ function tokenBase(stream, state) {
   }
   if (ch == '<') {
     if (stream.match('<<')) return 'operator';
-    var heredoc = stream.match(/^<-?\s*(?:['"]([^'"]*)['"]|([^'"\s]*))/);
+    const heredoc = stream.match(/^<-?\s*(?:['"]([^'"]*)['"]|([^'"\s]*))/);
     if (heredoc) {
       state.tokens.unshift(tokenHeredoc(heredoc[1] || heredoc[2]));
       return 'string.special';
@@ -150,16 +150,16 @@ function tokenBase(stream, state) {
     }
   }
   stream.eatWhile(/[\w-]/);
-  var cur = stream.current();
+  const cur = stream.current();
   if (stream.peek() === '=' && /\w+/.test(cur)) return 'def';
   return words.hasOwnProperty(cur) ? words[cur] : null;
 }
 
 function tokenString(quote, style) {
-  var close = quote == '(' ? ')' : quote == '{' ? '}' : quote;
+  const close = quote == '(' ? ')' : quote == '{' ? '}' : quote;
   return function (stream, state) {
-    var next,
-      escaped = false;
+    let next;
+      let escaped = false;
     while ((next = stream.next()) != null) {
       if (next === close && !escaped) {
         state.tokens.shift();
@@ -198,7 +198,7 @@ function tokenStringStart(quote, style) {
 
 var tokenDollar = function (stream, state) {
   if (state.tokens.length > 1) stream.eat('$');
-  var ch = stream.next();
+  const ch = stream.next();
   if (/['"({]/.test(ch)) {
     state.tokens[0] = tokenString(
       ch,

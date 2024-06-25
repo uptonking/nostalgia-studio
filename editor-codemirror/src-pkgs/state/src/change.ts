@@ -42,7 +42,7 @@ export class ChangeDesc {
   get newLength() {
     let result = 0;
     for (let i = 0; i < this.sections.length; i += 2) {
-      let ins = this.sections[i + 1];
+      const ins = this.sections[i + 1];
       result += ins < 0 ? this.sections[i] : ins;
     }
     return result;
@@ -61,8 +61,8 @@ export class ChangeDesc {
   /// the new position in the changed document.
   iterGaps(f: (posA: number, posB: number, length: number) => void) {
     for (let i = 0, posA = 0, posB = 0; i < this.sections.length; ) {
-      let len = this.sections[i++],
-        ins = this.sections[i++];
+      const len = this.sections[i++];
+        const ins = this.sections[i++];
       if (ins < 0) {
         f(posA, posB, len);
         posB += len;
@@ -92,10 +92,10 @@ export class ChangeDesc {
 
   /// Get a description of the inverted form of these changes.
   get invertedDesc() {
-    let sections = [];
+    const sections = [];
     for (let i = 0; i < this.sections.length; ) {
-      let len = this.sections[i++],
-        ins = this.sections[i++];
+      const len = this.sections[i++];
+        const ins = this.sections[i++];
       if (ins < 0) sections.push(len, ins);
       else sections.push(ins, len);
     }
@@ -135,12 +135,12 @@ export class ChangeDesc {
   mapPos(pos: number, assoc?: number): number;
   mapPos(pos: number, assoc: number, mode: MapMode): number | null;
   mapPos(pos: number, assoc = -1, mode: MapMode = MapMode.Simple) {
-    let posA = 0,
-      posB = 0;
+    let posA = 0;
+      let posB = 0;
     for (let i = 0; i < this.sections.length; ) {
-      let len = this.sections[i++],
-        ins = this.sections[i++],
-        endA = posA + len;
+      const len = this.sections[i++];
+        const ins = this.sections[i++];
+        const endA = posA + len;
       if (ins < 0) {
         if (endA > pos) return posB + (pos - posA);
         posB += len;
@@ -171,9 +171,9 @@ export class ChangeDesc {
   /// returned.
   touchesRange(from: number, to = from): boolean | 'cover' {
     for (let i = 0, pos = 0; i < this.sections.length && pos <= to; ) {
-      let len = this.sections[i++],
-        ins = this.sections[i++],
-        end = pos + len;
+      const len = this.sections[i++];
+        const ins = this.sections[i++];
+        const end = pos + len;
       if (ins >= 0 && pos <= to && end >= from)
         return pos < from && end > to ? 'cover' : true;
       pos = end;
@@ -185,8 +185,8 @@ export class ChangeDesc {
   toString() {
     let result = '';
     for (let i = 0; i < this.sections.length; ) {
-      let len = this.sections[i++],
-        ins = this.sections[i++];
+      const len = this.sections[i++];
+        const ins = this.sections[i++];
       result += (result ? ' ' : '') + len + (ins >= 0 ? ':' + ins : '');
     }
     return result;
@@ -203,7 +203,7 @@ export class ChangeDesc {
     if (
       !Array.isArray(json) ||
       json.length % 2 ||
-      json.some((a) => typeof a != 'number')
+      json.some((a) => typeof a !== 'number')
     )
       throw new RangeError('Invalid JSON representation of ChangeDesc');
     return new ChangeDesc(json as number[]);
@@ -264,15 +264,15 @@ export class ChangeSet extends ChangeDesc {
   /// be used to go from the document created by the changes back to
   /// the document as it existed before the changes.
   invert(doc: Text) {
-    let sections = this.sections.slice(),
-      inserted = [];
+    const sections = this.sections.slice();
+      const inserted = [];
     for (let i = 0, pos = 0; i < sections.length; i += 2) {
-      let len = sections[i],
-        ins = sections[i + 1];
+      const len = sections[i];
+        const ins = sections[i + 1];
       if (ins >= 0) {
         sections[i] = ins;
         sections[i + 1] = len;
-        let index = i >> 1;
+        const index = i >> 1;
         while (inserted.length < index) inserted.push(Text.empty);
         inserted.push(len ? doc.slice(pos, pos + len) : Text.empty);
       }
@@ -336,26 +336,26 @@ export class ChangeSet extends ChangeDesc {
 
   /// @internal
   filter(ranges: readonly number[]) {
-    let resultSections: number[] = [],
-      resultInserted: Text[] = [],
-      filteredSections: number[] = [];
-    let iter = new SectionIter(this);
+    const resultSections: number[] = [];
+      const resultInserted: Text[] = [];
+      const filteredSections: number[] = [];
+    const iter = new SectionIter(this);
     done: for (let i = 0, pos = 0; ; ) {
-      let next = i == ranges.length ? 1e9 : ranges[i++];
+      const next = i == ranges.length ? 1e9 : ranges[i++];
       while (pos < next || (pos == next && iter.len == 0)) {
         if (iter.done) break done;
-        let len = Math.min(iter.len, next - pos);
+        const len = Math.min(iter.len, next - pos);
         addSection(filteredSections, len, -1);
-        let ins = iter.ins == -1 ? -1 : iter.off == 0 ? iter.ins : 0;
+        const ins = iter.ins == -1 ? -1 : iter.off == 0 ? iter.ins : 0;
         addSection(resultSections, len, ins);
         if (ins > 0) addInsert(resultInserted, resultSections, iter.text);
         iter.forward(len);
         pos += len;
       }
-      let end = ranges[i++];
+      const end = ranges[i++];
       while (pos < end) {
         if (iter.done) break done;
-        let len = Math.min(iter.len, end - pos);
+        const len = Math.min(iter.len, end - pos);
         addSection(resultSections, len, -1);
         addSection(
           filteredSections,
@@ -374,10 +374,10 @@ export class ChangeSet extends ChangeDesc {
 
   /// Serialize this change set to a JSON-representable value.
   toJSON(): any {
-    let parts: (number | [number, ...string[]])[] = [];
+    const parts: (number | [number, ...string[]])[] = [];
     for (let i = 0; i < this.sections.length; i += 2) {
-      let len = this.sections[i],
-        ins = this.sections[i + 1];
+      const len = this.sections[i];
+        const ins = this.sections[i + 1];
       if (ins < 0) parts.push(len);
       else if (ins == 0) parts.push([len]);
       else
@@ -393,15 +393,15 @@ export class ChangeSet extends ChangeDesc {
   /// Create a change set for the given changes, for a document of the
   /// given length, using `lineSep` as line separator.
   static of(changes: ChangeSpec, length: number, lineSep?: string): ChangeSet {
-    let sections: number[] = [],
-      inserted: Text[] = [],
-      pos = 0;
+    let sections: number[] = [];
+      let inserted: Text[] = [];
+      let pos = 0;
     let total: ChangeSet | null = null;
 
     function flush(force = false) {
       if (!force && !sections.length) return;
       if (pos < length) addSection(sections, length - pos, -1);
-      let set = new ChangeSet(sections, inserted);
+      const set = new ChangeSet(sections, inserted);
       total = total ? total.compose(set.map(total)) : set;
       sections = [];
       inserted = [];
@@ -409,7 +409,7 @@ export class ChangeSet extends ChangeDesc {
     }
     function process(spec: ChangeSpec) {
       if (Array.isArray(spec)) {
-        for (let sub of spec) process(sub);
+        for (const sub of spec) process(sub);
       } else if (spec instanceof ChangeSet) {
         if (spec.length != length)
           throw new RangeError(
@@ -418,7 +418,7 @@ export class ChangeSet extends ChangeDesc {
         flush();
         total = total ? total.compose(spec.map(total)) : spec;
       } else {
-        let {
+        const {
           from,
           to = from,
           insert,
@@ -427,12 +427,12 @@ export class ChangeSet extends ChangeDesc {
           throw new RangeError(
             `Invalid change range ${from} to ${to} (in doc of length ${length})`,
           );
-        let insText = !insert
+        const insText = !insert
           ? Text.empty
-          : typeof insert == 'string'
+          : typeof insert === 'string'
             ? Text.of(insert.split(lineSep || DefaultSplit))
             : insert;
-        let insLen = insText.length;
+        const insLen = insText.length;
         if (from == to && insLen == 0) return;
         if (from < pos) flush();
         if (from > pos) addSection(sections, from - pos, -1);
@@ -457,16 +457,16 @@ export class ChangeSet extends ChangeDesc {
   static fromJSON(json: any) {
     if (!Array.isArray(json))
       throw new RangeError('Invalid JSON representation of ChangeSet');
-    let sections = [],
-      inserted = [];
+    const sections = [];
+      const inserted = [];
     for (let i = 0; i < json.length; i++) {
-      let part = json[i];
-      if (typeof part == 'number') {
+      const part = json[i];
+      if (typeof part === 'number') {
         sections.push(part, -1);
       } else if (
         !Array.isArray(part) ||
-        typeof part[0] != 'number' ||
-        part.some((e, i) => i && typeof e != 'string')
+        typeof part[0] !== 'number' ||
+        part.some((e, i) => i && typeof e !== 'string')
       ) {
         throw new RangeError('Invalid JSON representation of ChangeSet');
       } else if (part.length == 1) {
@@ -493,7 +493,7 @@ function addSection(
   forceJoin = false,
 ) {
   if (len == 0 && ins <= 0) return;
-  let last = sections.length - 2;
+  const last = sections.length - 2;
   if (last >= 0 && ins <= 0 && ins == sections[last + 1]) sections[last] += len;
   else if (last >= 0 && len == 0 && sections[last] == 0)
     sections[last + 1] += ins;
@@ -505,7 +505,7 @@ function addSection(
 
 function addInsert(values: Text[], sections: readonly number[], value: Text) {
   if (value.length == 0) return;
-  let index = (sections.length - 2) >> 1;
+  const index = (sections.length - 2) >> 1;
   if (index < values.length) {
     values[values.length - 1] = values[values.length - 1].append(value);
   } else {
@@ -525,17 +525,17 @@ function iterChanges(
   ) => void,
   individual: boolean,
 ) {
-  let inserted = (desc as ChangeSet).inserted;
+  const inserted = (desc as ChangeSet).inserted;
   for (let posA = 0, posB = 0, i = 0; i < desc.sections.length; ) {
-    let len = desc.sections[i++],
-      ins = desc.sections[i++];
+    let len = desc.sections[i++];
+      let ins = desc.sections[i++];
     if (ins < 0) {
       posA += len;
       posB += len;
     } else {
-      let endA = posA,
-        endB = posB,
-        text = Text.empty;
+      let endA = posA;
+        let endB = posB;
+        let text = Text.empty;
       for (;;) {
         endA += len;
         endB += ins;
@@ -571,10 +571,10 @@ function mapSet(
 ): ChangeSet | ChangeDesc {
   // Produce a copy of setA that applies to the document after setB
   // has been applied (assuming both start at the same document).
-  let sections: number[] = [],
-    insert: Text[] | null = mkSet ? [] : null;
-  let a = new SectionIter(setA),
-    b = new SectionIter(setB);
+  const sections: number[] = [];
+    const insert: Text[] | null = mkSet ? [] : null;
+  const a = new SectionIter(setA);
+    const b = new SectionIter(setB);
   // Iterate over both sets in parallel. inserted tracks, for changes
   // in A that have to be processed piece-by-piece, whether their
   // content has been inserted already, and refers to the section
@@ -582,7 +582,7 @@ function mapSet(
   for (let inserted = -1; ; ) {
     if (a.ins == -1 && b.ins == -1) {
       // Move across ranges skipped by both sets.
-      let len = Math.min(a.len, b.len);
+      const len = Math.min(a.len, b.len);
       addSection(sections, len, -1);
       a.forward(len);
       b.forward(len);
@@ -598,7 +598,7 @@ function mapSet(
       let len = b.len;
       addSection(sections, b.ins, -1);
       while (len) {
-        let piece = Math.min(a.len, len);
+        const piece = Math.min(a.len, len);
         if (a.ins >= 0 && inserted < a.i && a.len <= piece) {
           addSection(sections, 0, a.ins);
           if (insert) addInsert(insert, sections, a.text);
@@ -611,11 +611,11 @@ function mapSet(
     } else if (a.ins >= 0) {
       // Process the part of a change in A up to the start of the next
       // non-deletion change in B (if overlapping).
-      let len = 0,
-        left = a.len;
+      let len = 0;
+        let left = a.len;
       while (left) {
         if (b.ins == -1) {
-          let piece = Math.min(left, b.len);
+          const piece = Math.min(left, b.len);
           len += piece;
           left -= piece;
           b.forward(piece);
@@ -647,10 +647,10 @@ function composeSets(
   setB: ChangeDesc,
   mkSet = false,
 ): ChangeDesc {
-  let sections: number[] = [];
-  let insert: Text[] | null = mkSet ? [] : null;
-  let a = new SectionIter(setA),
-    b = new SectionIter(setB);
+  const sections: number[] = [];
+  const insert: Text[] | null = mkSet ? [] : null;
+  const a = new SectionIter(setA);
+    const b = new SectionIter(setB);
   for (let open = false; ; ) {
     if (a.done && b.done) {
       return insert
@@ -668,10 +668,10 @@ function composeSets(
     } else if (a.done || b.done) {
       throw new Error('Mismatched change set lengths');
     } else {
-      let len = Math.min(a.len2, b.len),
-        sectionLen = sections.length;
+      const len = Math.min(a.len2, b.len);
+        const sectionLen = sections.length;
       if (a.ins == -1) {
-        let insB = b.ins == -1 ? -1 : b.off ? 0 : b.ins;
+        const insB = b.ins == -1 ? -1 : b.off ? 0 : b.ins;
         addSection(sections, len, insB, open);
         if (insert && insB) addInsert(insert, sections, b.text);
       } else if (b.ins == -1) {
@@ -701,7 +701,7 @@ class SectionIter {
   }
 
   next() {
-    let { sections } = this.set;
+    const { sections } = this.set;
     if (this.i < sections.length) {
       this.len = sections[this.i++];
       this.ins = sections[this.i++];
@@ -721,14 +721,14 @@ class SectionIter {
   }
 
   get text() {
-    let { inserted } = this.set as ChangeSet,
-      index = (this.i - 2) >> 1;
+    const { inserted } = this.set as ChangeSet;
+      const index = (this.i - 2) >> 1;
     return index >= inserted.length ? Text.empty : inserted[index];
   }
 
   textBit(len?: number) {
-    let { inserted } = this.set as ChangeSet,
-      index = (this.i - 2) >> 1;
+    const { inserted } = this.set as ChangeSet;
+      const index = (this.i - 2) >> 1;
     return index >= inserted.length && !len
       ? Text.empty
       : inserted[index].slice(

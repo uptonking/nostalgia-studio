@@ -12,7 +12,7 @@ function mkStex(mathMode) {
   }
 
   function popCommand(state) {
-    var plug = state.cmdState.pop();
+    const plug = state.cmdState.pop();
     if (plug) {
       plug.closeBracket();
     }
@@ -20,9 +20,9 @@ function mkStex(mathMode) {
 
   // returns the non-default plugin closest to the end of the list
   function getMostPowerful(state) {
-    var context = state.cmdState;
-    for (var i = context.length - 1; i >= 0; i--) {
-      var plug = context[i];
+    const context = state.cmdState;
+    for (let i = context.length - 1; i >= 0; i--) {
+      const plug = context[i];
       if (plug.name == 'DEFAULT') {
         continue;
       }
@@ -54,7 +54,7 @@ function mkStex(mathMode) {
     };
   }
 
-  var plugins = {};
+  const plugins = {};
 
   plugins['importmodule'] = addPluginPattern('importmodule', 'tag', [
     'string',
@@ -92,10 +92,10 @@ function mkStex(mathMode) {
 
   // called when in a normal (no environment) context
   function normal(source, state) {
-    var plug;
+    let plug;
     // Do we look like '\command' ?  If so, attempt to apply the plugin 'command'
     if (source.match(/^\\[a-zA-Z@\xc0-\u1fff\u2060-\uffff]+/)) {
-      var cmdName = source.current().slice(1);
+      const cmdName = source.current().slice(1);
       plug = plugins.hasOwnProperty(cmdName)
         ? plugins[cmdName]
         : plugins['DEFAULT'];
@@ -141,7 +141,7 @@ function mkStex(mathMode) {
       return 'keyword';
     }
 
-    var ch = source.next();
+    const ch = source.next();
     if (ch == '%') {
       source.skipToEnd();
       return 'comment';
@@ -205,7 +205,7 @@ function mkStex(mathMode) {
     if (source.match(/^(\d+\.\d*|\d*\.\d+|\d+)/)) {
       return 'number';
     }
-    var ch = source.next();
+    const ch = source.next();
     if (
       ch == '{' ||
       ch == '}' ||
@@ -225,8 +225,8 @@ function mkStex(mathMode) {
   }
 
   function beginParams(source, state) {
-    var ch = source.peek(),
-      lastPlug;
+    const ch = source.peek();
+      let lastPlug;
     if (ch == '{' || ch == '[') {
       lastPlug = peekCommand(state);
       lastPlug.openBracket(ch);
@@ -247,7 +247,7 @@ function mkStex(mathMode) {
   return {
     name: 'stex',
     startState: function () {
-      var f = mathMode
+      const f = mathMode
         ? function (source, state) {
             return inMathMode(source, state);
           }

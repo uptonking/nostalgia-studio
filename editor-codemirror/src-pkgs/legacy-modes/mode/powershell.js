@@ -1,9 +1,9 @@
 function buildRegexp(patterns, options) {
   options = options || {};
-  var prefix = options.prefix !== undefined ? options.prefix : '^';
-  var suffix = options.suffix !== undefined ? options.suffix : '\\b';
+  const prefix = options.prefix !== undefined ? options.prefix : '^';
+  const suffix = options.suffix !== undefined ? options.suffix : '\\b';
 
-  for (var i = 0; i < patterns.length; i++) {
+  for (let i = 0; i < patterns.length; i++) {
     if (patterns[i] instanceof RegExp) {
       patterns[i] = patterns[i].source;
     } else {
@@ -14,9 +14,9 @@ function buildRegexp(patterns, options) {
   return new RegExp(prefix + '(' + patterns.join('|') + ')' + suffix, 'i');
 }
 
-var notCharacterOrDash = '(?=[^A-Za-z\\d\\-_]|$)';
-var varNames = /[\w\-:]/;
-var keywords = buildRegexp(
+const notCharacterOrDash = '(?=[^A-Za-z\\d\\-_]|$)';
+const varNames = /[\w\-:]/;
+const keywords = buildRegexp(
   [
     /begin|break|catch|continue|data|default|do|dynamicparam/,
     /else|elseif|end|exit|filter|finally|for|foreach|from|function|if|in/,
@@ -25,8 +25,8 @@ var keywords = buildRegexp(
   { suffix: notCharacterOrDash },
 );
 
-var punctuation = /[\[\]{},;`\\\.]|@[({]/;
-var wordOperators = buildRegexp(
+const punctuation = /[\[\]{},;`\\\.]|@[({]/;
+const wordOperators = buildRegexp(
   [
     'f',
     /b?not/,
@@ -41,16 +41,16 @@ var wordOperators = buildRegexp(
   ],
   { prefix: '-' },
 );
-var symbolOperators = /[+\-*\/%]=|\+\+|--|\.\.|[+\-*&^%:=!|\/]|<(?!#)|(?!#)>/;
-var operators = buildRegexp([wordOperators, symbolOperators], { suffix: '' });
+const symbolOperators = /[+\-*\/%]=|\+\+|--|\.\.|[+\-*&^%:=!|\/]|<(?!#)|(?!#)>/;
+const operators = buildRegexp([wordOperators, symbolOperators], { suffix: '' });
 
-var numbers =
+const numbers =
   /^((0x[\da-f]+)|((\d+\.\d+|\d\.|\.\d+|\d+)(e[\+\-]?\d+)?))[ld]?([kmgtp]b)?/i;
 
-var identifiers = /^[A-Za-z\_][A-Za-z\-\_\d]*\b/;
+const identifiers = /^[A-Za-z\_][A-Za-z\-\_\d]*\b/;
 
-var symbolBuiltins = /[A-Z]:|%|\?/i;
-var namedBuiltins = buildRegexp(
+const symbolBuiltins = /[A-Z]:|%|\?/i;
+const namedBuiltins = buildRegexp(
   [
     /Add-(Computer|Content|History|Member|PSSnapin|Type)/,
     /Checkpoint-Computer/,
@@ -136,7 +136,7 @@ var namedBuiltins = buildRegexp(
   ],
   { prefix: '', suffix: '' },
 );
-var variableBuiltins = buildRegexp(
+const variableBuiltins = buildRegexp(
   [
     /[$?^_]|Args|ConfirmPreference|ConsoleFileName|DebugPreference|Error|ErrorActionPreference|ErrorView|ExecutionContext/,
     /FormatEnumerationLimit|Home|Host|Input|MaximumAliasCount|MaximumDriveCount|MaximumErrorCount|MaximumFunctionCount/,
@@ -152,11 +152,11 @@ var variableBuiltins = buildRegexp(
   { prefix: '\\$', suffix: '' },
 );
 
-var builtins = buildRegexp([symbolBuiltins, namedBuiltins, variableBuiltins], {
+const builtins = buildRegexp([symbolBuiltins, namedBuiltins, variableBuiltins], {
   suffix: notCharacterOrDash,
 });
 
-var grammar = {
+const grammar = {
   keyword: keywords,
   number: numbers,
   operator: operators,
@@ -170,7 +170,7 @@ function tokenBase(stream, state) {
   // Handle Comments
   //var ch = stream.peek();
 
-  var parent = state.returnStack[state.returnStack.length - 1];
+  const parent = state.returnStack[state.returnStack.length - 1];
   if (parent && parent.shouldReturnFrom(state)) {
     state.tokenize = parent.tokenize;
     state.returnStack.pop();
@@ -191,13 +191,13 @@ function tokenBase(stream, state) {
     return 'punctuation';
   }
 
-  for (var key in grammar) {
+  for (const key in grammar) {
     if (stream.match(grammar[key])) {
       return key;
     }
   }
 
-  var ch = stream.next();
+  const ch = stream.next();
 
   // single-quote string
   if (ch === "'") {
@@ -224,7 +224,7 @@ function tokenBase(stream, state) {
   }
 
   if (ch === '@') {
-    var quoteMatch = stream.eat(/["']/);
+    const quoteMatch = stream.eat(/["']/);
     if (quoteMatch && stream.eol()) {
       state.tokenize = tokenMultiString;
       state.startQuote = quoteMatch[0];
@@ -242,7 +242,7 @@ function tokenBase(stream, state) {
 }
 
 function tokenSingleQuoteString(stream, state) {
-  var ch;
+  let ch;
   while ((ch = stream.peek()) != null) {
     stream.next();
 
@@ -256,7 +256,7 @@ function tokenSingleQuoteString(stream, state) {
 }
 
 function tokenDoubleQuoteString(stream, state) {
-  var ch;
+  let ch;
   while ((ch = stream.peek()) != null) {
     if (ch === '$') {
       state.tokenize = tokenStringInterpolation;
@@ -294,7 +294,7 @@ function tokenHereStringInterpolation(stream, state) {
 
 function tokenInterpolation(stream, state, parentTokenize) {
   if (stream.match('$(')) {
-    var savedBracketNesting = state.bracketNesting;
+    const savedBracketNesting = state.bracketNesting;
     state.returnStack.push({
       /*jshint loopfunc:true */
       shouldReturnFrom: function (state) {
@@ -319,8 +319,8 @@ function tokenInterpolation(stream, state, parentTokenize) {
 }
 
 function tokenComment(stream, state) {
-  var maybeEnd = false,
-    ch;
+  let maybeEnd = false;
+    let ch;
   while ((ch = stream.next()) != null) {
     if (maybeEnd && ch == '>') {
       state.tokenize = tokenBase;
@@ -332,7 +332,7 @@ function tokenComment(stream, state) {
 }
 
 function tokenVariable(stream, state) {
-  var ch = stream.peek();
+  const ch = stream.peek();
   if (stream.eat('{')) {
     state.tokenize = tokenVariableWithBraces;
     return tokenVariableWithBraces(stream, state);
@@ -347,7 +347,7 @@ function tokenVariable(stream, state) {
 }
 
 function tokenVariableWithBraces(stream, state) {
-  var ch;
+  let ch;
   while ((ch = stream.next()) != null) {
     if (ch === '}') {
       state.tokenize = tokenBase;
@@ -358,12 +358,12 @@ function tokenVariableWithBraces(stream, state) {
 }
 
 function tokenMultiString(stream, state) {
-  var quote = state.startQuote;
+  const quote = state.startQuote;
   if (stream.sol() && stream.match(new RegExp(quote + '@'))) {
     state.tokenize = tokenBase;
   } else if (quote === '"') {
     while (!stream.eol()) {
-      var ch = stream.peek();
+      const ch = stream.peek();
       if (ch === '$') {
         state.tokenize = tokenHereStringInterpolation;
         return 'string';

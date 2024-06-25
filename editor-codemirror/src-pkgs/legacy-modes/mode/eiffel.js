@@ -1,9 +1,9 @@
 function wordObj(words) {
-  var o = {};
-  for (var i = 0, e = words.length; i < e; ++i) o[words[i]] = true;
+  const o = {};
+  for (let i = 0, e = words.length; i < e; ++i) o[words[i]] = true;
   return o;
 }
-var keywords = wordObj([
+const keywords = wordObj([
   'note',
   'across',
   'when',
@@ -69,7 +69,7 @@ var keywords = wordObj([
   'not',
   'or',
 ]);
-var operators = wordObj([':=', 'and then', 'and', 'or', '<<', '>>']);
+const operators = wordObj([':=', 'and then', 'and', 'or', '<<', '>>']);
 
 function chain(newtok, stream, state) {
   state.tokenize.push(newtok);
@@ -78,7 +78,7 @@ function chain(newtok, stream, state) {
 
 function tokenBase(stream, state) {
   if (stream.eatSpace()) return null;
-  var ch = stream.next();
+  const ch = stream.next();
   if (ch == '"' || ch == "'") {
     return chain(readQuoted(ch, 'string'), stream, state);
   } else if (ch == '-' && stream.eat('-')) {
@@ -104,8 +104,8 @@ function tokenBase(stream, state) {
 
 function readQuoted(quote, style, unescaped) {
   return function (stream, state) {
-    var escaped = false,
-      ch;
+    let escaped = false;
+      let ch;
     while ((ch = stream.next()) != null) {
       if (ch == quote && (unescaped || !escaped)) {
         state.tokenize.pop();
@@ -124,9 +124,9 @@ export const eiffel = {
   },
 
   token: function (stream, state) {
-    var style = state.tokenize[state.tokenize.length - 1](stream, state);
+    let style = state.tokenize[state.tokenize.length - 1](stream, state);
     if (style == 'variable') {
-      var word = stream.current();
+      const word = stream.current();
       style = keywords.propertyIsEnumerable(stream.current())
         ? 'keyword'
         : operators.propertyIsEnumerable(stream.current())

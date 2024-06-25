@@ -1,13 +1,13 @@
 import { Prec, EditorState } from '@codemirror/state';
-import { KeyBinding, keymap } from '@codemirror/view';
+import { type KeyBinding, keymap } from '@codemirror/view';
 import {
-  Language,
+  type Language,
   LanguageSupport,
-  LanguageDescription,
+  type LanguageDescription,
   syntaxTree,
 } from '@codemirror/language';
-import { Completion, CompletionContext } from '@codemirror/autocomplete';
-import { MarkdownExtension, MarkdownParser, parseCode } from '@lezer/markdown';
+import { type Completion, CompletionContext } from '@codemirror/autocomplete';
+import { type MarkdownExtension, MarkdownParser, parseCode } from '@lezer/markdown';
 import { html, htmlCompletionSource } from '@codemirror/lang-html';
 import {
   commonmarkLanguage,
@@ -65,7 +65,7 @@ export function markdown(
     completeHTMLTags?: boolean;
   } = {},
 ) {
-  let {
+  const {
     codeLanguages,
     defaultCodeLanguage,
     addKeymap = true,
@@ -76,16 +76,16 @@ export function markdown(
     throw new RangeError(
       'Base parser provided to `markdown` should be a Markdown parser',
     );
-  let extensions = config.extensions ? [config.extensions] : [];
-  let support = [htmlNoMatch.support],
-    defaultCode;
+  const extensions = config.extensions ? [config.extensions] : [];
+  const support = [htmlNoMatch.support];
+    let defaultCode;
   if (defaultCodeLanguage instanceof LanguageSupport) {
     support.push(defaultCodeLanguage.support);
     defaultCode = defaultCodeLanguage.language;
   } else if (defaultCodeLanguage) {
     defaultCode = defaultCodeLanguage;
   }
-  let codeParser =
+  const codeParser =
     codeLanguages || defaultCode
       ? getCodeParser(codeLanguages, defaultCode)
       : undefined;
@@ -93,15 +93,15 @@ export function markdown(
     parseCode({ codeParser, htmlParser: htmlNoMatch.language.parser }),
   );
   if (addKeymap) support.push(Prec.high(keymap.of(markdownKeymap)));
-  let lang = mkLang(parser.configure(extensions));
+  const lang = mkLang(parser.configure(extensions));
   if (completeHTMLTags)
     support.push(lang.data.of({ autocomplete: htmlTagCompletion }));
   return new LanguageSupport(lang, support);
 }
 
 function htmlTagCompletion(context: CompletionContext) {
-  let { state, pos } = context,
-    m = /<[:\-\.\w\u00b7-\uffff]*$/.exec(state.sliceDoc(pos - 25, pos));
+  const { state, pos } = context;
+    const m = /<[:\-\.\w\u00b7-\uffff]*$/.exec(state.sliceDoc(pos - 25, pos));
   if (!m) return null;
   let tree = syntaxTree(state).resolveInner(pos, -1);
   while (tree && !tree.type.isTop) {
@@ -128,7 +128,7 @@ function htmlTagCompletion(context: CompletionContext) {
 let _tagCompletions: readonly Completion[] | null = null;
 function htmlTagCompletions() {
   if (_tagCompletions) return _tagCompletions;
-  let result = htmlCompletionSource(
+  const result = htmlCompletionSource(
     new CompletionContext(
       EditorState.create({ extensions: htmlNoMatch }),
       0,

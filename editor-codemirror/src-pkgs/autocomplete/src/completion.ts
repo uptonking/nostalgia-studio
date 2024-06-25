@@ -1,14 +1,14 @@
-import { EditorView } from '@codemirror/view';
+import type { EditorView } from '@codemirror/view';
 import {
-  EditorState,
+  type EditorState,
   StateEffect,
   Annotation,
   EditorSelection,
-  TransactionSpec,
-  ChangeDesc,
+  type TransactionSpec,
+  type ChangeDesc,
 } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
-import { SyntaxNode } from '@lezer/common';
+import type { SyntaxNode } from '@lezer/common';
 
 /// Objects type used to represent individual completions.
 export interface Completion {
@@ -136,10 +136,10 @@ export class CompletionContext {
   /// Get the match of the given expression directly before the
   /// cursor.
   matchBefore(expr: RegExp) {
-    let line = this.state.doc.lineAt(this.pos);
-    let start = Math.max(line.from, this.pos - 250);
-    let str = line.text.slice(start - line.from, this.pos - line.from);
-    let found = str.search(ensureAnchor(expr, false));
+    const line = this.state.doc.lineAt(this.pos);
+    const start = Math.max(line.from, this.pos - 250);
+    const str = line.text.slice(start - line.from, this.pos - line.from);
+    const found = str.search(ensureAnchor(expr, false));
     return found < 0
       ? null
       : { from: start + found, to: this.pos, text: str.slice(found) };
@@ -162,19 +162,19 @@ export class CompletionContext {
 
 function toSet(chars: { [ch: string]: true }) {
   let flat = Object.keys(chars).join('');
-  let words = /\w/.test(flat);
+  const words = /\w/.test(flat);
   if (words) flat = flat.replace(/\w/g, '');
   return `[${words ? '\\w' : ''}${flat.replace(/[^\w\s]/g, '\\$&')}]`;
 }
 
 function prefixMatch(options: readonly Completion[]) {
-  let first = Object.create(null),
-    rest = Object.create(null);
-  for (let { label } of options) {
+  const first = Object.create(null);
+    const rest = Object.create(null);
+  for (const { label } of options) {
     first[label[0]] = true;
     for (let i = 1; i < label.length; i++) rest[label[i]] = true;
   }
-  let source = toSet(first) + toSet(rest) + '*$';
+  const source = toSet(first) + toSet(rest) + '*$';
   return [new RegExp('^' + source), new RegExp(source)];
 }
 
@@ -183,14 +183,14 @@ function prefixMatch(options: readonly Completion[]) {
 export function completeFromList(
   list: readonly (string | Completion)[],
 ): CompletionSource {
-  let options = list.map((o) =>
-    typeof o == 'string' ? { label: o } : o,
+  const options = list.map((o) =>
+    typeof o === 'string' ? { label: o } : o,
   ) as Completion[];
-  let [validFor, match] = options.every((o) => /^\w+$/.test(o.label))
+  const [validFor, match] = options.every((o) => /^\w+$/.test(o.label))
     ? [/\w*$/, /\w+$/]
     : prefixMatch(options);
   return (context: CompletionContext) => {
-    let token = context.matchBefore(match);
+    const token = context.matchBefore(match);
     return token || context.explicit
       ? { from: token ? token.from : context.pos, options, validFor }
       : null;
@@ -332,9 +332,9 @@ export function cur(state: EditorState) {
 // Make sure the given regexp has a $ at its end and, if `start` is
 // true, a ^ at its start.
 export function ensureAnchor(expr: RegExp, start: boolean) {
-  let { source } = expr;
-  let addStart = start && source[0] != '^',
-    addEnd = source[source.length - 1] != '$';
+  const { source } = expr;
+  const addStart = start && source[0] != '^';
+    const addEnd = source[source.length - 1] != '$';
   if (!addStart && !addEnd) return expr;
   return new RegExp(
     `${addStart ? '^' : ''}(?:${source})${addEnd ? '$' : ''}`,
@@ -355,9 +355,9 @@ export function insertCompletionText(
   from: number,
   to: number,
 ): TransactionSpec {
-  let { main } = state.selection,
-    fromOff = from - main.from,
-    toOff = to - main.from;
+  const { main } = state.selection;
+    const fromOff = from - main.from;
+    const toOff = to - main.from;
   return {
     ...state.changeByRange((range) => {
       if (

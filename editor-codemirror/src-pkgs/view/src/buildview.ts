@@ -1,14 +1,14 @@
-import { SpanIterator, RangeSet, Text, TextIterator } from '@codemirror/state';
+import { type SpanIterator, RangeSet, type Text, type TextIterator } from '@codemirror/state';
 import {
-  DecorationSet,
-  Decoration,
+  type DecorationSet,
+  type Decoration,
   PointDecoration,
-  LineDecoration,
-  MarkDecoration,
+  type LineDecoration,
+  type MarkDecoration,
   WidgetType,
 } from './decoration';
-import { ContentView } from './contentview';
-import { BlockView, LineView, BlockWidgetView } from './blockview';
+import type { ContentView } from './contentview';
+import { type BlockView, LineView, BlockWidgetView } from './blockview';
 import { WidgetView, TextView, MarkView, WidgetBufferView } from './inlineview';
 
 const enum T {
@@ -49,7 +49,7 @@ export class ContentBuilder implements SpanIterator<Decoration> {
   posCovered() {
     if (this.content.length == 0)
       return !this.breakAtStart && this.doc.lineAt(this.pos).from != this.pos;
-    let last = this.content[this.content.length - 1];
+    const last = this.content[this.content.length - 1];
     return !(
       last.breakAfter ||
       (last instanceof BlockWidgetView && last.deco.endSide < 0)
@@ -102,7 +102,7 @@ export class ContentBuilder implements SpanIterator<Decoration> {
   ) {
     while (length > 0) {
       if (this.textOff == this.text.length) {
-        let { value, lineBreak, done } = this.cursor.next(this.skip);
+        const { value, lineBreak, done } = this.cursor.next(this.skip);
         this.skip = 0;
         if (done)
           throw new Error('Ran out of text content when drawing inline views');
@@ -121,7 +121,7 @@ export class ContentBuilder implements SpanIterator<Decoration> {
           this.textOff = 0;
         }
       }
-      let take = Math.min(this.text.length - this.textOff, length, T.Chunk);
+      const take = Math.min(this.text.length - this.textOff, length, T.Chunk);
       this.flushBuffer(active.slice(active.length - openStart));
       this.getLine().append(
         wrapMarks(
@@ -164,7 +164,7 @@ export class ContentBuilder implements SpanIterator<Decoration> {
           'Decorations that replace line breaks may not be specified via plugins',
         );
     }
-    let len = to - from;
+    const len = to - from;
     if (deco instanceof PointDecoration) {
       if (deco.block) {
         if (deco.startSide > 0 && !this.posCovered()) this.getLine();
@@ -172,20 +172,20 @@ export class ContentBuilder implements SpanIterator<Decoration> {
           new BlockWidgetView(deco.widget || NullWidget.block, len, deco),
         );
       } else {
-        let view = WidgetView.create(
+        const view = WidgetView.create(
           deco.widget || NullWidget.inline,
           len,
           len ? 0 : deco.startSide,
         );
-        let cursorBefore =
+        const cursorBefore =
           this.atCursorPos &&
           !view.isEditable &&
           openStart <= active.length &&
           (from < to || deco.startSide > 0);
-        let cursorAfter =
+        const cursorAfter =
           !view.isEditable &&
           (from < to || openStart > active.length || deco.startSide <= 0);
-        let line = this.getLine();
+        const line = this.getLine();
         if (
           this.pendingBuffer == Buf.IfCursor &&
           !cursorBefore &&
@@ -237,7 +237,7 @@ export class ContentBuilder implements SpanIterator<Decoration> {
     openStart: number;
     openEnd: number;
   } {
-    let builder = new ContentBuilder(text, from, to, dynamicDecorationMap);
+    const builder = new ContentBuilder(text, from, to, dynamicDecorationMap);
     builder.openEnd = RangeSet.spans(decorations, from, to, builder);
     if (builder.openStart < 0) builder.openStart = builder.openEnd;
     builder.finish(builder.openEnd);
@@ -246,7 +246,7 @@ export class ContentBuilder implements SpanIterator<Decoration> {
 }
 
 function wrapMarks(view: ContentView, active: readonly MarkDecoration[]) {
-  for (let mark of active) view = new MarkView(mark, [view], view.length);
+  for (const mark of active) view = new MarkView(mark, [view], view.length);
   return view;
 }
 

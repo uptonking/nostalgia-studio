@@ -1,18 +1,18 @@
 import {
   combineConfig,
-  EditorState,
+  type EditorState,
   Facet,
   StateField,
-  Extension,
-  Range,
+  type Extension,
+  type Range,
 } from '@codemirror/state';
 import { syntaxTree } from './language';
-import { EditorView, Decoration, DecorationSet } from '@codemirror/view';
+import { EditorView, Decoration, type DecorationSet } from '@codemirror/view';
 import {
-  Tree,
-  SyntaxNode,
-  SyntaxNodeRef,
-  NodeType,
+  type Tree,
+  type SyntaxNode,
+  type SyntaxNodeRef,
+  type NodeType,
   NodeProp,
 } from '@lezer/common';
 
@@ -46,8 +46,8 @@ const baseTheme = EditorView.baseTheme({
   '&.cm-focused .cm-nonmatchingBracket': { backgroundColor: '#bb555544' },
 });
 
-const DefaultScanDist = 10000,
-  DefaultBrackets = '()[]{}';
+const DefaultScanDist = 10000;
+  const DefaultBrackets = '()[]{}';
 
 const bracketMatchingConfig = Facet.define<Config, Required<Config>>({
   combine(configs) {
@@ -60,12 +60,12 @@ const bracketMatchingConfig = Facet.define<Config, Required<Config>>({
   },
 });
 
-const matchingMark = Decoration.mark({ class: 'cm-matchingBracket' }),
-  nonmatchingMark = Decoration.mark({ class: 'cm-nonmatchingBracket' });
+const matchingMark = Decoration.mark({ class: 'cm-matchingBracket' });
+  const nonmatchingMark = Decoration.mark({ class: 'cm-nonmatchingBracket' });
 
 function defaultRenderMatch(match: MatchResult) {
-  let decorations = [];
-  let mark = match.matched ? matchingMark : nonmatchingMark;
+  const decorations = [];
+  const mark = match.matched ? matchingMark : nonmatchingMark;
   decorations.push(mark.range(match.start.from, match.start.to));
   if (match.end) decorations.push(mark.range(match.end.from, match.end.to));
   return decorations;
@@ -78,10 +78,10 @@ const bracketMatchingState = StateField.define<DecorationSet>({
   update(deco, tr) {
     if (!tr.docChanged && !tr.selection) return deco;
     let decorations: Range<Decoration>[] = [];
-    let config = tr.state.facet(bracketMatchingConfig);
-    for (let range of tr.state.selection.ranges) {
+    const config = tr.state.facet(bracketMatchingConfig);
+    for (const range of tr.state.selection.ranges) {
       if (!range.empty) continue;
-      let match =
+      const match =
         matchBrackets(tr.state, range.head, -1, config) ||
         (range.head > 0 &&
           matchBrackets(tr.state, range.head - 1, 1, config)) ||
@@ -122,10 +122,10 @@ function matchingNodes(
   dir: -1 | 1,
   brackets: string,
 ): null | readonly string[] {
-  let byProp = node.prop(dir < 0 ? NodeProp.openedBy : NodeProp.closedBy);
+  const byProp = node.prop(dir < 0 ? NodeProp.openedBy : NodeProp.closedBy);
   if (byProp) return byProp;
   if (node.name.length == 1) {
-    let index = brackets.indexOf(node.name);
+    const index = brackets.indexOf(node.name);
     if (index > -1 && index % 2 == (dir < 0 ? 1 : 0))
       return [brackets[index + dir]];
   }
@@ -144,7 +144,7 @@ export interface MatchResult {
 }
 
 function findHandle(node: SyntaxNodeRef) {
-  let hasHandle = node.type.prop(bracketMatchingHandle);
+  const hasHandle = node.type.prop(bracketMatchingHandle);
   return hasHandle ? hasHandle(node.node) : node;
 }
 
@@ -158,14 +158,14 @@ export function matchBrackets(
   dir: -1 | 1,
   config: Config = {},
 ): MatchResult | null {
-  let maxScanDistance = config.maxScanDistance || DefaultScanDist,
-    brackets = config.brackets || DefaultBrackets;
-  let tree = syntaxTree(state),
-    node = tree.resolveInner(pos, dir);
+  const maxScanDistance = config.maxScanDistance || DefaultScanDist;
+    const brackets = config.brackets || DefaultBrackets;
+  const tree = syntaxTree(state);
+    const node = tree.resolveInner(pos, dir);
   for (let cur: SyntaxNode | null = node; cur; cur = cur.parent) {
-    let matches = matchingNodes(cur.type, dir, brackets);
+    const matches = matchingNodes(cur.type, dir, brackets);
     if (matches && cur.from < cur.to) {
-      let handle = findHandle(cur);
+      const handle = findHandle(cur);
       if (
         handle &&
         (dir > 0
@@ -203,10 +203,10 @@ function matchMarkedBrackets(
   matching: readonly string[],
   brackets: string,
 ) {
-  let parent = token.parent,
-    firstToken = { from: handle.from, to: handle.to };
-  let depth = 0,
-    cursor = parent?.cursor();
+  const parent = token.parent;
+    const firstToken = { from: handle.from, to: handle.to };
+  let depth = 0;
+    const cursor = parent?.cursor();
   if (
     cursor &&
     (dir < 0 ? cursor.childBefore(token.from) : cursor.childAfter(token.to))
@@ -218,7 +218,7 @@ function matchMarkedBrackets(
           matching.indexOf(cursor.type.name) > -1 &&
           cursor.from < cursor.to
         ) {
-          let endHandle = findHandle(cursor);
+          const endHandle = findHandle(cursor);
           return {
             start: firstToken,
             end: endHandle
@@ -230,7 +230,7 @@ function matchMarkedBrackets(
           depth++;
         } else if (matchingNodes(cursor.type, -dir as -1 | 1, brackets)) {
           if (depth == 0) {
-            let endHandle = findHandle(cursor);
+            const endHandle = findHandle(cursor);
             return {
               start: firstToken,
               end:
@@ -256,27 +256,27 @@ function matchPlainBrackets(
   maxScanDistance: number,
   brackets: string,
 ) {
-  let startCh =
+  const startCh =
     dir < 0 ? state.sliceDoc(pos - 1, pos) : state.sliceDoc(pos, pos + 1);
-  let bracket = brackets.indexOf(startCh);
+  const bracket = brackets.indexOf(startCh);
   if (bracket < 0 || (bracket % 2 == 0) != dir > 0) return null;
 
-  let startToken = {
+  const startToken = {
     from: dir < 0 ? pos - 1 : pos,
     to: dir > 0 ? pos + 1 : pos,
   };
-  let iter = state.doc.iterRange(pos, dir > 0 ? state.doc.length : 0),
-    depth = 0;
+  const iter = state.doc.iterRange(pos, dir > 0 ? state.doc.length : 0);
+    let depth = 0;
   for (let distance = 0; !iter.next().done && distance <= maxScanDistance; ) {
-    let text = iter.value;
+    const text = iter.value;
     if (dir < 0) distance += text.length;
-    let basePos = pos + distance * dir;
+    const basePos = pos + distance * dir;
     for (
       let pos = dir > 0 ? 0 : text.length - 1, end = dir > 0 ? text.length : -1;
       pos != end;
       pos += dir
     ) {
-      let found = brackets.indexOf(text[pos]);
+      const found = brackets.indexOf(text[pos]);
       if (found < 0 || tree.resolveInner(basePos + pos, 1).type != tokenType)
         continue;
       if ((found % 2 == 0) == dir > 0) {

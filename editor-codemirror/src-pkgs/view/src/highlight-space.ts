@@ -1,4 +1,4 @@
-import { Extension } from '@codemirror/state';
+import type { Extension } from '@codemirror/state';
 import { ViewPlugin } from './extension';
 import { MatchDecorator } from './matchdecorator';
 import { Decoration } from './decoration';

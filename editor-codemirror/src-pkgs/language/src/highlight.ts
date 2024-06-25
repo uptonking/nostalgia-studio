@@ -1,24 +1,24 @@
-import { Tree, NodeType } from '@lezer/common';
+import type { Tree, NodeType } from '@lezer/common';
 import {
-  Tag,
+  type Tag,
   tags,
   tagHighlighter,
-  Highlighter,
+  type Highlighter,
   highlightTree,
 } from '@lezer/highlight';
-import { StyleSpec, StyleModule } from 'style-mod';
+import { type StyleSpec, StyleModule } from 'style-mod';
 import {
   EditorView,
   ViewPlugin,
-  ViewUpdate,
+  type ViewUpdate,
   Decoration,
-  DecorationSet,
+  type DecorationSet,
 } from '@codemirror/view';
 import {
-  EditorState,
+  type EditorState,
   Prec,
   Facet,
-  Extension,
+  type Extension,
   RangeSetBuilder,
 } from '@codemirror/state';
 import { syntaxTree, Language, languageDataProp } from './language';
@@ -50,13 +50,13 @@ export class HighlightStyle implements Highlighter {
   ) {
     let modSpec: { [name: string]: StyleSpec } | undefined;
     function def(spec: StyleSpec) {
-      let cls = StyleModule.newName();
+      const cls = StyleModule.newName();
       (modSpec || (modSpec = Object.create(null)))['.' + cls] = spec;
       return cls;
     }
 
     const all =
-      typeof options.all == 'string'
+      typeof options.all === 'string'
         ? options.all
         : options.all
           ? def(options.all)
@@ -131,7 +131,7 @@ const fallbackHighlighter = Facet.define<
 });
 
 function getHighlighters(state: EditorState): readonly Highlighter[] | null {
-  let main = state.facet(highlighterFacet);
+  const main = state.facet(highlighterFacet);
   return main.length ? main : state.facet(fallbackHighlighter);
 }
 
@@ -148,8 +148,8 @@ export function syntaxHighlighting(
     fallback: boolean;
   },
 ): Extension {
-  let ext: Extension[] = [treeHighlighter],
-    themeType: string | undefined;
+  const ext: Extension[] = [treeHighlighter];
+    let themeType: string | undefined;
   if (highlighter instanceof HighlightStyle) {
     if (highlighter.module)
       ext.push(EditorView.styleModule.of(highlighter.module));
@@ -178,12 +178,12 @@ export function highlightingFor(
   tags: readonly Tag[],
   scope?: NodeType,
 ): string | null {
-  let highlighters = getHighlighters(state);
+  const highlighters = getHighlighters(state);
   let result = null;
   if (highlighters)
-    for (let highlighter of highlighters) {
+    for (const highlighter of highlighters) {
       if (!highlighter.scope || (scope && highlighter.scope(scope))) {
-        let cls = highlighter.style(tags);
+        const cls = highlighter.style(tags);
         if (cls) result = result ? result + ' ' + cls : cls;
       }
     }
@@ -221,11 +221,11 @@ class TreeHighlighter {
   }
 
   update(update: ViewUpdate) {
-    let tree = syntaxTree(update.state),
-      highlighters = getHighlighters(update.state);
-    let styleChange = highlighters != getHighlighters(update.startState);
-    let { viewport } = update.view,
-      decoratedToMapped = update.changes.mapPos(this.decoratedTo, 1);
+    const tree = syntaxTree(update.state);
+      const highlighters = getHighlighters(update.state);
+    const styleChange = highlighters != getHighlighters(update.startState);
+    const { viewport } = update.view;
+      const decoratedToMapped = update.changes.mapPos(this.decoratedTo, 1);
     if (
       tree.length < viewport.to &&
       !styleChange &&
@@ -244,8 +244,8 @@ class TreeHighlighter {
   buildDeco(view: EditorView, highlighters: readonly Highlighter[] | null) {
     if (!highlighters || !this.tree.length) return Decoration.none;
 
-    let builder = new RangeSetBuilder<Decoration>();
-    for (let { from, to } of view.visibleRanges) {
+    const builder = new RangeSetBuilder<Decoration>();
+    for (const { from, to } of view.visibleRanges) {
       highlightTree(
         this.tree,
         highlighters,

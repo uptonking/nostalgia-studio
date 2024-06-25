@@ -1,6 +1,6 @@
 import { simpleMode } from './simple-mode.js';
 
-var kKeywords = [
+const kKeywords = [
   'align',
   'block',
   'br(_if|_table|_on_(cast|data|func|i31|null))?',

@@ -1,11 +1,11 @@
-var cons = ['true', 'false', 'on', 'off', 'yes', 'no'];
-var keywordRegex = new RegExp('\\b((' + cons.join(')|(') + '))$', 'i');
+const cons = ['true', 'false', 'on', 'off', 'yes', 'no'];
+const keywordRegex = new RegExp('\\b((' + cons.join(')|(') + '))$', 'i');
 
 export const yaml = {
   name: 'yaml',
   token: function (stream, state) {
-    var ch = stream.peek();
-    var esc = state.escaped;
+    const ch = stream.peek();
+    const esc = state.escaped;
     state.escaped = false;
     /* comments */
     if (

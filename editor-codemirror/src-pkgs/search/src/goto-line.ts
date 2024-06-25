@@ -1,23 +1,23 @@
 import { EditorSelection, StateField, StateEffect } from '@codemirror/state';
 import {
   EditorView,
-  Command,
-  Panel,
+  type Command,
+  type Panel,
   getPanel,
   showPanel,
 } from '@codemirror/view';
 import elt from 'crelt';
 
 function createLineDialog(view: EditorView): Panel {
-  let line = String(
+  const line = String(
     view.state.doc.lineAt(view.state.selection.main.head).number,
   );
-  let input = elt('input', {
+  const input = elt('input', {
     class: 'cm-textfield',
     name: 'line',
     value: line,
   }) as HTMLInputElement;
-  let dom = elt(
+  const dom = elt(
     'form',
     {
       class: 'cm-gotoLine',
@@ -48,13 +48,13 @@ function createLineDialog(view: EditorView): Panel {
   );
 
   function go() {
-    let match = /^([+-])?(\d+)?(:\d+)?(%)?$/.exec(input.value);
+    const match = /^([+-])?(\d+)?(:\d+)?(%)?$/.exec(input.value);
     if (!match) return;
-    let { state } = view,
-      startLine = state.doc.lineAt(state.selection.main.head);
-    let [, sign, ln, cl, percent] = match;
-    let col = cl ? +cl.slice(1) : 0;
-    let line = ln ? +ln : startLine.number;
+    const { state } = view;
+      const startLine = state.doc.lineAt(state.selection.main.head);
+    const [, sign, ln, cl, percent] = match;
+    const col = cl ? Number(cl.slice(1)) : 0;
+    let line = ln ? Number(ln) : startLine.number;
     if (ln && percent) {
       let pc = line / 100;
       if (sign)
@@ -63,8 +63,8 @@ function createLineDialog(view: EditorView): Panel {
     } else if (ln && sign) {
       line = line * (sign == '-' ? -1 : 1) + startLine.number;
     }
-    let docLine = state.doc.line(Math.max(1, Math.min(state.doc.lines, line)));
-    let selection = EditorSelection.cursor(
+    const docLine = state.doc.line(Math.max(1, Math.min(state.doc.lines, line)));
+    const selection = EditorSelection.cursor(
       docLine.from + Math.max(0, Math.min(col, docLine.length)),
     );
     view.dispatch({
@@ -86,7 +86,7 @@ const dialogField = StateField.define<boolean>({
     return true;
   },
   update(value, tr) {
-    for (let e of tr.effects) if (e.is(dialogEffect)) value = e.value;
+    for (const e of tr.effects) if (e.is(dialogEffect)) value = e.value;
     return value;
   },
   provide: (f) => showPanel.from(f, (val) => (val ? createLineDialog : null)),
@@ -102,7 +102,7 @@ const dialogField = StateField.define<boolean>({
 export const gotoLine: Command = (view) => {
   let panel = getPanel(view, createLineDialog);
   if (!panel) {
-    let effects: StateEffect<unknown>[] = [dialogEffect.of(true)];
+    const effects: StateEffect<unknown>[] = [dialogEffect.of(true)];
     if (view.state.field(dialogField, false) == null)
       effects.push(StateEffect.appendConfig.of([dialogField, baseTheme]));
     view.dispatch({ effects });

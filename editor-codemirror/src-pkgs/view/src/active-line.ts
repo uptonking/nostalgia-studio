@@ -1,7 +1,7 @@
-import { Extension } from '@codemirror/state';
-import { EditorView } from './editorview';
-import { ViewPlugin, ViewUpdate } from './extension';
-import { Decoration, DecorationSet } from './decoration';
+import type { Extension } from '@codemirror/state';
+import type { EditorView } from './editorview';
+import { ViewPlugin, type ViewUpdate } from './extension';
+import { Decoration, type DecorationSet } from './decoration';
 
 /// Mark lines that have a cursor on them with the `"cm-activeLine"`
 /// DOM class.
@@ -25,10 +25,10 @@ const activeLineHighlighter = ViewPlugin.fromClass(
     }
 
     getDeco(view: EditorView) {
-      let lastLineStart = -1,
-        deco = [];
-      for (let r of view.state.selection.ranges) {
-        let line = view.lineBlockAt(r.head);
+      let lastLineStart = -1;
+        const deco = [];
+      for (const r of view.state.selection.ranges) {
+        const line = view.lineBlockAt(r.head);
         if (line.from > lastLineStart) {
           deco.push(lineDeco.range(line.from));
           lastLineStart = line.from;

@@ -1,5 +1,5 @@
 import { parser, configureNesting } from '@lezer/html';
-import { Parser } from '@lezer/common';
+import type { Parser } from '@lezer/common';
 import { cssLanguage, css } from '@codemirror/lang-css';
 import {
   javascriptLanguage,
@@ -21,7 +21,7 @@ import {
 import {
   elementName,
   htmlCompletionSourceWith,
-  TagSpec,
+  type TagSpec,
   eventAttributes,
 } from './complete';
 export {
@@ -107,7 +107,7 @@ const htmlPlain = LRLanguage.define({
     props: [
       indentNodeProp.add({
         Element(context) {
-          let after = /^(\s*)(<\/)?/.exec(context.textAfter)!;
+          const after = /^(\s*)(<\/)?/.exec(context.textAfter)!;
           if (context.node.to <= context.pos + after[0].length)
             return context.continue();
           return (
@@ -124,10 +124,10 @@ const htmlPlain = LRLanguage.define({
             context.node.to
           )
             return context.continue();
-          let endElt = null,
-            close;
+          let endElt = null;
+            let close;
           for (let cur = context.node; ; ) {
-            let last = cur.lastChild;
+            const last = cur.lastChild;
             if (!last || last.name != 'Element' || last.to != cur.to) break;
             endElt = cur = last;
           }
@@ -144,8 +144,8 @@ const htmlPlain = LRLanguage.define({
       }),
       foldNodeProp.add({
         Element(node) {
-          let first = node.firstChild,
-            last = node.lastChild!;
+          const first = node.firstChild;
+            const last = node.lastChild!;
           if (!first || first.name != 'OpenTag') return null;
           return {
             from: first.to,
@@ -203,8 +203,8 @@ export function html(
     nestedAttributes?: NestedAttr[];
   } = {},
 ) {
-  let dialect = '',
-    wrap;
+  let dialect = '';
+    let wrap;
   if (config.matchClosingTags === false) dialect = 'noMatch';
   if (config.selfClosingTags === true)
     dialect = (dialect ? dialect + ' ' : '') + 'selfClosing';
@@ -216,7 +216,7 @@ export function html(
       (config.nestedLanguages || []).concat(defaultNesting),
       (config.nestedAttributes || []).concat(defaultAttrs),
     );
-  let lang = wrap
+  const lang = wrap
     ? htmlPlain.configure({ wrap, dialect })
     : dialect
       ? htmlLanguage.configure({ dialect })
@@ -247,36 +247,36 @@ export const autoCloseTags = EditorView.inputHandler.of(
       !htmlLanguage.isActiveAt(view.state, from, -1)
     )
       return false;
-    let base = insertTransaction(),
-      { state } = base;
-    let closeTags = state.changeByRange((range) => {
-      let didType = state.doc.sliceString(range.from - 1, range.to) == text;
-      let { head } = range,
-        after = syntaxTree(state).resolveInner(head, -1),
-        name;
+    const base = insertTransaction();
+      const { state } = base;
+    const closeTags = state.changeByRange((range) => {
+      const didType = state.doc.sliceString(range.from - 1, range.to) == text;
+      const { head } = range;
+        const after = syntaxTree(state).resolveInner(head, -1);
+        let name;
       if (didType && text == '>' && after.name == 'EndTag') {
-        let tag = after.parent!;
+        const tag = after.parent!;
         if (
           tag.parent?.lastChild?.name != 'CloseTag' &&
           (name = elementName(state.doc, tag.parent, head)) &&
           !selfClosers.has(name)
         ) {
-          let to =
+          const to =
             head + (state.doc.sliceString(head, head + 1) === '>' ? 1 : 0);
-          let insert = `</${name}>`;
+          const insert = `</${name}>`;
           return { range, changes: { from: head, to, insert } };
         }
       } else if (didType && text == '/' && after.name == 'IncompleteCloseTag') {
-        let tag = after.parent!;
+        const tag = after.parent!;
         if (
           after.from == head - 2 &&
           tag.lastChild?.name != 'CloseTag' &&
           (name = elementName(state.doc, tag, head)) &&
           !selfClosers.has(name)
         ) {
-          let to =
+          const to =
             head + (state.doc.sliceString(head, head + 1) === '>' ? 1 : 0);
-          let insert = `${name}>`;
+          const insert = `${name}>`;
           return {
             range: EditorSelection.cursor(head + insert.length, -1),
             changes: { from: head, to, insert },

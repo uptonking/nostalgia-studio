@@ -1,12 +1,12 @@
 import {
   Text,
-  EditorState,
+  type EditorState,
   ChangeSet,
-  ChangeDesc,
+  type ChangeDesc,
   RangeSet,
   EditorSelection,
 } from '@codemirror/state';
-import { Rect, isScrolledToBottom, getScale } from './dom';
+import { type Rect, isScrolledToBottom, getScale } from './dom';
 import {
   HeightMap,
   HeightOracle,
@@ -17,39 +17,39 @@ import {
 } from './heightmap';
 import {
   decorations,
-  ViewUpdate,
+  type ViewUpdate,
   UpdateFlag,
   ChangedRange,
-  ScrollTarget,
+  type ScrollTarget,
   nativeSelectionHidden,
   contentAttributes,
 } from './extension';
-import { WidgetType, Decoration, DecorationSet, BlockType } from './decoration';
-import { EditorView } from './editorview';
+import { WidgetType, Decoration, type DecorationSet, BlockType } from './decoration';
+import type { EditorView } from './editorview';
 import { Direction } from './bidi';
 
 function visiblePixelRange(dom: HTMLElement, paddingTop: number): Rect {
-  let rect = dom.getBoundingClientRect();
-  let doc = dom.ownerDocument,
-    win = doc.defaultView || window;
-  let left = Math.max(0, rect.left),
-    right = Math.min(win.innerWidth, rect.right);
-  let top = Math.max(0, rect.top),
-    bottom = Math.min(win.innerHeight, rect.bottom);
+  const rect = dom.getBoundingClientRect();
+  const doc = dom.ownerDocument;
+    const win = doc.defaultView || window;
+  let left = Math.max(0, rect.left);
+    let right = Math.min(win.innerWidth, rect.right);
+  let top = Math.max(0, rect.top);
+    let bottom = Math.min(win.innerHeight, rect.bottom);
   for (
     let parent = dom.parentNode as Node | null;
     parent && parent != doc.body;
 
   ) {
     if (parent.nodeType == 1) {
-      let elt = parent as HTMLElement;
-      let style = window.getComputedStyle(elt);
+      const elt = parent as HTMLElement;
+      const style = window.getComputedStyle(elt);
       if (
         (elt.scrollHeight > elt.clientHeight ||
           elt.scrollWidth > elt.clientWidth) &&
         style.overflow != 'visible'
       ) {
-        let parentRect = elt.getBoundingClientRect();
+        const parentRect = elt.getBoundingClientRect();
         left = Math.max(left, parentRect.left);
         right = Math.min(right, parentRect.right);
         top = Math.max(top, parentRect.top);
@@ -79,7 +79,7 @@ function visiblePixelRange(dom: HTMLElement, paddingTop: number): Rect {
 }
 
 function fullPixelRange(dom: HTMLElement, paddingTop: number): Rect {
-  let rect = dom.getBoundingClientRect();
+  const rect = dom.getBoundingClientRect();
   return {
     left: 0,
     right: rect.right - rect.left,
@@ -112,8 +112,8 @@ export class LineGap {
   static same(a: readonly LineGap[], b: readonly LineGap[]) {
     if (a.length != b.length) return false;
     for (let i = 0; i < a.length; i++) {
-      let gA = a[i],
-        gB = b[i];
+      const gA = a[i];
+        const gB = b[i];
       if (gA.from != gB.from || gA.to != gB.to || gA.size != gB.size)
         return false;
     }
@@ -143,7 +143,7 @@ class LineGapWidget extends WidgetType {
   }
 
   toDOM() {
-    let elt = document.createElement('div');
+    const elt = document.createElement('div');
     if (this.vertical) {
       elt.style.height = this.size + 'px';
     } else {
@@ -231,13 +231,13 @@ export class ViewState {
   mustEnforceCursorAssoc = false;
 
   constructor(public state: EditorState) {
-    let guessWrapping = state
+    const guessWrapping = state
       .facet(contentAttributes)
-      .some((v) => typeof v != 'function' && v.class == 'cm-lineWrapping');
+      .some((v) => typeof v !== 'function' && v.class == 'cm-lineWrapping');
     this.heightOracle = new HeightOracle(guessWrapping);
     this.stateDeco = state
       .facet(decorations)
-      .filter((d) => typeof d != 'function') as readonly DecorationSet[];
+      .filter((d) => typeof d !== 'function') as readonly DecorationSet[];
     this.heightMap = HeightMap.empty().applyChanges(
       this.stateDeco,
       Text.empty,
@@ -257,12 +257,12 @@ export class ViewState {
   }
 
   updateForViewport() {
-    let viewports = [this.viewport],
-      { main } = this.state.selection;
+    const viewports = [this.viewport];
+      const { main } = this.state.selection;
     for (let i = 0; i <= 1; i++) {
-      let pos = i ? main.head : main.anchor;
+      const pos = i ? main.head : main.anchor;
       if (!viewports.some(({ from, to }) => pos >= from && pos <= to)) {
-        let { from, to } = this.lineBlockAt(pos);
+        const { from, to } = this.lineBlockAt(pos);
         viewports.push(new Viewport(from, to));
       }
     }
@@ -271,7 +271,7 @@ export class ViewState {
   }
 
   updateScaler() {
-    let scaler = this.scaler;
+    const scaler = this.scaler;
     this.scaler =
       this.heightMap.height <= VP.MaxDOMHeight
         ? IdScaler
@@ -295,13 +295,13 @@ export class ViewState {
 
   update(update: ViewUpdate, scrollTarget: ScrollTarget | null = null) {
     this.state = update.state;
-    let prevDeco = this.stateDeco;
+    const prevDeco = this.stateDeco;
     this.stateDeco = this.state
       .facet(decorations)
-      .filter((d) => typeof d != 'function') as readonly DecorationSet[];
-    let contentChanges = update.changedRanges;
+      .filter((d) => typeof d !== 'function') as readonly DecorationSet[];
+    const contentChanges = update.changedRanges;
 
-    let heightChanges = ChangedRange.extendWithRanges(
+    const heightChanges = ChangedRange.extendWithRanges(
       contentChanges,
       heightRelevantDecoChanges(
         prevDeco,
@@ -309,8 +309,8 @@ export class ViewState {
         update ? update.changes : ChangeSet.empty(this.state.doc.length),
       ),
     );
-    let prevHeight = this.heightMap.height;
-    let scrollAnchor = this.scrolledToBottom
+    const prevHeight = this.heightMap.height;
+    const scrollAnchor = this.scrolledToBottom
       ? null
       : this.scrollAnchorAt(this.scrollTop);
     this.heightMap = this.heightMap.applyChanges(
@@ -338,7 +338,7 @@ export class ViewState {
       !this.viewportIsAppropriate(viewport)
     )
       viewport = this.getViewport(0, scrollTarget);
-    let viewportChange =
+    const viewportChange =
       viewport.from != this.viewport.from || viewport.to != this.viewport.to;
     this.viewport = viewport;
     update.flags |= this.updateForViewport();
@@ -372,26 +372,26 @@ export class ViewState {
   }
 
   measure(view: EditorView) {
-    let dom = view.contentDOM,
-      style = window.getComputedStyle(dom);
-    let oracle = this.heightOracle;
-    let whiteSpace = style.whiteSpace!;
+    const dom = view.contentDOM;
+      const style = window.getComputedStyle(dom);
+    const oracle = this.heightOracle;
+    const whiteSpace = style.whiteSpace!;
     this.defaultTextDirection =
       style.direction == 'rtl' ? Direction.RTL : Direction.LTR;
 
     let refresh = this.heightOracle.mustRefreshForWrapping(whiteSpace);
-    let domRect = dom.getBoundingClientRect();
+    const domRect = dom.getBoundingClientRect();
     let measureContent =
       refresh ||
       this.mustMeasureContent ||
       this.contentDOMHeight != domRect.height;
     this.contentDOMHeight = domRect.height;
     this.mustMeasureContent = false;
-    let result = 0,
-      bias = 0;
+    let result = 0;
+      let bias = 0;
 
     if (domRect.width && domRect.height) {
-      let { scaleX, scaleY } = getScale(dom, domRect);
+      const { scaleX, scaleY } = getScale(dom, domRect);
       if (
         (scaleX > 0.005 && Math.abs(this.scaleX - scaleX) > 0.005) ||
         (scaleY > 0.005 && Math.abs(this.scaleY - scaleY) > 0.005)
@@ -404,8 +404,8 @@ export class ViewState {
     }
 
     // Vertical padding
-    let paddingTop = (parseInt(style.paddingTop!) || 0) * this.scaleY;
-    let paddingBottom = (parseInt(style.paddingBottom!) || 0) * this.scaleY;
+    const paddingTop = (parseInt(style.paddingTop!) || 0) * this.scaleY;
+    const paddingBottom = (parseInt(style.paddingBottom!) || 0) * this.scaleY;
     if (this.paddingTop != paddingTop || this.paddingBottom != paddingBottom) {
       this.paddingTop = paddingTop;
       this.paddingBottom = paddingBottom;
@@ -416,7 +416,7 @@ export class ViewState {
       this.editorWidth = view.scrollDOM.clientWidth;
       result |= UpdateFlag.Geometry;
     }
-    let scrollTop = view.scrollDOM.scrollTop * this.scaleY;
+    const scrollTop = view.scrollDOM.scrollTop * this.scaleY;
     if (this.scrollTop != scrollTop) {
       this.scrollAnchorHeight = -1;
       this.scrollTop = scrollTop;
@@ -424,14 +424,14 @@ export class ViewState {
     this.scrolledToBottom = isScrolledToBottom(view.scrollDOM);
 
     // Pixel viewport
-    let pixelViewport = (this.printing ? fullPixelRange : visiblePixelRange)(
+    const pixelViewport = (this.printing ? fullPixelRange : visiblePixelRange)(
       dom,
       this.paddingTop,
     );
-    let dTop = pixelViewport.top - this.pixelViewport.top,
-      dBottom = pixelViewport.bottom - this.pixelViewport.bottom;
+    const dTop = pixelViewport.top - this.pixelViewport.top;
+      const dBottom = pixelViewport.bottom - this.pixelViewport.bottom;
     this.pixelViewport = pixelViewport;
-    let inView =
+    const inView =
       this.pixelViewport.bottom > this.pixelViewport.top &&
       this.pixelViewport.right > this.pixelViewport.left;
     if (inView != this.inView) {
@@ -440,7 +440,7 @@ export class ViewState {
     }
     if (!this.inView && !this.scrollTarget) return 0;
 
-    let contentWidth = domRect.width;
+    const contentWidth = domRect.width;
     if (
       this.contentDOMWidth != contentWidth ||
       this.editorHeight != view.scrollDOM.clientHeight
@@ -451,14 +451,14 @@ export class ViewState {
     }
 
     if (measureContent) {
-      let lineHeights = view.docView.measureVisibleLineHeights(this.viewport);
+      const lineHeights = view.docView.measureVisibleLineHeights(this.viewport);
       if (oracle.mustRefreshForHeights(lineHeights)) refresh = true;
       if (
         refresh ||
         (oracle.lineWrapping &&
           Math.abs(contentWidth - this.contentDOMWidth) > oracle.charWidth)
       ) {
-        let { lineHeight, charWidth, textHeight } =
+        const { lineHeight, charWidth, textHeight } =
           view.docView.measureTextSize();
         refresh =
           lineHeight > 0 &&
@@ -480,8 +480,8 @@ export class ViewState {
       else if (dTop < 0 && dBottom < 0) bias = Math.min(dTop, dBottom);
 
       oracle.heightChanged = false;
-      for (let vp of this.viewports) {
-        let heights =
+      for (const vp of this.viewports) {
+        const heights =
           vp.from == this.viewport.from
             ? lineHeights
             : view.docView.measureVisibleLineHeights(vp);
@@ -504,7 +504,7 @@ export class ViewState {
       if (oracle.heightChanged) result |= UpdateFlag.Height;
     }
 
-    let viewportChange =
+    const viewportChange =
       !this.viewportIsAppropriate(this.viewport, bias) ||
       (this.scrollTarget &&
         (this.scrollTarget.range.head < this.viewport.from ||
@@ -549,10 +549,10 @@ export class ViewState {
     // This will divide VP.Margin between the top and the
     // bottom, depending on the bias (the change in viewport position
     // since the last update). It'll hold a number between 0 and 1
-    let marginTop = 0.5 - Math.max(-0.5, Math.min(0.5, bias / VP.Margin / 2));
-    let map = this.heightMap,
-      oracle = this.heightOracle;
-    let { visibleTop, visibleBottom } = this;
+    const marginTop = 0.5 - Math.max(-0.5, Math.min(0.5, bias / VP.Margin / 2));
+    const map = this.heightMap;
+      const oracle = this.heightOracle;
+    const { visibleTop, visibleBottom } = this;
     let viewport = new Viewport(
       map.lineAt(
         visibleTop - marginTop * VP.Margin,
@@ -571,14 +571,14 @@ export class ViewState {
     );
     // If scrollTarget is given, make sure the viewport includes that position
     if (scrollTarget) {
-      let { head } = scrollTarget.range;
+      const { head } = scrollTarget.range;
       if (head < viewport.from || head > viewport.to) {
-        let viewHeight = Math.min(
+        const viewHeight = Math.min(
           this.editorHeight,
           this.pixelViewport.bottom - this.pixelViewport.top,
         );
-        let block = map.lineAt(head, QueryType.ByPos, oracle, 0, 0),
-          topPos;
+        const block = map.lineAt(head, QueryType.ByPos, oracle, 0, 0);
+          let topPos;
         if (scrollTarget.y == 'center')
           topPos = (block.top + block.bottom) / 2 - viewHeight / 2;
         else if (
@@ -609,8 +609,8 @@ export class ViewState {
   }
 
   mapViewport(viewport: Viewport, changes: ChangeDesc) {
-    let from = changes.mapPos(viewport.from, -1),
-      to = changes.mapPos(viewport.to, 1);
+    const from = changes.mapPos(viewport.from, -1);
+      const to = changes.mapPos(viewport.to, 1);
     return new Viewport(
       this.heightMap.lineAt(
         from,
@@ -627,21 +627,21 @@ export class ViewState {
   // document and not too much beyond that.
   viewportIsAppropriate({ from, to }: Viewport, bias = 0) {
     if (!this.inView) return true;
-    let { top } = this.heightMap.lineAt(
+    const { top } = this.heightMap.lineAt(
       from,
       QueryType.ByPos,
       this.heightOracle,
       0,
       0,
     );
-    let { bottom } = this.heightMap.lineAt(
+    const { bottom } = this.heightMap.lineAt(
       to,
       QueryType.ByPos,
       this.heightOracle,
       0,
       0,
     );
-    let { visibleTop, visibleBottom } = this;
+    const { visibleTop, visibleBottom } = this;
     return (
       (from == 0 ||
         top <=
@@ -658,8 +658,8 @@ export class ViewState {
 
   mapLineGaps(gaps: readonly LineGap[], changes: ChangeSet) {
     if (!gaps.length || changes.empty) return gaps;
-    let mapped = [];
-    for (let gap of gaps)
+    const mapped = [];
+    for (const gap of gaps)
       if (!changes.touchesRange(gap.from, gap.to))
         mapped.push(
           new LineGap(
@@ -679,24 +679,24 @@ export class ViewState {
   // predictable. Relies on generous margins (see LG.Margin) to hide
   // the artifacts this might produce from the user.
   ensureLineGaps(current: readonly LineGap[], mayMeasure?: EditorView) {
-    let wrapping = this.heightOracle.lineWrapping;
-    let margin = wrapping ? LG.MarginWrap : LG.Margin,
-      halfMargin = margin >> 1,
-      doubleMargin = margin << 1;
+    const wrapping = this.heightOracle.lineWrapping;
+    const margin = wrapping ? LG.MarginWrap : LG.Margin;
+      const halfMargin = margin >> 1;
+      const doubleMargin = margin << 1;
     // The non-wrapping logic won't work at all in predominantly right-to-left text.
     if (this.defaultTextDirection != Direction.LTR && !wrapping) return [];
-    let gaps: LineGap[] = [];
-    let addGap = (
+    const gaps: LineGap[] = [];
+    const addGap = (
       from: number,
       to: number,
       line: BlockInfo,
       structure: LineStructure,
     ) => {
       if (to - from < halfMargin) return;
-      let sel = this.state.selection.main,
-        avoid = [sel.from];
+      const sel = this.state.selection.main;
+        const avoid = [sel.from];
       if (!sel.empty) avoid.push(sel.to);
-      for (let pos of avoid) {
+      for (const pos of avoid) {
         if (pos > from && pos < to) {
           addGap(from, pos - LG.SelectionMargin, line, structure);
           addGap(pos + LG.SelectionMargin, to, line, structure);
@@ -720,7 +720,7 @@ export class ViewState {
           wrapping &&
           mayMeasure.visibleRanges.some((r) => r.from <= to && r.to >= to)
         ) {
-          let lineStart = mayMeasure.moveToLineBoundary(
+          const lineStart = mayMeasure.moveToLineBoundary(
             EditorSelection.cursor(to),
             false,
             true,
@@ -732,20 +732,20 @@ export class ViewState {
       gaps.push(gap);
     };
 
-    let checkLine = (line: BlockInfo) => {
+    const checkLine = (line: BlockInfo) => {
       if (line.length < doubleMargin || line.type != BlockType.Text) return;
-      let structure = lineStructure(line.from, line.to, this.stateDeco);
+      const structure = lineStructure(line.from, line.to, this.stateDeco);
       if (structure.total < doubleMargin) return;
-      let target = this.scrollTarget ? this.scrollTarget.range.head : null;
-      let viewFrom, viewTo;
+      const target = this.scrollTarget ? this.scrollTarget.range.head : null;
+      let viewFrom; let viewTo;
       if (wrapping) {
-        let marginHeight =
+        const marginHeight =
           (margin / this.heightOracle.lineLength) *
           this.heightOracle.lineHeight;
-        let top, bot;
+        let top; let bot;
         if (target != null) {
-          let targetFrac = findFraction(structure, target);
-          let spaceFrac =
+          const targetFrac = findFraction(structure, target);
+          const spaceFrac =
             ((this.visibleBottom - this.visibleTop) / 2 + marginHeight) /
             line.height;
           top = targetFrac - spaceFrac;
@@ -757,12 +757,12 @@ export class ViewState {
         viewFrom = findPosition(structure, top);
         viewTo = findPosition(structure, bot);
       } else {
-        let totalWidth = structure.total * this.heightOracle.charWidth;
-        let marginWidth = margin * this.heightOracle.charWidth;
-        let left, right;
+        const totalWidth = structure.total * this.heightOracle.charWidth;
+        const marginWidth = margin * this.heightOracle.charWidth;
+        let left; let right;
         if (target != null) {
-          let targetFrac = findFraction(structure, target);
-          let spaceFrac =
+          const targetFrac = findFraction(structure, target);
+          const spaceFrac =
             ((this.pixelViewport.right - this.pixelViewport.left) / 2 +
               marginWidth) /
             totalWidth;
@@ -780,7 +780,7 @@ export class ViewState {
       if (viewTo < line.to) addGap(viewTo, line.to, line, structure);
     };
 
-    for (let line of this.viewportLines) {
+    for (const line of this.viewportLines) {
       if (Array.isArray(line.type)) line.type.forEach(checkLine);
       else checkLine(line);
     }
@@ -788,7 +788,7 @@ export class ViewState {
   }
 
   gapSize(line: BlockInfo, from: number, to: number, structure: LineStructure) {
-    let fraction = findFraction(structure, to) - findFraction(structure, from);
+    const fraction = findFraction(structure, to) - findFraction(structure, from);
     if (this.heightOracle.lineWrapping) {
       return line.height * fraction;
     } else {
@@ -808,7 +808,7 @@ export class ViewState {
   computeVisibleRanges() {
     let deco = this.stateDeco;
     if (this.lineGaps.length) deco = deco.concat(this.lineGapDeco);
-    let ranges: { from: number; to: number }[] = [];
+    const ranges: { from: number; to: number }[] = [];
     RangeSet.spans(
       deco,
       this.viewport.from,
@@ -821,7 +821,7 @@ export class ViewState {
       },
       20,
     );
-    let changed =
+    const changed =
       ranges.length != this.visibleRanges.length ||
       this.visibleRanges.some(
         (r, i) => r.from != ranges[i].from || r.to != ranges[i].to,
@@ -863,7 +863,7 @@ export class ViewState {
   }
 
   scrollAnchorAt(scrollTop: number) {
-    let block = this.lineBlockAtHeight(scrollTop + 8);
+    const block = this.lineBlockAtHeight(scrollTop + 8);
     return block.from >= this.viewport.from ||
       this.viewportLines[0].top - scrollTop > 200
       ? block
@@ -905,9 +905,9 @@ function lineStructure(
   to: number,
   stateDeco: readonly DecorationSet[],
 ): LineStructure {
-  let ranges = [],
-    pos = from,
-    total = 0;
+  const ranges = [];
+    let pos = from;
+    let total = 0;
   RangeSet.spans(
     stateDeco,
     from,
@@ -936,8 +936,8 @@ function findPosition({ total, ranges }: LineStructure, ratio: number): number {
   if (ratio >= 1) return ranges[ranges.length - 1].to;
   let dist = Math.floor(total * ratio);
   for (let i = 0; ; i++) {
-    let { from, to } = ranges[i],
-      size = to - from;
+    const { from, to } = ranges[i];
+      const size = to - from;
     if (dist <= size) return from + dist;
     dist -= size;
   }
@@ -945,7 +945,7 @@ function findPosition({ total, ranges }: LineStructure, ratio: number): number {
 
 function findFraction(structure: LineStructure, pos: number) {
   let counted = 0;
-  for (let { from, to } of structure.ranges) {
+  for (const { from, to } of structure.ranges) {
     if (pos <= to) {
       counted += pos - from;
       break;
@@ -956,7 +956,7 @@ function findFraction(structure: LineStructure, pos: number) {
 }
 
 function find<T>(array: readonly T[], f: (value: T) => boolean): T | undefined {
-  for (let val of array) if (f(val)) return val;
+  for (const val of array) if (f(val)) return val;
   return undefined;
 }
 
@@ -1003,17 +1003,17 @@ class BigScaler implements YScaler {
     heightMap: HeightMap,
     viewports: readonly Viewport[],
   ) {
-    let vpHeight = 0,
-      base = 0,
-      domBase = 0;
+    let vpHeight = 0;
+      let base = 0;
+      let domBase = 0;
     this.viewports = viewports.map(({ from, to }) => {
-      let top = heightMap.lineAt(from, QueryType.ByPos, oracle, 0, 0).top;
-      let bottom = heightMap.lineAt(to, QueryType.ByPos, oracle, 0, 0).bottom;
+      const top = heightMap.lineAt(from, QueryType.ByPos, oracle, 0, 0).top;
+      const bottom = heightMap.lineAt(to, QueryType.ByPos, oracle, 0, 0).bottom;
       vpHeight += bottom - top;
       return { from, to, top, bottom, domTop: 0, domBottom: 0 };
     });
     this.scale = (VP.MaxDOMHeight - vpHeight) / (heightMap.height - vpHeight);
-    for (let obj of this.viewports) {
+    for (const obj of this.viewports) {
       obj.domTop = domBase + (obj.top - base) * this.scale;
       domBase = obj.domBottom = obj.domTop + (obj.bottom - obj.top);
       base = obj.bottom;
@@ -1022,7 +1022,7 @@ class BigScaler implements YScaler {
 
   toDOM(n: number) {
     for (let i = 0, base = 0, domBase = 0; ; i++) {
-      let vp = i < this.viewports.length ? this.viewports[i] : null;
+      const vp = i < this.viewports.length ? this.viewports[i] : null;
       if (!vp || n < vp.top) return domBase + (n - base) * this.scale;
       if (n <= vp.bottom) return vp.domTop + (n - vp.top);
       base = vp.bottom;
@@ -1032,7 +1032,7 @@ class BigScaler implements YScaler {
 
   fromDOM(n: number) {
     for (let i = 0, base = 0, domBase = 0; ; i++) {
-      let vp = i < this.viewports.length ? this.viewports[i] : null;
+      const vp = i < this.viewports.length ? this.viewports[i] : null;
       if (!vp || n < vp.domTop) return base + (n - domBase) / this.scale;
       if (n <= vp.domBottom) return vp.top + (n - vp.domTop);
       base = vp.bottom;
@@ -1055,8 +1055,8 @@ class BigScaler implements YScaler {
 
 function scaleBlock(block: BlockInfo, scaler: YScaler): BlockInfo {
   if (scaler.scale == 1) return block;
-  let bTop = scaler.toDOM(block.top),
-    bBottom = scaler.toDOM(block.bottom);
+  const bTop = scaler.toDOM(block.top);
+    const bBottom = scaler.toDOM(block.bottom);
   return new BlockInfo(
     block.from,
     block.length,

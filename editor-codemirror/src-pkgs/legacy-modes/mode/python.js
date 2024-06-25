@@ -2,8 +2,8 @@ function wordRegexp(words) {
   return new RegExp('^((' + words.join(')|(') + '))\\b');
 }
 
-var wordOperators = wordRegexp(['and', 'or', 'not', 'is']);
-var commonKeywords = [
+const wordOperators = wordRegexp(['and', 'or', 'not', 'is']);
+const commonKeywords = [
   'as',
   'assert',
   'break',
@@ -32,7 +32,7 @@ var commonKeywords = [
   'False',
   'True',
 ];
-var commonBuiltins = [
+const commonBuiltins = [
   'abs',
   'all',
   'any',
@@ -107,14 +107,14 @@ function top(state) {
 }
 
 export function mkPython(parserConf) {
-  var ERRORCLASS = 'error';
+  const ERRORCLASS = 'error';
 
-  var delimiters =
+  const delimiters =
     parserConf.delimiters ||
     parserConf.singleDelimiters ||
     /^[\(\)\[\]\{\}@,:`=;\.\\]/;
   //               (Backwards-compatibility with old, cumbersome config system)
-  var operators = [
+  const operators = [
     parserConf.singleOperators,
     parserConf.doubleOperators,
     parserConf.doubleDelimiters,
@@ -122,20 +122,20 @@ export function mkPython(parserConf) {
     parserConf.operators ||
       /^([-+*/%\/&|^]=?|[<>=]+|\/\/=?|\*\*=?|!=|[~!@]|\.\.\.)/,
   ];
-  for (var i = 0; i < operators.length; i++)
+  for (let i = 0; i < operators.length; i++)
     if (!operators[i]) operators.splice(i--, 1);
 
-  var hangingIndent = parserConf.hangingIndent;
+  const hangingIndent = parserConf.hangingIndent;
 
-  var myKeywords = commonKeywords,
-    myBuiltins = commonBuiltins;
+  let myKeywords = commonKeywords;
+    let myBuiltins = commonBuiltins;
   if (parserConf.extra_keywords != undefined)
     myKeywords = myKeywords.concat(parserConf.extra_keywords);
 
   if (parserConf.extra_builtins != undefined)
     myBuiltins = myBuiltins.concat(parserConf.extra_builtins);
 
-  var py3 = !(parserConf.version && Number(parserConf.version) < 3);
+  const py3 = !(parserConf.version && Number(parserConf.version) < 3);
   if (py3) {
     // since http://legacy.python.org/dev/peps/pep-0465/ @ is also an operator
     var identifiers =
@@ -183,18 +183,18 @@ export function mkPython(parserConf) {
       'i',
     );
   }
-  var keywords = wordRegexp(myKeywords);
-  var builtins = wordRegexp(myBuiltins);
+  const keywords = wordRegexp(myKeywords);
+  const builtins = wordRegexp(myBuiltins);
 
   // tokenizers
   function tokenBase(stream, state) {
-    var sol = stream.sol() && state.lastToken != '\\';
+    const sol = stream.sol() && state.lastToken != '\\';
     if (sol) state.indent = stream.indentation();
     // Handle scope changes
     if (sol && top(state).type == 'py') {
-      var scopeOffset = top(state).offset;
+      const scopeOffset = top(state).offset;
       if (stream.eatSpace()) {
-        var lineOffset = stream.indentation();
+        const lineOffset = stream.indentation();
         if (lineOffset > scopeOffset) pushPyScope(stream, state);
         else if (
           lineOffset < scopeOffset &&
@@ -204,7 +204,7 @@ export function mkPython(parserConf) {
           state.errorToken = true;
         return null;
       } else {
-        var style = tokenBaseInner(stream, state);
+        let style = tokenBaseInner(stream, state);
         if (scopeOffset > 0 && dedent(stream, state)) style += ' ' + ERRORCLASS;
         return style;
       }
@@ -220,7 +220,7 @@ export function mkPython(parserConf) {
 
     // Handle Number Literals
     if (stream.match(/^[0-9\.]/, false)) {
-      var floatLiteral = false;
+      let floatLiteral = false;
       // Floats
       if (stream.match(/^[\d_]*\.\d+(e[\+\-]?\d+)?/i)) {
         floatLiteral = true;
@@ -237,7 +237,7 @@ export function mkPython(parserConf) {
         return 'number';
       }
       // Integers
-      var intLiteral = false;
+      let intLiteral = false;
       // Hex
       if (stream.match(/^0x[0-9a-f_]+/i)) intLiteral = true;
       // Binary
@@ -262,7 +262,7 @@ export function mkPython(parserConf) {
 
     // Handle Strings
     if (stream.match(stringPrefixes)) {
-      var isFmtString = stream.current().toLowerCase().indexOf('f') !== -1;
+      const isFmtString = stream.current().toLowerCase().indexOf('f') !== -1;
       if (!isFmtString) {
         state.tokenize = tokenStringFactory(stream.current(), state.tokenize);
         return state.tokenize(stream, state);
@@ -272,7 +272,7 @@ export function mkPython(parserConf) {
       }
     }
 
-    for (var i = 0; i < operators.length; i++)
+    for (let i = 0; i < operators.length; i++)
       if (stream.match(operators[i])) return 'operator';
 
     if (stream.match(delimiters)) return 'punctuation';
@@ -299,12 +299,12 @@ export function mkPython(parserConf) {
     while ('rubf'.indexOf(delimiter.charAt(0).toLowerCase()) >= 0)
       delimiter = delimiter.substr(1);
 
-    var singleline = delimiter.length == 1;
-    var OUTCLASS = 'string';
+    const singleline = delimiter.length == 1;
+    const OUTCLASS = 'string';
 
     function tokenNestedExpr(depth) {
       return function (stream, state) {
-        var inner = tokenBaseInner(stream, state, true);
+        const inner = tokenBaseInner(stream, state, true);
         if (inner == 'punctuation') {
           if (stream.current() == '{') {
             state.tokenize = tokenNestedExpr(depth + 1);
@@ -357,8 +357,8 @@ export function mkPython(parserConf) {
     while ('rubf'.indexOf(delimiter.charAt(0).toLowerCase()) >= 0)
       delimiter = delimiter.substr(1);
 
-    var singleline = delimiter.length == 1;
-    var OUTCLASS = 'string';
+    const singleline = delimiter.length == 1;
+    const OUTCLASS = 'string';
 
     function tokenString(stream, state) {
       while (!stream.eol()) {
@@ -393,7 +393,7 @@ export function mkPython(parserConf) {
   }
 
   function pushBracketScope(stream, state, type) {
-    var align = stream.match(/^[\s\[\{\(]*(?:#|$)/, false)
+    const align = stream.match(/^[\s\[\{\(]*(?:#|$)/, false)
       ? null
       : stream.column() + 1;
     state.scopes.push({
@@ -404,7 +404,7 @@ export function mkPython(parserConf) {
   }
 
   function dedent(stream, state) {
-    var indented = stream.indentation();
+    const indented = stream.indentation();
     while (state.scopes.length > 1 && top(state).offset > indented) {
       if (top(state).type != 'py') return true;
       state.scopes.pop();
@@ -418,8 +418,8 @@ export function mkPython(parserConf) {
       state.dedent = false;
     }
 
-    var style = state.tokenize(stream, state);
-    var current = stream.current();
+    let style = state.tokenize(stream, state);
+    const current = stream.current();
 
     // Handle decorators
     if (state.beginningOfLine && current == '@')
@@ -450,7 +450,7 @@ export function mkPython(parserConf) {
       pushPyScope(stream, state);
 
     if (current.length == 1 && !/string|comment/.test(style)) {
-      var delimiter_index = '[({'.indexOf(current);
+      let delimiter_index = '[({'.indexOf(current);
       if (delimiter_index != -1)
         pushBracketScope(
           stream,
@@ -492,9 +492,9 @@ export function mkPython(parserConf) {
     },
 
     token: function (stream, state) {
-      var addErr = state.errorToken;
+      const addErr = state.errorToken;
       if (addErr) state.errorToken = false;
-      var style = tokenLexer(stream, state);
+      let style = tokenLexer(stream, state);
 
       if (style && style != 'comment')
         state.lastToken =
@@ -511,8 +511,8 @@ export function mkPython(parserConf) {
       if (state.tokenize != tokenBase)
         return state.tokenize.isString ? null : 0;
 
-      var scope = top(state);
-      var closing =
+      const scope = top(state);
+      const closing =
         scope.type == textAfter.charAt(0) ||
         (scope.type == 'py' &&
           !state.dedent &&
@@ -532,7 +532,7 @@ export function mkPython(parserConf) {
   };
 }
 
-var words = function (str) {
+const words = function (str) {
   return str.split(' ');
 };
 

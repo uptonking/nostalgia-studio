@@ -1,9 +1,9 @@
-var variable_regex = /({)?[a-zA-Z0-9_]+(})?/;
+const variable_regex = /({)?[a-zA-Z0-9_]+(})?/;
 
 function tokenString(stream, state) {
-  var current,
-    prev,
-    found_var = false;
+  let current;
+    let prev;
+    let found_var = false;
   while (!stream.eol() && (current = stream.next()) != state.pending) {
     if (current === '$' && prev != '\\' && state.pending == '"') {
       found_var = true;
@@ -23,7 +23,7 @@ function tokenString(stream, state) {
 }
 
 function tokenize(stream, state) {
-  var ch = stream.next();
+  const ch = stream.next();
 
   // Have we found a variable?
   if (ch === '$') {
@@ -67,7 +67,7 @@ function tokenize(stream, state) {
 export const cmake = {
   name: 'cmake',
   startState: function () {
-    var state = {};
+    const state = {};
     state.inDefinition = false;
     state.inInclude = false;
     state.continueString = false;

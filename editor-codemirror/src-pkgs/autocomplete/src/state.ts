@@ -1,21 +1,21 @@
-import { EditorView, Tooltip, showTooltip } from '@codemirror/view';
+import { EditorView, type Tooltip, showTooltip } from '@codemirror/view';
 import {
-  Transaction,
+  type Transaction,
   StateField,
   StateEffect,
-  EditorState,
-  ChangeDesc,
+  type EditorState,
+  type ChangeDesc,
 } from '@codemirror/state';
 import {
   Option,
-  CompletionSource,
-  CompletionResult,
+  type CompletionSource,
+  type CompletionResult,
   cur,
   asSource,
-  Completion,
+  type Completion,
   ensureAnchor,
   CompletionContext,
-  CompletionSection,
+  type CompletionSection,
   startCompletionEffect,
   closeCompletionEffect,
   insertCompletionText,
@@ -23,7 +23,7 @@ import {
 } from './completion';
 import { FuzzyMatcher, StrictMatcher } from './filter';
 import { completionTooltip } from './tooltip';
-import { CompletionConfig, completionConfig } from './config';
+import { type CompletionConfig, completionConfig } from './config';
 
 // Used to pick a preferred option when two options with the same
 // label occur in the result.
@@ -37,25 +37,25 @@ function score(option: Completion) {
 }
 
 function sortOptions(active: readonly ActiveSource[], state: EditorState) {
-  let options: Option[] = [];
+  const options: Option[] = [];
   let sections: null | CompletionSection[] = null;
-  let addOption = (option: Option) => {
+  const addOption = (option: Option) => {
     options.push(option);
-    let { section } = option.completion;
+    const { section } = option.completion;
     if (section) {
       if (!sections) sections = [];
-      let name = typeof section == 'string' ? section : section.name;
+      const name = typeof section === 'string' ? section : section.name;
       if (!sections.some((s) => s.name == name))
-        sections.push(typeof section == 'string' ? { name } : section);
+        sections.push(typeof section === 'string' ? { name } : section);
     }
   };
 
-  let conf = state.facet(completionConfig);
-  for (let a of active)
+  const conf = state.facet(completionConfig);
+  for (const a of active)
     if (a.hasResult()) {
-      let getMatch = a.result.getMatch;
+      const getMatch = a.result.getMatch;
       if (a.result.filter === false) {
-        for (let option of a.result.options) {
+        for (const option of a.result.options) {
           addOption(
             new Option(
               option,
@@ -66,14 +66,14 @@ function sortOptions(active: readonly ActiveSource[], state: EditorState) {
           );
         }
       } else {
-        let pattern = state.sliceDoc(a.from, a.to),
-          match;
-        let matcher = conf.filterStrict
+        const pattern = state.sliceDoc(a.from, a.to);
+          let match;
+        const matcher = conf.filterStrict
           ? new StrictMatcher(pattern)
           : new FuzzyMatcher(pattern);
-        for (let option of a.result.options)
+        for (const option of a.result.options)
           if ((match = matcher.match(option.label))) {
-            let matched = !option.displayLabel
+            const matched = !option.displayLabel
               ? match.matched
               : getMatch
                 ? getMatch(option, match.matched)
@@ -91,29 +91,29 @@ function sortOptions(active: readonly ActiveSource[], state: EditorState) {
     }
 
   if (sections) {
-    let sectionOrder: { [name: string]: number } = Object.create(null),
-      pos = 0;
-    let cmp = (a: CompletionSection, b: CompletionSection) =>
+    const sectionOrder: { [name: string]: number } = Object.create(null);
+      let pos = 0;
+    const cmp = (a: CompletionSection, b: CompletionSection) =>
       (a.rank ?? 1e9) - (b.rank ?? 1e9) || (a.name < b.name ? -1 : 1);
-    for (let s of (sections as CompletionSection[]).sort(cmp)) {
+    for (const s of (sections as CompletionSection[]).sort(cmp)) {
       pos -= 1e5;
       sectionOrder[s.name] = pos;
     }
-    for (let option of options) {
-      let { section } = option.completion;
+    for (const option of options) {
+      const { section } = option.completion;
       if (section)
         option.score +=
-          sectionOrder[typeof section == 'string' ? section : section.name];
+          sectionOrder[typeof section === 'string' ? section : section.name];
     }
   }
 
-  let result = [],
-    prev = null;
-  let compare = conf.compareCompletions;
-  for (let opt of options.sort(
+  const result = [];
+    let prev = null;
+  const compare = conf.compareCompletions;
+  for (const opt of options.sort(
     (a, b) => b.score - a.score || compare(a.completion, b.completion),
   )) {
-    let cur = opt.completion;
+    const cur = opt.completion;
     if (
       !prev ||
       prev.label != cur.label ||
@@ -160,7 +160,7 @@ class CompletionDialog {
     prev: CompletionDialog | null,
     conf: Required<CompletionConfig>,
   ): CompletionDialog | null {
-    let options = sortOptions(active, state);
+    const options = sortOptions(active, state);
     if (!options.length) {
       return prev && active.some((a) => a.state == State.Pending)
         ? new CompletionDialog(
@@ -175,7 +175,7 @@ class CompletionDialog {
     }
     let selected = state.facet(completionConfig).selectOnOpen ? 0 : -1;
     if (prev && prev.selected != selected && prev.selected != -1) {
-      let selectedValue = prev.options[prev.selected].completion;
+      const selectedValue = prev.options[prev.selected].completion;
       for (let i = 0; i < options.length; i++)
         if (options[i].completion == selectedValue) {
           selected = i;
@@ -227,9 +227,9 @@ export class CompletionState {
   }
 
   update(tr: Transaction) {
-    let { state } = tr,
-      conf = state.facet(completionConfig);
-    let sources =
+    const { state } = tr;
+      const conf = state.facet(completionConfig);
+    const sources =
       conf.override ||
       state
         .languageDataAt<
@@ -237,7 +237,7 @@ export class CompletionState {
         >('autocomplete', cur(state))
         .map(asSource);
     let active: readonly ActiveSource[] = sources.map((source) => {
-      let value =
+      const value =
         this.active.find((s) => s.source == source) ||
         new ActiveSource(
           source,
@@ -278,7 +278,7 @@ export class CompletionState {
       active = active.map((a) =>
         a.hasResult() ? new ActiveSource(a.source, State.Inactive) : a,
       );
-    for (let effect of tr.effects)
+    for (const effect of tr.effects)
       if (effect.is(setSelectedEffect))
         open = open && open.setSelected(effect.value, this.id);
 
@@ -305,8 +305,8 @@ function sameResults(a: readonly ActiveSource[], b: readonly ActiveSource[]) {
   for (let iA = 0, iB = 0; ; ) {
     while (iA < a.length && !a[iA].hasResult) iA++;
     while (iB < b.length && !b[iB].hasResult) iB++;
-    let endA = iA == a.length,
-      endB = iB == b.length;
+    const endA = iA == a.length;
+      const endB = iB == b.length;
     if (endA || endB) return endA == endB;
     if ((a[iA++] as ActiveResult).result != (b[iB++] as ActiveResult).result)
       return false;
@@ -320,7 +320,7 @@ const baseAttrs = {
 const noAttrs = {};
 
 function makeAttrs(id: string, selected: number) {
-  let result: { [name: string]: string } = {
+  const result: { [name: string]: string } = {
     'aria-autocomplete': 'list',
     'aria-haspopup': 'listbox',
     'aria-controls': id,
@@ -352,11 +352,11 @@ export function getUpdateType(
   conf: Required<CompletionConfig>,
 ): UpdateType {
   if (tr.isUserEvent('input.complete')) {
-    let completion = tr.annotation(pickedCompletion);
+    const completion = tr.annotation(pickedCompletion);
     if (completion && conf.activateOnCompletion(completion))
       return UpdateType.Activate | UpdateType.Reset;
   }
-  let typing = tr.isUserEvent('input.type');
+  const typing = tr.isUserEvent('input.type');
   return typing && conf.activateOnTyping
     ? UpdateType.Activate | UpdateType.Typing
     : typing
@@ -382,8 +382,8 @@ export class ActiveSource {
   }
 
   update(tr: Transaction, conf: Required<CompletionConfig>): ActiveSource {
-    let type = getUpdateType(tr, conf),
-      value: ActiveSource = this;
+    const type = getUpdateType(tr, conf);
+      let value: ActiveSource = this;
     if (
       type & UpdateType.Reset ||
       (type & UpdateType.ResetIfTouching && this.touches(tr))
@@ -393,7 +393,7 @@ export class ActiveSource {
       value = new ActiveSource(this.source, State.Pending);
     value = value.updateFor(tr, type);
 
-    for (let effect of tr.effects) {
+    for (const effect of tr.effects) {
       if (effect.is(startCompletionEffect))
         value = new ActiveSource(
           value.source,
@@ -403,7 +403,7 @@ export class ActiveSource {
       else if (effect.is(closeCompletionEffect))
         value = new ActiveSource(value.source, State.Inactive);
       else if (effect.is(setActiveEffect))
-        for (let active of effect.value)
+        for (const active of effect.value)
           if (active.source == value.source) value = active;
     }
     return value;
@@ -448,9 +448,9 @@ export class ActiveResult extends ActiveSource {
     let result = this.result as CompletionResult | null;
     if (result!.map && !tr.changes.empty)
       result = result!.map(result!, tr.changes);
-    let from = tr.changes.mapPos(this.from),
-      to = tr.changes.mapPos(this.to, 1);
-    let pos = cur(tr.state);
+    const from = tr.changes.mapPos(this.from);
+      const to = tr.changes.mapPos(this.to, 1);
+    const pos = cur(tr.state);
     if (
       (this.explicitPos < 0 ? pos <= from : pos < this.from) ||
       pos > to ||
@@ -461,7 +461,7 @@ export class ActiveResult extends ActiveSource {
         this.source,
         type & UpdateType.Activate ? State.Pending : State.Inactive,
       );
-    let explicitPos =
+    const explicitPos =
       this.explicitPos < 0 ? -1 : tr.changes.mapPos(this.explicitPos);
     if (checkValid(result.validFor, tr.state, from, to))
       return new ActiveResult(this.source, explicitPos, result, from, to);
@@ -486,7 +486,7 @@ export class ActiveResult extends ActiveSource {
 
   map(mapping: ChangeDesc) {
     if (mapping.empty) return this;
-    let result = this.result.map
+    const result = this.result.map
       ? this.result.map(this.result, mapping)
       : this.result;
     if (!result) return new ActiveSource(this.source, State.Inactive);
@@ -514,8 +514,8 @@ function checkValid(
   to: number,
 ) {
   if (!validFor) return false;
-  let text = state.sliceDoc(from, to);
-  return typeof validFor == 'function'
+  const text = state.sliceDoc(from, to);
+  return typeof validFor === 'function'
     ? validFor(text, from, to, state)
     : ensureAnchor(validFor, true).test(text);
 }
@@ -544,12 +544,12 @@ export const completionState = StateField.define<CompletionState>({
 
 export function applyCompletion(view: EditorView, option: Option) {
   const apply = option.completion.apply || option.completion.label;
-  let result = view.state
+  const result = view.state
     .field(completionState)
     .active.find((a) => a.source == option.source);
   if (!(result instanceof ActiveResult)) return false;
 
-  if (typeof apply == 'string')
+  if (typeof apply === 'string')
     view.dispatch({
       ...insertCompletionText(view.state, apply, result.from, result.to),
       annotations: pickedCompletion.of(option.completion),

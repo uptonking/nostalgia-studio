@@ -1,17 +1,17 @@
 import {
-  EditorState,
-  StateCommand,
+  type EditorState,
+  type StateCommand,
   EditorSelection,
-  SelectionRange,
-  ChangeSpec,
-  Transaction,
+  type SelectionRange,
+  type ChangeSpec,
+  type Transaction,
   CharCategory,
   findClusterBreak,
   Text,
-  Line,
+  type Line,
   countColumn,
 } from '@codemirror/state';
-import { EditorView, Command, Direction, KeyBinding } from '@codemirror/view';
+import { EditorView, type Command, Direction, type KeyBinding } from '@codemirror/view';
 import {
   syntaxTree,
   IndentContext,
@@ -21,7 +21,7 @@ import {
   getIndentation,
   matchBrackets,
 } from '@codemirror/language';
-import { SyntaxNode, NodeProp } from '@lezer/common';
+import { type SyntaxNode, NodeProp } from '@lezer/common';
 import { toggleComment, toggleBlockComment } from './comment';
 
 export {
@@ -72,7 +72,7 @@ function moveSel(
   { state, dispatch }: CommandTarget,
   how: (range: SelectionRange) => SelectionRange,
 ): boolean {
-  let selection = updateSel(state.selection, how);
+  const selection = updateSel(state.selection, how);
   if (selection.eq(state.selection, true)) return false;
   dispatch(setSel(state, selection));
   return true;
@@ -126,7 +126,7 @@ export const cursorGroupBackward: Command = (view) =>
   cursorByGroup(view, false);
 
 const segmenter =
-  typeof Intl != 'undefined' && (Intl as any).Segmenter
+  typeof Intl !== 'undefined' && (Intl as any).Segmenter
     ? new (Intl as any).Segmenter(undefined, { granularity: 'word' })
     : null;
 
@@ -135,18 +135,18 @@ function moveBySubword(
   range: SelectionRange,
   forward: boolean,
 ) {
-  let categorize = view.state.charCategorizer(range.from);
-  let cat = CharCategory.Space,
-    pos = range.from,
-    steps = 0;
-  let done = false,
-    sawUpper = false,
-    sawLower = false;
-  let step = (next: string) => {
+  const categorize = view.state.charCategorizer(range.from);
+  let cat = CharCategory.Space;
+    let pos = range.from;
+    let steps = 0;
+  let done = false;
+    let sawUpper = false;
+    let sawLower = false;
+  const step = (next: string) => {
     if (done) return false;
     pos += forward ? next.length : -next.length;
-    let nextCat = categorize(next),
-      ahead;
+    let nextCat = categorize(next);
+      let ahead;
     if (
       nextCat == CharCategory.Word &&
       next.charCodeAt(0) < 128 &&
@@ -178,7 +178,7 @@ function moveBySubword(
     return true;
   };
 
-  let end = view.moveByChar(range, forward, (start) => {
+  const end = view.moveByChar(range, forward, (start) => {
     step(start);
     return step;
   });
@@ -188,11 +188,11 @@ function moveBySubword(
     cat == (CharCategory.Word as any) &&
     end.from == range.from + steps * (forward ? 1 : -1)
   ) {
-    let from = Math.min(range.head, end.head),
-      to = Math.max(range.head, end.head);
-    let skipped = view.state.sliceDoc(from, to);
+    const from = Math.min(range.head, end.head);
+      const to = Math.max(range.head, end.head);
+    const skipped = view.state.sliceDoc(from, to);
     if (skipped.length > 1 && /[\u4E00-\uffff]/.test(skipped)) {
-      let segments = Array.from(segmenter.segment(skipped)) as {
+      const segments = Array.from(segmenter.segment(skipped)) as {
         index: number;
       }[];
       if (segments.length > 1) {
@@ -229,7 +229,7 @@ function interestingNode(
   bracketProp: NodeProp<unknown>,
 ) {
   if (node.type.prop(bracketProp)) return true;
-  let len = node.to - node.from;
+  const len = node.to - node.from;
   return (
     (len &&
       (len > 2 || /[^\s,.;:]/.test(state.sliceDoc(node.from, node.to)))) ||
@@ -243,18 +243,18 @@ function moveBySyntax(
   forward: boolean,
 ) {
   let pos = syntaxTree(state).resolveInner(start.head);
-  let bracketProp = forward ? NodeProp.closedBy : NodeProp.openedBy;
+  const bracketProp = forward ? NodeProp.closedBy : NodeProp.openedBy;
   // Scan forward through child nodes to see if there's an interesting
   // node ahead.
   for (let at = start.head; ; ) {
-    let next = forward ? pos.childAfter(at) : pos.childBefore(at);
+    const next = forward ? pos.childAfter(at) : pos.childBefore(at);
     if (!next) break;
     if (interestingNode(state, next, bracketProp)) pos = next;
     else at = forward ? next.to : next.from;
   }
-  let bracket = pos.type.prop(bracketProp),
-    match,
-    newPos;
+  const bracket = pos.type.prop(bracketProp);
+    let match;
+    let newPos;
   if (
     bracket &&
     (match = forward
@@ -277,7 +277,7 @@ export const cursorSyntaxRight: Command = (view) =>
 function cursorByLine(view: EditorView, forward: boolean) {
   return moveSel(view, (range) => {
     if (!range.empty) return rangeEnd(range, forward);
-    let moved = view.moveVertically(range, forward);
+    const moved = view.moveVertically(range, forward);
     return moved.head != range.head
       ? moved
       : view.moveToLineBoundary(range, forward);
@@ -290,14 +290,14 @@ export const cursorLineUp: Command = (view) => cursorByLine(view, false);
 export const cursorLineDown: Command = (view) => cursorByLine(view, true);
 
 function pageInfo(view: EditorView) {
-  let selfScroll =
+  const selfScroll =
     view.scrollDOM.clientHeight < view.scrollDOM.scrollHeight - 2;
-  let marginTop = 0,
-    marginBottom = 0,
-    height;
+  let marginTop = 0;
+    let marginBottom = 0;
+    let height;
   if (selfScroll) {
-    for (let source of view.state.facet(EditorView.scrollMargins)) {
-      let margins = source(view);
+    for (const source of view.state.facet(EditorView.scrollMargins)) {
+      const margins = source(view);
       if (margins?.top) marginTop = Math.max(margins?.top, marginTop);
       if (margins?.bottom)
         marginBottom = Math.max(margins?.bottom, marginBottom);
@@ -315,9 +315,9 @@ function pageInfo(view: EditorView) {
 }
 
 function cursorByPage(view: EditorView, forward: boolean) {
-  let page = pageInfo(view);
-  let { state } = view,
-    selection = updateSel(state.selection, (range) => {
+  const page = pageInfo(view);
+  const { state } = view;
+    const selection = updateSel(state.selection, (range) => {
       return range.empty
         ? view.moveVertically(range, forward, page.height)
         : rangeEnd(range, forward);
@@ -325,10 +325,10 @@ function cursorByPage(view: EditorView, forward: boolean) {
   if (selection.eq(state.selection)) return false;
   let effect;
   if (page.selfScroll) {
-    let startPos = view.coordsAtPos(state.selection.main.head);
-    let scrollRect = view.scrollDOM.getBoundingClientRect();
-    let scrollTop = scrollRect.top + page.marginTop,
-      scrollBottom = scrollRect.bottom - page.marginBottom;
+    const startPos = view.coordsAtPos(state.selection.main.head);
+    const scrollRect = view.scrollDOM.getBoundingClientRect();
+    const scrollTop = scrollRect.top + page.marginTop;
+      const scrollBottom = scrollRect.bottom - page.marginBottom;
     if (startPos && startPos.top > scrollTop && startPos.bottom < scrollBottom)
       effect = EditorView.scrollIntoView(selection.main.head, {
         y: 'start',
@@ -349,12 +349,12 @@ function moveByLineBoundary(
   start: SelectionRange,
   forward: boolean,
 ) {
-  let line = view.lineBlockAt(start.head),
-    moved = view.moveToLineBoundary(start, forward);
+  const line = view.lineBlockAt(start.head);
+    let moved = view.moveToLineBoundary(start, forward);
   if (moved.head == start.head && moved.head != (forward ? line.to : line.from))
     moved = view.moveToLineBoundary(start, forward, false);
   if (!forward && moved.head == line.from && line.length) {
-    let space = /^\s*/.exec(
+    const space = /^\s*/.exec(
       view.state.sliceDoc(line.from, Math.min(line.from + 100, line.to)),
     )![0].length;
     if (space && start.head != line.from + space)
@@ -396,9 +396,9 @@ function toMatchingBracket(
   dispatch: (tr: Transaction) => void,
   extend: boolean,
 ) {
-  let found = false,
-    selection = updateSel(state.selection, (range) => {
-      let matching =
+  let found = false;
+    const selection = updateSel(state.selection, (range) => {
+      const matching =
         matchBrackets(state, range.head, -1) ||
         matchBrackets(state, range.head, 1) ||
         (range.head > 0 && matchBrackets(state, range.head - 1, 1)) ||
@@ -406,7 +406,7 @@ function toMatchingBracket(
           matchBrackets(state, range.head + 1, -1));
       if (!matching || !matching.end) return range;
       found = true;
-      let head =
+      const head =
         matching.start.from == range.head ? matching.end.to : matching.end.from;
       return extend
         ? EditorSelection.range(range.anchor, head)
@@ -430,8 +430,8 @@ function extendSel(
   view: EditorView,
   how: (range: SelectionRange) => SelectionRange,
 ): boolean {
-  let selection = updateSel(view.state.selection, (range) => {
-    let head = how(range);
+  const selection = updateSel(view.state.selection, (range) => {
+    const head = how(range);
     return EditorSelection.range(
       range.anchor,
       head.head,
@@ -591,7 +591,7 @@ export const selectAll: StateCommand = ({ state, dispatch }) => {
 
 /// Expand the selection to cover entire lines.
 export const selectLine: StateCommand = ({ state, dispatch }) => {
-  let ranges = selectedLineBlocks(state).map(({ from, to }) =>
+  const ranges = selectedLineBlocks(state).map(({ from, to }) =>
     EditorSelection.range(from, Math.min(to + 1, state.doc.length)),
   );
   dispatch(
@@ -608,10 +608,10 @@ export const selectLine: StateCommand = ({ state, dispatch }) => {
 /// [provider](#language.language) you use builds up a full
 /// syntax tree.
 export const selectParentSyntax: StateCommand = ({ state, dispatch }) => {
-  let selection = updateSel(state.selection, (range) => {
-    let stack = syntaxTree(state).resolveStack(range.from, 1);
+  const selection = updateSel(state.selection, (range) => {
+    const stack = syntaxTree(state).resolveStack(range.from, 1);
     for (let cur: typeof stack | null = stack; cur; cur = cur.next) {
-      let { node } = cur;
+      const { node } = cur;
       if (
         ((node.from < range.from && node.to >= range.to) ||
           (node.to > range.to && node.from <= range.from)) &&
@@ -629,8 +629,8 @@ export const selectParentSyntax: StateCommand = ({ state, dispatch }) => {
 /// reduce it to its main range. Otherwise, if the selection is
 /// non-empty, convert it to a cursor selection.
 export const simplifySelection: StateCommand = ({ state, dispatch }) => {
-  let cur = state.selection,
-    selection = null;
+  const cur = state.selection;
+    let selection = null;
   if (cur.ranges.length > 1) selection = EditorSelection.create([cur.main]);
   else if (!cur.main.empty)
     selection = EditorSelection.create([EditorSelection.cursor(cur.main.head)]);
@@ -644,9 +644,9 @@ function deleteBy(
   by: (start: SelectionRange) => number,
 ) {
   if (target.state.readOnly) return false;
-  let event = 'delete.selection',
-    { state } = target;
-  let changes = state.changeByRange((range) => {
+  let event = 'delete.selection';
+    const { state } = target;
+  const changes = state.changeByRange((range) => {
     let { from, to } = range;
     if (from == to) {
       let towards = by(range);
@@ -686,7 +686,7 @@ function deleteBy(
 
 function skipAtomic(target: CommandTarget, pos: number, forward: boolean) {
   if (target instanceof EditorView)
-    for (let ranges of target.state
+    for (const ranges of target.state
       .facet(EditorView.atomicRanges)
       .map((f) => f(target)))
       ranges.between(pos, pos, (from, to) => {
@@ -701,11 +701,11 @@ const deleteByChar = (
   byIndentUnit: boolean,
 ) =>
   deleteBy(target, (range) => {
-    let pos = range.from,
-      { state } = target,
-      line = state.doc.lineAt(pos),
-      before,
-      targetPos: number;
+    let pos = range.from;
+      const { state } = target;
+      const line = state.doc.lineAt(pos);
+      let before;
+      let targetPos: number;
     if (
       byIndentUnit &&
       !forward &&
@@ -714,8 +714,8 @@ const deleteByChar = (
       !/[^ \t]/.test((before = line.text.slice(0, pos - line.from)))
     ) {
       if (before[before.length - 1] == '\t') return pos - 1;
-      let col = countColumn(before, state.tabSize),
-        drop = col % getIndentUnit(state) || getIndentUnit(state);
+      const col = countColumn(before, state.tabSize);
+        const drop = col % getIndentUnit(state) || getIndentUnit(state);
       for (let i = 0; i < drop && before[before.length - 1 - i] == ' '; i++)
         pos--;
       targetPos = pos;
@@ -755,23 +755,23 @@ export const deleteCharForward: Command = (view) =>
 
 const deleteByGroup = (target: CommandTarget, forward: boolean) =>
   deleteBy(target, (range) => {
-    let pos = range.head,
-      { state } = target,
-      line = state.doc.lineAt(pos);
-    let categorize = state.charCategorizer(pos);
+    let pos = range.head;
+      const { state } = target;
+      const line = state.doc.lineAt(pos);
+    const categorize = state.charCategorizer(pos);
     for (let cat: CharCategory | null = null; ; ) {
       if (pos == (forward ? line.to : line.from)) {
         if (pos == range.head && line.number != (forward ? state.doc.lines : 1))
           pos += forward ? 1 : -1;
         break;
       }
-      let next =
+      const next =
         findClusterBreak(line.text, pos - line.from, forward) + line.from;
-      let nextChar = line.text.slice(
+      const nextChar = line.text.slice(
         Math.min(pos, next) - line.from,
         Math.max(pos, next) - line.from,
       );
-      let nextCat = categorize(nextChar);
+      const nextCat = categorize(nextChar);
       if (cat != null && nextCat != cat) break;
       if (nextChar != ' ' || pos != range.head) cat = nextCat;
       pos = next;
@@ -793,7 +793,7 @@ export const deleteGroupForward: StateCommand = (target) =>
 /// line, delete the line break after it.
 export const deleteToLineEnd: Command = (view) =>
   deleteBy(view, (range) => {
-    let lineEnd = view.lineBlockAt(range.head).to;
+    const lineEnd = view.lineBlockAt(range.head).to;
     return range.head < lineEnd
       ? lineEnd
       : Math.min(view.state.doc.length, range.head + 1);
@@ -804,7 +804,7 @@ export const deleteToLineEnd: Command = (view) =>
 /// line, delete the line break before it.
 export const deleteToLineStart: Command = (view) =>
   deleteBy(view, (range) => {
-    let lineStart = view.lineBlockAt(range.head).from;
+    const lineStart = view.lineBlockAt(range.head).from;
     return range.head > lineStart ? lineStart : Math.max(0, range.head - 1);
   });
 
@@ -812,7 +812,7 @@ export const deleteToLineStart: Command = (view) =>
 /// the start of the line or the next line wrap before the cursor.
 export const deleteLineBoundaryBackward: Command = (view) =>
   deleteBy(view, (range) => {
-    let lineStart = view.moveToLineBoundary(range, false).head;
+    const lineStart = view.moveToLineBoundary(range, false).head;
     return range.head > lineStart ? lineStart : Math.max(0, range.head - 1);
   });
 
@@ -820,7 +820,7 @@ export const deleteLineBoundaryBackward: Command = (view) =>
 /// the end of the line or the next line wrap after the cursor.
 export const deleteLineBoundaryForward: Command = (view) =>
   deleteBy(view, (range) => {
-    let lineStart = view.moveToLineBoundary(range, true).head;
+    const lineStart = view.moveToLineBoundary(range, true).head;
     return range.head < lineStart
       ? lineStart
       : Math.min(view.state.doc.length, range.head + 1);
@@ -830,11 +830,11 @@ export const deleteLineBoundaryForward: Command = (view) =>
 /// document.
 export const deleteTrailingWhitespace: StateCommand = ({ state, dispatch }) => {
   if (state.readOnly) return false;
-  let changes = [];
+  const changes = [];
   for (let pos = 0, prev = '', iter = state.doc.iter(); ; ) {
     iter.next();
     if (iter.lineBreak || iter.done) {
-      let trailing = prev.search(/\s+$/);
+      const trailing = prev.search(/\s+$/);
       if (trailing > -1)
         changes.push({ from: pos - (prev.length - trailing), to: pos });
       if (iter.done) break;
@@ -853,7 +853,7 @@ export const deleteTrailingWhitespace: StateCommand = ({ state, dispatch }) => {
 /// on the line before the break.
 export const splitLine: StateCommand = ({ state, dispatch }) => {
   if (state.readOnly) return false;
-  let changes = state.changeByRange((range) => {
+  const changes = state.changeByRange((range) => {
     return {
       changes: { from: range.from, to: range.to, insert: Text.of(['', '']) },
       range: EditorSelection.cursor(range.from),
@@ -866,16 +866,16 @@ export const splitLine: StateCommand = ({ state, dispatch }) => {
 /// Flip the characters before and after the cursor(s).
 export const transposeChars: StateCommand = ({ state, dispatch }) => {
   if (state.readOnly) return false;
-  let changes = state.changeByRange((range) => {
+  const changes = state.changeByRange((range) => {
     if (!range.empty || range.from == 0 || range.from == state.doc.length)
       return { range };
-    let pos = range.from,
-      line = state.doc.lineAt(pos);
-    let from =
+    const pos = range.from;
+      const line = state.doc.lineAt(pos);
+    const from =
       pos == line.from
         ? pos - 1
         : findClusterBreak(line.text, pos - line.from, false) + line.from;
-    let to =
+    const to =
       pos == line.to
         ? pos + 1
         : findClusterBreak(line.text, pos - line.from, true) + line.from;
@@ -899,15 +899,15 @@ export const transposeChars: StateCommand = ({ state, dispatch }) => {
 };
 
 function selectedLineBlocks(state: EditorState) {
-  let blocks = [],
-    upto = -1;
-  for (let range of state.selection.ranges) {
-    let startLine = state.doc.lineAt(range.from),
-      endLine = state.doc.lineAt(range.to);
+  const blocks = [];
+    let upto = -1;
+  for (const range of state.selection.ranges) {
+    const startLine = state.doc.lineAt(range.from);
+      let endLine = state.doc.lineAt(range.to);
     if (!range.empty && range.to == endLine.from)
       endLine = state.doc.lineAt(range.to - 1);
     if (upto >= startLine.number) {
-      let prev = blocks[blocks.length - 1];
+      const prev = blocks[blocks.length - 1];
       prev.to = endLine.to;
       prev.ranges.push(range);
     } else {
@@ -924,18 +924,18 @@ function moveLine(
   forward: boolean,
 ): boolean {
   if (state.readOnly) return false;
-  let changes = [],
-    ranges = [];
-  for (let block of selectedLineBlocks(state)) {
+  const changes = [];
+    const ranges = [];
+  for (const block of selectedLineBlocks(state)) {
     if (forward ? block.to == state.doc.length : block.from == 0) continue;
-    let nextLine = state.doc.lineAt(forward ? block.to + 1 : block.from - 1);
-    let size = nextLine.length + 1;
+    const nextLine = state.doc.lineAt(forward ? block.to + 1 : block.from - 1);
+    const size = nextLine.length + 1;
     if (forward) {
       changes.push(
         { from: block.to, to: nextLine.to },
         { from: block.from, insert: nextLine.text + state.lineBreak },
       );
-      for (let r of block.ranges)
+      for (const r of block.ranges)
         ranges.push(
           EditorSelection.range(
             Math.min(state.doc.length, r.anchor + size),
@@ -947,7 +947,7 @@ function moveLine(
         { from: nextLine.from, to: block.from },
         { from: block.to, insert: state.lineBreak + nextLine.text },
       );
-      for (let r of block.ranges)
+      for (const r of block.ranges)
         ranges.push(EditorSelection.range(r.anchor - size, r.head - size));
     }
   }
@@ -976,8 +976,8 @@ function copyLine(
   forward: boolean,
 ): boolean {
   if (state.readOnly) return false;
-  let changes = [];
-  for (let block of selectedLineBlocks(state)) {
+  const changes = [];
+  for (const block of selectedLineBlocks(state)) {
     if (forward)
       changes.push({
         from: block.from,
@@ -1009,19 +1009,19 @@ export const copyLineDown: StateCommand = ({ state, dispatch }) =>
 /// Delete selected lines.
 export const deleteLine: Command = (view) => {
   if (view.state.readOnly) return false;
-  let { state } = view,
-    changes = state.changes(
+  const { state } = view;
+    const changes = state.changes(
       selectedLineBlocks(state).map(({ from, to }) => {
         if (from > 0) from--;
         else if (to < state.doc.length) to++;
         return { from, to };
       }),
     );
-  let selection = updateSel(state.selection, (range) => {
+  const selection = updateSel(state.selection, (range) => {
     let dist: number | undefined = undefined;
     if (view.lineWrapping) {
-      let block = view.lineBlockAt(range.head),
-        pos = view.coordsAtPos(range.head, range.assoc || 1);
+      const block = view.lineBlockAt(range.head);
+        const pos = view.coordsAtPos(range.head, range.assoc || 1);
       if (pos)
         dist =
           block.bottom +
@@ -1057,7 +1057,7 @@ export const insertNewlineKeepIndent: StateCommand = ({ state, dispatch }) => {
   dispatch(
     state.update(
       state.changeByRange((range) => {
-        let indent = /^\s*/.exec(state.doc.lineAt(range.from).text)![0];
+        const indent = /^\s*/.exec(state.doc.lineAt(range.from).text)![0];
         return {
           changes: {
             from: range.from,
@@ -1079,10 +1079,10 @@ function isBetweenBrackets(
 ): { from: number; to: number } | null {
   if (/\(\)|\[\]|\{\}/.test(state.sliceDoc(pos - 1, pos + 1)))
     return { from: pos, to: pos };
-  let context = syntaxTree(state).resolveInner(pos);
-  let before = context.childBefore(pos),
-    after = context.childAfter(pos),
-    closedBy;
+  const context = syntaxTree(state).resolveInner(pos);
+  const before = context.childBefore(pos);
+    const after = context.childAfter(pos);
+    let closedBy;
   if (
     before &&
     after &&
@@ -1110,14 +1110,14 @@ export const insertBlankLine = newlineAndIndent(true);
 function newlineAndIndent(atEof: boolean): StateCommand {
   return ({ state, dispatch }): boolean => {
     if (state.readOnly) return false;
-    let changes = state.changeByRange((range) => {
-      let { from, to } = range,
-        line = state.doc.lineAt(from);
-      let explode = !atEof && from == to && isBetweenBrackets(state, from);
+    const changes = state.changeByRange((range) => {
+      let { from, to } = range;
+        const line = state.doc.lineAt(from);
+      const explode = !atEof && from == to && isBetweenBrackets(state, from);
       if (atEof) from = to = (to <= line.to ? line : state.doc.lineAt(to)).to;
-      let cx = new IndentContext(state, {
+      const cx = new IndentContext(state, {
         simulateBreak: from,
-        simulateDoubleBreak: !!explode,
+        simulateDoubleBreak: Boolean(explode),
       });
       let indent = getIndentation(cx, from);
       if (indent == null)
@@ -1134,7 +1134,7 @@ function newlineAndIndent(atEof: boolean): StateCommand {
         !/\S/.test(line.text.slice(0, from))
       )
         from = line.from;
-      let insert = ['', indentString(state, indent)];
+      const insert = ['', indentString(state, indent)];
       if (explode)
         insert.push(indentString(state, cx.lineIndent(line.from, -1)));
       return {
@@ -1155,16 +1155,16 @@ function changeBySelectedLine(
 ) {
   let atLine = -1;
   return state.changeByRange((range) => {
-    let changes: ChangeSpec[] = [];
+    const changes: ChangeSpec[] = [];
     for (let pos = range.from; pos <= range.to; ) {
-      let line = state.doc.lineAt(pos);
+      const line = state.doc.lineAt(pos);
       if (line.number > atLine && (range.empty || range.to > line.from)) {
         f(line, changes, range);
         atLine = line.number;
       }
       pos = line.to + 1;
     }
-    let changeSet = state.changes(changes);
+    const changeSet = state.changes(changes);
     return {
       changes,
       range: EditorSelection.range(
@@ -1180,19 +1180,19 @@ function changeBySelectedLine(
 /// information.
 export const indentSelection: StateCommand = ({ state, dispatch }) => {
   if (state.readOnly) return false;
-  let updated: { [lineStart: number]: number } = Object.create(null);
-  let context = new IndentContext(state, {
+  const updated: { [lineStart: number]: number } = Object.create(null);
+  const context = new IndentContext(state, {
     overrideIndentation: (start) => {
-      let found = updated[start];
+      const found = updated[start];
       return found == null ? -1 : found;
     },
   });
-  let changes = changeBySelectedLine(state, (line, changes, range) => {
+  const changes = changeBySelectedLine(state, (line, changes, range) => {
     let indent = getIndentation(context, line.from);
     if (indent == null) return;
     if (!/\S/.test(line.text)) indent = 0;
-    let cur = /^\s*/.exec(line.text)![0];
-    let norm = indentString(state, indent);
+    const cur = /^\s*/.exec(line.text)![0];
+    const norm = indentString(state, indent);
     if (cur != norm || range.from < line.from + cur.length) {
       updated[line.from] = indent;
       changes.push({
@@ -1229,11 +1229,11 @@ export const indentLess: StateCommand = ({ state, dispatch }) => {
   dispatch(
     state.update(
       changeBySelectedLine(state, (line, changes) => {
-        let space = /^\s*/.exec(line.text)![0];
+        const space = /^\s*/.exec(line.text)![0];
         if (!space) return;
-        let col = countColumn(space, state.tabSize),
-          keep = 0;
-        let insert = indentString(
+        const col = countColumn(space, state.tabSize);
+          let keep = 0;
+        const insert = indentString(
           state,
           Math.max(0, col - getIndentUnit(state)),
         );

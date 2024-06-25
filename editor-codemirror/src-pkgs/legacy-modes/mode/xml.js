@@ -1,4 +1,4 @@
-var htmlConfig = {
+const htmlConfig = {
   autoSelfClosers: {
     area: true,
     base: true,
@@ -83,7 +83,7 @@ var htmlConfig = {
   caseFold: true,
 };
 
-var xmlConfig = {
+const xmlConfig = {
   autoSelfClosers: {},
   implicitlyClosed: {},
   contextGrabbers: {},
@@ -95,13 +95,13 @@ var xmlConfig = {
 };
 
 export function mkXML(parserConfig) {
-  var config = {};
-  var defaults = parserConfig.htmlMode ? htmlConfig : xmlConfig;
+  const config = {};
+  const defaults = parserConfig.htmlMode ? htmlConfig : xmlConfig;
   for (var prop in defaults) config[prop] = defaults[prop];
   for (var prop in parserConfig) config[prop] = parserConfig[prop];
 
   // Return variables for tokenizers
-  var type, setStyle;
+  let type; let setStyle;
 
   function inText(stream, state) {
     function chain(parser) {
@@ -109,7 +109,7 @@ export function mkXML(parserConfig) {
       return parser(stream, state);
     }
 
-    var ch = stream.next();
+    const ch = stream.next();
     if (ch == '<') {
       if (stream.eat('!')) {
         if (stream.eat('[')) {
@@ -133,7 +133,7 @@ export function mkXML(parserConfig) {
         return 'angleBracket';
       }
     } else if (ch == '&') {
-      var ok;
+      let ok;
       if (stream.eat('#')) {
         if (stream.eat('x')) {
           ok = stream.eatWhile(/[a-fA-F\d]/) && stream.eat(';');
@@ -152,7 +152,7 @@ export function mkXML(parserConfig) {
   inText.isInText = true;
 
   function inTag(stream, state) {
-    var ch = stream.next();
+    const ch = stream.next();
     if (ch == '>' || (ch == '/' && stream.eat('>'))) {
       state.tokenize = inText;
       type = ch == '>' ? 'endTag' : 'selfcloseTag';
@@ -177,7 +177,7 @@ export function mkXML(parserConfig) {
   }
 
   function inAttribute(quote) {
-    var closure = function (stream, state) {
+    const closure = function (stream, state) {
       while (!stream.eol()) {
         if (stream.next() == quote) {
           state.tokenize = inTag;
@@ -205,7 +205,7 @@ export function mkXML(parserConfig) {
 
   function doctype(depth) {
     return function (stream, state) {
-      var ch;
+      let ch;
       while ((ch = stream.next()) != null) {
         if (ch == '<') {
           state.tokenize = doctype(depth + 1);
@@ -243,7 +243,7 @@ export function mkXML(parserConfig) {
     if (state.context) state.context = state.context.prev;
   }
   function maybePopContext(state, nextTagName) {
-    var parentTagName;
+    let parentTagName;
     while (true) {
       if (!state.context) {
         return;
@@ -286,7 +286,7 @@ export function mkXML(parserConfig) {
   }
   function closeTagNameState(type, stream, state) {
     if (type == 'word') {
-      var tagName = stream.current();
+      const tagName = stream.current();
       if (
         state.context &&
         state.context.tagName != tagName &&
@@ -330,8 +330,8 @@ export function mkXML(parserConfig) {
       setStyle = 'attribute';
       return attrEqState;
     } else if (type == 'endTag' || type == 'selfcloseTag') {
-      var tagName = state.tagName,
-        tagStart = state.tagStart;
+      const tagName = state.tagName;
+        const tagStart = state.tagStart;
       state.tagName = state.tagStart = null;
       if (
         type == 'selfcloseTag' ||
@@ -370,7 +370,7 @@ export function mkXML(parserConfig) {
     name: 'xml',
 
     startState: function () {
-      var state = {
+      const state = {
         tokenize: inText,
         state: baseState,
         indented: 0,
@@ -386,7 +386,7 @@ export function mkXML(parserConfig) {
 
       if (stream.eatSpace()) return null;
       type = null;
-      var style = state.tokenize(stream, state);
+      let style = state.tokenize(stream, state);
       if ((style || type) && style != 'comment') {
         setStyle = null;
         state.state = state.state(type || style, stream, state);
@@ -396,7 +396,7 @@ export function mkXML(parserConfig) {
     },
 
     indent: function (state, textAfter, cx) {
-      var context = state.context;
+      let context = state.context;
       // Indent multi-line strings (e.g. css).
       if (state.tokenize.isInAttribute) {
         if (state.tagStart == state.indented) return state.stringStartCol + 1;
@@ -414,7 +414,7 @@ export function mkXML(parserConfig) {
           );
       }
       if (config.alignCDATA && /<!\[CDATA\[/.test(textAfter)) return 0;
-      var tagAfter = textAfter && /^<(\/)?([\w_:\.-]*)/.exec(textAfter);
+      const tagAfter = textAfter && /^<(\/)?([\w_:\.-]*)/.exec(textAfter);
       if (tagAfter && tagAfter[1]) {
         // Closing tag spotted
         while (context) {
@@ -432,7 +432,7 @@ export function mkXML(parserConfig) {
       } else if (tagAfter) {
         // Opening tag spotted
         while (context) {
-          var grabbers = config.contextGrabbers[lower(context.tagName)];
+          const grabbers = config.contextGrabbers[lower(context.tagName)];
           if (grabbers && grabbers.hasOwnProperty(lower(tagAfter[2])))
             context = context.prev;
           else break;
@@ -461,8 +461,8 @@ export function mkXML(parserConfig) {
     },
 
     xmlCurrentContext: function (state) {
-      var context = [];
-      for (var cx = state.context; cx; cx = cx.prev) context.push(cx.tagName);
+      const context = [];
+      for (let cx = state.context; cx; cx = cx.prev) context.push(cx.tagName);
       return context.reverse();
     },
   };

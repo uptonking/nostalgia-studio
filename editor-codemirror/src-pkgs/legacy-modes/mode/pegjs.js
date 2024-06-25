@@ -65,10 +65,10 @@ export const pegjs = {
       return 'comment';
     } else if (state.braced || stream.peek() === '{') {
       if (state.localState === null) state.localState = javascript.startState();
-      var token = javascript.token(stream, state.localState);
-      var text = stream.current();
+      const token = javascript.token(stream, state.localState);
+      const text = stream.current();
       if (!token) {
-        for (var i = 0; i < text.length; i++) {
+        for (let i = 0; i < text.length; i++) {
           if (text[i] === '{') state.braced++;
           else if (text[i] === '}') state.braced--;
         }

@@ -63,9 +63,9 @@ export class StringStream {
   /// Match the next character against the given string, regular
   /// expression, or predicate. Consume and return it if it matches.
   eat(match: string | RegExp | ((ch: string) => boolean)): string | void {
-    let ch = this.string.charAt(this.pos);
+    const ch = this.string.charAt(this.pos);
     let ok;
-    if (typeof match == 'string') ok = ch == match;
+    if (typeof match === 'string') ok = ch == match;
     else ok = ch && (match instanceof RegExp ? match.test(ch) : match(ch));
     if (ok) {
       ++this.pos;
@@ -77,7 +77,7 @@ export class StringStream {
   /// regular expression, or predicate function. Return true if any
   /// characters were consumed.
   eatWhile(match: string | RegExp | ((ch: string) => boolean)): boolean {
-    let start = this.pos;
+    const start = this.pos;
     while (this.eat(match)) {}
     return this.pos > start;
   }
@@ -85,7 +85,7 @@ export class StringStream {
   /// Consume whitespace ahead of `this.pos`. Return true if any was
   /// found.
   eatSpace() {
-    let start = this.pos;
+    const start = this.pos;
     while (/[\s\u00a0]/.test(this.string.charAt(this.pos))) ++this.pos;
     return this.pos > start;
   }
@@ -98,7 +98,7 @@ export class StringStream {
   /// Move to directly before the given character, if found on the
   /// current line.
   skipTo(ch: string): boolean | void {
-    let found = this.string.indexOf(ch, this.pos);
+    const found = this.string.indexOf(ch, this.pos);
     if (found > -1) {
       this.pos = found;
       return true;
@@ -144,15 +144,15 @@ export class StringStream {
     consume?: boolean,
     caseInsensitive?: boolean,
   ): boolean | RegExpMatchArray | null {
-    if (typeof pattern == 'string') {
-      let cased = (str: string) => (caseInsensitive ? str.toLowerCase() : str);
-      let substr = this.string.substr(this.pos, pattern.length);
+    if (typeof pattern === 'string') {
+      const cased = (str: string) => (caseInsensitive ? str.toLowerCase() : str);
+      const substr = this.string.substr(this.pos, pattern.length);
       if (cased(substr) == cased(pattern)) {
         if (consume !== false) this.pos += pattern.length;
         return true;
       } else return null;
     } else {
-      let match = this.string.slice(this.pos).match(pattern);
+      const match = this.string.slice(this.pos).match(pattern);
       if (match && match.index! > 0) return null;
       if (match && consume !== false) this.pos += match[0].length;
       return match;

@@ -17,11 +17,11 @@ function start(stream, state) {
 }
 
 function responseStatusCode(stream, state) {
-  var code = stream.match(/^\d+/);
+  const code = stream.match(/^\d+/);
   if (!code) return failFirstLine(stream, state);
 
   state.cur = responseStatusText;
-  var status = Number(code[0]);
+  const status = Number(code[0]);
   if (status >= 100 && status < 400) {
     return 'atom';
   } else {
@@ -72,7 +72,7 @@ function body(stream) {
 export const http = {
   name: 'http',
   token: function (stream, state) {
-    var cur = state.cur;
+    const cur = state.cur;
     if (cur != header && cur != body && stream.eatSpace()) return null;
     return cur(stream, state);
   },

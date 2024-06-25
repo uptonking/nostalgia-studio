@@ -11,13 +11,13 @@ import {
 } from '@codemirror/language';
 import {
   parser as baseParser,
-  MarkdownParser,
+  type MarkdownParser,
   GFM,
   Subscript,
   Superscript,
   Emoji,
 } from '@lezer/markdown';
-import { SyntaxNode, NodeType, NodeProp } from '@lezer/common';
+import { type SyntaxNode, type NodeType, NodeProp } from '@lezer/common';
 
 const data = defineLanguageFacet({
   commentTokens: { block: { open: '<!--', close: '-->' } },
@@ -49,8 +49,8 @@ const commonmark = baseParser.configure({
 });
 
 function isHeading(type: NodeType) {
-  let match = /^(?:ATX|Setext)Heading(\d)$/.exec(type.name);
-  return match ? +match[1] : undefined;
+  const match = /^(?:ATX|Setext)Heading(\d)$/.exec(type.name);
+  return match ? Number(match[1]) : undefined;
 }
 
 function isList(type: NodeType) {
@@ -60,8 +60,8 @@ function isList(type: NodeType) {
 function findSectionEnd(headerNode: SyntaxNode, level: number) {
   let last = headerNode;
   for (;;) {
-    let next = last.nextSibling,
-      heading;
+    const next = last.nextSibling;
+      let heading;
     if (!next || ((heading = isHeading(next.type)) != null && heading <= level))
       break;
     last = next;
@@ -76,9 +76,9 @@ const headerIndent = foldService.of((state, start, end) => {
     node = node.parent
   ) {
     if (node.from < start) break;
-    let heading = node.type.prop(headingProp);
+    const heading = node.type.prop(headingProp);
     if (heading == null) continue;
-    let upto = findSectionEnd(node, heading);
+    const upto = findSectionEnd(node, heading);
     if (upto > end) return { from: end, to: upto };
   }
   return null;
@@ -124,7 +124,7 @@ export function getCodeParser(
       let found = null;
       // Strip anything after whitespace
       info = /\S*/.exec(info)![0];
-      if (typeof languages == 'function') found = languages(info);
+      if (typeof languages === 'function') found = languages(info);
       else found = LanguageDescription.matchLanguageName(languages, info, true);
       if (found instanceof LanguageDescription)
         return found.support

@@ -1,8 +1,8 @@
-import { MapMode, RangeValue, Range, RangeSet } from '@codemirror/state';
-import { Direction } from './bidi';
-import { attrsEq, Attrs } from './attributes';
-import { EditorView } from './editorview';
-import { Rect } from './dom';
+import { MapMode, RangeValue, type Range, RangeSet } from '@codemirror/state';
+import type { Direction } from './bidi';
+import { attrsEq, type Attrs } from './attributes';
+import type { EditorView } from './editorview';
+import type { Rect } from './dom';
 
 interface MarkDecorationSpec {
   /// Whether the mark covers its start and end position or not. This
@@ -258,8 +258,8 @@ export abstract class Decoration extends RangeValue {
   /// Create a widget decoration, which displays a DOM element at the
   /// given position.
   static widget(spec: WidgetDecorationSpec): Decoration {
-    let side = Math.max(-10000, Math.min(10000, spec.side || 0)),
-      block = !!spec.block;
+    let side = Math.max(-10000, Math.min(10000, spec.side || 0));
+      const block = Boolean(spec.block);
     side +=
       block && !spec.inlineOrder
         ? side > 0
@@ -281,14 +281,14 @@ export abstract class Decoration extends RangeValue {
   /// Create a replace decoration which replaces the given range with
   /// a widget, or simply hides it.
   static replace(spec: ReplaceDecorationSpec): Decoration {
-    let block = !!spec.block,
-      startSide,
-      endSide;
+    const block = Boolean(spec.block);
+      let startSide;
+      let endSide;
     if (spec.isBlockGap) {
       startSide = Side.GapStart;
       endSide = Side.GapEnd;
     } else {
-      let { start, end } = getInclusive(spec, block);
+      const { start, end } = getInclusive(spec, block);
       startSide =
         (start
           ? block
@@ -344,7 +344,7 @@ export class MarkDecoration extends Decoration {
   point=false;
 
   constructor(spec: MarkDecorationSpec) {
-    let { start, end } = getInclusive(spec);
+    const { start, end } = getInclusive(spec);
     super(
       start ? Side.InlineIncStart : Side.NonIncStart,
       end ? Side.InlineIncEnd : Side.NonIncEnd,
@@ -432,7 +432,7 @@ export class PointDecoration extends Decoration {
   get heightRelevant() {
     return (
       this.block ||
-      (!!this.widget &&
+      (Boolean(this.widget) &&
         (this.widget.estimatedHeight >= 5 || this.widget.lineBreaks > 0))
     );
   }
@@ -478,7 +478,7 @@ function getInclusive(
 }
 
 function widgetsEq(a: WidgetType | null, b: WidgetType | null): boolean {
-  return a == b || !!(a && b && a.compare(b));
+  return a == b || Boolean(a && b && a.compare(b));
 }
 
 export function addRange(
@@ -487,7 +487,7 @@ export function addRange(
   ranges: number[],
   margin = 0,
 ) {
-  let last = ranges.length - 1;
+  const last = ranges.length - 1;
   if (last >= 0 && ranges[last] + margin >= from)
     ranges[last] = Math.max(ranges[last], to);
   else ranges.push(from, to);

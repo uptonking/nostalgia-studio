@@ -1,26 +1,26 @@
 import { EditorView } from '@codemirror/view';
-import { Extension } from '@codemirror/state';
+import type { Extension } from '@codemirror/state';
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { tags as t } from '@lezer/highlight';
 
 // Using https://github.com/one-dark/vscode-one-dark-theme/ as reference for the colors
 
-const chalky = '#e5c07b',
-  coral = '#e06c75',
-  cyan = '#56b6c2',
-  invalid = '#ffffff',
-  ivory = '#abb2bf',
-  stone = '#7d8799', // Brightened compared to original to increase contrast
-  malibu = '#61afef',
-  sage = '#98c379',
-  whiskey = '#d19a66',
-  violet = '#c678dd',
-  darkBackground = '#21252b',
-  highlightBackground = '#2c313a',
-  background = '#282c34',
-  tooltipBackground = '#353a42',
-  selection = '#3E4451',
-  cursor = '#528bff';
+const chalky = '#e5c07b';
+  const coral = '#e06c75';
+  const cyan = '#56b6c2';
+  const invalid = '#ffffff';
+  const ivory = '#abb2bf';
+  const stone = '#7d8799'; // Brightened compared to original to increase contrast
+  const malibu = '#61afef';
+  const sage = '#98c379';
+  const whiskey = '#d19a66';
+  const violet = '#c678dd';
+  const darkBackground = '#21252b';
+  const highlightBackground = '#2c313a';
+  const background = '#282c34';
+  const tooltipBackground = '#353a42';
+  const selection = '#3E4451';
+  const cursor = '#528bff';
 
 /// The colors used in the theme, as CSS color strings.
 export const color = {

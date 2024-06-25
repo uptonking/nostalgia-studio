@@ -1,5 +1,5 @@
-import { EditorState } from './state';
-import { Transaction, TransactionSpec } from './transaction';
+import type { EditorState } from './state';
+import type { Transaction, TransactionSpec } from './transaction';
 import { Facet } from './facet';
 
 export const languageData =

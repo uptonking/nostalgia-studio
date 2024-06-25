@@ -1,10 +1,10 @@
-var wordRegexp = function (words) {
+const wordRegexp = function (words) {
   return new RegExp('^(?:' + words.join('|') + ')$', 'i');
 };
 
-var tokenBase = function (stream /*, state*/) {
+const tokenBase = function (stream /*, state*/) {
   curPunc = null;
-  var ch = stream.next();
+  const ch = stream.next();
   if (ch === '"') {
     stream.match(/^.*?"/);
     return 'string';
@@ -28,14 +28,14 @@ var tokenBase = function (stream /*, state*/) {
       stream.eatWhile(/[\w\d_\-]/);
       return 'atom';
     }
-    var word = stream.current();
+    const word = stream.current();
     if (funcs.test(word)) return 'builtin';
     if (preds.test(word)) return 'def';
     if (keywords.test(word) || systemKeywords.test(word)) return 'keyword';
     return 'variable';
   }
 };
-var pushContext = function (state, type, col) {
+const pushContext = function (state, type, col) {
   return (state.context = {
     prev: state.context,
     indent: state.indent,
@@ -43,11 +43,11 @@ var pushContext = function (state, type, col) {
     type: type,
   });
 };
-var popContext = function (state) {
+const popContext = function (state) {
   state.indent = state.context.indent;
   return (state.context = state.context.prev);
 };
-var curPunc;
+let curPunc;
 var funcs = wordRegexp([
   'abs',
   'acos',
@@ -289,7 +289,7 @@ export const cypher = {
     if (stream.eatSpace()) {
       return null;
     }
-    var style = state.tokenize(stream, state);
+    const style = state.tokenize(stream, state);
     if (
       style !== 'comment' &&
       state.context &&
@@ -328,14 +328,14 @@ export const cypher = {
     return style;
   },
   indent: function (state, textAfter, cx) {
-    var firstChar = textAfter && textAfter.charAt(0);
-    var context = state.context;
+    const firstChar = textAfter && textAfter.charAt(0);
+    let context = state.context;
     if (/[\]\}]/.test(firstChar)) {
       while (context && context.type === 'pattern') {
         context = context.prev;
       }
     }
-    var closing = context && firstChar === context.type;
+    const closing = context && firstChar === context.type;
     if (!context) return 0;
     if (context.type === 'keywords') return null;
     if (context.align) return context.col + (closing ? 0 : 1);

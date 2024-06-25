@@ -1,5 +1,5 @@
 function mlLike(parserConfig) {
-  var words = {
+  const words = {
     as: 'keyword',
     do: 'keyword',
     else: 'keyword',
@@ -22,19 +22,19 @@ function mlLike(parserConfig) {
     with: 'keyword',
   };
 
-  var extraWords = parserConfig.extraWords || {};
-  for (var prop in extraWords) {
+  const extraWords = parserConfig.extraWords || {};
+  for (const prop in extraWords) {
     if (extraWords.hasOwnProperty(prop)) {
       words[prop] = parserConfig.extraWords[prop];
     }
   }
-  var hintWords = [];
-  for (var k in words) {
+  const hintWords = [];
+  for (const k in words) {
     hintWords.push(k);
   }
 
   function tokenBase(stream, state) {
-    var ch = stream.next();
+    const ch = stream.next();
 
     if (ch === '"') {
       state.tokenize = tokenString;
@@ -91,16 +91,16 @@ function mlLike(parserConfig) {
     }
     if (/[\w\xa1-\uffff]/.test(ch)) {
       stream.eatWhile(/[\w\xa1-\uffff]/);
-      var cur = stream.current();
+      const cur = stream.current();
       return words.hasOwnProperty(cur) ? words[cur] : 'variable';
     }
     return null;
   }
 
   function tokenString(stream, state) {
-    var next,
-      end = false,
-      escaped = false;
+    let next;
+      let end = false;
+      let escaped = false;
     while ((next = stream.next()) != null) {
       if (next === '"' && !escaped) {
         end = true;
@@ -115,7 +115,7 @@ function mlLike(parserConfig) {
   }
 
   function tokenComment(stream, state) {
-    var prev, next;
+    let prev; let next;
     while (state.commentLevel > 0 && (next = stream.next()) != null) {
       if (prev === '(' && next === '*') state.commentLevel++;
       if (prev === '*' && next === ')') state.commentLevel--;
@@ -128,7 +128,7 @@ function mlLike(parserConfig) {
   }
 
   function tokenLongString(stream, state) {
-    var prev, next;
+    let prev; let next;
     while (state.longString && (next = stream.next()) != null) {
       if (prev === '|' && next === '}') state.longString = false;
       prev = next;

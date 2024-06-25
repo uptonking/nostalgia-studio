@@ -1,7 +1,7 @@
 import {
   EditorSelection,
-  SelectionRange,
-  Line,
+  type SelectionRange,
+  type Line,
   findClusterBreak,
 } from '@codemirror/state';
 
@@ -15,8 +15,8 @@ export enum Direction {
   RTL = 1,
 }
 
-const LTR = Direction.LTR,
-  RTL = Direction.RTL;
+const LTR = Direction.LTR;
+  const RTL = Direction.RTL;
 
 // Codes used for character types:
 const enum T {
@@ -35,8 +35,8 @@ const enum T {
 
 // Decode a string with each type encoded as log2(type)
 function dec(str: string): readonly T[] {
-  let result = [];
-  for (let i = 0; i < str.length; i++) result.push(1 << +str[i]);
+  const result = [];
+  for (let i = 0; i < str.length; i++) result.push(1 << Number(str[i]));
   return result;
 }
 
@@ -50,14 +50,14 @@ const ArabicTypes = dec(
   '4444448826627288999999999992222222222222222222222222222222222222222222222229999999999999999999994444444444644222822222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222999999949999999229989999223333333333',
 );
 
-const Brackets = Object.create(null),
-  BracketStack: number[] = [];
+const Brackets = Object.create(null);
+  const BracketStack: number[] = [];
 // There's a lot more in
 // https://www.unicode.org/Public/UCD/latest/ucd/BidiBrackets.txt,
 // which are left out to keep code size down.
-for (let p of ['()', '[]', '{}']) {
-  let l = p.charCodeAt(0),
-    r = p.charCodeAt(1);
+for (const p of ['()', '[]', '{}']) {
+  const l = p.charCodeAt(0);
+    const r = p.charCodeAt(1);
   Brackets[l] = r;
   Brackets[r] = -l;
 }
@@ -129,7 +129,7 @@ export class BidiSpan {
   ) {
     let maybe = -1;
     for (let i = 0; i < order.length; i++) {
-      let span = order[i];
+      const span = order[i];
       if (span.from <= index && span.to >= index) {
         if (span.level == level) return i;
         // When multiple spans match, if assoc != 0, take the one that
@@ -163,8 +163,8 @@ export type Isolate = {
 export function isolatesEq(a: readonly Isolate[], b: readonly Isolate[]) {
   if (a.length != b.length) return false;
   for (let i = 0; i < a.length; i++) {
-    let iA = a[i],
-      iB = b[i];
+    const iA = a[i];
+      const iB = b[i];
     if (
       iA.from != iB.from ||
       iA.to != iB.to ||
@@ -189,9 +189,9 @@ function computeCharTypes(
   outerType: T,
 ) {
   for (let iI = 0; iI <= isolates.length; iI++) {
-    let from = iI ? isolates[iI - 1].to : rFrom,
-      to = iI < isolates.length ? isolates[iI].from : rTo;
-    let prevType = iI ? T.NI : outerType;
+    const from = iI ? isolates[iI - 1].to : rFrom;
+      const to = iI < isolates.length ? isolates[iI].from : rTo;
+    const prevType = iI ? T.NI : outerType;
 
     // W1. Examine each non-spacing mark (NSM) in the level run, and
     // change the type of the NSM to the type of the previous
@@ -229,7 +229,7 @@ function computeCharTypes(
       } else if (type == T.ET) {
         let end = i + 1;
         while (end < to && types[end] == T.ET) end++;
-        let replace =
+        const replace =
           (i && prev == T.EN) || (end < rTo && types[end] == T.EN)
             ? prevStrong == T.L
               ? T.L
@@ -254,11 +254,11 @@ function processBracketPairs(
   isolates: readonly Isolate[],
   outerType: T,
 ) {
-  let oppositeType = outerType == T.L ? T.R : T.L;
+  const oppositeType = outerType == T.L ? T.R : T.L;
 
   for (let iI = 0, sI = 0, context = 0; iI <= isolates.length; iI++) {
-    let from = iI ? isolates[iI - 1].to : rFrom,
-      to = iI < isolates.length ? isolates[iI].from : rTo;
+    const from = iI ? isolates[iI - 1].to : rFrom;
+      const to = iI < isolates.length ? isolates[iI].from : rTo;
     // N0. Process bracket pairs in an isolating run sequence
     // sequentially in the logical order of the text positions of the
     // opening paired brackets using the logic given below. Within this
@@ -271,8 +271,8 @@ function processBracketPairs(
           // Closing bracket
           for (let sJ = sI - 3; sJ >= 0; sJ -= 3) {
             if (BracketStack[sJ + 1] == -br) {
-              let flags = BracketStack[sJ + 2];
-              let type =
+              const flags = BracketStack[sJ + 2];
+              const type =
                 flags & Bracketed.EmbedInside
                   ? outerType
                   : !(flags & Bracketed.OppositeInside)
@@ -293,10 +293,10 @@ function processBracketPairs(
           BracketStack[sI++] = context;
         }
       } else if ((type = types[i]) == T.R || type == T.L) {
-        let embed = type == outerType;
+        const embed = type == outerType;
         context = embed ? 0 : Bracketed.OppositeBefore;
         for (let sJ = sI - 3; sJ >= 0; sJ -= 3) {
-          let cur = BracketStack[sJ + 2];
+          const cur = BracketStack[sJ + 2];
           if (cur & Bracketed.EmbedInside) break;
           if (embed) {
             BracketStack[sJ + 2] |= Bracketed.EmbedInside;
@@ -317,8 +317,8 @@ function processNeutrals(
   outerType: T,
 ) {
   for (let iI = 0, prev = outerType; iI <= isolates.length; iI++) {
-    let from = iI ? isolates[iI - 1].to : rFrom,
-      to = iI < isolates.length ? isolates[iI].from : rTo;
+    const from = iI ? isolates[iI - 1].to : rFrom;
+      let to = iI < isolates.length ? isolates[iI].from : rTo;
     // N1. A sequence of neutrals takes the direction of the
     // surrounding strong text if the text on both sides has the same
     // direction. European and Arabic numbers act as if they were R in
@@ -327,7 +327,7 @@ function processNeutrals(
     // N2. Any remaining neutrals take the embedding direction.
     // (Left after this: L, R, EN+AN)
     for (let i = from; i < to; ) {
-      let type = types[i];
+      const type = types[i];
       if (type == T.NI) {
         let end = i + 1;
         for (;;) {
@@ -341,9 +341,9 @@ function processNeutrals(
             break;
           }
         }
-        let beforeL = prev == T.L;
-        let afterL = (end < rTo ? types[end] : outerType) == T.L;
-        let replace = beforeL == afterL ? (beforeL ? T.L : T.R) : outerType;
+        const beforeL = prev == T.L;
+        const afterL = (end < rTo ? types[end] : outerType) == T.L;
+        const replace = beforeL == afterL ? (beforeL ? T.L : T.R) : outerType;
         for (
           let j = end, jI = iI, fromJ = jI ? isolates[jI - 1].to : rFrom;
           j > i;
@@ -377,7 +377,7 @@ function emitSpans(
   isolates: readonly Isolate[],
   order: BidiSpan[],
 ) {
-  let ourType = level % 2 ? T.R : T.L;
+  const ourType = level % 2 ? T.R : T.L;
 
   if (level % 2 == baseLevel % 2) {
     // Same dir as base direction, don't flip
@@ -386,10 +386,10 @@ function emitSpans(
       // there's another type of char right after iCh, in which case
       // we scan a section of other characters (which, if ourType ==
       // T.L, may contain both T.R and T.AN chars).
-      let sameDir = true,
-        isNum = false;
+      let sameDir = true;
+        let isNum = false;
       if (iI == isolates.length || iCh < isolates[iI].from) {
-        let next = types[iCh];
+        const next = types[iCh];
         if (next != ourType) {
           sameDir = false;
           isNum = next == T.AN;
@@ -398,13 +398,13 @@ function emitSpans(
       // Holds an array of isolates to pass to a recursive call if we
       // must recurse (to distinguish T.AN inside an RTL section in
       // LTR text), null if we can emit directly
-      let recurse: Isolate[] | null = !sameDir && ourType == T.L ? [] : null;
-      let localLevel = sameDir ? level : level + 1;
+      const recurse: Isolate[] | null = !sameDir && ourType == T.L ? [] : null;
+      const localLevel = sameDir ? level : level + 1;
       let iScan = iCh;
       run: for (;;) {
         if (iI < isolates.length && iScan == isolates[iI].from) {
           if (isNum) break run;
-          let iso = isolates[iI];
+          const iso = isolates[iI];
           // Scan ahead to verify that there is another char in this dir after the isolate(s)
           if (!sameDir)
             for (let upto = iso.to, jI = iI + 1; ; ) {
@@ -420,7 +420,7 @@ function emitSpans(
           } else {
             if (iso.from > iCh)
               order.push(new BidiSpan(iCh, iso.from, localLevel));
-            let dirSwap = (iso.direction == LTR) != !(localLevel % 2);
+            const dirSwap = (iso.direction == LTR) != !(localLevel % 2);
             computeSectionOrder(
               line,
               dirSwap ? level + 1 : level,
@@ -451,22 +451,22 @@ function emitSpans(
     // Iterate in reverse to flip the span order. Same code again, but
     // going from the back of the section to the front
     for (let iCh = to, iI = isolates.length; iCh > from; ) {
-      let sameDir = true,
-        isNum = false;
+      let sameDir = true;
+        let isNum = false;
       if (!iI || iCh > isolates[iI - 1].to) {
-        let next = types[iCh - 1];
+        const next = types[iCh - 1];
         if (next != ourType) {
           sameDir = false;
           isNum = next == T.AN;
         }
       }
-      let recurse: Isolate[] | null = !sameDir && ourType == T.L ? [] : null;
-      let localLevel = sameDir ? level : level + 1;
+      const recurse: Isolate[] | null = !sameDir && ourType == T.L ? [] : null;
+      const localLevel = sameDir ? level : level + 1;
       let iScan = iCh;
       run: for (;;) {
         if (iI && iScan == isolates[iI - 1].to) {
           if (isNum) break run;
-          let iso = isolates[--iI];
+          const iso = isolates[--iI];
           // Scan ahead to verify that there is another char in this dir after the isolate(s)
           if (!sameDir)
             for (let upto = iso.from, jI = iI; ; ) {
@@ -479,7 +479,7 @@ function emitSpans(
             recurse.push(iso);
           } else {
             if (iso.to < iCh) order.push(new BidiSpan(iso.to, iCh, localLevel));
-            let dirSwap = (iso.direction == LTR) != !(localLevel % 2);
+            const dirSwap = (iso.direction == LTR) != !(localLevel % 2);
             computeSectionOrder(
               line,
               dirSwap ? level + 1 : level,
@@ -518,7 +518,7 @@ function computeSectionOrder(
   to: number,
   order: BidiSpan[],
 ) {
-  let outerType = (level % 2 ? T.R : T.L) as T;
+  const outerType = (level % 2 ? T.R : T.L) as T;
   computeCharTypes(line, from, to, isolates, outerType);
   processBracketPairs(line, from, to, isolates, outerType);
   processNeutrals(from, to, isolates, outerType);
@@ -537,8 +537,8 @@ export function computeOrder(
 
   if (isolates.length)
     while (line.length > types.length) types[types.length] = T.NI; // Make sure types array has no gaps
-  let order: BidiSpan[] = [],
-    level = direction == LTR ? 0 : 1;
+  const order: BidiSpan[] = [];
+    const level = direction == LTR ? 0 : 1;
   computeSectionOrder(line, level, level, isolates, 0, line.length, order);
   return order;
 }
@@ -576,11 +576,11 @@ export function moveVisually(
     start.bidiLevel ?? -1,
     start.assoc,
   );
-  let span = order[spanI],
-    spanEnd = span.side(forward, dir);
+  let span = order[spanI];
+    let spanEnd = span.side(forward, dir);
   // End of span
   if (startIndex == spanEnd) {
-    let nextI = (spanI += forward ? 1 : -1);
+    const nextI = (spanI += forward ? 1 : -1);
     if (nextI < 0 || nextI >= order.length) return null;
     span = order[(spanI = nextI)];
     startIndex = span.side(!forward, dir);
@@ -597,7 +597,7 @@ export function moveVisually(
     Math.max(startIndex, nextIndex),
   );
 
-  let nextSpan =
+  const nextSpan =
     spanI == (forward ? order.length - 1 : 0)
       ? null
       : order[spanI + (forward ? 1 : -1)];
@@ -620,7 +620,7 @@ export function moveVisually(
 
 export function autoDirection(text: string, from: number, to: number) {
   for (let i = from; i < to; i++) {
-    let type = charType(text.charCodeAt(i));
+    const type = charType(text.charCodeAt(i));
     if (type == T.L) return LTR;
     if (type == T.R || type == T.AL) return RTL;
   }

@@ -1,11 +1,11 @@
 function words(str) {
-  var obj = {},
-    words = str.split(' ');
-  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
+  const obj = {};
+    const words = str.split(' ');
+  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
 
-var blockKeywordsStr =
+const blockKeywordsStr =
   'body catch class do else enum for foreach foreach_reverse if in interface mixin ' +
   'out scope struct switch try union unittest version while with';
 
@@ -32,21 +32,21 @@ const parserConfig = {
   },
 };
 
-var statementIndentUnit = parserConfig.statementIndentUnit,
-  keywords = parserConfig.keywords,
-  builtin = parserConfig.builtin,
-  blockKeywords = parserConfig.blockKeywords,
-  atoms = parserConfig.atoms,
-  hooks = parserConfig.hooks,
-  multiLineStrings = parserConfig.multiLineStrings;
-var isOperatorChar = /[+\-*&%=<>!?|\/]/;
+const statementIndentUnit = parserConfig.statementIndentUnit;
+  const keywords = parserConfig.keywords;
+  const builtin = parserConfig.builtin;
+  const blockKeywords = parserConfig.blockKeywords;
+  const atoms = parserConfig.atoms;
+  const hooks = parserConfig.hooks;
+  const multiLineStrings = parserConfig.multiLineStrings;
+const isOperatorChar = /[+\-*&%=<>!?|\/]/;
 
-var curPunc;
+let curPunc;
 
 function tokenBase(stream, state) {
-  var ch = stream.next();
+  const ch = stream.next();
   if (hooks[ch]) {
-    var result = hooks[ch](stream, state);
+    const result = hooks[ch](stream, state);
     if (result !== false) return result;
   }
   if (ch == '"' || ch == "'" || ch == '`') {
@@ -80,7 +80,7 @@ function tokenBase(stream, state) {
     return 'operator';
   }
   stream.eatWhile(/[\w\$_\xa1-\uffff]/);
-  var cur = stream.current();
+  const cur = stream.current();
   if (keywords.propertyIsEnumerable(cur)) {
     if (blockKeywords.propertyIsEnumerable(cur)) curPunc = 'newstatement';
     return 'keyword';
@@ -95,9 +95,9 @@ function tokenBase(stream, state) {
 
 function tokenString(quote) {
   return function (stream, state) {
-    var escaped = false,
-      next,
-      end = false;
+    let escaped = false;
+      let next;
+      let end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -111,8 +111,8 @@ function tokenString(quote) {
 }
 
 function tokenComment(stream, state) {
-  var maybeEnd = false,
-    ch;
+  let maybeEnd = false;
+    let ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = null;
@@ -124,8 +124,8 @@ function tokenComment(stream, state) {
 }
 
 function tokenNestedComment(stream, state) {
-  var maybeEnd = false,
-    ch;
+  let maybeEnd = false;
+    let ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = null;
@@ -144,13 +144,13 @@ function Context(indented, column, type, align, prev) {
   this.prev = prev;
 }
 function pushContext(state, col, type) {
-  var indent = state.indented;
+  let indent = state.indented;
   if (state.context && state.context.type == 'statement')
     indent = state.context.indented;
   return (state.context = new Context(indent, col, type, null, state.context));
 }
 function popContext(state) {
-  var t = state.context.type;
+  const t = state.context.type;
   if (t == ')' || t == ']' || t == '}') state.indented = state.context.indented;
   return (state.context = state.context.prev);
 }
@@ -169,7 +169,7 @@ export const d = {
   },
 
   token: function (stream, state) {
-    var ctx = state.context;
+    let ctx = state.context;
     if (stream.sol()) {
       if (ctx.align == null) ctx.align = false;
       state.indented = stream.indentation();
@@ -177,7 +177,7 @@ export const d = {
     }
     if (stream.eatSpace()) return null;
     curPunc = null;
-    var style = (state.tokenize || tokenBase)(stream, state);
+    const style = (state.tokenize || tokenBase)(stream, state);
     if (style == 'comment' || style == 'meta') return style;
     if (ctx.align == null) ctx.align = true;
 
@@ -205,10 +205,10 @@ export const d = {
 
   indent: function (state, textAfter, cx) {
     if (state.tokenize != tokenBase && state.tokenize != null) return null;
-    var ctx = state.context,
-      firstChar = textAfter && textAfter.charAt(0);
+    let ctx = state.context;
+      const firstChar = textAfter && textAfter.charAt(0);
     if (ctx.type == 'statement' && firstChar == '}') ctx = ctx.prev;
-    var closing = firstChar == ctx.type;
+    const closing = firstChar == ctx.type;
     if (ctx.type == 'statement')
       return (
         ctx.indented + (firstChar == '{' ? 0 : statementIndentUnit || cx.unit)

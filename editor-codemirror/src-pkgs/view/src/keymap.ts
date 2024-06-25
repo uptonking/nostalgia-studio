@@ -1,11 +1,11 @@
 import { EditorView } from './editorview';
-import { Command } from './extension';
+import type { Command } from './extension';
 import { modifierCodes } from './input';
 import { base, shift, keyName } from 'w3c-keyname';
 import {
   Facet,
   Prec,
-  EditorState,
+  type EditorState,
   codePointSize,
   codePointAt,
 } from '@codemirror/state';
@@ -94,7 +94,7 @@ function normalizeKeyName(name: string, platform: PlatformName): string {
   const parts = name.split(/-(?!$)/);
   let result = parts[parts.length - 1];
   if (result == 'Space') result = ' ';
-  let alt, ctrl, shift, meta;
+  let alt; let ctrl; let shift; let meta;
   for (let i = 0; i < parts.length - 1; ++i) {
     const mod = parts[i];
     if (/^(cmd|meta|m)$/i.test(mod)) meta = true;
@@ -154,7 +154,7 @@ const Keymaps = new WeakMap<readonly (readonly KeyBinding[])[], Keymap>();
 // This is hidden behind an indirection, rather than directly computed
 // by the facet, to keep internal types out of the facet's type.
 function getKeymap(state: EditorState) {
-  let bindings = state.facet(keymap);
+  const bindings = state.facet(keymap);
   let map = Keymaps.get(bindings);
   if (!map)
     Keymaps.set(
@@ -184,11 +184,11 @@ function buildKeymap(
   bindings: readonly KeyBinding[],
   platform = currentPlatform,
 ) {
-  let bound: Keymap = Object.create(null);
-  let isPrefix: { [prefix: string]: boolean } = Object.create(null);
+  const bound: Keymap = Object.create(null);
+  const isPrefix: { [prefix: string]: boolean } = Object.create(null);
 
-  let checkPrefix = (name: string, is: boolean) => {
-    let current = isPrefix[name];
+  const checkPrefix = (name: string, is: boolean) => {
+    const current = isPrefix[name];
     if (current == null) isPrefix[name] = is;
     else if (current != is)
       throw new Error(
@@ -198,17 +198,17 @@ function buildKeymap(
       );
   };
 
-  let add = (
+  const add = (
     scope: string,
     key: string,
     command: Command | undefined,
     preventDefault?: boolean,
     stopPropagation?: boolean,
   ) => {
-    let scopeObj = bound[scope] || (bound[scope] = Object.create(null));
-    let parts = key.split(/ (?!$)/).map((k) => normalizeKeyName(k, platform));
+    const scopeObj = bound[scope] || (bound[scope] = Object.create(null));
+    const parts = key.split(/ (?!$)/).map((k) => normalizeKeyName(k, platform));
     for (let i = 1; i < parts.length; i++) {
-      let prefix = parts.slice(0, i).join(' ');
+      const prefix = parts.slice(0, i).join(' ');
       checkPrefix(prefix, true);
       if (!scopeObj[prefix])
         scopeObj[prefix] = {
@@ -216,7 +216,7 @@ function buildKeymap(
           stopPropagation: false,
           run: [
             (view: EditorView) => {
-              let ourObj = (storedPrefix = { view, prefix, scope });
+              const ourObj = (storedPrefix = { view, prefix, scope });
               setTimeout(() => {
                 if (storedPrefix == ourObj) storedPrefix = null;
               }, PrefixTimeout);
@@ -225,9 +225,9 @@ function buildKeymap(
           ],
         };
     }
-    let full = parts.join(' ');
+    const full = parts.join(' ');
     checkPrefix(full, false);
-    let binding =
+    const binding =
       scopeObj[full] ||
       (scopeObj[full] = {
         preventDefault: false,
@@ -239,24 +239,24 @@ function buildKeymap(
     if (stopPropagation) binding.stopPropagation = true;
   };
 
-  for (let b of bindings) {
-    let scopes = b.scope ? b.scope.split(' ') : ['editor'];
+  for (const b of bindings) {
+    const scopes = b.scope ? b.scope.split(' ') : ['editor'];
     if (b.any)
-      for (let scope of scopes) {
-        let scopeObj = bound[scope] || (bound[scope] = Object.create(null));
+      for (const scope of scopes) {
+        const scopeObj = bound[scope] || (bound[scope] = Object.create(null));
         if (!scopeObj._any)
           scopeObj._any = {
             preventDefault: false,
             stopPropagation: false,
             run: [],
           };
-        let { any } = b;
-        for (let key in scopeObj)
+        const { any } = b;
+        for (const key in scopeObj)
           scopeObj[key].run.push((view) => any(view, currentKeyEvent!));
       }
-    let name = b[platform] || b.key;
+    const name = b[platform] || b.key;
     if (!name) continue;
-    for (let scope of scopes) {
+    for (const scope of scopes) {
       add(scope, name, b.run, b.preventDefault, b.stopPropagation);
       if (b.shift)
         add(
@@ -280,13 +280,13 @@ function runHandlers(
   scope: string,
 ): boolean {
   currentKeyEvent = event;
-  let name = keyName(event);
-  let charCode = codePointAt(name, 0),
-    isChar = codePointSize(charCode) == name.length && name != ' ';
-  let prefix = '',
-    handled = false,
-    prevented = false,
-    stopPropagation = false;
+  const name = keyName(event);
+  const charCode = codePointAt(name, 0);
+    const isChar = codePointSize(charCode) == name.length && name != ' ';
+  let prefix = '';
+    let handled = false;
+    let prevented = false;
+    let stopPropagation = false;
   if (
     storedPrefix &&
     storedPrefix.view == view &&
@@ -299,10 +299,10 @@ function runHandlers(
     }
   }
 
-  let ran: Set<(view: EditorView, event: KeyboardEvent) => boolean> = new Set();
-  let runFor = (binding: Binding | undefined) => {
+  const ran: Set<(view: EditorView, event: KeyboardEvent) => boolean> = new Set();
+  const runFor = (binding: Binding | undefined) => {
     if (binding) {
-      for (let cmd of binding.run)
+      for (const cmd of binding.run)
         if (!ran.has(cmd)) {
           ran.add(cmd);
           if (cmd(view)) {
@@ -318,9 +318,9 @@ function runHandlers(
     return false;
   };
 
-  let scopeObj = map[scope],
-    baseName,
-    shiftName;
+  const scopeObj = map[scope];
+    let baseName;
+    let shiftName;
   if (scopeObj) {
     if (runFor(scopeObj[prefix + modifiers(name, event, !isChar)])) {
       handled = true;

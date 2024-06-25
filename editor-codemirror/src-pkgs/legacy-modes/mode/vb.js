@@ -1,21 +1,21 @@
-var ERRORCLASS = 'error';
+const ERRORCLASS = 'error';
 
 function wordRegexp(words) {
   return new RegExp('^((' + words.join(')|(') + '))\\b', 'i');
 }
 
-var singleOperators = new RegExp('^[\\+\\-\\*/%&\\\\|\\^~<>!]');
-var singleDelimiters = new RegExp('^[\\(\\)\\[\\]\\{\\}@,:`=;\\.]');
-var doubleOperators = new RegExp(
+const singleOperators = new RegExp('^[\\+\\-\\*/%&\\\\|\\^~<>!]');
+const singleDelimiters = new RegExp('^[\\(\\)\\[\\]\\{\\}@,:`=;\\.]');
+const doubleOperators = new RegExp(
   '^((==)|(<>)|(<=)|(>=)|(<>)|(<<)|(>>)|(//)|(\\*\\*))',
 );
-var doubleDelimiters = new RegExp(
+const doubleDelimiters = new RegExp(
   '^((\\+=)|(\\-=)|(\\*=)|(%=)|(/=)|(&=)|(\\|=)|(\\^=))',
 );
-var tripleDelimiters = new RegExp('^((//=)|(>>=)|(<<=)|(\\*\\*=))');
-var identifiers = new RegExp('^[_A-Za-z][_A-Za-z0-9]*');
+const tripleDelimiters = new RegExp('^((//=)|(>>=)|(<<=)|(\\*\\*=))');
+const identifiers = new RegExp('^[_A-Za-z][_A-Za-z0-9]*');
 
-var openingKeywords = [
+const openingKeywords = [
   'class',
   'module',
   'sub',
@@ -33,10 +33,10 @@ var openingKeywords = [
   'using',
   'with',
 ];
-var middleKeywords = ['else', 'elseif', 'case', 'catch', 'finally'];
-var endKeywords = ['next', 'loop'];
+const middleKeywords = ['else', 'elseif', 'case', 'catch', 'finally'];
+const endKeywords = ['next', 'loop'];
 
-var operatorKeywords = [
+const operatorKeywords = [
   'and',
   'andalso',
   'or',
@@ -48,9 +48,9 @@ var operatorKeywords = [
   'isnot',
   'like',
 ];
-var wordOperators = wordRegexp(operatorKeywords);
+const wordOperators = wordRegexp(operatorKeywords);
 
-var commonKeywords = [
+const commonKeywords = [
   '#const',
   '#else',
   '#elseif',
@@ -161,7 +161,7 @@ var commonKeywords = [
   'writeonly',
 ];
 
-var commontypes = [
+const commontypes = [
   'object',
   'boolean',
   'char',
@@ -190,17 +190,17 @@ var commontypes = [
   'uintptr',
 ];
 
-var keywords = wordRegexp(commonKeywords);
-var types = wordRegexp(commontypes);
-var stringPrefixes = '"';
+const keywords = wordRegexp(commonKeywords);
+const types = wordRegexp(commontypes);
+const stringPrefixes = '"';
 
-var opening = wordRegexp(openingKeywords);
-var middle = wordRegexp(middleKeywords);
-var closing = wordRegexp(endKeywords);
-var doubleClosing = wordRegexp(['end']);
-var doOpening = wordRegexp(['do']);
+const opening = wordRegexp(openingKeywords);
+const middle = wordRegexp(middleKeywords);
+const closing = wordRegexp(endKeywords);
+const doubleClosing = wordRegexp(['end']);
+const doOpening = wordRegexp(['do']);
 
-var indentInfo = null;
+const indentInfo = null;
 
 function indent(_stream, state) {
   state.currentIndent++;
@@ -215,7 +215,7 @@ function tokenBase(stream, state) {
     return null;
   }
 
-  var ch = stream.peek();
+  const ch = stream.peek();
 
   // Handle Comments
   if (ch === "'") {
@@ -225,7 +225,7 @@ function tokenBase(stream, state) {
 
   // Handle Number Literals
   if (stream.match(/^((&H)|(&O))?[0-9\.a-f]/i, false)) {
-    var floatLiteral = false;
+    let floatLiteral = false;
     // Floats
     if (stream.match(/^\d*\.\d+F?/i)) {
       floatLiteral = true;
@@ -241,7 +241,7 @@ function tokenBase(stream, state) {
       return 'number';
     }
     // Integers
-    var intLiteral = false;
+    let intLiteral = false;
     // Hex
     if (stream.match(/^&H[0-9a-f]+/i)) {
       intLiteral = true;
@@ -330,8 +330,8 @@ function tokenBase(stream, state) {
 }
 
 function tokenStringFactory(delimiter) {
-  var singleline = delimiter.length == 1;
-  var OUTCLASS = 'string';
+  const singleline = delimiter.length == 1;
+  const OUTCLASS = 'string';
 
   return function (stream, state) {
     while (!stream.eol()) {
@@ -351,8 +351,8 @@ function tokenStringFactory(delimiter) {
 }
 
 function tokenLexer(stream, state) {
-  var style = state.tokenize(stream, state);
-  var current = stream.current();
+  let style = state.tokenize(stream, state);
+  const current = stream.current();
 
   // Handle '.' connected identifiers
   if (current === '.') {
@@ -364,7 +364,7 @@ function tokenLexer(stream, state) {
     }
   }
 
-  var delimiter_index = '[({'.indexOf(current);
+  let delimiter_index = '[({'.indexOf(current);
   if (delimiter_index !== -1) {
     indent(stream, state);
   }
@@ -402,7 +402,7 @@ export const vb = {
       state.nextLineIndent = 0;
       state.doInCurrentLine = 0;
     }
-    var style = tokenLexer(stream, state);
+    const style = tokenLexer(stream, state);
 
     state.lastToken = { style: style, content: stream.current() };
 
@@ -410,7 +410,7 @@ export const vb = {
   },
 
   indent: function (state, textAfter, cx) {
-    var trueText = textAfter.replace(/^\s+|\s+$/g, '');
+    const trueText = textAfter.replace(/^\s+|\s+$/g, '');
     if (
       trueText.match(closing) ||
       trueText.match(doubleClosing) ||

@@ -1,21 +1,21 @@
 function mkVerilog(parserConfig) {
-  var statementIndentUnit = parserConfig.statementIndentUnit,
-    dontAlignCalls = parserConfig.dontAlignCalls,
-    noIndentKeywords = parserConfig.noIndentKeywords || [],
-    multiLineStrings = parserConfig.multiLineStrings,
-    hooks = parserConfig.hooks || {};
+  const statementIndentUnit = parserConfig.statementIndentUnit;
+    const dontAlignCalls = parserConfig.dontAlignCalls;
+    const noIndentKeywords = parserConfig.noIndentKeywords || [];
+    const multiLineStrings = parserConfig.multiLineStrings;
+    const hooks = parserConfig.hooks || {};
 
   function words(str) {
-    var obj = {},
-      words = str.split(' ');
-    for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
+    const obj = {};
+      const words = str.split(' ');
+    for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
     return obj;
   }
 
   /**
    * Keywords from IEEE 1800-2012
    */
-  var keywords = words(
+  const keywords = words(
     'accept_on alias always always_comb always_ff always_latch and assert assign assume automatic before begin bind ' +
       'bins binsof bit break buf bufif0 bufif1 byte case casex casez cell chandle checker class clocking cmos config ' +
       'const constraint context continue cover covergroup coverpoint cross deassign default defparam design disable ' +
@@ -49,31 +49,31 @@ function mkVerilog(parserConfig) {
       binary_module_path_operator ::=
       == | != | && | || | & | | | ^ | ^~ | ~^
   */
-  var isOperatorChar = /[\+\-\*\/!~&|^%=?:]/;
-  var isBracketChar = /[\[\]{}()]/;
+  const isOperatorChar = /[\+\-\*\/!~&|^%=?:]/;
+  const isBracketChar = /[\[\]{}()]/;
 
-  var unsignedNumber = /\d[0-9_]*/;
-  var decimalLiteral = /\d*\s*'s?d\s*\d[0-9_]*/i;
-  var binaryLiteral = /\d*\s*'s?b\s*[xz01][xz01_]*/i;
-  var octLiteral = /\d*\s*'s?o\s*[xz0-7][xz0-7_]*/i;
-  var hexLiteral = /\d*\s*'s?h\s*[0-9a-fxz?][0-9a-fxz?_]*/i;
-  var realLiteral = /(\d[\d_]*(\.\d[\d_]*)?E-?[\d_]+)|(\d[\d_]*\.\d[\d_]*)/i;
+  const unsignedNumber = /\d[0-9_]*/;
+  const decimalLiteral = /\d*\s*'s?d\s*\d[0-9_]*/i;
+  const binaryLiteral = /\d*\s*'s?b\s*[xz01][xz01_]*/i;
+  const octLiteral = /\d*\s*'s?o\s*[xz0-7][xz0-7_]*/i;
+  const hexLiteral = /\d*\s*'s?h\s*[0-9a-fxz?][0-9a-fxz?_]*/i;
+  const realLiteral = /(\d[\d_]*(\.\d[\d_]*)?E-?[\d_]+)|(\d[\d_]*\.\d[\d_]*)/i;
 
-  var closingBracketOrWord = /^((\w+)|[)}\]])/;
-  var closingBracket = /[)}\]]/;
+  const closingBracketOrWord = /^((\w+)|[)}\]])/;
+  const closingBracket = /[)}\]]/;
 
-  var curPunc;
-  var curKeyword;
+  let curPunc;
+  let curKeyword;
 
   // Block openings which are closed by a matching keyword in the form of ("end" + keyword)
   // E.g. "task" => "endtask"
-  var blockKeywords = words(
+  const blockKeywords = words(
     'case checker class clocking config function generate interface module package ' +
       'primitive program property specify sequence table task',
   );
 
   // Opening/closing pairs
-  var openClose = {};
+  const openClose = {};
   for (var keyword in blockKeywords) {
     openClose[keyword] = 'end' + keyword;
   }
@@ -84,7 +84,7 @@ function mkVerilog(parserConfig) {
   openClose['fork'] = 'join;join_any;join_none';
   openClose['covergroup'] = 'endgroup';
 
-  for (var i in noIndentKeywords) {
+  for (const i in noIndentKeywords) {
     var keyword = noIndentKeywords[i];
     if (openClose[keyword]) {
       openClose[keyword] = undefined;
@@ -92,13 +92,13 @@ function mkVerilog(parserConfig) {
   }
 
   // Keywords which open statements that are ended with a semi-colon
-  var statementKeywords = words(
+  const statementKeywords = words(
     'always always_comb always_ff always_latch assert assign assume else export for foreach forever if import initial repeat while',
   );
 
   function tokenBase(stream, state) {
-    var ch = stream.peek(),
-      style;
+    const ch = stream.peek();
+      let style;
     if (hooks[ch] && (style = hooks[ch](stream, state)) != false) return style;
     if (hooks.tokenBase && (style = hooks.tokenBase(stream, state)) != false)
       return style;
@@ -175,7 +175,7 @@ function mkVerilog(parserConfig) {
 
     // Keywords / plain variables
     if (stream.eatWhile(/[\w\$_]/)) {
-      var cur = stream.current();
+      const cur = stream.current();
       if (keywords[cur]) {
         if (openClose[cur]) {
           curPunc = 'newblock';
@@ -195,9 +195,9 @@ function mkVerilog(parserConfig) {
 
   function tokenString(quote) {
     return function (stream, state) {
-      var escaped = false,
-        next,
-        end = false;
+      let escaped = false;
+        let next;
+        let end = false;
       while ((next = stream.next()) != null) {
         if (next == quote && !escaped) {
           end = true;
@@ -211,8 +211,8 @@ function mkVerilog(parserConfig) {
   }
 
   function tokenComment(stream, state) {
-    var maybeEnd = false,
-      ch;
+    let maybeEnd = false;
+      let ch;
     while ((ch = stream.next())) {
       if (ch == '/' && maybeEnd) {
         state.tokenize = tokenBase;
@@ -231,12 +231,12 @@ function mkVerilog(parserConfig) {
     this.prev = prev;
   }
   function pushContext(state, col, type) {
-    var indent = state.indented;
-    var c = new Context(indent, col, type, null, state.context);
+    const indent = state.indented;
+    const c = new Context(indent, col, type, null, state.context);
     return (state.context = c);
   }
   function popContext(state) {
-    var t = state.context.type;
+    const t = state.context.type;
     if (t == ')' || t == ']' || t == '}') {
       state.indented = state.context.indented;
     }
@@ -248,8 +248,8 @@ function mkVerilog(parserConfig) {
       return true;
     } else {
       // contextClosing may be multiple keywords separated by ;
-      var closingKeywords = contextClosing.split(';');
-      for (var i in closingKeywords) {
+      const closingKeywords = contextClosing.split(';');
+      for (const i in closingKeywords) {
         if (text == closingKeywords[i]) {
           return true;
         }
@@ -262,16 +262,16 @@ function mkVerilog(parserConfig) {
     // Reindentation should occur on any bracket char: {}()[]
     // or on a match of any of the block closing keywords, at
     // the end of a line
-    var allClosings = [];
-    for (var i in openClose) {
+    const allClosings = [];
+    for (const i in openClose) {
       if (openClose[i]) {
-        var closings = openClose[i].split(';');
-        for (var j in closings) {
+        const closings = openClose[i].split(';');
+        for (const j in closings) {
           allClosings.push(closings[j]);
         }
       }
     }
-    var re = new RegExp('[{}()\\[\\]]|(' + allClosings.join('|') + ')$');
+    const re = new RegExp('[{}()\\[\\]]|(' + allClosings.join('|') + ')$');
     return re;
   }
 
@@ -280,7 +280,7 @@ function mkVerilog(parserConfig) {
     name: 'verilog',
 
     startState: function (indentUnit) {
-      var state = {
+      const state = {
         tokenize: null,
         context: new Context(-indentUnit, 0, 'top', false),
         indented: 0,
@@ -291,7 +291,7 @@ function mkVerilog(parserConfig) {
     },
 
     token: function (stream, state) {
-      var ctx = state.context;
+      let ctx = state.context;
       if (stream.sol()) {
         if (ctx.align == null) ctx.align = false;
         state.indented = stream.indentation();
@@ -342,7 +342,7 @@ function mkVerilog(parserConfig) {
         } else if (curKeyword == 'task' && ctx && ctx.type == 'statement') {
           // Same thing for task
         } else {
-          var close = openClose[curKeyword];
+          const close = openClose[curKeyword];
           pushContext(state, stream.column(), close);
         }
       }
@@ -354,14 +354,14 @@ function mkVerilog(parserConfig) {
     indent: function (state, textAfter, cx) {
       if (state.tokenize != tokenBase && state.tokenize != null) return null;
       if (hooks.indent) {
-        var fromHook = hooks.indent(state);
+        const fromHook = hooks.indent(state);
         if (fromHook >= 0) return fromHook;
       }
-      var ctx = state.context,
-        firstChar = textAfter && textAfter.charAt(0);
+      let ctx = state.context;
+        const firstChar = textAfter && textAfter.charAt(0);
       if (ctx.type == 'statement' && firstChar == '}') ctx = ctx.prev;
-      var closing = false;
-      var possibleClosing = textAfter.match(closingBracketOrWord);
+      let closing = false;
+      const possibleClosing = textAfter.match(closingBracketOrWord);
       if (possibleClosing) closing = isClosing(possibleClosing[0], ctx.type);
       if (ctx.type == 'statement')
         return (
@@ -391,7 +391,7 @@ export const verilog = mkVerilog({});
 // TLV Identifier prefixes.
 // Note that sign is not treated separately, so "+/-" versions of numeric identifiers
 // are included.
-var tlvIdentifierStyle = {
+const tlvIdentifierStyle = {
   '|': 'link',
   '>': 'property', // Should condition this off for > TLV 1c.
   $: 'variable',
@@ -425,7 +425,7 @@ var tlvIdentifierStyle = {
 };
 
 // Lines starting with these characters define scope (result in indentation).
-var tlvScopePrefixChars = {
+const tlvScopePrefixChars = {
   '/': 'beh-hier',
   '>': 'beh-hier',
   '-': 'phys-hier',
@@ -434,12 +434,12 @@ var tlvScopePrefixChars = {
   '@': 'stage',
   '\\': 'keyword',
 };
-var tlvIndentUnit = 3;
-var tlvTrackStatements = false;
-var tlvIdentMatch = /^([~!@#\$%\^&\*-\+=\?\/\\\|'"<>]+)([\d\w_]*)/; // Matches an identifier.
+const tlvIndentUnit = 3;
+const tlvTrackStatements = false;
+const tlvIdentMatch = /^([~!@#\$%\^&\*-\+=\?\/\\\|'"<>]+)([\d\w_]*)/; // Matches an identifier.
 // Note that ':' is excluded, because of it's use in [:].
-var tlvLineIndentationMatch = /^[! ] */;
-var tlvCommentMatch = /^\/[\/\*]/;
+const tlvLineIndentationMatch = /^[! ] */;
+const tlvCommentMatch = /^\/[\/\*]/;
 
 export const tlv = mkVerilog({
   hooks: {
@@ -452,7 +452,7 @@ export const tlv = mkVerilog({
     //   - TLV scope indentation
     //   - Statement delimitation (enabled by tlvTrackStatements)
     token: function (stream, state) {
-      var style = undefined;
+      let style = undefined;
       var match; // Return value of pattern matches.
 
       // Set highlighting mode based on code region (TLV or SV).
@@ -480,16 +480,16 @@ export const tlv = mkVerilog({
         // Compute indentation state:
         //   o Auto indentation on next line
         //   o Indentation scope styles
-        var indented = state.indented;
-        var depth = indented / tlvIndentUnit;
+        let indented = state.indented;
+        let depth = indented / tlvIndentUnit;
         if (depth <= state.tlvIndentationStyle.length) {
           // not deeper than current scope
 
-          var blankline = stream.string.length == indented;
-          var chPos = depth * tlvIndentUnit;
+          const blankline = stream.string.length == indented;
+          const chPos = depth * tlvIndentUnit;
           if (chPos < stream.string.length) {
-            var bodyString = stream.string.slice(chPos);
-            var ch = bodyString[0];
+            const bodyString = stream.string.slice(chPos);
+            const ch = bodyString[0];
             if (
               tlvScopePrefixChars[ch] &&
               (match = bodyString.match(tlvIdentMatch)) &&
@@ -523,7 +523,7 @@ export const tlv = mkVerilog({
       if (state.tlvCodeActive) {
         // Highlight as TLV.
 
-        var beginStatement = false;
+        let beginStatement = false;
         if (tlvTrackStatements) {
           // This starts a statement if the position is at the scope level
           // and we're not within a statement leading comment.
@@ -572,8 +572,8 @@ export const tlv = mkVerilog({
           style = 'comment';
         } else if ((match = stream.match(tlvIdentMatch))) {
           // looks like an identifier (or identifier prefix)
-          var prefix = match[1];
-          var mnemonic = match[2];
+          const prefix = match[1];
+          const mnemonic = match[2];
           if (
             // is identifier prefix
             tlvIdentifierStyle.hasOwnProperty(prefix) &&

@@ -2,19 +2,19 @@ function wordRegexp(words) {
   return new RegExp('^((' + words.join(')|(') + '))\\b');
 }
 
-var singleOperators = new RegExp("^[\\+\\-\\*/&|\\^~<>!@'\\\\]");
-var singleDelimiters = new RegExp('^[\\(\\[\\{\\},:=;\\.]');
-var doubleOperators = new RegExp(
+const singleOperators = new RegExp("^[\\+\\-\\*/&|\\^~<>!@'\\\\]");
+const singleDelimiters = new RegExp('^[\\(\\[\\{\\},:=;\\.]');
+const doubleOperators = new RegExp(
   '^((==)|(~=)|(<=)|(>=)|(<<)|(>>)|(\\.[\\+\\-\\*/\\^\\\\]))',
 );
-var doubleDelimiters = new RegExp(
+const doubleDelimiters = new RegExp(
   '^((!=)|(\\+=)|(\\-=)|(\\*=)|(/=)|(&=)|(\\|=)|(\\^=))',
 );
-var tripleDelimiters = new RegExp('^((>>=)|(<<=))');
-var expressionEnd = new RegExp('^[\\]\\)]');
-var identifiers = new RegExp('^[_A-Za-z\xa1-\uffff][_A-Za-z0-9\xa1-\uffff]*');
+const tripleDelimiters = new RegExp('^((>>=)|(<<=))');
+const expressionEnd = new RegExp('^[\\]\\)]');
+const identifiers = new RegExp('^[_A-Za-z\xa1-\uffff][_A-Za-z0-9\xa1-\uffff]*');
 
-var builtins = wordRegexp([
+const builtins = wordRegexp([
   'error',
   'eval',
   'function',
@@ -84,7 +84,7 @@ var builtins = wordRegexp([
   'ismember',
 ]);
 
-var keywords = wordRegexp([
+const keywords = wordRegexp([
   'return',
   'case',
   'switch',
@@ -170,7 +170,7 @@ function tokenBase(stream, state) {
   }
 
   // Handle Strings
-  var m =
+  const m =
     stream.match(/^"(?:[^"]|"")*("|$)/) || stream.match(/^'(?:[^']|'')*('|$)/);
   if (m) {
     return m[1] ? 'string' : 'error';
@@ -218,7 +218,7 @@ export const octave = {
   },
 
   token: function (stream, state) {
-    var style = state.tokenize(stream, state);
+    const style = state.tokenize(stream, state);
     if (style === 'number' || style === 'variable') {
       state.tokenize = tokenTranspose;
     }

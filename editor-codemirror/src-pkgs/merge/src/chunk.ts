@@ -1,5 +1,5 @@
-import { Text, ChangeDesc } from '@codemirror/state';
-import { Change, presentableDiff, DiffConfig } from './diff';
+import type { Text, ChangeDesc } from '@codemirror/state';
+import { type Change, presentableDiff, type DiffConfig } from './diff';
 
 /// A chunk describes a range of lines which have changed content in
 /// them. Either side (a/b) may either be empty (when its `to` is
@@ -98,8 +98,8 @@ export class Chunk {
 }
 
 function fromLine(fromA: number, fromB: number, a: Text, b: Text) {
-  let lineA = a.lineAt(fromA),
-    lineB = b.lineAt(fromB);
+  const lineA = a.lineAt(fromA);
+    const lineB = b.lineAt(fromB);
   return lineA.to == fromA &&
     lineB.to == fromB &&
     fromA < a.length &&
@@ -109,8 +109,8 @@ function fromLine(fromA: number, fromB: number, a: Text, b: Text) {
 }
 
 function toLine(toA: number, toB: number, a: Text, b: Text) {
-  let lineA = a.lineAt(toA),
-    lineB = b.lineAt(toB);
+  const lineA = a.lineAt(toA);
+    const lineB = b.lineAt(toB);
   return lineA.from == toA && lineB.from == toB
     ? [toA, toB]
     : [lineA.to + 1, lineB.to + 1];
@@ -123,20 +123,20 @@ function toChunks(
   offA: number,
   offB: number,
 ) {
-  let chunks = [];
+  const chunks = [];
   for (let i = 0; i < changes.length; i++) {
-    let change = changes[i];
-    let [fromA, fromB] = fromLine(
+    const change = changes[i];
+    const [fromA, fromB] = fromLine(
       change.fromA + offA,
       change.fromB + offB,
       a,
       b,
     );
     let [toA, toB] = toLine(change.toA + offA, change.toB + offB, a, b);
-    let chunk = [change.offset(-fromA + offA, -fromB + offB)];
+    const chunk = [change.offset(-fromA + offA, -fromB + offB)];
     while (i < changes.length - 1) {
-      let next = changes[i + 1];
-      let [nextA, nextB] = fromLine(next.fromA + offA, next.fromB + offB, a, b);
+      const next = changes[i + 1];
+      const [nextA, nextB] = fromLine(next.fromA + offA, next.fromB + offB, a, b);
       if (nextA > toA + 1 && nextB > toB + 1) break;
       chunk.push(next.offset(-fromA + offA, -fromB + offB));
       [toA, toB] = toLine(next.toA + offA, next.toB + offB, a, b);
@@ -175,19 +175,19 @@ function findPos(
   isA: boolean,
   start: boolean,
 ): [number, number] {
-  let lo = 0,
-    hi = chunks.length;
+  let lo = 0;
+    let hi = chunks.length;
   for (;;) {
     if (lo == hi) {
-      let refA = 0,
-        refB = 0;
+      let refA = 0;
+        let refB = 0;
       if (lo) ({ toA: refA, toB: refB } = chunks[lo - 1]);
-      let off = pos - (isA ? refA : refB);
+      const off = pos - (isA ? refA : refB);
       return [refA + off, refB + off];
     }
-    let mid = (lo + hi) >> 1,
-      chunk = chunks[mid];
-    let [from, to] = isA ? [chunk.fromA, chunk.toA] : [chunk.fromB, chunk.toB];
+    const mid = (lo + hi) >> 1;
+      const chunk = chunks[mid];
+    const [from, to] = isA ? [chunk.fromA, chunk.toA] : [chunk.fromB, chunk.toB];
     if (from > pos) hi = mid;
     else if (to <= pos) lo = mid + 1;
     else return start ? [chunk.fromA, chunk.fromB] : [chunk.toA, chunk.toB];
@@ -200,19 +200,19 @@ function findRangesForChange(
   isA: boolean,
   otherLen: number,
 ) {
-  let ranges: UpdateRange[] = [];
+  const ranges: UpdateRange[] = [];
   changes.iterChangedRanges((cFromA, cToA, cFromB, cToB) => {
-    let fromA = 0,
-      toA = isA ? changes.length : otherLen;
-    let fromB = 0,
-      toB = isA ? otherLen : changes.length;
+    let fromA = 0;
+      let toA = isA ? changes.length : otherLen;
+    let fromB = 0;
+      let toB = isA ? otherLen : changes.length;
     if (cFromA > updateMargin)
       [fromA, fromB] = findPos(chunks, cFromA - updateMargin, isA, true);
     if (cToA < changes.length - updateMargin)
       [toA, toB] = findPos(chunks, cToA + updateMargin, isA, false);
-    let lenDiff = cToB - cFromB - (cToA - cFromA),
-      last;
-    let [diffA, diffB] = isA ? [lenDiff, 0] : [0, lenDiff];
+    const lenDiff = cToB - cFromB - (cToA - cFromA);
+      let last;
+    const [diffA, diffB] = isA ? [lenDiff, 0] : [0, lenDiff];
     if (ranges.length && (last = ranges[ranges.length - 1]).toA >= fromA)
       ranges[ranges.length - 1] = {
         fromA: last.fromA,
@@ -235,30 +235,30 @@ function updateChunks(
   conf?: DiffConfig,
 ): readonly Chunk[] {
   if (!ranges.length) return chunks;
-  let result = [];
+  const result = [];
   for (let i = 0, offA = 0, offB = 0, chunkI = 0; ; i++) {
-    let range = i == ranges.length ? null : ranges[i];
-    let fromA = range ? range.fromA + offA : a.length,
-      fromB = range ? range.fromB + offB : b.length;
+    const range = i == ranges.length ? null : ranges[i];
+    const fromA = range ? range.fromA + offA : a.length;
+      const fromB = range ? range.fromB + offB : b.length;
     while (chunkI < chunks.length) {
-      let next = chunks[chunkI];
+      const next = chunks[chunkI];
       if (next.toA + offA > fromA || next.toB + offB > fromB) break;
       result.push(next.offset(offA, offB));
       chunkI++;
     }
     if (!range) break;
-    let toA = range.toA + offA + range.diffA,
-      toB = range.toB + offB + range.diffB;
-    let diff = presentableDiff(
+    const toA = range.toA + offA + range.diffA;
+      const toB = range.toB + offB + range.diffB;
+    const diff = presentableDiff(
       a.sliceString(fromA, toA),
       b.sliceString(fromB, toB),
       conf,
     );
-    for (let chunk of toChunks(diff, a, b, fromA, fromB)) result.push(chunk);
+    for (const chunk of toChunks(diff, a, b, fromA, fromB)) result.push(chunk);
     offA += range.diffA;
     offB += range.diffB;
     while (chunkI < chunks.length) {
-      let next = chunks[chunkI];
+      const next = chunks[chunkI];
       if (next.fromA + offA > toA && next.fromB + offB > toB) break;
       chunkI++;
     }

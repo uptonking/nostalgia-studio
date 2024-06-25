@@ -1,4 +1,4 @@
-var Location = {
+const Location = {
   PRE_SUBJECT: 0,
   WRITING_SUB_URI: 1,
   WRITING_BNODE_URI: 2,
@@ -14,8 +14,8 @@ var Location = {
   ERROR: 12,
 };
 function transitState(currState, c) {
-  var currLocation = currState.location;
-  var ret;
+  const currLocation = currState.location;
+  let ret;
 
   // Opening.
   if (currLocation == Location.PRE_SUBJECT && c == '<')
@@ -83,10 +83,10 @@ export const ntriples = {
     };
   },
   token: function (stream, state) {
-    var ch = stream.next();
+    const ch = stream.next();
     if (ch == '<') {
       transitState(state, ch);
-      var parsedURI = '';
+      let parsedURI = '';
       stream.eatWhile(function (c) {
         if (c != '#' && c != '>') {
           parsedURI += c;
@@ -101,7 +101,7 @@ export const ntriples = {
       return 'variable';
     }
     if (ch == '#') {
-      var parsedAnchor = '';
+      let parsedAnchor = '';
       stream.eatWhile(function (c) {
         if (c != '>' && c != ' ') {
           parsedAnchor += c;
@@ -118,7 +118,7 @@ export const ntriples = {
     }
     if (ch == '_') {
       transitState(state, ch);
-      var parsedBNode = '';
+      let parsedBNode = '';
       stream.eatWhile(function (c) {
         if (c != ' ') {
           parsedBNode += c;
@@ -144,7 +144,7 @@ export const ntriples = {
     }
     if (ch == '@') {
       transitState(state, '@');
-      var parsedLang = '';
+      let parsedLang = '';
       stream.eatWhile(function (c) {
         if (c != ' ') {
           parsedLang += c;
@@ -160,7 +160,7 @@ export const ntriples = {
     if (ch == '^') {
       stream.next();
       transitState(state, '^');
-      var parsedType = '';
+      let parsedType = '';
       stream.eatWhile(function (c) {
         if (c != '>') {
           parsedType += c;

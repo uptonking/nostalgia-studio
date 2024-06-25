@@ -1,22 +1,22 @@
 function mkJavaScript(parserConfig) {
-  var statementIndent = parserConfig.statementIndent;
-  var jsonldMode = parserConfig.jsonld;
-  var jsonMode = parserConfig.json || jsonldMode;
-  var isTS = parserConfig.typescript;
-  var wordRE = parserConfig.wordCharacters || /[\w$\xa1-\uffff]/;
+  const statementIndent = parserConfig.statementIndent;
+  const jsonldMode = parserConfig.jsonld;
+  const jsonMode = parserConfig.json || jsonldMode;
+  const isTS = parserConfig.typescript;
+  const wordRE = parserConfig.wordCharacters || /[\w$\xa1-\uffff]/;
 
   // Tokenizer
 
-  var keywords = (function () {
+  const keywords = (function () {
     function kw(type) {
       return { type: type, style: 'keyword' };
     }
-    var A = kw('keyword a'),
-      B = kw('keyword b'),
-      C = kw('keyword c'),
-      D = kw('keyword d');
-    var operator = kw('operator'),
-      atom = { type: 'atom', style: 'atom' };
+    const A = kw('keyword a');
+      const B = kw('keyword b');
+      const C = kw('keyword c');
+      const D = kw('keyword d');
+    const operator = kw('operator');
+      const atom = { type: 'atom', style: 'atom' };
 
     return {
       if: kw('if'),
@@ -63,14 +63,14 @@ function mkJavaScript(parserConfig) {
     };
   })();
 
-  var isOperatorChar = /[+\-*&%=<>!?|~^@]/;
-  var isJsonldKeyword =
+  const isOperatorChar = /[+\-*&%=<>!?|~^@]/;
+  const isJsonldKeyword =
     /^@(context|id|value|language|type|container|list|set|reverse|index|base|vocab|graph)"/;
 
   function readRegexp(stream) {
-    var escaped = false,
-      next,
-      inSet = false;
+    let escaped = false;
+      let next;
+      let inSet = false;
     while ((next = stream.next()) != null) {
       if (!escaped) {
         if (next == '/' && !inSet) return;
@@ -83,14 +83,14 @@ function mkJavaScript(parserConfig) {
 
   // Used as scratch variables to communicate multiple values without
   // consing up tons of objects.
-  var type, content;
+  let type; let content;
   function ret(tp, style, cont) {
     type = tp;
     content = cont;
     return style;
   }
   function tokenBase(stream, state) {
-    var ch = stream.next();
+    const ch = stream.next();
     if (ch == '"' || ch == "'") {
       state.tokenize = tokenString(ch);
       return state.tokenize(stream, state);
@@ -154,10 +154,10 @@ function mkJavaScript(parserConfig) {
       return ret('operator', 'operator', stream.current());
     } else if (wordRE.test(ch)) {
       stream.eatWhile(wordRE);
-      var word = stream.current();
+      const word = stream.current();
       if (state.lastType != '.') {
         if (keywords.propertyIsEnumerable(word)) {
-          var kw = keywords[word];
+          const kw = keywords[word];
           return ret(kw.type, kw.style, word);
         }
         if (
@@ -172,8 +172,8 @@ function mkJavaScript(parserConfig) {
 
   function tokenString(quote) {
     return function (stream, state) {
-      var escaped = false,
-        next;
+      let escaped = false;
+        let next;
       if (jsonldMode && stream.peek() == '@' && stream.match(isJsonldKeyword)) {
         state.tokenize = tokenBase;
         return ret('jsonld-keyword', 'meta');
@@ -188,8 +188,8 @@ function mkJavaScript(parserConfig) {
   }
 
   function tokenComment(stream, state) {
-    var maybeEnd = false,
-      ch;
+    let maybeEnd = false;
+      let ch;
     while ((ch = stream.next())) {
       if (ch == '/' && maybeEnd) {
         state.tokenize = tokenBase;
@@ -201,8 +201,8 @@ function mkJavaScript(parserConfig) {
   }
 
   function tokenQuasi(stream, state) {
-    var escaped = false,
-      next;
+    let escaped = false;
+      let next;
     while ((next = stream.next()) != null) {
       if (!escaped && (next == '`' || (next == '$' && stream.eat('{')))) {
         state.tokenize = tokenBase;
@@ -213,7 +213,7 @@ function mkJavaScript(parserConfig) {
     return ret('quasi', 'string.special', stream.current());
   }
 
-  var brackets = '([{}])';
+  const brackets = '([{}])';
   // This is a crude lookahead trick to try and notice that we're
   // parsing the argument patterns for a fat-arrow function before we
   // actually hit the arrow token. It only works if the arrow is on
@@ -223,22 +223,22 @@ function mkJavaScript(parserConfig) {
   // body.
   function findFatArrow(stream, state) {
     if (state.fatArrowAt) state.fatArrowAt = null;
-    var arrow = stream.string.indexOf('=>', stream.start);
+    let arrow = stream.string.indexOf('=>', stream.start);
     if (arrow < 0) return;
 
     if (isTS) {
       // Try to skip TypeScript return type declarations after the arguments
-      var m = /:\s*(?:\w+(?:<[^>]*>|\[\])?|\{[^}]*\})\s*$/.exec(
+      const m = /:\s*(?:\w+(?:<[^>]*>|\[\])?|\{[^}]*\})\s*$/.exec(
         stream.string.slice(stream.start, arrow),
       );
       if (m) arrow = m.index;
     }
 
-    var depth = 0,
-      sawSomething = false;
+    let depth = 0;
+      let sawSomething = false;
     for (var pos = arrow - 1; pos >= 0; --pos) {
-      var ch = stream.string.charAt(pos);
-      var bracket = brackets.indexOf(ch);
+      const ch = stream.string.charAt(pos);
+      const bracket = brackets.indexOf(ch);
       if (bracket >= 0 && bracket < 3) {
         if (!depth) {
           ++pos;
@@ -255,7 +255,7 @@ function mkJavaScript(parserConfig) {
       } else if (/["'\/`]/.test(ch)) {
         for (; ; --pos) {
           if (pos == 0) return;
-          var next = stream.string.charAt(pos - 1);
+          const next = stream.string.charAt(pos - 1);
           if (next == ch && stream.string.charAt(pos - 2) != '\\') {
             pos--;
             break;
@@ -271,7 +271,7 @@ function mkJavaScript(parserConfig) {
 
   // Parser
 
-  var atomicTypes = {
+  const atomicTypes = {
     atom: true,
     number: true,
     variable: true,
@@ -294,13 +294,13 @@ function mkJavaScript(parserConfig) {
   function inScope(state, varname) {
     for (var v = state.localVars; v; v = v.next)
       if (v.name == varname) return true;
-    for (var cx = state.context; cx; cx = cx.prev) {
+    for (let cx = state.context; cx; cx = cx.prev) {
       for (var v = cx.vars; v; v = v.next) if (v.name == varname) return true;
     }
   }
 
   function parseJS(state, style, type, content, stream) {
-    var cc = state.cc;
+    const cc = state.cc;
     // Communicate our context to the combinators.
     // (Less wasteful than consing up a hundred closures on every call.)
     cx.state = state;
@@ -312,7 +312,7 @@ function mkJavaScript(parserConfig) {
     if (!state.lexical.hasOwnProperty('align')) state.lexical.align = true;
 
     while (true) {
-      var combinator = cc.length ? cc.pop() : jsonMode ? expression : statement;
+      const combinator = cc.length ? cc.pop() : jsonMode ? expression : statement;
       if (combinator(type, content)) {
         while (cc.length && cc[cc.length - 1].lex) cc.pop()();
         if (cx.marked) return cx.marked;
@@ -327,23 +327,23 @@ function mkJavaScript(parserConfig) {
 
   var cx = { state: null, column: null, marked: null, cc: null };
   function pass() {
-    for (var i = arguments.length - 1; i >= 0; i--) cx.cc.push(arguments[i]);
+    for (let i = arguments.length - 1; i >= 0; i--) cx.cc.push(arguments[i]);
   }
   function cont() {
     pass.apply(null, arguments);
     return true;
   }
   function inList(name, list) {
-    for (var v = list; v; v = v.next) if (v.name == name) return true;
+    for (let v = list; v; v = v.next) if (v.name == name) return true;
     return false;
   }
   function register(varname) {
-    var state = cx.state;
+    const state = cx.state;
     cx.marked = 'def';
     if (state.context) {
       if (state.lexical.info == 'var' && state.context && state.context.block) {
         // FIXME function decls are also not block scoped
-        var newContext = registerVarScoped(varname, state.context);
+        const newContext = registerVarScoped(varname, state.context);
         if (newContext != null) {
           state.context = newContext;
           return;
@@ -361,7 +361,7 @@ function mkJavaScript(parserConfig) {
     if (!context) {
       return null;
     } else if (context.block) {
-      var inner = registerVarScoped(varname, context.prev);
+      const inner = registerVarScoped(varname, context.prev);
       if (!inner) return null;
       if (inner == context.prev) return context;
       return new Context(inner, context.vars, true);
@@ -394,7 +394,7 @@ function mkJavaScript(parserConfig) {
     this.next = next;
   }
 
-  var defaultVars = new Var('this', new Var('arguments', null));
+  const defaultVars = new Var('this', new Var('arguments', null));
   function pushcontext() {
     cx.state.context = new Context(cx.state.context, cx.state.localVars, false);
     cx.state.localVars = defaultVars;
@@ -410,13 +410,13 @@ function mkJavaScript(parserConfig) {
   }
   popcontext.lex = true;
   function pushlex(type, info) {
-    var result = function () {
-      var state = cx.state,
-        indent = state.indented;
+    const result = function () {
+      const state = cx.state;
+        let indent = state.indented;
       if (state.lexical.type == 'stat') indent = state.lexical.indented;
       else
         for (
-          var outer = state.lexical;
+          let outer = state.lexical;
           outer && outer.type == ')' && outer.align;
           outer = outer.prev
         )
@@ -434,7 +434,7 @@ function mkJavaScript(parserConfig) {
     return result;
   }
   function poplex() {
-    var state = cx.state;
+    const state = cx.state;
     if (state.lexical.prev) {
       if (state.lexical.type == ')') state.indented = state.lexical.indented;
       state.lexical = state.lexical.prev;
@@ -569,7 +569,7 @@ function mkJavaScript(parserConfig) {
   }
   function expressionInner(type, value, noComma) {
     if (cx.state.fatArrowAt == cx.stream.start) {
-      var body = noComma ? arrowBodyNoComma : arrowBody;
+      const body = noComma ? arrowBodyNoComma : arrowBody;
       if (type == '(')
         return cont(
           pushcontext,
@@ -584,7 +584,7 @@ function mkJavaScript(parserConfig) {
         return pass(pushcontext, pattern, expect('=>'), body, popcontext);
     }
 
-    var maybeop = noComma ? maybeoperatorNoComma : maybeoperatorComma;
+    const maybeop = noComma ? maybeoperatorNoComma : maybeoperatorComma;
     if (atomicTypes.hasOwnProperty(type)) return cont(maybeop);
     if (type == 'function') return cont(functiondef, maybeop);
     if (type == 'class' || (isTS && value == 'interface')) {
@@ -613,8 +613,8 @@ function mkJavaScript(parserConfig) {
     return maybeoperatorNoComma(type, value, false);
   }
   function maybeoperatorNoComma(type, value, noComma) {
-    var me = noComma == false ? maybeoperatorComma : maybeoperatorNoComma;
-    var expr = noComma == false ? expression : expressionNoComma;
+    const me = noComma == false ? maybeoperatorComma : maybeoperatorNoComma;
+    const expr = noComma == false ? expression : expressionNoComma;
     if (type == '=>')
       return cont(
         pushcontext,
@@ -710,7 +710,7 @@ function mkJavaScript(parserConfig) {
     } else if (type == 'variable' || cx.style == 'keyword') {
       cx.marked = 'property';
       if (value == 'get' || value == 'set') return cont(getterSetter);
-      var m; // Work around fat-arrow-detection complication for detecting typescript typed arrow params
+      let m; // Work around fat-arrow-detection complication for detecting typescript typed arrow params
       if (
         isTS &&
         cx.state.fatArrowAt == cx.stream.start &&
@@ -749,7 +749,7 @@ function mkJavaScript(parserConfig) {
   function commasep(what, end, sep) {
     function proceed(type, value) {
       if (sep ? sep.indexOf(type) > -1 : type == ',') {
-        var lex = cx.state.lexical;
+        const lex = cx.state.lexical;
         if (lex.info == 'call') lex.pos = (lex.pos || 0) + 1;
         return cont(function (type, value) {
           if (type == end || value == end) return pass();
@@ -766,7 +766,7 @@ function mkJavaScript(parserConfig) {
     };
   }
   function contCommasep(what, end, info) {
-    for (var i = 3; i < arguments.length; i++) cx.cc.push(arguments[i]);
+    for (let i = 3; i < arguments.length; i++) cx.cc.push(arguments[i]);
     return cont(pushlex(end, info), commasep(what, end), poplex);
   }
   function block(type) {
@@ -1075,8 +1075,8 @@ function mkJavaScript(parserConfig) {
     if (value == '!' || value == '?') return cont(classfield);
     if (type == ':') return cont(typeexpr, maybeAssign);
     if (value == '=') return cont(expressionNoComma);
-    var context = cx.state.lexical.prev,
-      isInterface = context && context.info == 'interface';
+    const context = cx.state.lexical.prev;
+      const isInterface = context && context.info == 'interface';
     return pass(isInterface ? functiondecl : functiondef);
   }
   function afterExport(type, value) {
@@ -1171,7 +1171,7 @@ function mkJavaScript(parserConfig) {
     name: parserConfig.name,
 
     startState: function (indentUnit) {
-      var state = {
+      const state = {
         tokenize: tokenBase,
         lastType: 'sof',
         cc: [],
@@ -1180,7 +1180,7 @@ function mkJavaScript(parserConfig) {
         context: parserConfig.localVars && new Context(null, null, false),
         indented: 0,
       };
-      if (parserConfig.globalVars && typeof parserConfig.globalVars == 'object')
+      if (parserConfig.globalVars && typeof parserConfig.globalVars === 'object')
         state.globalVars = parserConfig.globalVars;
       return state;
     },
@@ -1192,7 +1192,7 @@ function mkJavaScript(parserConfig) {
         findFatArrow(stream, state);
       }
       if (state.tokenize != tokenComment && stream.eatSpace()) return null;
-      var style = state.tokenize(stream, state);
+      const style = state.tokenize(stream, state);
       if (type == 'comment') return style;
       state.lastType =
         type == 'operator' && (content == '++' || content == '--')
@@ -1205,13 +1205,13 @@ function mkJavaScript(parserConfig) {
       if (state.tokenize == tokenComment || state.tokenize == tokenQuasi)
         return null;
       if (state.tokenize != tokenBase) return 0;
-      var firstChar = textAfter && textAfter.charAt(0),
-        lexical = state.lexical,
-        top;
+      const firstChar = textAfter && textAfter.charAt(0);
+        let lexical = state.lexical;
+        let top;
       // Kludge to prevent 'maybelse' from blocking lexical scope pops
       if (!/^\s*else\b/.test(textAfter))
-        for (var i = state.cc.length - 1; i >= 0; --i) {
-          var c = state.cc[i];
+        for (let i = state.cc.length - 1; i >= 0; --i) {
+          const c = state.cc[i];
           if (c == poplex) lexical = lexical.prev;
           else if (c != maybeelse && c != popcontext) break;
         }
@@ -1225,8 +1225,8 @@ function mkJavaScript(parserConfig) {
         lexical = lexical.prev;
       if (statementIndent && lexical.type == ')' && lexical.prev.type == 'stat')
         lexical = lexical.prev;
-      var type = lexical.type,
-        closing = firstChar == type;
+      const type = lexical.type;
+        const closing = firstChar == type;
 
       if (type == 'vardef')
         return (
