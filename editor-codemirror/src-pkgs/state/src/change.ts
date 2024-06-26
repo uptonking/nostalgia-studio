@@ -62,7 +62,7 @@ export class ChangeDesc {
   iterGaps(f: (posA: number, posB: number, length: number) => void) {
     for (let i = 0, posA = 0, posB = 0; i < this.sections.length; ) {
       const len = this.sections[i++];
-        const ins = this.sections[i++];
+      const ins = this.sections[i++];
       if (ins < 0) {
         f(posA, posB, len);
         posB += len;
@@ -95,7 +95,7 @@ export class ChangeDesc {
     const sections = [];
     for (let i = 0; i < this.sections.length; ) {
       const len = this.sections[i++];
-        const ins = this.sections[i++];
+      const ins = this.sections[i++];
       if (ins < 0) sections.push(len, ins);
       else sections.push(ins, len);
     }
@@ -136,11 +136,11 @@ export class ChangeDesc {
   mapPos(pos: number, assoc: number, mode: MapMode): number | null;
   mapPos(pos: number, assoc = -1, mode: MapMode = MapMode.Simple) {
     let posA = 0;
-      let posB = 0;
+    let posB = 0;
     for (let i = 0; i < this.sections.length; ) {
       const len = this.sections[i++];
-        const ins = this.sections[i++];
-        const endA = posA + len;
+      const ins = this.sections[i++];
+      const endA = posA + len;
       if (ins < 0) {
         if (endA > pos) return posB + (pos - posA);
         posB += len;
@@ -172,8 +172,8 @@ export class ChangeDesc {
   touchesRange(from: number, to = from): boolean | 'cover' {
     for (let i = 0, pos = 0; i < this.sections.length && pos <= to; ) {
       const len = this.sections[i++];
-        const ins = this.sections[i++];
-        const end = pos + len;
+      const ins = this.sections[i++];
+      const end = pos + len;
       if (ins >= 0 && pos <= to && end >= from)
         return pos < from && end > to ? 'cover' : true;
       pos = end;
@@ -186,7 +186,7 @@ export class ChangeDesc {
     let result = '';
     for (let i = 0; i < this.sections.length; ) {
       const len = this.sections[i++];
-        const ins = this.sections[i++];
+      const ins = this.sections[i++];
       result += (result ? ' ' : '') + len + (ins >= 0 ? ':' + ins : '');
     }
     return result;
@@ -265,10 +265,10 @@ export class ChangeSet extends ChangeDesc {
   /// the document as it existed before the changes.
   invert(doc: Text) {
     const sections = this.sections.slice();
-      const inserted = [];
+    const inserted = [];
     for (let i = 0, pos = 0; i < sections.length; i += 2) {
       const len = sections[i];
-        const ins = sections[i + 1];
+      const ins = sections[i + 1];
       if (ins >= 0) {
         sections[i] = ins;
         sections[i + 1] = len;
@@ -337,8 +337,8 @@ export class ChangeSet extends ChangeDesc {
   /// @internal
   filter(ranges: readonly number[]) {
     const resultSections: number[] = [];
-      const resultInserted: Text[] = [];
-      const filteredSections: number[] = [];
+    const resultInserted: Text[] = [];
+    const filteredSections: number[] = [];
     const iter = new SectionIter(this);
     done: for (let i = 0, pos = 0; ; ) {
       const next = i == ranges.length ? 1e9 : ranges[i++];
@@ -377,7 +377,7 @@ export class ChangeSet extends ChangeDesc {
     const parts: (number | [number, ...string[]])[] = [];
     for (let i = 0; i < this.sections.length; i += 2) {
       const len = this.sections[i];
-        const ins = this.sections[i + 1];
+      const ins = this.sections[i + 1];
       if (ins < 0) parts.push(len);
       else if (ins == 0) parts.push([len]);
       else
@@ -394,8 +394,8 @@ export class ChangeSet extends ChangeDesc {
   /// given length, using `lineSep` as line separator.
   static of(changes: ChangeSpec, length: number, lineSep?: string): ChangeSet {
     let sections: number[] = [];
-      let inserted: Text[] = [];
-      let pos = 0;
+    let inserted: Text[] = [];
+    let pos = 0;
     let total: ChangeSet | null = null;
 
     function flush(force = false) {
@@ -458,7 +458,7 @@ export class ChangeSet extends ChangeDesc {
     if (!Array.isArray(json))
       throw new RangeError('Invalid JSON representation of ChangeSet');
     const sections = [];
-      const inserted = [];
+    const inserted = [];
     for (let i = 0; i < json.length; i++) {
       const part = json[i];
       if (typeof part === 'number') {
@@ -528,14 +528,14 @@ function iterChanges(
   const inserted = (desc as ChangeSet).inserted;
   for (let posA = 0, posB = 0, i = 0; i < desc.sections.length; ) {
     let len = desc.sections[i++];
-      let ins = desc.sections[i++];
+    let ins = desc.sections[i++];
     if (ins < 0) {
       posA += len;
       posB += len;
     } else {
       let endA = posA;
-        let endB = posB;
-        let text = Text.empty;
+      let endB = posB;
+      let text = Text.empty;
       for (;;) {
         endA += len;
         endB += ins;
@@ -572,15 +572,17 @@ function mapSet(
   // Produce a copy of setA that applies to the document after setB
   // has been applied (assuming both start at the same document).
   const sections: number[] = [];
-    const insert: Text[] | null = mkSet ? [] : null;
+  const insert: Text[] | null = mkSet ? [] : null;
   const a = new SectionIter(setA);
-    const b = new SectionIter(setB);
+  const b = new SectionIter(setB);
   // Iterate over both sets in parallel. inserted tracks, for changes
   // in A that have to be processed piece-by-piece, whether their
   // content has been inserted already, and refers to the section
   // index.
   for (let inserted = -1; ; ) {
-    if (a.ins == -1 && b.ins == -1) {
+    if ((a.done && b.len) || (b.done && a.len)) {
+      throw new Error('Mismatched change set lengths');
+    } else if (a.ins == -1 && b.ins == -1) {
       // Move across ranges skipped by both sets.
       const len = Math.min(a.len, b.len);
       addSection(sections, len, -1);
@@ -612,7 +614,7 @@ function mapSet(
       // Process the part of a change in A up to the start of the next
       // non-deletion change in B (if overlapping).
       let len = 0;
-        let left = a.len;
+      let left = a.len;
       while (left) {
         if (b.ins == -1) {
           const piece = Math.min(left, b.len);
@@ -650,7 +652,7 @@ function composeSets(
   const sections: number[] = [];
   const insert: Text[] | null = mkSet ? [] : null;
   const a = new SectionIter(setA);
-    const b = new SectionIter(setB);
+  const b = new SectionIter(setB);
   for (let open = false; ; ) {
     if (a.done && b.done) {
       return insert
@@ -669,7 +671,7 @@ function composeSets(
       throw new Error('Mismatched change set lengths');
     } else {
       const len = Math.min(a.len2, b.len);
-        const sectionLen = sections.length;
+      const sectionLen = sections.length;
       if (a.ins == -1) {
         const insB = b.ins == -1 ? -1 : b.off ? 0 : b.ins;
         addSection(sections, len, insB, open);
@@ -722,13 +724,13 @@ class SectionIter {
 
   get text() {
     const { inserted } = this.set as ChangeSet;
-      const index = (this.i - 2) >> 1;
+    const index = (this.i - 2) >> 1;
     return index >= inserted.length ? Text.empty : inserted[index];
   }
 
   textBit(len?: number) {
     const { inserted } = this.set as ChangeSet;
-      const index = (this.i - 2) >> 1;
+    const index = (this.i - 2) >> 1;
     return index >= inserted.length && !len
       ? Text.empty
       : inserted[index].slice(
