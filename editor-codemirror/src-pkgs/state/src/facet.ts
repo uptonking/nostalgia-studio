@@ -176,11 +176,11 @@ class FacetProvider<Input> {
     const getter: (state: EditorState) => any = this.value as any;
     const compare = this.facet.compareInput;
     const id = this.id;
-      const idx = addresses[id] >> 1;
-      const multi = this.type == Provider.Multi;
+    const idx = addresses[id] >> 1;
+    const multi = this.type == Provider.Multi;
     let depDoc = false;
-      let depSel = false;
-      const depAddrs: number[] = [];
+    let depSel = false;
+    const depAddrs: number[] = [];
     for (const dep of this.dependencies) {
       if (dep == 'doc') depDoc = true;
       else if (dep == 'selection') depSel = true;
@@ -213,7 +213,7 @@ class FacetProvider<Input> {
       },
       reconfigure: (state, oldState) => {
         let newVal;
-          const oldAddr = oldState.config.address[id];
+        const oldAddr = oldState.config.address[id];
         if (oldAddr != null) {
           const oldVal = getAddr(oldState, oldAddr);
           if (
@@ -295,7 +295,7 @@ function dynamicFacetSlot<Input, Output>(
     reconfigure(state, oldState) {
       const depChanged = ensureAll(state, providerAddrs);
       const oldProviders = oldState.config.facets[facet.id];
-        const oldValue = oldState.facet(facet);
+      const oldValue = oldState.facet(facet);
       if (oldProviders && !depChanged && sameArray(providers, oldProviders)) {
         state.values[idx] = oldValue;
         return 0;
@@ -568,7 +568,7 @@ export class Configuration {
     const oldFacets = oldState?.config.facets;
     for (const id in facets) {
       const providers = facets[id];
-        const facet = providers[0].facet;
+      const facet = providers[0].facet;
       const oldProviders = (oldFacets && oldFacets[id]) || [];
       if (providers.every((p) => p.type == Provider.Static)) {
         address[facet.id] = (staticValues.length << 1) | 1;
@@ -614,7 +614,13 @@ function flatten(
   compartments: Map<Compartment, Extension>,
   newCompartments: Map<Compartment, Extension>,
 ) {
-  const result: (FacetProvider<any> | StateField<any>)[][] = [[], [], [], [], []];
+  const result: (FacetProvider<any> | StateField<any>)[][] = [
+    [],
+    [],
+    [],
+    [],
+    [],
+  ];
   const seen = new Map<Extension, number>();
   function inner(ext: Extension, prec: number) {
     const known = seen.get(ext);

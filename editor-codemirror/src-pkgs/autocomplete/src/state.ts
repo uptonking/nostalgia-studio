@@ -67,7 +67,7 @@ function sortOptions(active: readonly ActiveSource[], state: EditorState) {
         }
       } else {
         const pattern = state.sliceDoc(a.from, a.to);
-          let match;
+        let match;
         const matcher = conf.filterStrict
           ? new StrictMatcher(pattern)
           : new FuzzyMatcher(pattern);
@@ -92,7 +92,7 @@ function sortOptions(active: readonly ActiveSource[], state: EditorState) {
 
   if (sections) {
     const sectionOrder: { [name: string]: number } = Object.create(null);
-      let pos = 0;
+    let pos = 0;
     const cmp = (a: CompletionSection, b: CompletionSection) =>
       (a.rank ?? 1e9) - (b.rank ?? 1e9) || (a.name < b.name ? -1 : 1);
     for (const s of (sections as CompletionSection[]).sort(cmp)) {
@@ -108,7 +108,7 @@ function sortOptions(active: readonly ActiveSource[], state: EditorState) {
   }
 
   const result = [];
-    let prev = null;
+  let prev = null;
   const compare = conf.compareCompletions;
   for (const opt of options.sort(
     (a, b) => b.score - a.score || compare(a.completion, b.completion),
@@ -228,7 +228,7 @@ export class CompletionState {
 
   update(tr: Transaction) {
     const { state } = tr;
-      const conf = state.facet(completionConfig);
+    const conf = state.facet(completionConfig);
     const sources =
       conf.override ||
       state
@@ -306,7 +306,7 @@ function sameResults(a: readonly ActiveSource[], b: readonly ActiveSource[]) {
     while (iA < a.length && !a[iA].hasResult) iA++;
     while (iB < b.length && !b[iB].hasResult) iB++;
     const endA = iA == a.length;
-      const endB = iB == b.length;
+    const endB = iB == b.length;
     if (endA || endB) return endA == endB;
     if ((a[iA++] as ActiveResult).result != (b[iB++] as ActiveResult).result)
       return false;
@@ -383,7 +383,7 @@ export class ActiveSource {
 
   update(tr: Transaction, conf: Required<CompletionConfig>): ActiveSource {
     const type = getUpdateType(tr, conf);
-      let value: ActiveSource = this;
+    let value: ActiveSource = this;
     if (
       type & UpdateType.Reset ||
       (type & UpdateType.ResetIfTouching && this.touches(tr))
@@ -449,7 +449,7 @@ export class ActiveResult extends ActiveSource {
     if (result!.map && !tr.changes.empty)
       result = result!.map(result!, tr.changes);
     const from = tr.changes.mapPos(this.from);
-      const to = tr.changes.mapPos(this.to, 1);
+    const to = tr.changes.mapPos(this.to, 1);
     const pos = cur(tr.state);
     if (
       (this.explicitPos < 0 ? pos <= from : pos < this.from) ||

@@ -167,9 +167,9 @@ export class MarkView extends ContentView {
 
   split(from: number) {
     const result = [];
-      let off = 0;
-      let detachFrom = -1;
-      let i = 0;
+    let off = 0;
+    let detachFrom = -1;
+    let i = 0;
     for (const elt of this.children) {
       const end = off + elt.length;
       if (end > from) result.push(off < from ? elt.split(from - off) : elt);
@@ -199,8 +199,8 @@ function textCoords(text: Text, pos: number, side: number): Rect | null {
   const length = text.nodeValue!.length;
   if (pos > length) pos = length;
   let from = pos;
-    let to = pos;
-    let flatten = 0;
+  let to = pos;
+  let flatten = 0;
   if ((pos == 0 && side < 0) || (pos == length && side >= 0)) {
     if (!(browser.chrome || browser.gecko)) {
       // These browsers reliably return valid rectangles for empty ranges
@@ -244,7 +244,11 @@ export class WidgetView extends ContentView {
   }
 
   split(from: number) {
-    const result = WidgetView.create(this.widget, this.length - from, this.side);
+    const result = WidgetView.create(
+      this.widget,
+      this.length - from,
+      this.side,
+    );
     this.length -= from;
     return result;
   }
@@ -309,8 +313,8 @@ export class WidgetView extends ContentView {
     let top: ContentView = this;
     while (top.parent) top = top.parent;
     const { view } = top as DocView;
-      const text: DocText | undefined = view && view.state.doc;
-      const start = this.posAtStart;
+    const text: DocText | undefined = view && view.state.doc;
+    const start = this.posAtStart;
     return text ? text.slice(start, start + this.length) : DocText.empty;
   }
 
@@ -328,7 +332,7 @@ export class WidgetView extends ContentView {
     const custom = this.widget.coordsAt(this.dom!, pos, side);
     if (custom) return custom;
     const rects = this.dom!.getClientRects();
-      let rect: Rect | null = null;
+    let rect: Rect | null = null;
     if (!rects.length) return null;
     const fromBack = this.side ? this.side < 0 : pos > 0;
     for (let i = fromBack ? rects.length - 1 : 0; ; i += fromBack ? -1 : 1) {
@@ -429,11 +433,11 @@ TextView.prototype.children =
 
 export function inlineDOMAtPos(parent: ContentView, pos: number) {
   const dom = parent.dom!;
-    const { children } = parent;
-    let i = 0;
+  const { children } = parent;
+  let i = 0;
   for (let off = 0; i < children.length; i++) {
     const child = children[i];
-      const end = off + child.length;
+    const end = off + child.length;
     if (end == off && child.getSide() <= 0) continue;
     if (pos > off && pos < end && child.dom!.parentNode == dom)
       return child.domAtPos(pos - off);
@@ -458,7 +462,7 @@ export function joinInlineInto(
   open: number,
 ) {
   let last;
-    const { children } = parent;
+  const { children } = parent;
   if (
     open > 0 &&
     view instanceof MarkView &&
@@ -480,13 +484,13 @@ export function coordsInChildren(
   side: number,
 ): Rect | null {
   let before: ContentView | null = null;
-    let beforePos = -1;
-    let after: ContentView | null = null;
-    let afterPos = -1;
+  let beforePos = -1;
+  let after: ContentView | null = null;
+  let afterPos = -1;
   function scan(view: ContentView, pos: number) {
     for (let i = 0, off = 0; i < view.children.length && off <= pos; i++) {
       const child = view.children[i];
-        const end = off + child.length;
+      const end = off + child.length;
       if (end >= pos) {
         if (child.children.length) {
           scan(child, pos - off);

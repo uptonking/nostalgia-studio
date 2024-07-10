@@ -77,7 +77,7 @@ export class RegExpCursor
       const match = this.matchPos <= this.to && this.re.exec(this.curLine);
       if (match) {
         const from = this.curLineStart + match.index;
-          const to = from + match[0].length;
+        const to = from + match[0].length;
         this.matchPos = toCharEnd(this.text, to + (from == to ? 1 : 0));
         if (from == this.curLineStart + this.curLine.length) this.nextLine();
         if (
@@ -182,7 +182,7 @@ class MultilineRegExpCursor
       }
       if (match) {
         const from = this.flat.from + match.index;
-          const to = from + match[0].length;
+        const to = from + match[0].length;
         // If a match goes almost to the end of a noncomplete chunk, try
         // again, since it'll likely be able to match more
         if (
@@ -235,7 +235,7 @@ export function validRegExp(source: string) {
 function toCharEnd(text: Text, pos: number) {
   if (pos >= text.length) return pos;
   const line = text.lineAt(pos);
-    let next;
+  let next;
   while (
     pos < line.to &&
     (next = line.text.charCodeAt(pos - line.from)) >= 0xdc00 &&

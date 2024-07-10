@@ -1,7 +1,11 @@
 import { Text } from './text';
 import { findClusterBreak } from './char';
 import { ChangeSet, type ChangeSpec, DefaultSplit } from './change';
-import { EditorSelection, type SelectionRange, checkSelection } from './selection';
+import {
+  EditorSelection,
+  type SelectionRange,
+  checkSelection,
+} from './selection';
 import {
   type Transaction,
   type TransactionSpec,
@@ -119,7 +123,7 @@ export class EditorState {
   /// @internal
   applyTransaction(tr: Transaction) {
     let conf: Configuration | null = this.config;
-      let { base, compartments } = conf;
+    let { base, compartments } = conf;
     for (const effect of tr.effects) {
       if (effect.is(Compartment.reconfigure)) {
         if (conf) {
@@ -197,12 +201,12 @@ export class EditorState {
     const sel = this.selection;
     const result1 = f(sel.ranges[0]);
     let changes = this.changes(result1.changes);
-      const ranges = [result1.range];
+    const ranges = [result1.range];
     let effects = asArray(result1.effects);
     for (let i = 1; i < sel.ranges.length; i++) {
       const result = f(sel.ranges[i]);
       const newChanges = this.changes(result.changes);
-        const newMapped = newChanges.map(changes);
+      const newMapped = newChanges.map(changes);
       for (let j = 0; j < i; j++) ranges[j] = ranges[j].map(newMapped);
       const mapBy = changes.mapDesc(newChanges, true);
       ranges.push(result.range.map(mapBy));
@@ -289,7 +293,7 @@ export class EditorState {
       for (const prop in fields) {
         if (Object.hasOwn(json, prop)) {
           const field = fields[prop];
-            const value = json[prop];
+          const value = json[prop];
           fieldInit.push(
             field.init((state) => field.spec.fromJSON!(value, state)),
           );
@@ -405,7 +409,7 @@ export class EditorState {
   static phrases = Facet.define<{ [key: string]: string }>({
     compare(a, b) {
       const kA = Object.keys(a);
-        const kB = Object.keys(b);
+      const kB = Object.keys(b);
       return (
         kA.length == kB.length && kA.every((k) => a[k as any] == b[k as any])
       );
@@ -461,8 +465,7 @@ export class EditorState {
     const values: T[] = [];
     for (const provider of this.facet(languageData)) {
       for (const result of provider(this, pos, side)) {
-        if (Object.hasOwn(result, name))
-          values.push(result[name]);
+        if (Object.hasOwn(result, name)) values.push(result[name]);
       }
     }
     return values;
@@ -491,7 +494,7 @@ export class EditorState {
     const { text, from, length } = this.doc.lineAt(pos);
     const cat = this.charCategorizer(pos);
     let start = pos - from;
-      let end = pos - from;
+    let end = pos - from;
     while (start > 0) {
       const prev = findClusterBreak(text, start, false);
       if (cat(text.slice(prev, start)) != CharCategory.Word) break;

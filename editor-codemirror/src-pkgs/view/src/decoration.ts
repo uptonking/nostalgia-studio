@@ -259,7 +259,7 @@ export abstract class Decoration extends RangeValue {
   /// given position.
   static widget(spec: WidgetDecorationSpec): Decoration {
     let side = Math.max(-10000, Math.min(10000, spec.side || 0));
-      const block = Boolean(spec.block);
+    const block = Boolean(spec.block);
     side +=
       block && !spec.inlineOrder
         ? side > 0
@@ -282,8 +282,8 @@ export abstract class Decoration extends RangeValue {
   /// a widget, or simply hides it.
   static replace(spec: ReplaceDecorationSpec): Decoration {
     const block = Boolean(spec.block);
-      let startSide;
-      let endSide;
+    let startSide;
+    let endSide;
     if (spec.isBlockGap) {
       startSide = Side.GapStart;
       endSide = Side.GapEnd;
@@ -341,7 +341,7 @@ export class MarkDecoration extends Decoration {
   tagName: string;
   class: string;
   attrs: Attrs | null;
-  point=false;
+  point = false;
 
   constructor(spec: MarkDecorationSpec) {
     const { start, end } = getInclusive(spec);
@@ -376,8 +376,8 @@ export class MarkDecoration extends Decoration {
 MarkDecoration.prototype.point = false;
 
 export class LineDecoration extends Decoration {
-  point: boolean=true;
-  mapMode = MapMode.TrackBefore
+  point: boolean = true;
+  mapMode = MapMode.TrackBefore;
 
   constructor(spec: LineDecorationSpec) {
     super(Side.Line, Side.Line, null, spec);
@@ -402,8 +402,8 @@ LineDecoration.prototype.mapMode = MapMode.TrackBefore;
 LineDecoration.prototype.point = true;
 
 export class PointDecoration extends Decoration {
-  point = true
-  
+  point = true;
+
   constructor(
     spec: any,
     startSide: number,

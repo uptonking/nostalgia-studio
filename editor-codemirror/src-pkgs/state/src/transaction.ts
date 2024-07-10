@@ -279,11 +279,13 @@ export class Transaction {
   /// `"select.pointer"` will match it.
   isUserEvent(event: string): boolean {
     const e = this.annotation(Transaction.userEvent);
-    return Boolean(e &&
-      (e == event ||
-        (e.length > event.length &&
-          e.slice(0, event.length) == event &&
-          e[event.length] == '.')));
+    return Boolean(
+      e &&
+        (e == event ||
+          (e.length > event.length &&
+            e.slice(0, event.length) == event &&
+            e[event.length] == '.')),
+    );
   }
 
   /// Annotation used to store transaction timestamps. Automatically
@@ -330,7 +332,8 @@ export class Transaction {
 function joinRanges(a: readonly number[], b: readonly number[]) {
   const result = [];
   for (let iA = 0, iB = 0; ; ) {
-    let from; let to;
+    let from;
+    let to;
     if (iA < a.length && (iB == b.length || b[iB] >= a[iA])) {
       from = a[iA++];
       to = a[iA++];
@@ -357,7 +360,9 @@ function mergeTransaction(
   b: ResolvedSpec,
   sequential: boolean,
 ): ResolvedSpec {
-  let mapForA; let mapForB; let changes;
+  let mapForA;
+  let mapForB;
+  let changes;
   if (sequential) {
     mapForA = b.changes;
     mapForB = ChangeSet.empty(b.changes.length);
@@ -388,7 +393,7 @@ function resolveTransactionInner(
   docSize: number,
 ): ResolvedSpec {
   const sel = spec.selection;
-    let annotations = asArray(spec.annotations);
+  let annotations = asArray(spec.annotations);
   if (spec.userEvent)
     annotations = annotations.concat(Transaction.userEvent.of(spec.userEvent));
   return {
@@ -458,7 +463,8 @@ function filterTransaction(tr: Transaction) {
       result = result === true ? value : joinRanges(result, value);
   }
   if (result !== true) {
-    let changes; let back;
+    let changes;
+    let back;
     if (result === false) {
       back = tr.changes.invertedDesc;
       changes = ChangeSet.empty(state.doc.length);
@@ -495,8 +501,8 @@ function filterTransaction(tr: Transaction) {
 
 function extendTransaction(tr: Transaction) {
   const state = tr.startState;
-    const extenders = state.facet(transactionExtender);
-    let spec: ResolvedSpec = tr;
+  const extenders = state.facet(transactionExtender);
+  let spec: ResolvedSpec = tr;
   for (let i = extenders.length - 1; i >= 0; i--) {
     const extension = extenders[i](tr);
     if (extension && Object.keys(extension).length)

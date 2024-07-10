@@ -1,12 +1,12 @@
 export function simpleMode(states) {
   ensureState(states, 'start');
   const states_ = {};
-    const meta = states.languageData || {};
-    let hasIndentation = false;
+  const meta = states.languageData || {};
+  let hasIndentation = false;
   for (const state in states)
     if (state != meta && states.hasOwnProperty(state)) {
       const list = (states_[state] = []);
-        const orig = states[state];
+      const orig = states[state];
       for (let i = 0; i < orig.length; i++) {
         const data = orig[i];
         list.push(new Rule(data, states));
@@ -100,7 +100,11 @@ function tokenFunction(states) {
         if (rule.data.dedent) state.indent.pop();
         let token = rule.token;
         if (token && token.apply) token = token(matches);
-        if (matches.length > 2 && rule.token && typeof rule.token !== 'string') {
+        if (
+          matches.length > 2 &&
+          rule.token &&
+          typeof rule.token !== 'string'
+        ) {
           state.pending = [];
           for (let j = 2; j < matches.length; j++)
             if (matches[j])
@@ -133,7 +137,7 @@ function indentFunction(states, meta) {
       return null;
 
     let pos = state.indent.length - 1;
-      let rules = states[state.state];
+    let rules = states[state.state];
     scan: for (;;) {
       for (let i = 0; i < rules.length; i++) {
         const rule = rules[i];

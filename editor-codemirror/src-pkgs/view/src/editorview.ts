@@ -353,8 +353,8 @@ export class EditorView {
       );
 
     let redrawn = false;
-      let attrsChanged = false;
-      let update: ViewUpdate;
+    let attrsChanged = false;
+    let update: ViewUpdate;
     let state = this.state;
     for (const tr of transactions) {
       if (tr.startState != state)
@@ -369,8 +369,8 @@ export class EditorView {
     }
 
     const focus = this.hasFocus;
-      let focusFlag = 0;
-      let dispatchFocus: Transaction | null = null;
+    let focusFlag = 0;
+    let dispatchFocus: Transaction | null = null;
     if (transactions.some((tr) => tr.annotation(isFocusChange))) {
       this.inputState.notifiedFocused = focus;
       // If a focus-change transaction is being dispatched, set this update flag.
@@ -386,7 +386,7 @@ export class EditorView {
     // If there was a pending DOM change, eagerly read it and try to
     // apply it after the given transactions.
     const pendingKey = this.observer.delayedAndroidKey;
-      let domChange: DOMChange | null = null;
+    let domChange: DOMChange | null = null;
     if (pendingKey) {
       this.observer.clearDelayedAndroidKey();
       domChange = this.observer.readChange();
@@ -517,7 +517,7 @@ export class EditorView {
 
   private updatePlugins(update: ViewUpdate) {
     const prevSpecs = update.startState.facet(viewPlugin);
-      const specs = update.state.facet(viewPlugin);
+    const specs = update.state.facet(viewPlugin);
     if (prevSpecs != specs) {
       const newPlugins = [];
       for (const spec of specs) {
@@ -570,7 +570,7 @@ export class EditorView {
 
     let updated: ViewUpdate | null = null;
     const sDOM = this.scrollDOM;
-      let scrollTop = sDOM.scrollTop * this.scaleY;
+    let scrollTop = sDOM.scrollTop * this.scaleY;
     let { scrollAnchorPos, scrollAnchorHeight } = this.viewState;
     if (Math.abs(scrollTop - this.viewState.scrollTop) > 1)
       scrollAnchorHeight = -1;
@@ -617,7 +617,7 @@ export class EditorView {
           }
         });
         const update = ViewUpdate.create(this, this.state, []);
-          let redrawn = false;
+        let redrawn = false;
         update.flags |= changed;
         if (!updated) updated = update;
         else updated.flags |= changed;
@@ -669,7 +669,8 @@ export class EditorView {
     }
 
     if (updated && !updated.empty)
-      for (const listener of this.state.facet(updateListener)) listener(updated);
+      for (const listener of this.state.facet(updateListener))
+        listener(updated);
   }
 
   /// Get the CSS classes for the currently active editor themes.
@@ -710,7 +711,11 @@ export class EditorView {
         this.contentAttrs,
         contentAttrs,
       );
-      const changedEditor = updateAttrs(this.dom, this.editorAttrs, editorAttrs);
+      const changedEditor = updateAttrs(
+        this.dom,
+        this.editorAttrs,
+        editorAttrs,
+      );
       return changedContent || changedEditor;
     });
     this.editorAttrs = editorAttrs;
@@ -725,7 +730,9 @@ export class EditorView {
         if (effect.is(EditorView.announce)) {
           if (first) this.announceDOM.textContent = '';
           first = false;
-          const div = this.announceDOM.appendChild(document.createElement('div'));
+          const div = this.announceDOM.appendChild(
+            document.createElement('div'),
+          );
           div.textContent = effect.value;
         }
   }
@@ -897,7 +904,7 @@ export class EditorView {
   /// at the start or end goes against the line's base text direction.
   visualLineSide(line: Line, end: boolean) {
     const order = this.bidiSpans(line);
-      const dir = this.textDirectionAt(line.from);
+    const dir = this.textDirectionAt(line.from);
     const span = order[end ? order.length - 1 : 0];
     return EditorSelection.cursor(
       span.side(end, dir) + line.from,
@@ -978,7 +985,7 @@ export class EditorView {
     const rect = this.docView.coordsAt(pos, side);
     if (!rect || rect.left == rect.right) return rect;
     const line = this.state.doc.lineAt(pos);
-      const order = this.bidiSpans(line);
+    const order = this.bidiSpans(line);
     const span = order[BidiSpan.find(order, pos - line.from, -1, side)];
     return flattenRect(rect, (span.dir == Direction.LTR) == side > 0);
   }
@@ -1045,7 +1052,7 @@ export class EditorView {
   bidiSpans(line: Line) {
     if (line.length > MaxBidiLine) return trivialOrder(line.length);
     const dir = this.textDirectionAt(line.from);
-      let isolates: readonly Isolate[] | undefined;
+    let isolates: readonly Isolate[] | undefined;
     for (const entry of this.bidiCache) {
       if (
         entry.from == line.from &&
@@ -1192,7 +1199,8 @@ export class EditorView {
   setTabFocusMode(to?: boolean | number) {
     if (to == null)
       this.inputState.tabFocusMode = this.inputState.tabFocusMode < 0 ? 0 : -1;
-    else if (typeof to === 'boolean') this.inputState.tabFocusMode = to ? 0 : -1;
+    else if (typeof to === 'boolean')
+      this.inputState.tabFocusMode = to ? 0 : -1;
     else if (this.inputState.tabFocusMode != 0)
       this.inputState.tabFocusMode = Date.now() + to;
   }
@@ -1465,7 +1473,7 @@ class CachedOrder {
   static update(cache: CachedOrder[], changes: ChangeDesc) {
     if (changes.empty && !cache.some((c) => c.fresh)) return cache;
     const result = [];
-      const lastDir = cache.length ? cache[cache.length - 1].dir : Direction.LTR;
+    const lastDir = cache.length ? cache[cache.length - 1].dir : Direction.LTR;
     for (let i = Math.max(0, cache.length - 10); i < cache.length; i++) {
       const entry = cache[i];
       if (entry.dir == lastDir && !changes.touchesRange(entry.from, entry.to))
@@ -1495,7 +1503,7 @@ function attrsFromFacet(
     i--
   ) {
     const source = sources[i];
-      const value = typeof source === 'function' ? source(view) : source;
+    const value = typeof source === 'function' ? source(view) : source;
     if (value) combineAttrs(value, base);
   }
   return base;

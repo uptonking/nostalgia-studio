@@ -1,6 +1,6 @@
 function words(str) {
   const obj = {};
-    const words = str.split(' ');
+  const words = str.split(' ');
   for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
@@ -27,11 +27,12 @@ const pKeywords =
   'NEQ MATCHES TRUE FALSE DUMP';
 
 // data types
-const pTypes = 'BOOLEAN INT LONG FLOAT DOUBLE CHARARRAY BYTEARRAY BAG TUPLE MAP ';
+const pTypes =
+  'BOOLEAN INT LONG FLOAT DOUBLE CHARARRAY BYTEARRAY BAG TUPLE MAP ';
 
 const builtins = words(pBuiltins);
-  const keywords = words(pKeywords);
-  const types = words(pTypes);
+const keywords = words(pKeywords);
+const types = words(pTypes);
 
 const isOperatorChar = /[*+\-%<>=&?:\/!|]/;
 
@@ -56,8 +57,8 @@ function tokenComment(stream, state) {
 function tokenString(quote) {
   return function (stream, state) {
     let escaped = false;
-      let next;
-      let end = false;
+    let next;
+    let end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;

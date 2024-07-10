@@ -1,4 +1,9 @@
-import { type SpanIterator, RangeSet, type Text, type TextIterator } from '@codemirror/state';
+import {
+  type SpanIterator,
+  RangeSet,
+  type Text,
+  type TextIterator,
+} from '@codemirror/state';
 import {
   type DecorationSet,
   type Decoration,

@@ -64,7 +64,7 @@ export interface DirectMergeConfig extends MergeConfig {
 }
 
 const collapseCompartment = new Compartment();
-  const configCompartment = new Compartment();
+const configCompartment = new Compartment();
 
 /// A merge view manages two editors side-by-side, highlighting the
 /// difference between them and vertically aligning unchanged lines.
@@ -243,7 +243,7 @@ export class MergeView {
       const aB = config.orientation != 'b-a';
       if (aB != (this.editorDOM.firstChild == this.a.dom.parentNode)) {
         const domA = this.a.dom.parentNode as HTMLElement;
-          const domB = this.b.dom.parentNode as HTMLElement;
+        const domB = this.b.dom.parentNode as HTMLElement;
         domA.remove();
         domB.remove();
         this.editorDOM.insertBefore(
@@ -257,8 +257,8 @@ export class MergeView {
     }
     if ('revertControls' in config || 'renderRevertControl' in config) {
       let controls = Boolean(this.revertDOM);
-        let toA = this.revertToA;
-        let render = this.renderRevert;
+      let toA = this.revertToA;
+      let render = this.renderRevert;
       if ('revertControls' in config) {
         controls = Boolean(config.revertControls);
         toA = config.revertControls == 'b-to-a';
@@ -267,11 +267,11 @@ export class MergeView {
       this.setupRevertControls(controls, toA, render);
     }
     const highlight = 'highlightChanges' in config;
-      const gutter = 'gutter' in config;
-      const collapse = 'collapseUnchanged' in config;
+    const gutter = 'gutter' in config;
+    const collapse = 'collapseUnchanged' in config;
     if (highlight || gutter || collapse) {
       const effectsA: StateEffect<unknown>[] = [];
-        const effectsB: StateEffect<unknown>[] = [];
+      const effectsB: StateEffect<unknown>[] = [];
       if (highlight || gutter) {
         const currentConfig = this.a.state.facet(mergeConfig);
         const markGutter = gutter
@@ -361,9 +361,9 @@ export class MergeView {
 
   private updateRevertButtons() {
     const dom = this.revertDOM!;
-      let next = dom.firstChild as HTMLElement | null;
+    let next = dom.firstChild as HTMLElement | null;
     const vpA = this.a.viewport;
-      const vpB = this.b.viewport;
+    const vpB = this.b.viewport;
     for (let i = 0; i < this.chunks.length; i++) {
       const chunk = this.chunks[i];
       if (chunk.fromA > vpA.to || chunk.fromB > vpB.to) break;
@@ -398,7 +398,7 @@ export class MergeView {
 
   private revertClicked(e: MouseEvent) {
     let target = e.target as HTMLElement | null;
-      let chunk;
+    let chunk;
     while (target && target.parentNode != this.revertDOM)
       target = target.parentNode as HTMLElement | null;
     if (target && (chunk = this.chunks[target.dataset.chunk as any])) {

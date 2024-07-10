@@ -36,10 +36,10 @@ export class FuzzyMatcher {
   constructor(readonly pattern: string) {
     for (let p = 0; p < pattern.length; ) {
       const char = codePointAt(pattern, p);
-        const size = codePointSize(char);
+      const size = codePointSize(char);
       this.chars.push(char);
       const part = pattern.slice(p, p + size);
-        const upper = part.toUpperCase();
+      const upper = part.toUpperCase();
       this.folded.push(
         codePointAt(upper == part ? part.toLowerCase() : upper, 0),
       );
@@ -69,7 +69,7 @@ export class FuzzyMatcher {
     // at the start
     if (chars.length == 1) {
       const first = codePointAt(word, 0);
-        const firstSize = codePointSize(first);
+      const firstSize = codePointSize(first);
       let score = firstSize == word.length ? 0 : Penalty.NotFull;
       if (first == chars[0]) {
       } else if (first == folded[0]) score += Penalty.CaseFold;
@@ -84,7 +84,7 @@ export class FuzzyMatcher {
       );
 
     const len = chars.length;
-      let anyTo = 0;
+    let anyTo = 0;
     if (direct < 0) {
       for (let i = 0, e = Math.min(word.length, 200); i < e && anyTo < len; ) {
         const next = codePointAt(word, i);
@@ -102,13 +102,13 @@ export class FuzzyMatcher {
     // appear to be starting words. `byWordFolded` is set to true when
     // a case folded character is encountered in such a match
     let byWordTo = 0;
-      let byWordFolded = false;
+    let byWordFolded = false;
     // If we've found a partial adjacent match, these track its state
     let adjacentTo = 0;
-      let adjacentStart = -1;
-      let adjacentEnd = -1;
+    let adjacentStart = -1;
+    let adjacentEnd = -1;
     const hasLower = /[a-z]/.test(word);
-      let wordAdjacent = true;
+    let wordAdjacent = true;
     // Go over the option's text, scanning for the various kinds of matches
     for (
       let i = 0, e = Math.min(word.length, 200), prevType = Tp.NonWord;
@@ -130,18 +130,18 @@ export class FuzzyMatcher {
         }
       }
       let ch;
-        const type =
-          next < 0xff
-            ? (next >= 48 && next <= 57) || (next >= 97 && next <= 122)
-              ? Tp.Lower
-              : next >= 65 && next <= 90
-                ? Tp.Upper
-                : Tp.NonWord
-            : (ch = fromCodePoint(next)) != ch.toLowerCase()
+      const type =
+        next < 0xff
+          ? (next >= 48 && next <= 57) || (next >= 97 && next <= 122)
+            ? Tp.Lower
+            : next >= 65 && next <= 90
               ? Tp.Upper
-              : ch != ch.toUpperCase()
-                ? Tp.Lower
-                : Tp.NonWord;
+              : Tp.NonWord
+          : (ch = fromCodePoint(next)) != ch.toLowerCase()
+            ? Tp.Upper
+            : ch != ch.toUpperCase()
+              ? Tp.Lower
+              : Tp.NonWord;
       if (
         !i ||
         (type == Tp.Upper && hasLower) ||
@@ -201,9 +201,10 @@ export class FuzzyMatcher {
 
   result(score: number, positions: number[], word: string) {
     const result: number[] = [];
-      let i = 0;
+    let i = 0;
     for (const pos of positions) {
-      const to = pos + (this.astral ? codePointSize(codePointAt(word, pos)) : 1);
+      const to =
+        pos + (this.astral ? codePointSize(codePointAt(word, pos)) : 1);
       if (i && result[i - 1] == pos) result[i - 1] = to;
       else {
         result[i++] = pos;

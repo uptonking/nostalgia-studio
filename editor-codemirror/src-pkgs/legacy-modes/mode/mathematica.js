@@ -154,8 +154,8 @@ function tokenBase(stream, state) {
 
 function tokenString(stream, state) {
   let next;
-    let end = false;
-    let escaped = false;
+  let end = false;
+  let escaped = false;
   while ((next = stream.next()) != null) {
     if (next === '"' && !escaped) {
       end = true;
@@ -170,7 +170,8 @@ function tokenString(stream, state) {
 }
 
 function tokenComment(stream, state) {
-  let prev; let next;
+  let prev;
+  let next;
   while (state.commentLevel > 0 && (next = stream.next()) != null) {
     if (prev === '(' && next === '*') state.commentLevel++;
     if (prev === '*' && next === ')') state.commentLevel--;

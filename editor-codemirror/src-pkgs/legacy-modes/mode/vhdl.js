@@ -1,6 +1,6 @@
 function words(str) {
   const obj = {};
-    const words = str.split(',');
+  const words = str.split(',');
   for (let i = 0; i < words.length; ++i) {
     const allCaps = words[i].toUpperCase();
     const firstCap = words[i].charAt(0).toUpperCase() + words[i].slice(1);
@@ -17,8 +17,8 @@ function metaHook(stream) {
 }
 
 const atoms = words('null');
-  const hooks = { '`': metaHook, $: metaHook };
-  const multiLineStrings = false;
+const hooks = { '`': metaHook, $: metaHook };
+const multiLineStrings = false;
 
 const keywords = words(
   'abs,access,after,alias,all,and,architecture,array,assert,attribute,begin,block,' +
@@ -82,8 +82,8 @@ function tokenBase(stream, state) {
 function tokenString(quote) {
   return function (stream, state) {
     let escaped = false;
-      let next;
-      let end = false;
+    let next;
+    let end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -98,8 +98,8 @@ function tokenString(quote) {
 function tokenString2(quote) {
   return function (stream, state) {
     let escaped = false;
-      let next;
-      let end = false;
+    let next;
+    let end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -182,8 +182,8 @@ export const vhdl = {
   indent: function (state, textAfter, cx) {
     if (state.tokenize != tokenBase && state.tokenize != null) return 0;
     const firstChar = textAfter && textAfter.charAt(0);
-      const ctx = state.context;
-      const closing = firstChar == ctx.type;
+    const ctx = state.context;
+    const closing = firstChar == ctx.type;
     if (ctx.type == 'statement')
       return ctx.indented + (firstChar == '{' ? 0 : cx.unit);
     else if (ctx.align) return ctx.column + (closing ? 0 : 1);

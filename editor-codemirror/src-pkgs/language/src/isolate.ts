@@ -138,9 +138,9 @@ function clipRTLLines(
   doc: Text,
 ) {
   const cur = doc.iter();
-    let pos = 0;
-    const result: { from: number; to: number }[] = [];
-    let last = null;
+  let pos = 0;
+  const result: { from: number; to: number }[] = [];
+  let last = null;
   for (let { from, to } of ranges) {
     if (last && last.to > from) {
       from = last.to;
@@ -152,7 +152,7 @@ function clipRTLLines(
     }
     for (;;) {
       const start = pos;
-        const end = pos + cur.value.length;
+      const end = pos + cur.value.length;
       if (!cur.lineBreak && buildForLine(cur.value)) {
         if (last && last.to > start - 10) last.to = Math.min(to, end);
         else result.push((last = { from: start, to: Math.min(to, end) }));

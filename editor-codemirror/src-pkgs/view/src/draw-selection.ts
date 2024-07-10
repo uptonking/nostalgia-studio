@@ -86,7 +86,7 @@ const cursorLayer = layer({
   above: true,
   markers(view) {
     const { state } = view;
-      const conf = state.facet(selectionConfig);
+    const conf = state.facet(selectionConfig);
     const cursors = [];
     for (const r of state.selection.ranges) {
       const prim = r == state.selection.main;

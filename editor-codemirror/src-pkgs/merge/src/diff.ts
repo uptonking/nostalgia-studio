@@ -45,7 +45,7 @@ function findDiff(
   fromB += prefix;
   toB -= suffix;
   const lenA = toA - fromA;
-    const lenB = toB - fromB;
+  const lenB = toB - fromB;
   // Nothing left in one of them
   if (!lenA || !lenB) return [new Change(fromA, toA, fromB, toB)];
 
@@ -98,7 +98,7 @@ function findSnake(
   toB: number,
 ): Change[] {
   const lenA = toA - fromA;
-    const lenB = toB - fromB;
+  const lenB = toB - fromB;
   if (scanLimit < 1e9 && Math.min(lenA, lenB) > scanLimit * 16) {
     if (Math.min(lenA, lenB) > scanLimit * 64)
       return [new Change(fromA, toA, fromB, toB)];
@@ -112,7 +112,7 @@ function findSnake(
   const match2 = (x: number, y: number) =>
     a.charCodeAt(toA - x - 1) == b.charCodeAt(toB - y - 1);
   const test1 = (lenA - lenB) % 2 != 0 ? frontier2 : null;
-    const test2 = test1 ? null : frontier1;
+  const test2 = test1 ? null : frontier1;
   for (let depth = 0; depth < off; depth++) {
     if (depth > scanLimit) return crudeMatch(a, fromA, toA, b, fromB, toB);
     const done =
@@ -191,7 +191,7 @@ class Frontier {
 
 // Reused across calls to avoid growing the vectors again and again
 const frontier1 = new Frontier();
-  const frontier2 = new Frontier();
+const frontier2 = new Frontier();
 
 // Given a position in both strings, recursively call `findDiff` with
 // the sub-problems before and after that position. Make sure cut
@@ -217,7 +217,7 @@ function bisect(
 
 function chunkSize(lenA: number, lenB: number) {
   let size = 1;
-    const max = Math.min(lenA, lenB);
+  const max = Math.min(lenA, lenB);
   while (size < max) size = size << 1;
   return size;
 }
@@ -242,7 +242,7 @@ function commonPrefix(
   let chunk = chunkSize(toA - fromA, toB - fromB);
   for (let pA = fromA, pB = fromB; ; ) {
     const endA = pA + chunk;
-      const endB = pB + chunk;
+    const endB = pB + chunk;
     if (endA > toA || endB > toB || a.slice(pA, endA) != b.slice(pB, endB)) {
       if (chunk == 1) return pA - fromA - (validIndex(a, pA) ? 0 : 1);
       chunk = chunk >> 1;
@@ -273,7 +273,7 @@ function commonSuffix(
   let chunk = chunkSize(toA - fromA, toB - fromB);
   for (let pA = toA, pB = toB; ; ) {
     const sA = pA - chunk;
-      const sB = pB - chunk;
+    const sB = pB - chunk;
     if (sA < fromA || sB < fromB || a.slice(sA, pA) != b.slice(sB, pB)) {
       if (chunk == 1) return toA - pA - (validIndex(a, pA) ? 0 : 1);
       chunk = chunk >> 1;
@@ -351,7 +351,7 @@ function halfMatch(
   toB: number,
 ): [number, number, number] | null {
   const lenA = toA - fromA;
-    const lenB = toB - fromB;
+  const lenB = toB - fromB;
   if (lenA < lenB) {
     const result = halfMatch(b, fromB, toB, a, fromA, toA);
     return result && [result[1], result[0], result[2]];
@@ -370,10 +370,19 @@ function crudeMatch(
   toB: number,
 ): Change[] {
   const lenA = toA - fromA;
-    const lenB = toB - fromB;
+  const lenB = toB - fromB;
   let result;
   if (lenA < lenB) {
-    const inv = findMatch(b, fromB, toB, a, fromA, toA, Math.floor(lenA / 6), 50);
+    const inv = findMatch(
+      b,
+      fromB,
+      toB,
+      a,
+      fromA,
+      toA,
+      Math.floor(lenA / 6),
+      50,
+    );
     result = inv && [inv[1], inv[0], inv[2]];
   } else {
     result = findMatch(a, fromA, toA, b, fromB, toB, Math.floor(lenB / 6), 50);
@@ -388,7 +397,7 @@ function crudeMatch(
 function mergeAdjacent(changes: Change[], minGap: number) {
   for (let i = 1; i < changes.length; i++) {
     const prev = changes[i - 1];
-      const cur = changes[i];
+    const cur = changes[i];
     if (prev.toA > cur.fromA - minGap && prev.toB > cur.fromB - minGap) {
       changes[i - 1] = new Change(prev.fromA, cur.toA, prev.fromB, cur.toB);
       changes.splice(i--, 1);
@@ -405,8 +414,8 @@ function normalize(a: string, b: string, changes: Change[]) {
     // adjacent insertion/deletion, to simplify the diff.
     for (let i = 0; i < changes.length; i++) {
       let ch = changes[i];
-        let pre;
-        let post;
+      let pre;
+      let post;
       // The half-match heuristic sometimes produces non-minimal
       // diffs. Strip matching pre- and post-fixes again here.
       if ((pre = commonPrefix(a, ch.fromA, ch.toA, b, ch.fromB, ch.toB)))
@@ -424,7 +433,7 @@ function normalize(a: string, b: string, changes: Change[]) {
           ch.toB - post,
         );
       const lenA = ch.toA - ch.fromA;
-        const lenB = ch.toB - ch.fromB;
+      const lenB = ch.toB - ch.fromB;
       // Only look at plain insertions/deletions
       if (lenA && lenB) continue;
       const beforeLen = ch.fromA - (i ? changes[i - 1].toA : 0);
@@ -469,13 +478,13 @@ function makePresentable(changes: Change[], a: string, b: string) {
   for (let posA = 0, i = 0; i < changes.length; i++) {
     let change = changes[i];
     const lenA = change.toA - change.fromA;
-      const lenB = change.toB - change.fromB;
+    const lenB = change.toB - change.fromB;
     // Don't touch short insertions or deletions.
     if ((lenA && lenB) || lenA > 3 || lenB > 3) {
       const nextChangeA =
         i == changes.length - 1 ? a.length : changes[i + 1].fromA;
       const maxScanBefore = change.fromA - posA;
-        const maxScanAfter = nextChangeA - change.toA;
+      const maxScanAfter = nextChangeA - change.toA;
       let boundBefore = findWordBoundaryBefore(
         a,
         change.fromA,
@@ -487,13 +496,14 @@ function makePresentable(changes: Change[], a: string, b: string) {
         Math.min(maxScanAfter, 5),
       );
       let lenBefore = change.fromA - boundBefore;
-        let lenAfter = boundAfter - change.toA;
+      let lenAfter = boundAfter - change.toA;
       if (!lenA || !lenB) {
         const changeLen = Math.max(lenA, lenB);
         const [changeText, changeFrom, changeTo] = lenA
           ? [a, change.fromA, change.toA]
           : [b, change.fromB, change.toB];
-        let indentBefore; let indentLen;
+        let indentBefore;
+        let indentLen;
         // An insertion or deletion that falls inside words on both
         // sides can maybe be moved to align with word boundaries.
         if (lenBefore && lenAfter) {

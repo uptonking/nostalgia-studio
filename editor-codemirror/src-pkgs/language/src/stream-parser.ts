@@ -112,7 +112,7 @@ export class StreamLanguage<State> extends Language {
   private constructor(parser: StreamParser<State>) {
     const data = defineLanguageFacet(parser.languageData);
     const p = fullParser(parser);
-      let self: StreamLanguage<State>;
+    let self: StreamLanguage<State>;
     const impl = new (class extends Parser {
       createParse(
         input: Input,
@@ -144,7 +144,7 @@ export class StreamLanguage<State> extends Language {
 
   private getIndent(cx: IndentContext, pos: number) {
     const tree = syntaxTree(cx.state);
-      let at: SyntaxNode | null = tree.resolve(pos);
+    let at: SyntaxNode | null = tree.resolve(pos);
     while (at && at.type != this.topNode) at = at.parent;
     if (!at) return null;
     let from = undefined;
@@ -154,8 +154,8 @@ export class StreamLanguage<State> extends Language {
       if (from != null && from < pos - 1e4) from = undefined;
     }
     const start = findState(this, tree, 0, at.from, from ?? pos);
-      let statePos;
-      let state;
+    let statePos;
+    let state;
     if (start) {
       state = start.state;
       statePos = start.pos + 1;
@@ -166,7 +166,7 @@ export class StreamLanguage<State> extends Language {
     if (pos - statePos > C.MaxIndentScanDist) return null;
     while (statePos < pos) {
       const line = cx.state.doc.lineAt(statePos);
-        const end = Math.min(pos, line.to);
+      const end = Math.min(pos, line.to);
       if (line.length) {
         const indentation = overrideIndentation
           ? overrideIndentation(line.from)
@@ -214,7 +214,7 @@ function findState<State>(
     };
   for (let i = tree.children.length - 1; i >= 0; i--) {
     const child = tree.children[i];
-      const pos = off + tree.positions[i];
+    const pos = off + tree.positions[i];
     const found =
       child instanceof Tree &&
       pos < before &&
@@ -235,8 +235,8 @@ function cutTree(
   if (!inside && tree.type == lang.topNode) inside = true;
   for (let i = tree.children.length - 1; i >= 0; i--) {
     const pos = tree.positions[i];
-      const child = tree.children[i];
-      let inner;
+    const child = tree.children[i];
+    let inner;
     if (pos < to && child instanceof Tree) {
       if (!(inner = cutTree(lang, child, from - pos, to - pos, inside))) break;
       return !inside
@@ -260,12 +260,12 @@ function findStartInFragments<State>(
 ) {
   for (const f of fragments) {
     const from = f.from + (f.openStart ? 25 : 0);
-      const to = f.to - (f.openEnd ? 25 : 0);
+    const to = f.to - (f.openEnd ? 25 : 0);
     const found =
-        from <= startPos &&
-        to > startPos &&
-        findState(lang, f.tree, 0 - f.offset, startPos, to);
-      let tree;
+      from <= startPos &&
+      to > startPos &&
+      findState(lang, f.tree, 0 - f.offset, startPos, to);
+    let tree;
     if (
       found &&
       (tree = cutTree(
@@ -314,7 +314,7 @@ class Parse<State> implements PartialParse {
   ) {
     this.to = ranges[ranges.length - 1].to;
     const context = ParseContext.get();
-      const from = ranges[0].from;
+    const from = ranges[0].from;
     const { state, tree } = findStartInFragments(
       lang,
       fragments,
@@ -375,8 +375,8 @@ class Parse<State> implements PartialParse {
 
   nextLine() {
     const from = this.parsedPos;
-      let line = this.lineAfter(from);
-      let end = from + line.length;
+    let line = this.lineAfter(from);
+    let end = from + line.length;
     for (let index = this.rangeIndex; ; ) {
       const rangeEnd = this.ranges[index].to;
       if (rangeEnd >= end) break;
@@ -394,7 +394,7 @@ class Parse<State> implements PartialParse {
   skipGapsTo(pos: number, offset: number, side: -1 | 1) {
     for (;;) {
       const end = this.ranges[this.rangeIndex].to;
-        const offPos = pos + offset;
+      const offPos = pos + offset;
       if (side > 0 ? end > offPos : end >= offPos) break;
       const start = this.ranges[++this.rangeIndex].from;
       offset += start - end;
@@ -427,8 +427,8 @@ class Parse<State> implements PartialParse {
 
   parseLine(context: ParseContext | null) {
     const { line, end } = this.nextLine();
-      let offset = 0;
-      const { streamParser } = this.lang;
+    let offset = 0;
+    const { streamParser } = this.lang;
     const stream = new StringStream(
       line,
       context ? context.state.tabSize : 4,
@@ -576,7 +576,7 @@ function createTokenType(
   if (!tags.length) return 0;
 
   const name = tagStr.replace(/ /g, '_');
-    const key = name + ' ' + tags.map((t) => (t as any).id);
+  const key = name + ' ' + tags.map((t) => (t as any).id);
   const known = byTag[key];
   if (known) return known.id;
   const type = (byTag[key] = NodeType.define({

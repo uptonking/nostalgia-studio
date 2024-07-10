@@ -13,7 +13,8 @@ type PanelConfig = {
 
 const panelConfig = Facet.define<PanelConfig, PanelConfig>({
   combine(configs: readonly PanelConfig[]) {
-    let topContainer; let bottomContainer;
+    let topContainer;
+    let bottomContainer;
     for (const c of configs) {
       topContainer = topContainer || c.topContainer;
       bottomContainer = bottomContainer || c.bottomContainer;
@@ -92,12 +93,12 @@ const panelPlugin = ViewPlugin.fromClass(
       if (input != this.input) {
         const specs = input.filter((x) => x) as PanelConstructor[];
         const panels = [];
-          const top: Panel[] = [];
-          const bottom: Panel[] = [];
-          const mount = [];
+        const top: Panel[] = [];
+        const bottom: Panel[] = [];
+        const mount = [];
         for (const spec of specs) {
           const known = this.specs.indexOf(spec);
-            let panel;
+          let panel;
           if (known < 0) {
             panel = spec(update.view);
             mount.push(panel);

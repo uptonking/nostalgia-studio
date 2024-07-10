@@ -1,13 +1,13 @@
 function mkVerilog(parserConfig) {
   const statementIndentUnit = parserConfig.statementIndentUnit;
-    const dontAlignCalls = parserConfig.dontAlignCalls;
-    const noIndentKeywords = parserConfig.noIndentKeywords || [];
-    const multiLineStrings = parserConfig.multiLineStrings;
-    const hooks = parserConfig.hooks || {};
+  const dontAlignCalls = parserConfig.dontAlignCalls;
+  const noIndentKeywords = parserConfig.noIndentKeywords || [];
+  const multiLineStrings = parserConfig.multiLineStrings;
+  const hooks = parserConfig.hooks || {};
 
   function words(str) {
     const obj = {};
-      const words = str.split(' ');
+    const words = str.split(' ');
     for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
     return obj;
   }
@@ -98,7 +98,7 @@ function mkVerilog(parserConfig) {
 
   function tokenBase(stream, state) {
     const ch = stream.peek();
-      let style;
+    let style;
     if (hooks[ch] && (style = hooks[ch](stream, state)) != false) return style;
     if (hooks.tokenBase && (style = hooks.tokenBase(stream, state)) != false)
       return style;
@@ -196,8 +196,8 @@ function mkVerilog(parserConfig) {
   function tokenString(quote) {
     return function (stream, state) {
       let escaped = false;
-        let next;
-        let end = false;
+      let next;
+      let end = false;
       while ((next = stream.next()) != null) {
         if (next == quote && !escaped) {
           end = true;
@@ -212,7 +212,7 @@ function mkVerilog(parserConfig) {
 
   function tokenComment(stream, state) {
     let maybeEnd = false;
-      let ch;
+    let ch;
     while ((ch = stream.next())) {
       if (ch == '/' && maybeEnd) {
         state.tokenize = tokenBase;
@@ -358,7 +358,7 @@ function mkVerilog(parserConfig) {
         if (fromHook >= 0) return fromHook;
       }
       let ctx = state.context;
-        const firstChar = textAfter && textAfter.charAt(0);
+      const firstChar = textAfter && textAfter.charAt(0);
       if (ctx.type == 'statement' && firstChar == '}') ctx = ctx.prev;
       let closing = false;
       const possibleClosing = textAfter.match(closingBracketOrWord);

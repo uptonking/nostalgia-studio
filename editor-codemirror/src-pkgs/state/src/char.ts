@@ -64,7 +64,7 @@ function nextClusterBreak(str: string, pos: number, includeExtending: boolean) {
       prev = next;
     } else if (isRegionalIndicator(next)) {
       let countBefore = 0;
-        let i = pos - 2;
+      let i = pos - 2;
       while (i >= 0 && isRegionalIndicator(codePointAt(str, i))) {
         countBefore++;
         i -= 2;

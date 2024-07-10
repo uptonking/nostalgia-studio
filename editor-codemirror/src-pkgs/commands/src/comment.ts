@@ -20,8 +20,8 @@ export interface CommentTokens {
 /// if available, otherwise falling back to block comments.
 export const toggleComment: StateCommand = (target) => {
   const { state } = target;
-    const line = state.doc.lineAt(state.selection.main.from);
-    const config = getConfig(target.state, line.from);
+  const line = state.doc.lineAt(state.selection.main.from);
+  const config = getConfig(target.state, line.from);
   return config.line
     ? toggleLineComment(target)
     : config.block
@@ -116,7 +116,7 @@ function findBlockComment(
   const textBefore = state.sliceDoc(from - SearchMargin, from);
   const textAfter = state.sliceDoc(to, to + SearchMargin);
   const spaceBefore = /\s*$/.exec(textBefore)![0].length;
-    const spaceAfter = /^\s*/.exec(textAfter)![0].length;
+  const spaceAfter = /^\s*/.exec(textAfter)![0].length;
   const beforeOff = textBefore.length - spaceBefore;
   if (
     textBefore.slice(beforeOff - open.length, beforeOff) == open &&
@@ -128,7 +128,8 @@ function findBlockComment(
     };
   }
 
-  let startText: string; let endText: string;
+  let startText: string;
+  let endText: string;
   if (to - from <= 2 * SearchMargin) {
     startText = endText = state.sliceDoc(from, to);
   } else {
@@ -136,7 +137,7 @@ function findBlockComment(
     endText = state.sliceDoc(to - SearchMargin, to);
   }
   const startSpace = /^\s*/.exec(startText)![0].length;
-    const endSpace = /\s*$/.exec(endText)![0].length;
+  const endSpace = /\s*$/.exec(endText)![0].length;
   const endOff = endText.length - endSpace - close.length;
   if (
     startText.slice(startSpace, startSpace + open.length) == open &&
@@ -205,7 +206,7 @@ function changeBlockComment(
     for (let i = 0, comment; i < comments.length; i++)
       if ((comment = comments[i])) {
         const token = tokens[i];
-          const { open, close } = comment;
+        const { open, close } = comment;
         changes.push(
           { from: open.pos - token.open.length, to: open.pos + open.margin },
           {
@@ -236,7 +237,7 @@ function changeLineComment(
   let prevLine = -1;
   for (const { from, to } of ranges) {
     const startI = lines.length;
-      let minIndent = 1e9;
+    let minIndent = 1e9;
     const token = getConfig(state, from).line;
     if (!token) continue;
     for (let pos = from; pos <= to; ) {
@@ -277,7 +278,7 @@ function changeLineComment(
     for (const { line, comment, token } of lines)
       if (comment >= 0) {
         const from = line.from + comment;
-          let to = from + token.length;
+        let to = from + token.length;
         if (line.text[to - line.from] == ' ') to++;
         changes.push({ from, to });
       }

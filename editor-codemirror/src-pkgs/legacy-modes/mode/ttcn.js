@@ -1,6 +1,6 @@
 function words(str) {
   const obj = {};
-    const words = str.split(' ');
+  const words = str.split(' ');
   for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
@@ -64,21 +64,21 @@ add(parserConfig.timerOps);
 add(parserConfig.portOps);
 
 const keywords = parserConfig.keywords || {};
-  const builtin = parserConfig.builtin || {};
-  const timerOps = parserConfig.timerOps || {};
-  const portOps = parserConfig.portOps || {};
-  const configOps = parserConfig.configOps || {};
-  const verdictOps = parserConfig.verdictOps || {};
-  const sutOps = parserConfig.sutOps || {};
-  const functionOps = parserConfig.functionOps || {};
-  const verdictConsts = parserConfig.verdictConsts || {};
-  const booleanConsts = parserConfig.booleanConsts || {};
-  const otherConsts = parserConfig.otherConsts || {};
-  const types = parserConfig.types || {};
-  const visibilityModifiers = parserConfig.visibilityModifiers || {};
-  const templateMatch = parserConfig.templateMatch || {};
-  const multiLineStrings = parserConfig.multiLineStrings;
-  const indentStatements = parserConfig.indentStatements !== false;
+const builtin = parserConfig.builtin || {};
+const timerOps = parserConfig.timerOps || {};
+const portOps = parserConfig.portOps || {};
+const configOps = parserConfig.configOps || {};
+const verdictOps = parserConfig.verdictOps || {};
+const sutOps = parserConfig.sutOps || {};
+const functionOps = parserConfig.functionOps || {};
+const verdictConsts = parserConfig.verdictConsts || {};
+const booleanConsts = parserConfig.booleanConsts || {};
+const otherConsts = parserConfig.otherConsts || {};
+const types = parserConfig.types || {};
+const visibilityModifiers = parserConfig.visibilityModifiers || {};
+const templateMatch = parserConfig.templateMatch || {};
+const multiLineStrings = parserConfig.multiLineStrings;
+const indentStatements = parserConfig.indentStatements !== false;
 const isOperatorChar = /[+\-*&@=<>!\/]/;
 let curPunc;
 
@@ -155,8 +155,8 @@ function tokenBase(stream, state) {
 function tokenString(quote) {
   return function (stream, state) {
     let escaped = false;
-      let next;
-      let end = false;
+    let next;
+    let end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         let afterQuote = stream.peek();
@@ -178,7 +178,7 @@ function tokenString(quote) {
 
 function tokenComment(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = null;

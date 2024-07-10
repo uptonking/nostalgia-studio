@@ -64,9 +64,9 @@ function getContext(node: SyntaxNode, doc: Text) {
   const context = [];
   for (let i = nodes.length - 1; i >= 0; i--) {
     const node = nodes[i];
-      let match;
+    let match;
     const line = doc.lineAt(node.from);
-      const startPos = node.from - line.from;
+    const startPos = node.from - line.from;
     if (node.name == 'FencedCode') {
       context.push(new Context(node, startPos, startPos, '', '', '', null));
     } else if (
@@ -90,7 +90,7 @@ function getContext(node: SyntaxNode, doc: Text) {
       (match = /^( *)\d+([.)])( *)/.exec(line.text.slice(startPos)))
     ) {
       let after = match[3];
-        let len = match[0].length;
+      let len = match[0].length;
       if (after.length >= 4) {
         after = after.slice(0, after.length - 4);
         len -= 4;
@@ -114,7 +114,7 @@ function getContext(node: SyntaxNode, doc: Text) {
       ))
     ) {
       let after = match[4];
-        let len = match[0].length;
+      let len = match[0].length;
       if (after.length > 4) {
         after = after.slice(0, after.length - 4);
         len -= 4;
@@ -200,116 +200,113 @@ export const insertNewlineContinueMarkup: StateCommand = ({
   dispatch,
 }) => {
   const tree = syntaxTree(state);
-    const { doc } = state;
+  const { doc } = state;
   let dont = null;
-    const changes = state.changeByRange((range) => {
-      if (!range.empty || !markdownLanguage.isActiveAt(state, range.from))
-        return (dont = { range });
-      const pos = range.from;
-        const line = doc.lineAt(pos);
-      const context = getContext(tree.resolveInner(pos, -1), doc);
-      while (
-        context.length &&
-        context[context.length - 1].from > pos - line.from
-      )
-        context.pop();
-      if (!context.length) return (dont = { range });
-      const inner = context[context.length - 1];
-      if (inner.to - inner.spaceAfter.length > pos - line.from)
-        return (dont = { range });
+  const changes = state.changeByRange((range) => {
+    if (!range.empty || !markdownLanguage.isActiveAt(state, range.from))
+      return (dont = { range });
+    const pos = range.from;
+    const line = doc.lineAt(pos);
+    const context = getContext(tree.resolveInner(pos, -1), doc);
+    while (context.length && context[context.length - 1].from > pos - line.from)
+      context.pop();
+    if (!context.length) return (dont = { range });
+    const inner = context[context.length - 1];
+    if (inner.to - inner.spaceAfter.length > pos - line.from)
+      return (dont = { range });
 
-      const emptyLine =
-        pos >= inner.to - inner.spaceAfter.length &&
-        !/\S/.test(line.text.slice(inner.to));
-      // Empty line in list
-      if (inner.item && emptyLine) {
-        const first = inner.node.firstChild!;
-          const second = inner.node.getChild('ListItem', 'ListItem');
-        // Not second item or blank line before: delete a level of markup
-        if (
-          first.to >= pos ||
-          (second && second.to < pos) ||
-          (line.from > 0 && !/[^\s>]/.test(doc.lineAt(line.from - 1).text))
-        ) {
-          const next = context.length > 1 ? context[context.length - 2] : null;
-          let delTo;
-            let insert = '';
-          if (next && next.item) {
-            // Re-add marker for the list at the next level
-            delTo = line.from + next.from;
-            insert = next.marker(doc, 1);
-          } else {
-            delTo = line.from + (next ? next.to : 0);
-          }
-          const changes: ChangeSpec[] = [{ from: delTo, to: pos, insert }];
-          if (inner.node.name == 'OrderedList')
-            renumberList(inner.item!, doc, changes, -2);
-          if (next && next.node.name == 'OrderedList')
-            renumberList(next.item!, doc, changes);
-          return {
-            range: EditorSelection.cursor(delTo + insert.length),
-            changes,
-          };
-        } else {
-          // Move second item down, making tight two-item list non-tight
-          const insert = blankLine(context, state, line);
-          return {
-            range: EditorSelection.cursor(pos + insert.length + 1),
-            changes: { from: line.from, insert: insert + state.lineBreak },
-          };
-        }
-      }
-
-      if (inner.node.name == 'Blockquote' && emptyLine && line.from) {
-        const prevLine = doc.lineAt(line.from - 1);
-          const quoted = />\s*$/.exec(prevLine.text);
-        // Two aligned empty quoted lines in a row
-        if (quoted && quoted.index == inner.from) {
-          const changes = state.changes([
-            { from: prevLine.from + quoted.index, to: prevLine.to },
-            { from: line.from + inner.from, to: line.to },
-          ]);
-          return { range: range.map(changes), changes };
-        }
-      }
-
-      const changes: ChangeSpec[] = [];
-      if (inner.node.name == 'OrderedList')
-        renumberList(inner.item!, doc, changes);
-      const continued = inner.item && inner.item.from < line.from;
-      let insert = '';
-      // If not dedented
+    const emptyLine =
+      pos >= inner.to - inner.spaceAfter.length &&
+      !/\S/.test(line.text.slice(inner.to));
+    // Empty line in list
+    if (inner.item && emptyLine) {
+      const first = inner.node.firstChild!;
+      const second = inner.node.getChild('ListItem', 'ListItem');
+      // Not second item or blank line before: delete a level of markup
       if (
-        !continued ||
-        /^[\s\d.)\-+*>]*/.exec(line.text)![0].length >= inner.to
+        first.to >= pos ||
+        (second && second.to < pos) ||
+        (line.from > 0 && !/[^\s>]/.test(doc.lineAt(line.from - 1).text))
       ) {
-        for (let i = 0, e = context.length - 1; i <= e; i++) {
-          insert +=
-            i == e && !continued
-              ? context[i].marker(doc, 1)
-              : context[i].blank(
-                  i < e
-                    ? countColumn(line.text, 4, context[i + 1].from) -
-                        insert.length
-                    : null,
-                );
+        const next = context.length > 1 ? context[context.length - 2] : null;
+        let delTo;
+        let insert = '';
+        if (next && next.item) {
+          // Re-add marker for the list at the next level
+          delTo = line.from + next.from;
+          insert = next.marker(doc, 1);
+        } else {
+          delTo = line.from + (next ? next.to : 0);
         }
+        const changes: ChangeSpec[] = [{ from: delTo, to: pos, insert }];
+        if (inner.node.name == 'OrderedList')
+          renumberList(inner.item!, doc, changes, -2);
+        if (next && next.node.name == 'OrderedList')
+          renumberList(next.item!, doc, changes);
+        return {
+          range: EditorSelection.cursor(delTo + insert.length),
+          changes,
+        };
+      } else {
+        // Move second item down, making tight two-item list non-tight
+        const insert = blankLine(context, state, line);
+        return {
+          range: EditorSelection.cursor(pos + insert.length + 1),
+          changes: { from: line.from, insert: insert + state.lineBreak },
+        };
       }
-      let from = pos;
-      while (
-        from > line.from &&
-        /\s/.test(line.text.charAt(from - line.from - 1))
-      )
-        from--;
-      insert = normalizeIndent(insert, state);
-      if (nonTightList(inner.node, state.doc))
-        insert = blankLine(context, state, line) + state.lineBreak + insert;
-      changes.push({ from, to: pos, insert: state.lineBreak + insert });
-      return {
-        range: EditorSelection.cursor(from + insert.length + 1),
-        changes,
-      };
-    });
+    }
+
+    if (inner.node.name == 'Blockquote' && emptyLine && line.from) {
+      const prevLine = doc.lineAt(line.from - 1);
+      const quoted = />\s*$/.exec(prevLine.text);
+      // Two aligned empty quoted lines in a row
+      if (quoted && quoted.index == inner.from) {
+        const changes = state.changes([
+          { from: prevLine.from + quoted.index, to: prevLine.to },
+          { from: line.from + inner.from, to: line.to },
+        ]);
+        return { range: range.map(changes), changes };
+      }
+    }
+
+    const changes: ChangeSpec[] = [];
+    if (inner.node.name == 'OrderedList')
+      renumberList(inner.item!, doc, changes);
+    const continued = inner.item && inner.item.from < line.from;
+    let insert = '';
+    // If not dedented
+    if (
+      !continued ||
+      /^[\s\d.)\-+*>]*/.exec(line.text)![0].length >= inner.to
+    ) {
+      for (let i = 0, e = context.length - 1; i <= e; i++) {
+        insert +=
+          i == e && !continued
+            ? context[i].marker(doc, 1)
+            : context[i].blank(
+                i < e
+                  ? countColumn(line.text, 4, context[i + 1].from) -
+                      insert.length
+                  : null,
+              );
+      }
+    }
+    let from = pos;
+    while (
+      from > line.from &&
+      /\s/.test(line.text.charAt(from - line.from - 1))
+    )
+      from--;
+    insert = normalizeIndent(insert, state);
+    if (nonTightList(inner.node, state.doc))
+      insert = blankLine(context, state, line) + state.lineBreak + insert;
+    changes.push({ from, to: pos, insert: state.lineBreak + insert });
+    return {
+      range: EditorSelection.cursor(from + insert.length + 1),
+      changes,
+    };
+  });
   if (dont) return false;
   dispatch(state.update(changes, { scrollIntoView: true, userEvent: 'input' }));
   return true;
@@ -322,10 +319,10 @@ function isMark(node: SyntaxNode) {
 function nonTightList(node: SyntaxNode, doc: Text) {
   if (node.name != 'OrderedList' && node.name != 'BulletList') return false;
   const first = node.firstChild!;
-    const second = node.getChild('ListItem', 'ListItem');
+  const second = node.getChild('ListItem', 'ListItem');
   if (!second) return false;
   const line1 = doc.lineAt(first.to);
-    const line2 = doc.lineAt(second.from);
+  const line2 = doc.lineAt(second.from);
   const empty = /^[\s>]*$/.test(line1.text);
   return line1.number + (empty ? 0 : 1) < line2.number;
 }
@@ -345,7 +342,7 @@ function blankLine(context: Context[], state: EditorState, line: Line) {
 
 function contextNodeForDelete(tree: Tree, pos: number) {
   let node = tree.resolveInner(pos, -1);
-    let scan = pos;
+  let scan = pos;
   if (isMark(node)) {
     scan = node.from;
     node = node.parent!;
@@ -375,62 +372,62 @@ function contextNodeForDelete(tree: Tree, pos: number) {
 export const deleteMarkupBackward: StateCommand = ({ state, dispatch }) => {
   const tree = syntaxTree(state);
   let dont = null;
-    const changes = state.changeByRange((range) => {
-      const pos = range.from;
-        const { doc } = state;
-      if (range.empty && markdownLanguage.isActiveAt(state, range.from)) {
-        const line = doc.lineAt(pos);
-        const context = getContext(contextNodeForDelete(tree, pos), doc);
-        if (context.length) {
-          const inner = context[context.length - 1];
-          const spaceEnd =
-            inner.to - inner.spaceAfter.length + (inner.spaceAfter ? 1 : 0);
-          // Delete extra trailing space after markup
+  const changes = state.changeByRange((range) => {
+    const pos = range.from;
+    const { doc } = state;
+    if (range.empty && markdownLanguage.isActiveAt(state, range.from)) {
+      const line = doc.lineAt(pos);
+      const context = getContext(contextNodeForDelete(tree, pos), doc);
+      if (context.length) {
+        const inner = context[context.length - 1];
+        const spaceEnd =
+          inner.to - inner.spaceAfter.length + (inner.spaceAfter ? 1 : 0);
+        // Delete extra trailing space after markup
+        if (
+          pos - line.from > spaceEnd &&
+          !/\S/.test(line.text.slice(spaceEnd, pos - line.from))
+        )
+          return {
+            range: EditorSelection.cursor(line.from + spaceEnd),
+            changes: { from: line.from + spaceEnd, to: pos },
+          };
+        if (
+          pos - line.from == spaceEnd &&
+          // Only apply this if we're on the line that has the
+          // construct's syntax, or there's only indentation in the
+          // target range
+          (!inner.item ||
+            line.from <= inner.item.from ||
+            !/\S/.test(line.text.slice(0, inner.to)))
+        ) {
+          const start = line.from + inner.from;
+          // Replace a list item marker with blank space
           if (
-            pos - line.from > spaceEnd &&
-            !/\S/.test(line.text.slice(spaceEnd, pos - line.from))
-          )
-            return {
-              range: EditorSelection.cursor(line.from + spaceEnd),
-              changes: { from: line.from + spaceEnd, to: pos },
-            };
-          if (
-            pos - line.from == spaceEnd &&
-            // Only apply this if we're on the line that has the
-            // construct's syntax, or there's only indentation in the
-            // target range
-            (!inner.item ||
-              line.from <= inner.item.from ||
-              !/\S/.test(line.text.slice(0, inner.to)))
+            inner.item &&
+            inner.node.from < inner.item.from &&
+            /\S/.test(line.text.slice(inner.from, inner.to))
           ) {
-            const start = line.from + inner.from;
-            // Replace a list item marker with blank space
-            if (
-              inner.item &&
-              inner.node.from < inner.item.from &&
-              /\S/.test(line.text.slice(inner.from, inner.to))
-            ) {
-              let insert = inner.blank(
-                countColumn(line.text, 4, inner.to) -
-                  countColumn(line.text, 4, inner.from),
-              );
-              if (start == line.from) insert = normalizeIndent(insert, state);
-              return {
-                range: EditorSelection.cursor(start + insert.length),
-                changes: { from: start, to: line.from + inner.to, insert },
-              };
-            }
-            // Delete one level of indentation
-            if (start < pos)
-              return {
-                range: EditorSelection.cursor(start),
-                changes: { from: start, to: pos },
-              };
+            let insert = inner.blank(
+              countColumn(line.text, 4, inner.to) -
+                countColumn(line.text, 4, inner.from),
+            );
+            if (start == line.from) insert = normalizeIndent(insert, state);
+            return {
+              range: EditorSelection.cursor(start + insert.length),
+              changes: { from: start, to: line.from + inner.to, insert },
+            };
           }
+          // Delete one level of indentation
+          if (start < pos)
+            return {
+              range: EditorSelection.cursor(start),
+              changes: { from: start, to: pos },
+            };
         }
       }
-      return (dont = { range });
-    });
+    }
+    return (dont = { range });
+  });
   if (dont) return false;
   dispatch(
     state.update(changes, { scrollIntoView: true, userEvent: 'delete' }),

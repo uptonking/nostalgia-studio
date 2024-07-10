@@ -12,8 +12,8 @@ let _properties: readonly Completion[] | null = null;
 function properties() {
   if (!_properties && typeof document === 'object' && document.body) {
     const { style } = document.body;
-      const names = [];
-      const seen = new Set();
+    const names = [];
+    const seen = new Set();
     for (let prop in style)
       if (prop != 'cssText' && prop != 'cssFloat') {
         if (typeof style[prop] === 'string') {
@@ -749,7 +749,7 @@ const tags = [
 ].map((name) => ({ type: 'type', label: name }));
 
 const identifier = /^(\w[\w-]*|-\w[\w-]*|)$/;
-  const variable = /^-(-[\w-]*)?$/;
+const variable = /^-(-[\w-]*)?$/;
 
 function isVarArg(node: SyntaxNode, doc: Text) {
   if (node.name == '(' || node.type.isError) node = node.parent || node;
@@ -778,8 +778,8 @@ function variableNames(
     const known = VariablesByNode.get(node);
     if (known) return known;
     const result = [];
-      const seen = new Set();
-      const cursor = node.cursor(IterMode.IncludeAnonymous);
+    const seen = new Set();
+    const cursor = node.cursor(IterMode.IncludeAnonymous);
     if (cursor.firstChild())
       do {
         for (const option of variableNames(doc, cursor.node, isVariable))
@@ -792,7 +792,7 @@ function variableNames(
     return result;
   } else {
     const result: Completion[] = [];
-      const seen = new Set();
+    const seen = new Set();
     node.cursor().iterate((node) => {
       if (
         isVariable(node) &&
@@ -818,7 +818,7 @@ export const defineCSSCompletionSource =
   (isVariable: (node: SyntaxNodeRef) => boolean): CompletionSource =>
   (context) => {
     const { state, pos } = context;
-      const node = syntaxTree(state).resolveInner(pos, -1);
+    const node = syntaxTree(state).resolveInner(pos, -1);
     const isDash =
       node.type.isError &&
       node.from == node.to - 1 &&
@@ -856,7 +856,7 @@ export const defineCSSCompletionSource =
     if (!context.explicit) return null;
 
     const above = node.resolve(pos);
-      const before = above.childBefore(pos);
+    const before = above.childBefore(pos);
     if (before && before.name == ':' && above.name == 'PseudoClassSelector')
       return { from: pos, options: pseudoClasses, validFor: identifier };
     if (

@@ -125,7 +125,7 @@ const htmlPlain = LRLanguage.define({
           )
             return context.continue();
           let endElt = null;
-            let close;
+          let close;
           for (let cur = context.node; ; ) {
             const last = cur.lastChild;
             if (!last || last.name != 'Element' || last.to != cur.to) break;
@@ -145,7 +145,7 @@ const htmlPlain = LRLanguage.define({
       foldNodeProp.add({
         Element(node) {
           const first = node.firstChild;
-            const last = node.lastChild!;
+          const last = node.lastChild!;
           if (!first || first.name != 'OpenTag') return null;
           return {
             from: first.to,
@@ -204,7 +204,7 @@ export function html(
   } = {},
 ) {
   let dialect = '';
-    let wrap;
+  let wrap;
   if (config.matchClosingTags === false) dialect = 'noMatch';
   if (config.selfClosingTags === true)
     dialect = (dialect ? dialect + ' ' : '') + 'selfClosing';
@@ -248,12 +248,12 @@ export const autoCloseTags = EditorView.inputHandler.of(
     )
       return false;
     const base = insertTransaction();
-      const { state } = base;
+    const { state } = base;
     const closeTags = state.changeByRange((range) => {
       const didType = state.doc.sliceString(range.from - 1, range.to) == text;
       const { head } = range;
-        const after = syntaxTree(state).resolveInner(head, -1);
-        let name;
+      const after = syntaxTree(state).resolveInner(head, -1);
+      let name;
       if (didType && text == '>' && after.name == 'EndTag') {
         const tag = after.parent!;
         if (

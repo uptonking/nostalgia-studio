@@ -99,8 +99,8 @@ function mlLike(parserConfig) {
 
   function tokenString(stream, state) {
     let next;
-      let end = false;
-      let escaped = false;
+    let end = false;
+    let escaped = false;
     while ((next = stream.next()) != null) {
       if (next === '"' && !escaped) {
         end = true;
@@ -115,7 +115,8 @@ function mlLike(parserConfig) {
   }
 
   function tokenComment(stream, state) {
-    let prev; let next;
+    let prev;
+    let next;
     while (state.commentLevel > 0 && (next = stream.next()) != null) {
       if (prev === '(' && next === '*') state.commentLevel++;
       if (prev === '*' && next === ')') state.commentLevel--;
@@ -128,7 +129,8 @@ function mlLike(parserConfig) {
   }
 
   function tokenLongString(stream, state) {
-    let prev; let next;
+    let prev;
+    let next;
     while (state.longString && (next = stream.next()) != null) {
       if (prev === '|' && next === '}') state.longString = false;
       prev = next;

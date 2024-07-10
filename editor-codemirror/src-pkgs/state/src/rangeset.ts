@@ -159,16 +159,16 @@ class Chunk<T extends RangeValue> {
 
   map(offset: number, changes: ChangeDesc) {
     const value: T[] = [];
-      const from = [];
-      const to = [];
-      let newPos = -1;
-      let maxPoint = -1;
+    const from = [];
+    const to = [];
+    let newPos = -1;
+    let maxPoint = -1;
     for (let i = 0; i < this.value.length; i++) {
       const val = this.value[i];
-        const curFrom = this.from[i] + offset;
-        const curTo = this.to[i] + offset;
-        let newFrom;
-        let newTo;
+      const curFrom = this.from[i] + offset;
+      const curTo = this.to[i] + offset;
+      let newFrom;
+      let newTo;
       if (curFrom == curTo) {
         const mapped = changes.mapPos(curFrom, val.startSide, val.mapMode);
         if (mapped == null) continue;
@@ -303,8 +303,8 @@ export class RangeSet<T extends RangeValue> {
     if (this.isEmpty) return add.length ? RangeSet.of(add) : this;
 
     const cur = new LayerCursor(this, null, -1).goto(0);
-      let i = 0;
-      const spill: Range<T>[] = [];
+    let i = 0;
+    const spill: Range<T>[] = [];
     const builder = new RangeSetBuilder<T>();
     while (cur.value || i < add.length) {
       if (
@@ -358,11 +358,11 @@ export class RangeSet<T extends RangeValue> {
     if (changes.empty || this.isEmpty) return this;
 
     const chunks = [];
-      const chunkPos = [];
-      let maxPoint = -1;
+    const chunkPos = [];
+    let maxPoint = -1;
     for (let i = 0; i < this.chunk.length; i++) {
       const start = this.chunkPos[i];
-        const chunk = this.chunk[i];
+      const chunk = this.chunk[i];
       const touch = changes.touchesRange(start, start + chunk.length);
       if (touch === false) {
         maxPoint = Math.max(maxPoint, chunk.maxPoint);
@@ -395,7 +395,7 @@ export class RangeSet<T extends RangeValue> {
     if (this.isEmpty) return;
     for (let i = 0; i < this.chunk.length; i++) {
       const start = this.chunkPos[i];
-        const chunk = this.chunk[i];
+      const chunk = this.chunk[i];
       if (
         to >= start &&
         from <= start + chunk.length &&
@@ -474,7 +474,7 @@ export class RangeSet<T extends RangeValue> {
     if (!a.length) return true;
     const sharedChunks = findSharedChunks(a, b);
     const sideA = new SpanCursor(a, sharedChunks, 0).goto(from);
-      const sideB = new SpanCursor(b, sharedChunks, 0).goto(from);
+    const sideB = new SpanCursor(b, sharedChunks, 0).goto(from);
     for (;;) {
       if (
         sideA.to != sideB.to ||
@@ -503,7 +503,7 @@ export class RangeSet<T extends RangeValue> {
     minPointSize: number = -1,
   ): number {
     const cursor = new SpanCursor(sets, null, minPointSize).goto(from);
-      let pos = from;
+    let pos = from;
     let openRanges = cursor.openStart;
     for (;;) {
       const curTo = Math.min(cursor.to, to);
@@ -788,7 +788,7 @@ class LayerCursor<T extends RangeValue> {
         break;
       } else {
         const chunkPos = this.layer.chunkPos[this.chunkIndex];
-          const chunk = this.layer.chunk[this.chunkIndex];
+        const chunk = this.layer.chunk[this.chunkIndex];
         const from = chunkPos + chunk.from[this.rangeIndex];
         this.from = from;
         this.to = chunkPos + chunk.to[this.rangeIndex];
@@ -972,7 +972,7 @@ class SpanCursor<T extends RangeValue> {
 
   addActive(trackOpen: number[] | null) {
     let i = 0;
-      const { value, to, rank } = this.cursor;
+    const { value, to, rank } = this.cursor;
     // Organize active marks by rank first, then by size
     while (
       i < this.activeRank.length &&
@@ -990,7 +990,7 @@ class SpanCursor<T extends RangeValue> {
   // point. Otherwise, it's a regular range, covered by `this.active`.
   next() {
     const from = this.to;
-      const wasPoint = this.point;
+    const wasPoint = this.point;
     this.point = null;
     const trackOpen = this.openStart < 0 ? [] : null;
     for (;;) {
@@ -1082,11 +1082,11 @@ function compare<T extends RangeValue>(
   b.goto(startB);
   const endB = startB + length;
   let pos = startB;
-    const dPos = startB - startA;
+  const dPos = startB - startA;
   for (;;) {
     const diff = a.to + dPos - b.to || a.endSide - b.endSide;
     const end = diff < 0 ? a.to + dPos : b.to;
-      const clipEnd = Math.min(end, endB);
+    const clipEnd = Math.min(end, endB);
     if (a.point || b.point) {
       if (
         !(
@@ -1127,7 +1127,7 @@ function insert<T>(array: T[], index: number, value: T) {
 
 function findMinIndex(value: RangeValue[], array: number[]) {
   let found = -1;
-    let foundPos = C.Far;
+  let foundPos = C.Far;
   for (let i = 0; i < array.length; i++)
     if ((array[i] - foundPos || value[i].endSide - value[found].endSide) < 0) {
       found = i;

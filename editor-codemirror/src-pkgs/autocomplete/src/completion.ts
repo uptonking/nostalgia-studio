@@ -113,6 +113,12 @@ export class CompletionContext {
     /// only return completions when either there is part of a
     /// completable entity before the cursor, or `explicit` is true.
     readonly explicit: boolean,
+    /// The editor view. May be undefined if the context was created
+    /// in a situation where there is no such view available, such as
+    /// in synchronous updates via
+    /// [`CompletionResult.update`](#autocomplete.CompletionResult.update)
+    /// or when called by test code.
+    readonly view?: EditorView,
   ) {}
 
   /// Get the extent, content, and (if there is a token) type of the
@@ -169,7 +175,7 @@ function toSet(chars: { [ch: string]: true }) {
 
 function prefixMatch(options: readonly Completion[]) {
   const first = Object.create(null);
-    const rest = Object.create(null);
+  const rest = Object.create(null);
   for (const { label } of options) {
     first[label[0]] = true;
     for (let i = 1; i < label.length; i++) rest[label[i]] = true;
@@ -334,7 +340,7 @@ export function cur(state: EditorState) {
 export function ensureAnchor(expr: RegExp, start: boolean) {
   const { source } = expr;
   const addStart = start && source[0] != '^';
-    const addEnd = source[source.length - 1] != '$';
+  const addEnd = source[source.length - 1] != '$';
   if (!addStart && !addEnd) return expr;
   return new RegExp(
     `${addStart ? '^' : ''}(?:${source})${addEnd ? '$' : ''}`,
@@ -356,8 +362,8 @@ export function insertCompletionText(
   to: number,
 ): TransactionSpec {
   const { main } = state.selection;
-    const fromOff = from - main.from;
-    const toOff = to - main.from;
+  const fromOff = from - main.from;
+  const toOff = to - main.from;
   return {
     ...state.changeByRange((range) => {
       if (

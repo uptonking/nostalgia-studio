@@ -26,7 +26,7 @@ const activeLineHighlighter = ViewPlugin.fromClass(
 
     getDeco(view: EditorView) {
       let lastLineStart = -1;
-        const deco = [];
+      const deco = [];
       for (const r of view.state.selection.ranges) {
         const line = view.lineBlockAt(r.head);
         if (line.from > lastLineStart) {

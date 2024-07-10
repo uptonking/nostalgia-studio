@@ -159,7 +159,7 @@ function tokenString(quote, style) {
   const close = quote == '(' ? ')' : quote == '{' ? '}' : quote;
   return function (stream, state) {
     let next;
-      let escaped = false;
+    let escaped = false;
     while ((next = stream.next()) != null) {
       if (next === close && !escaped) {
         state.tokens.shift();

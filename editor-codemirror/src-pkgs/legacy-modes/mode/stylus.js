@@ -1185,40 +1185,40 @@ const valueKeywords_ = [
 ];
 
 const wordOperatorKeywords_ = [
-    'in',
-    'and',
-    'or',
-    'not',
-    'is not',
-    'is a',
-    'is',
-    'isnt',
-    'defined',
-    'if unless',
-  ];
-  const blockKeywords_ = ['for', 'if', 'else', 'unless', 'from', 'to'];
-  const commonAtoms_ = [
-    'null',
-    'true',
-    'false',
-    'href',
-    'title',
-    'type',
-    'not-allowed',
-    'readonly',
-    'disabled',
-  ];
-  const commonDef_ = [
-    '@font-face',
-    '@keyframes',
-    '@media',
-    '@viewport',
-    '@page',
-    '@host',
-    '@supports',
-    '@block',
-    '@css',
-  ];
+  'in',
+  'and',
+  'or',
+  'not',
+  'is not',
+  'is a',
+  'is',
+  'isnt',
+  'defined',
+  'if unless',
+];
+const blockKeywords_ = ['for', 'if', 'else', 'unless', 'from', 'to'];
+const commonAtoms_ = [
+  'null',
+  'true',
+  'false',
+  'href',
+  'title',
+  'type',
+  'not-allowed',
+  'readonly',
+  'disabled',
+];
+const commonDef_ = [
+  '@font-face',
+  '@keyframes',
+  '@media',
+  '@viewport',
+  '@page',
+  '@host',
+  '@supports',
+  '@block',
+  '@css',
+];
 
 const hintWords = tagKeywords_.concat(
   documentTypes_,
@@ -1253,27 +1253,28 @@ function escapeRegExp(text) {
 }
 
 const tagKeywords = keySet(tagKeywords_);
-  const tagVariablesRegexp = /^(a|b|i|s|col|em)$/i;
-  const propertyKeywords = keySet(propertyKeywords_);
-  const nonStandardPropertyKeywords = keySet(nonStandardPropertyKeywords_);
-  const valueKeywords = keySet(valueKeywords_);
-  const colorKeywords = keySet(colorKeywords_);
-  const documentTypes = keySet(documentTypes_);
-  const documentTypesRegexp = wordRegexp(documentTypes_);
-  const mediaFeatures = keySet(mediaFeatures_);
-  const mediaTypes = keySet(mediaTypes_);
-  const fontProperties = keySet(fontProperties_);
-  const operatorsRegexp = /^\s*([.]{2,3}|&&|\|\||\*\*|[?!=:]?=|[-+*\/%<>]=?|\?:|\~)/;
-  const wordOperatorKeywordsRegexp = wordRegexp(wordOperatorKeywords_);
-  const blockKeywords = keySet(blockKeywords_);
-  const vendorPrefixesRegexp = new RegExp(/^\-(moz|ms|o|webkit)-/i);
-  const commonAtoms = keySet(commonAtoms_);
-  let firstWordMatch = '';
-  const states = {};
-  let ch;
-  let style;
-  let type;
-  let override;
+const tagVariablesRegexp = /^(a|b|i|s|col|em)$/i;
+const propertyKeywords = keySet(propertyKeywords_);
+const nonStandardPropertyKeywords = keySet(nonStandardPropertyKeywords_);
+const valueKeywords = keySet(valueKeywords_);
+const colorKeywords = keySet(colorKeywords_);
+const documentTypes = keySet(documentTypes_);
+const documentTypesRegexp = wordRegexp(documentTypes_);
+const mediaFeatures = keySet(mediaFeatures_);
+const mediaTypes = keySet(mediaTypes_);
+const fontProperties = keySet(fontProperties_);
+const operatorsRegexp =
+  /^\s*([.]{2,3}|&&|\|\||\*\*|[?!=:]?=|[-+*\/%<>]=?|\?:|\~)/;
+const wordOperatorKeywordsRegexp = wordRegexp(wordOperatorKeywords_);
+const blockKeywords = keySet(blockKeywords_);
+const vendorPrefixesRegexp = new RegExp(/^\-(moz|ms|o|webkit)-/i);
+const commonAtoms = keySet(commonAtoms_);
+let firstWordMatch = '';
+const states = {};
+let ch;
+let style;
+let type;
+let override;
 
 /**
  * Tokenizers
@@ -1404,7 +1405,7 @@ function tokenBase(stream, state) {
  */
 function tokenCComment(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next()) != null) {
     if (maybeEnd && ch == '/') {
       state.tokenize = null;
@@ -1421,7 +1422,7 @@ function tokenCComment(stream, state) {
 function tokenString(quote) {
   return function (stream, state) {
     let escaped = false;
-      let ch;
+    let ch;
     while ((ch = stream.next()) != null) {
       if (ch == quote && !escaped) {
         if (quote == ')') stream.backUp(1);
@@ -1543,7 +1544,8 @@ function endOfLine(stream) {
 
 function firstWordOfLine(line) {
   const re = /^\s*[-_]*[a-z0-9]+[\w-]*/i;
-  const result = typeof line === 'string' ? line.match(re) : line.string.match(re);
+  const result =
+    typeof line === 'string' ? line.match(re) : line.string.match(re);
   return result ? result[0].replace(/^\s*/, '') : '';
 }
 
@@ -1947,16 +1949,16 @@ export const stylus = {
   },
   indent: function (state, textAfter, iCx) {
     const cx = state.context;
-      const ch = textAfter && textAfter.charAt(0);
-      let indent = cx.indent;
-      const lineFirstWord = firstWordOfLine(textAfter);
-      const lineIndent = iCx.lineIndent(iCx.pos);
-      const prevLineFirstWord = state.context.prev
-        ? state.context.prev.line.firstWord
-        : '';
-      const prevLineIndent = state.context.prev
-        ? state.context.prev.line.indent
-        : lineIndent;
+    const ch = textAfter && textAfter.charAt(0);
+    let indent = cx.indent;
+    const lineFirstWord = firstWordOfLine(textAfter);
+    const lineIndent = iCx.lineIndent(iCx.pos);
+    const prevLineFirstWord = state.context.prev
+      ? state.context.prev.line.firstWord
+      : '';
+    const prevLineIndent = state.context.prev
+      ? state.context.prev.line.indent
+      : lineIndent;
 
     if (
       cx.prev &&

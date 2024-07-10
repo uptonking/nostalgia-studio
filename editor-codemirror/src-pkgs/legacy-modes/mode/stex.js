@@ -226,7 +226,7 @@ function mkStex(mathMode) {
 
   function beginParams(source, state) {
     const ch = source.peek();
-      let lastPlug;
+    let lastPlug;
     if (ch == '{' || ch == '[') {
       lastPlug = peekCommand(state);
       lastPlug.openBracket(ch);

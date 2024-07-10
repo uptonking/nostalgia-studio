@@ -25,17 +25,17 @@ const keywords = {
 };
 
 const isSpaceName = /[\w_\-]/i;
-  const reHR = /^\-\-\-\-+$/; // <hr>
-  const reWikiCommentStart = /^\/\*\*\*$/; // /***
-  const reWikiCommentStop = /^\*\*\*\/$/; // ***/
-  const reBlockQuote = /^<<<$/;
-  const reJsCodeStart = /^\/\/\{\{\{$/; // //{{{ js block start
-  const reJsCodeStop = /^\/\/\}\}\}$/; // //}}} js stop
-  const reXmlCodeStart = /^<!--\{\{\{-->$/; // xml block start
-  const reXmlCodeStop = /^<!--\}\}\}-->$/; // xml stop
-  const reCodeBlockStart = /^\{\{\{$/; // {{{ TW text div block start
-  const reCodeBlockStop = /^\}\}\}$/; // }}} TW text stop
-  const reUntilCodeStop = /.*?\}\}\}/;
+const reHR = /^\-\-\-\-+$/; // <hr>
+const reWikiCommentStart = /^\/\*\*\*$/; // /***
+const reWikiCommentStop = /^\*\*\*\/$/; // ***/
+const reBlockQuote = /^<<<$/;
+const reJsCodeStart = /^\/\/\{\{\{$/; // //{{{ js block start
+const reJsCodeStop = /^\/\/\}\}\}$/; // //}}} js stop
+const reXmlCodeStart = /^<!--\{\{\{-->$/; // xml block start
+const reXmlCodeStop = /^<!--\}\}\}-->$/; // xml stop
+const reCodeBlockStart = /^\{\{\{$/; // {{{ TW text div block start
+const reCodeBlockStop = /^\}\}\}$/; // }}} TW text stop
+const reUntilCodeStop = /.*?\}\}\}/;
 
 function chain(stream, state, f) {
   state.tokenize = f;
@@ -44,7 +44,7 @@ function chain(stream, state, f) {
 
 function tokenBase(stream, state) {
   const sol = stream.sol();
-    const ch = stream.peek();
+  const ch = stream.peek();
 
   state.block = false; // indicates the start of a code block.
 
@@ -175,7 +175,7 @@ function tokenBase(stream, state) {
 // tw invisible comment
 function twTokenComment(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = tokenBase;
@@ -189,7 +189,7 @@ function twTokenComment(stream, state) {
 // tw strong / bold
 function twTokenStrong(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next())) {
     if (ch == "'" && maybeEnd) {
       state.tokenize = tokenBase;
@@ -225,7 +225,7 @@ function twTokenCode(stream, state) {
 // tw em / italic
 function twTokenEm(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = tokenBase;
@@ -239,7 +239,7 @@ function twTokenEm(stream, state) {
 // tw underlined text
 function twTokenUnderline(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next())) {
     if (ch == '_' && maybeEnd) {
       state.tokenize = tokenBase;
@@ -254,7 +254,7 @@ function twTokenUnderline(stream, state) {
 // change CSS if needed
 function twTokenStrike(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
 
   while ((ch = stream.next())) {
     if (ch == '-' && maybeEnd) {

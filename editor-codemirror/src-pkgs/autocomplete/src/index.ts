@@ -1,4 +1,9 @@
-import { Prec, type Extension, type EditorState, type StateEffect } from '@codemirror/state';
+import {
+  Prec,
+  type Extension,
+  type EditorState,
+  type StateEffect,
+} from '@codemirror/state';
 import { keymap, type KeyBinding } from '@codemirror/view';
 import type { Completion, Option } from './completion';
 import { completionState, State, setSelectedEffect } from './state';

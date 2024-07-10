@@ -36,7 +36,14 @@ const commonKeywords = [
   'next',
   'break',
 ];
-const commonBlockKeywords = ['if', 'else', 'repeat', 'while', 'function', 'for'];
+const commonBlockKeywords = [
+  'if',
+  'else',
+  'repeat',
+  'while',
+  'function',
+  'for',
+];
 
 const atoms = wordObj(commonAtoms);
 const builtins = wordObj(commonBuiltins);
@@ -141,8 +148,8 @@ function tokenString(quote) {
 }
 
 const ALIGN_YES = 1;
-  const ALIGN_NO = 2;
-  const BRACELESS = 4;
+const ALIGN_NO = 2;
+const BRACELESS = 4;
 
 function push(state, type, stream) {
   state.ctx = {
@@ -211,8 +218,8 @@ export const r = {
   indent: function (state, textAfter, cx) {
     if (state.tokenize != tokenBase) return 0;
     const firstChar = textAfter && textAfter.charAt(0);
-      let ctx = state.ctx;
-      const closing = firstChar == ctx.type;
+    let ctx = state.ctx;
+    const closing = firstChar == ctx.type;
     if (ctx.flags & BRACELESS) ctx = ctx.prev;
     if (ctx.type == 'block')
       return ctx.indent + (firstChar == '{' ? 0 : cx.unit);

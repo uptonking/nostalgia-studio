@@ -33,7 +33,7 @@ export class DOMReader {
       const next: Node | null = cur.nextSibling;
       if (next == end) break;
       const view = ContentView.get(cur);
-        const nextView = ContentView.get(next!);
+      const nextView = ContentView.get(next!);
       if (
         view && nextView
           ? view.breakAfter
@@ -57,8 +57,8 @@ export class DOMReader {
 
     for (let off = 0, re = this.lineSeparator ? null : /\r\n?|\n/g; ; ) {
       let nextBreak = -1;
-        let breakSize = 1;
-        let m;
+      let breakSize = 1;
+      let m;
       if (this.lineSeparator) {
         nextBreak = text.indexOf(this.lineSeparator, off);
         breakSize = this.lineSeparator.length;

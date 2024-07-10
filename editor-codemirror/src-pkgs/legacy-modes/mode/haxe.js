@@ -4,11 +4,11 @@ function kw(type) {
   return { type: type, style: 'keyword' };
 }
 const A = kw('keyword a');
-  const B = kw('keyword b');
-  const C = kw('keyword c');
+const B = kw('keyword b');
+const C = kw('keyword c');
 const operator = kw('operator');
-  const atom = { type: 'atom', style: 'atom' };
-  const attribute = { type: 'attribute', style: 'attribute' };
+const atom = { type: 'atom', style: 'atom' };
+const attribute = { type: 'attribute', style: 'attribute' };
 var type = kw('typedef');
 const keywords = {
   if: A,
@@ -63,7 +63,7 @@ function chain(stream, state, f) {
 
 function toUnescaped(stream, end) {
   let escaped = false;
-    let next;
+  let next;
   while ((next = stream.next()) != null) {
     if (next == end && !escaped) return true;
     escaped = !escaped && next == '\\';
@@ -72,7 +72,8 @@ function toUnescaped(stream, end) {
 
 // Used as scratch variables to communicate multiple values without
 // consing up tons of objects.
-var type; let content;
+var type;
+let content;
 function ret(tp, style, cont) {
   type = tp;
   content = cont;
@@ -124,7 +125,7 @@ function haxeTokenBase(stream, state) {
     } else {
       stream.eatWhile(/[\w_]/);
       var word = stream.current();
-        const known = keywords.propertyIsEnumerable(word) && keywords[word];
+      const known = keywords.propertyIsEnumerable(word) && keywords[word];
       return known && state.kwAllowed
         ? ret(known.type, known.style, word)
         : ret('variable', 'variable', word);
@@ -141,7 +142,7 @@ function haxeTokenString(quote) {
 
 function haxeTokenComment(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = haxeTokenBase;
@@ -536,9 +537,9 @@ export const haxe = {
     if (stream.eatSpace()) return null;
     const style = state.tokenize(stream, state);
     if (type == 'comment') return style;
-    state.reAllowed = Boolean(type == 'operator' ||
-      type == 'keyword c' ||
-      type.match(/^[\[{}\(,;:]$/));
+    state.reAllowed = Boolean(
+      type == 'operator' || type == 'keyword c' || type.match(/^[\[{}\(,;:]$/),
+    );
     state.kwAllowed = type != '.';
     return parseHaxe(state, style, type, content, stream);
   },
@@ -546,10 +547,10 @@ export const haxe = {
   indent: function (state, textAfter, cx) {
     if (state.tokenize != haxeTokenBase) return 0;
     const firstChar = textAfter && textAfter.charAt(0);
-      let lexical = state.lexical;
+    let lexical = state.lexical;
     if (lexical.type == 'stat' && firstChar == '}') lexical = lexical.prev;
     const type = lexical.type;
-      const closing = firstChar == type;
+    const closing = firstChar == type;
     if (type == 'vardef') return lexical.indented + 4;
     else if (type == 'form' && firstChar == '{') return lexical.indented;
     else if (type == 'stat' || type == 'form')

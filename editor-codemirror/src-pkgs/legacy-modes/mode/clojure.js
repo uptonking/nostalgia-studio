@@ -787,7 +787,7 @@ function base(stream, state) {
 
 function inString(stream, state) {
   let escaped = false;
-    let next;
+  let next;
 
   while ((next = stream.next())) {
     if (next === '"' && !escaped) {

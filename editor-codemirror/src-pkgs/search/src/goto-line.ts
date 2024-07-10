@@ -51,7 +51,7 @@ function createLineDialog(view: EditorView): Panel {
     const match = /^([+-])?(\d+)?(:\d+)?(%)?$/.exec(input.value);
     if (!match) return;
     const { state } = view;
-      const startLine = state.doc.lineAt(state.selection.main.head);
+    const startLine = state.doc.lineAt(state.selection.main.head);
     const [, sign, ln, cl, percent] = match;
     const col = cl ? Number(cl.slice(1)) : 0;
     let line = ln ? Number(ln) : startLine.number;
@@ -63,7 +63,9 @@ function createLineDialog(view: EditorView): Panel {
     } else if (ln && sign) {
       line = line * (sign == '-' ? -1 : 1) + startLine.number;
     }
-    const docLine = state.doc.line(Math.max(1, Math.min(state.doc.lines, line)));
+    const docLine = state.doc.line(
+      Math.max(1, Math.min(state.doc.lines, line)),
+    );
     const selection = EditorSelection.cursor(
       docLine.from + Math.max(0, Math.min(col, docLine.length)),
     );

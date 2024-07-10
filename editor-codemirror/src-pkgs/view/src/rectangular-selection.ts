@@ -17,11 +17,11 @@ const MaxOff = 2000;
 
 function rectangleFor(state: EditorState, a: Pos, b: Pos) {
   const startLine = Math.min(a.line, b.line);
-    const endLine = Math.max(a.line, b.line);
+  const endLine = Math.max(a.line, b.line);
   const ranges = [];
   if (a.off > MaxOff || b.off > MaxOff || a.col < 0 || b.col < 0) {
     const startOff = Math.min(a.off, b.off);
-      const endOff = Math.max(a.off, b.off);
+    const endOff = Math.max(a.off, b.off);
     for (let i = startLine; i <= endLine; i++) {
       const line = state.doc.line(i);
       if (line.length <= endOff)
@@ -31,7 +31,7 @@ function rectangleFor(state: EditorState, a: Pos, b: Pos) {
     }
   } else {
     const startCol = Math.min(a.col, b.col);
-      const endCol = Math.max(a.col, b.col);
+    const endCol = Math.max(a.col, b.col);
     for (let i = startLine; i <= endLine; i++) {
       const line = state.doc.line(i);
       const start = findColumn(line.text, startCol, state.tabSize, true);
@@ -54,9 +54,12 @@ function absoluteColumn(view: EditorView, x: number) {
 }
 
 function getPos(view: EditorView, event: MouseEvent) {
-  const offset = view.posAtCoords({ x: event.clientX, y: event.clientY }, false);
+  const offset = view.posAtCoords(
+    { x: event.clientX, y: event.clientY },
+    false,
+  );
   const line = view.state.doc.lineAt(offset);
-    const off = offset - line.from;
+  const off = offset - line.from;
   const col =
     off > MaxOff
       ? -1
@@ -68,7 +71,7 @@ function getPos(view: EditorView, event: MouseEvent) {
 
 function rectangleSelectionStyle(view: EditorView, event: MouseEvent) {
   let start = getPos(view, event)!;
-    let startSel = view.state.selection;
+  let startSel = view.state.selection;
   if (!start) return null;
   return {
     update(update) {

@@ -47,7 +47,7 @@ const baseTheme = EditorView.baseTheme({
 });
 
 const DefaultScanDist = 10000;
-  const DefaultBrackets = '()[]{}';
+const DefaultBrackets = '()[]{}';
 
 const bracketMatchingConfig = Facet.define<Config, Required<Config>>({
   combine(configs) {
@@ -61,7 +61,7 @@ const bracketMatchingConfig = Facet.define<Config, Required<Config>>({
 });
 
 const matchingMark = Decoration.mark({ class: 'cm-matchingBracket' });
-  const nonmatchingMark = Decoration.mark({ class: 'cm-nonmatchingBracket' });
+const nonmatchingMark = Decoration.mark({ class: 'cm-nonmatchingBracket' });
 
 function defaultRenderMatch(match: MatchResult) {
   const decorations = [];
@@ -159,9 +159,9 @@ export function matchBrackets(
   config: Config = {},
 ): MatchResult | null {
   const maxScanDistance = config.maxScanDistance || DefaultScanDist;
-    const brackets = config.brackets || DefaultBrackets;
+  const brackets = config.brackets || DefaultBrackets;
   const tree = syntaxTree(state);
-    const node = tree.resolveInner(pos, dir);
+  const node = tree.resolveInner(pos, dir);
   for (let cur: SyntaxNode | null = node; cur; cur = cur.parent) {
     const matches = matchingNodes(cur.type, dir, brackets);
     if (matches && cur.from < cur.to) {
@@ -204,9 +204,9 @@ function matchMarkedBrackets(
   brackets: string,
 ) {
   const parent = token.parent;
-    const firstToken = { from: handle.from, to: handle.to };
+  const firstToken = { from: handle.from, to: handle.to };
   let depth = 0;
-    const cursor = parent?.cursor();
+  const cursor = parent?.cursor();
   if (
     cursor &&
     (dir < 0 ? cursor.childBefore(token.from) : cursor.childAfter(token.to))
@@ -266,7 +266,7 @@ function matchPlainBrackets(
     to: dir > 0 ? pos + 1 : pos,
   };
   const iter = state.doc.iterRange(pos, dir > 0 ? state.doc.length : 0);
-    let depth = 0;
+  let depth = 0;
   for (let distance = 0; !iter.next().done && distance <= maxScanDistance; ) {
     const text = iter.value;
     if (dir < 0) distance += text.length;

@@ -145,7 +145,8 @@ export class StringStream {
     caseInsensitive?: boolean,
   ): boolean | RegExpMatchArray | null {
     if (typeof pattern === 'string') {
-      const cased = (str: string) => (caseInsensitive ? str.toLowerCase() : str);
+      const cased = (str: string) =>
+        caseInsensitive ? str.toLowerCase() : str;
       const substr = this.string.substr(this.pos, pattern.length);
       if (cased(substr) == cased(pattern)) {
         if (consume !== false) this.pos += pattern.length;

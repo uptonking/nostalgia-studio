@@ -117,10 +117,10 @@ export class Language {
       language.of(this),
       EditorState.languageData.of((state, pos, side) => {
         const top = topNodeAt(state, pos, side);
-          const data = top.type.prop(languageDataProp);
+        const data = top.type.prop(languageDataProp);
         if (!data) return [];
         const base = state.facet(data);
-          const sub = top.type.prop(sublanguageProp);
+        const sub = top.type.prop(sublanguageProp);
         if (sub) {
           const innerNode = top.resolve(pos - top.from, side);
           for (const sublang of sub)
@@ -190,7 +190,7 @@ export class Language {
 
 function topNodeAt(state: EditorState, pos: number, side: -1 | 0 | 1) {
   const topLang = state.facet(language);
-    let tree = syntaxTree(state).topNode;
+  let tree = syntaxTree(state).topNode;
   if (!topLang || topLang.allowsNesting) {
     for (
       let node: SyntaxNode | null = tree;
@@ -485,7 +485,8 @@ export class ParseContext {
 
   /// @internal
   takeTree() {
-    let pos; let tree: Tree | undefined | null;
+    let pos;
+    let tree: Tree | undefined | null;
     if (this.parse && (pos = this.parse.parsedPos) >= this.treeLen) {
       if (this.parse.stoppedAt == null || this.parse.stoppedAt > pos)
         this.parse.stopAt(pos);
@@ -537,7 +538,7 @@ export class ParseContext {
         skipped = [];
         for (const r of this.skipped) {
           const from = changes.mapPos(r.from, 1);
-            const to = changes.mapPos(r.to, -1);
+          const to = changes.mapPos(r.to, -1);
           if (from < to) skipped.push({ from, to });
         }
       }
@@ -602,7 +603,7 @@ export class ParseContext {
         ranges: readonly { from: number; to: number }[],
       ): PartialParse {
         const from = ranges[0].from;
-          const to = ranges[ranges.length - 1].to;
+        const to = ranges[ranges.length - 1].to;
         const parser = {
           parsedPos: from,
           advance() {
@@ -683,10 +684,14 @@ class LanguageState {
 
   static init(state: EditorState) {
     const vpTo = Math.min(Work.InitViewport, state.doc.length);
-    const parseState = ParseContext.create(state.facet(language)!.parser, state, {
-      from: 0,
-      to: vpTo,
-    });
+    const parseState = ParseContext.create(
+      state.facet(language)!.parser,
+      state,
+      {
+        from: 0,
+        to: vpTo,
+      },
+    );
     if (!parseState.work(Work.Apply, vpTo)) parseState.takeTree();
     return new LanguageState(parseState);
   }
@@ -710,11 +715,11 @@ let requestIdle = (callback: (deadline?: IdleDeadline) => void) => {
 if (typeof requestIdleCallback !== 'undefined')
   requestIdle = (callback: (deadline?: IdleDeadline) => void) => {
     let idle = -1;
-      const timeout = setTimeout(() => {
-        idle = requestIdleCallback(callback, {
-          timeout: Work.MaxPause - Work.MinPause,
-        });
-      }, Work.MinPause);
+    const timeout = setTimeout(() => {
+      idle = requestIdleCallback(callback, {
+        timeout: Work.MaxPause - Work.MinPause,
+      });
+    }, Work.MinPause);
     return () => (idle < 0 ? clearTimeout(timeout) : cancelIdleCallback(idle));
   };
 
@@ -755,7 +760,7 @@ const parseWorker = ViewPlugin.fromClass(
     scheduleWork() {
       if (this.working) return;
       const { state } = this.view;
-        const field = state.field(Language.state);
+      const field = state.field(Language.state);
       if (
         field.tree != field.context.tree ||
         !field.context.isDone(state.doc.length)
@@ -775,10 +780,10 @@ const parseWorker = ViewPlugin.fromClass(
       if (this.chunkBudget <= 0) return; // No more budget
 
       const {
-          state,
-          viewport: { to: vpTo },
-        } = this.view;
-        const field = state.field(Language.state);
+        state,
+        viewport: { to: vpTo },
+      } = this.view;
+      const field = state.field(Language.state);
       if (
         field.tree == field.context.tree &&
         field.context.isDone(vpTo + Work.MaxParseAhead)
@@ -966,7 +971,8 @@ export class LanguageDescription {
     descs: readonly LanguageDescription[],
     filename: string,
   ) {
-    for (const d of descs) if (d.filename && d.filename.test(filename)) return d;
+    for (const d of descs)
+      if (d.filename && d.filename.test(filename)) return d;
     const ext = /\.([^.]+)$/.exec(filename);
     if (ext)
       for (const d of descs) if (d.extensions.indexOf(ext[1]) > -1) return d;

@@ -2,8 +2,8 @@ const variable_regex = /({)?[a-zA-Z0-9_]+(})?/;
 
 function tokenString(stream, state) {
   let current;
-    let prev;
-    let found_var = false;
+  let prev;
+  let found_var = false;
   while (!stream.eol() && (current = stream.next()) != state.pending) {
     if (current === '$' && prev != '\\' && state.pending == '"') {
       found_var = true;

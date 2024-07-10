@@ -94,7 +94,10 @@ function normalizeKeyName(name: string, platform: PlatformName): string {
   const parts = name.split(/-(?!$)/);
   let result = parts[parts.length - 1];
   if (result == 'Space') result = ' ';
-  let alt; let ctrl; let shift; let meta;
+  let alt;
+  let ctrl;
+  let shift;
+  let meta;
   for (let i = 0; i < parts.length - 1; ++i) {
     const mod = parts[i];
     if (/^(cmd|meta|m)$/i.test(mod)) meta = true;
@@ -282,11 +285,11 @@ function runHandlers(
   currentKeyEvent = event;
   const name = keyName(event);
   const charCode = codePointAt(name, 0);
-    const isChar = codePointSize(charCode) == name.length && name != ' ';
+  const isChar = codePointSize(charCode) == name.length && name != ' ';
   let prefix = '';
-    let handled = false;
-    let prevented = false;
-    let stopPropagation = false;
+  let handled = false;
+  let prevented = false;
+  let stopPropagation = false;
   if (
     storedPrefix &&
     storedPrefix.view == view &&
@@ -299,7 +302,8 @@ function runHandlers(
     }
   }
 
-  const ran: Set<(view: EditorView, event: KeyboardEvent) => boolean> = new Set();
+  const ran: Set<(view: EditorView, event: KeyboardEvent) => boolean> =
+    new Set();
   const runFor = (binding: Binding | undefined) => {
     if (binding) {
       for (const cmd of binding.run)
@@ -319,8 +323,8 @@ function runHandlers(
   };
 
   const scopeObj = map[scope];
-    let baseName;
-    let shiftName;
+  let baseName;
+  let shiftName;
   if (scopeObj) {
     if (runFor(scopeObj[prefix + modifiers(name, event, !isChar)])) {
       handled = true;

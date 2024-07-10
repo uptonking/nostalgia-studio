@@ -43,30 +43,33 @@ function isTopScope(context) {
 
 export function clike(parserConfig) {
   const statementIndentUnit = parserConfig.statementIndentUnit;
-    const dontAlignCalls = parserConfig.dontAlignCalls;
-    const keywords = parserConfig.keywords || {};
-    const types = parserConfig.types || {};
-    const builtin = parserConfig.builtin || {};
-    const blockKeywords = parserConfig.blockKeywords || {};
-    const defKeywords = parserConfig.defKeywords || {};
-    const atoms = parserConfig.atoms || {};
-    const hooks = parserConfig.hooks || {};
-    const multiLineStrings = parserConfig.multiLineStrings;
-    const indentStatements = parserConfig.indentStatements !== false;
-    const indentSwitch = parserConfig.indentSwitch !== false;
-    const namespaceSeparator = parserConfig.namespaceSeparator;
-    const isPunctuationChar = parserConfig.isPunctuationChar || /[\[\]{}\(\),;\:\.]/;
-    const numberStart = parserConfig.numberStart || /[\d\.]/;
-    const number =
-      parserConfig.number ||
-      /^(?:0x[a-f\d]+|0b[01]+|(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?)(u|ll?|l|f)?/i;
-    const isOperatorChar = parserConfig.isOperatorChar || /[+\-*&%=<>!?|\/]/;
-    const isIdentifierChar = parserConfig.isIdentifierChar || /[\w\$_\xa1-\uffff]/;
-    // An optional function that takes a {string} token and returns true if it
-    // should be treated as a builtin.
-    const isReservedIdentifier = parserConfig.isReservedIdentifier || false;
+  const dontAlignCalls = parserConfig.dontAlignCalls;
+  const keywords = parserConfig.keywords || {};
+  const types = parserConfig.types || {};
+  const builtin = parserConfig.builtin || {};
+  const blockKeywords = parserConfig.blockKeywords || {};
+  const defKeywords = parserConfig.defKeywords || {};
+  const atoms = parserConfig.atoms || {};
+  const hooks = parserConfig.hooks || {};
+  const multiLineStrings = parserConfig.multiLineStrings;
+  const indentStatements = parserConfig.indentStatements !== false;
+  const indentSwitch = parserConfig.indentSwitch !== false;
+  const namespaceSeparator = parserConfig.namespaceSeparator;
+  const isPunctuationChar =
+    parserConfig.isPunctuationChar || /[\[\]{}\(\),;\:\.]/;
+  const numberStart = parserConfig.numberStart || /[\d\.]/;
+  const number =
+    parserConfig.number ||
+    /^(?:0x[a-f\d]+|0b[01]+|(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?)(u|ll?|l|f)?/i;
+  const isOperatorChar = parserConfig.isOperatorChar || /[+\-*&%=<>!?|\/]/;
+  const isIdentifierChar =
+    parserConfig.isIdentifierChar || /[\w\$_\xa1-\uffff]/;
+  // An optional function that takes a {string} token and returns true if it
+  // should be treated as a builtin.
+  const isReservedIdentifier = parserConfig.isReservedIdentifier || false;
 
-  let curPunc; let isDefKeyword;
+  let curPunc;
+  let isDefKeyword;
 
   function tokenBase(stream, state) {
     const ch = stream.next();
@@ -127,8 +130,8 @@ export function clike(parserConfig) {
   function tokenString(quote) {
     return function (stream, state) {
       let escaped = false;
-        let next;
-        let end = false;
+      let next;
+      let end = false;
       while ((next = stream.next()) != null) {
         if (next == quote && !escaped) {
           end = true;
@@ -143,7 +146,7 @@ export function clike(parserConfig) {
 
   function tokenComment(stream, state) {
     let maybeEnd = false;
-      let ch;
+    let ch;
     while ((ch = stream.next())) {
       if (ch == '/' && maybeEnd) {
         state.tokenize = null;
@@ -246,7 +249,7 @@ export function clike(parserConfig) {
       )
         return null;
       let ctx = state.context;
-        const firstChar = textAfter && textAfter.charAt(0);
+      const firstChar = textAfter && textAfter.charAt(0);
       const closing = firstChar == ctx.type;
       if (ctx.type == 'statement' && firstChar == '}') ctx = ctx.prev;
       if (parserConfig.dontIndentStatements)
@@ -299,7 +302,7 @@ export function clike(parserConfig) {
 
 function words(str) {
   const obj = {};
-    const words = str.split(' ');
+  const words = str.split(' ');
   for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
@@ -687,8 +690,8 @@ export const scala = clike({
 function tokenKotlinString(tripleString) {
   return function (stream, state) {
     let escaped = false;
-      let next;
-      let end = false;
+    let next;
+    let end = false;
     while (!stream.eol()) {
       if (!tripleString && !escaped && stream.match('"')) {
         end = true;
@@ -950,8 +953,8 @@ let stringTokenizer = null;
 function tokenCeylonString(type) {
   return function (stream, state) {
     let escaped = false;
-      let next;
-      let end = false;
+    let next;
+    let end = false;
     while (!stream.eol()) {
       if (
         !escaped &&

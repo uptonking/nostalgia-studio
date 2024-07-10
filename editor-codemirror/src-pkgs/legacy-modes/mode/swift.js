@@ -224,7 +224,7 @@ function tokenUntilClosingParen() {
 function tokenString(openQuote, stream, state) {
   const singleLine = openQuote.length == 1;
   let ch;
-    let escaped = false;
+  let escaped = false;
   while ((ch = stream.peek())) {
     if (escaped) {
       stream.next();

@@ -173,7 +173,7 @@ export class DocView extends ContentView {
       this.forceSelection = true;
 
     const prevDeco = this.decorations;
-      const deco = this.updateDeco();
+    const deco = this.updateDeco();
     const decoDiff = findChangedDeco(prevDeco, deco, update.changes);
     changedRanges = ChangedRange.extendWithRanges(changedRanges, decoDiff);
 
@@ -256,10 +256,10 @@ export class DocView extends ContentView {
       const next = i >= 0 ? ranges[i] : null;
       if (!next) break;
       const { fromA, toA, fromB, toB } = next;
-        let content;
-        let breakAtStart;
-        let openStart;
-        let openEnd;
+      let content;
+      let breakAtStart;
+      let openStart;
+      let openEnd;
       if (
         composition &&
         composition.range.fromB < toB &&
@@ -385,7 +385,7 @@ export class DocView extends ContentView {
     if (mustRead || !this.view.observer.selectionRange.focusNode)
       this.view.observer.readSelectionRange();
     const activeElt = this.view.root.activeElement;
-      const focused = activeElt == this.dom;
+    const focused = activeElt == this.dom;
     const selectionNotFocus =
       !focused &&
       hasSelection(this.dom, this.view.observer.selectionRange) &&
@@ -526,7 +526,7 @@ export class DocView extends ContentView {
   enforceCursorAssoc() {
     if (this.hasComposition) return;
     const { view } = this;
-      const cursor = view.state.selection.main;
+    const cursor = view.state.selection.main;
     const sel = getSelection(view.root);
     const { anchorNode, anchorOffset } = view.observer.selectionRange;
     if (!sel || !cursor.empty || !cursor.assoc || !sel.modify) return;
@@ -536,7 +536,7 @@ export class DocView extends ContentView {
     if (cursor.head == lineStart || cursor.head == lineStart + line.length)
       return;
     const before = this.coordsAt(cursor.head, -1);
-      const after = this.coordsAt(cursor.head, 1);
+    const after = this.coordsAt(cursor.head, 1);
     if (!before || !after || before.bottom > after.top) return;
     const dom = this.domAtPos(cursor.head + cursor.assoc);
     sel.collapse(dom.node, dom.offset);
@@ -562,7 +562,7 @@ export class DocView extends ContentView {
     // Block widgets will return positions before/after them, which
     // are thus directly in the document DOM element.
     const dom = this.dom!;
-      let newPos;
+    let newPos;
     if (pos.node != dom) return pos;
     for (let i = pos.offset; !newPos && i < dom.childNodes.length; i++) {
       const view = ContentView.get(dom.childNodes[i]);
@@ -606,11 +606,11 @@ export class DocView extends ContentView {
 
   coordsAt(pos: number, side: number): Rect | null {
     let best = null;
-      let bestPos = 0;
+    let bestPos = 0;
     for (let off = this.length, i = this.children.length - 1; i >= 0; i--) {
       const child = this.children[i];
-        const end = off - child.breakAfter;
-        const start = end - child.length;
+      const end = off - child.breakAfter;
+      const start = end - child.length;
       if (end < pos) break;
       if (
         start <= pos &&
@@ -639,7 +639,7 @@ export class DocView extends ContentView {
 
   coordsForChar(pos: number) {
     let { i, off } = this.childPos(pos, 1);
-      let child: ContentView = this.children[i];
+    let child: ContentView = this.children[i];
     if (!(child instanceof LineView)) return null;
     while (child.children.length) {
       let { i, off: childOff } = child.childPos(off, 1);
@@ -666,16 +666,16 @@ export class DocView extends ContentView {
 
   measureVisibleLineHeights(viewport: { from: number; to: number }) {
     const result = [];
-      const { from, to } = viewport;
+    const { from, to } = viewport;
     const contentWidth = this.view.contentDOM.clientWidth;
     const isWider =
       contentWidth >
       Math.max(this.view.scrollDOM.clientWidth, this.minWidth) + 1;
     let widest = -1;
-      const ltr = this.view.textDirection == Direction.LTR;
+    const ltr = this.view.textDirection == Direction.LTR;
     for (let pos = 0, i = 0; i < this.children.length; i++) {
       const child = this.children[i];
-        const end = pos + child.length;
+      const end = pos + child.length;
       if (end > to) break;
       if (pos >= from) {
         const childRect = child.dom!.getBoundingClientRect();
@@ -722,9 +722,9 @@ export class DocView extends ContentView {
     }
     // If no workable line exists, force a layout of a measurable element
     const dummy = document.createElement('div');
-      let lineHeight!: number;
-      let charWidth!: number;
-      let textHeight!: number;
+    let lineHeight!: number;
+    let charWidth!: number;
+    let textHeight!: number;
     dummy.className = 'cm-line';
     dummy.style.width = '99999px';
     dummy.style.position = 'absolute';
@@ -751,7 +751,7 @@ export class DocView extends ContentView {
 
   computeBlockGapDeco(): DecorationSet {
     const deco = [];
-      const vs = this.view.viewState;
+    const vs = this.view.viewState;
     for (let pos = 0, i = 0; ; i++) {
       const next = i == vs.viewports.length ? null : vs.viewports[i];
       const end = next ? next.from - 1 : this.length;
@@ -777,19 +777,20 @@ export class DocView extends ContentView {
   updateDeco() {
     let i = 1;
     const allDeco = this.view.state.facet(decorationsFacet).map((d) => {
-      const dynamic = (this.dynamicDecorationMap[i++] = typeof d === 'function');
+      const dynamic = (this.dynamicDecorationMap[i++] =
+        typeof d === 'function');
       return dynamic
         ? (d as (view: EditorView) => DecorationSet)(this.view)
         : (d as DecorationSet);
     });
     let dynamicOuter = false;
-      const outerDeco = this.view.state.facet(outerDecorations).map((d, i) => {
-        const dynamic = typeof d === 'function';
-        if (dynamic) dynamicOuter = true;
-        return dynamic
-          ? (d as (view: EditorView) => DecorationSet)(this.view)
-          : (d as DecorationSet);
-      });
+    const outerDeco = this.view.state.facet(outerDecorations).map((d, i) => {
+      const dynamic = typeof d === 'function';
+      if (dynamic) dynamicOuter = true;
+      return dynamic
+        ? (d as (view: EditorView) => DecorationSet)(this.view)
+        : (d as DecorationSet);
+    });
     if (outerDeco.length) {
       this.dynamicDecorationMap[i++] = dynamicOuter;
       allDeco.push(RangeSet.join(outerDeco));
@@ -822,10 +823,10 @@ export class DocView extends ContentView {
 
     const { range } = target;
     let rect = this.coordsAt(
-        range.head,
-        range.empty ? range.assoc : range.head > range.anchor ? -1 : 1,
-      );
-      let other;
+      range.head,
+      range.empty ? range.assoc : range.head > range.anchor ? -1 : 1,
+    );
+    let other;
     if (!rect) return;
     if (
       !range.empty &&
@@ -957,7 +958,7 @@ function findCompositionRange(
   const found = findCompositionNode(view, headPos);
   if (!found) return null;
   const { node: textNode, from, to } = found;
-    const text = textNode.nodeValue!;
+  const text = textNode.nodeValue!;
   // Don't try to preserve multi-line compositions
   if (/[\n\r]/.test(text)) return null;
   if (view.state.doc.sliceString(found.from, found.to) != text) return null;

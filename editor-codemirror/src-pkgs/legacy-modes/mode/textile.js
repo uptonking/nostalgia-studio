@@ -199,7 +199,7 @@ function activeStyles(state) {
 
 function blankLine(state) {
   const spanningLayout = state.spanningLayout;
-    const type = state.layoutType;
+  const type = state.layoutType;
 
   for (const key in state) if (state.hasOwnProperty(key)) delete state[key];
 
@@ -348,7 +348,8 @@ var Modes = {
   },
 
   blockType: function (stream, state) {
-    let match; let type;
+    let match;
+    let type;
     state.layoutType = null;
 
     if ((match = stream.match(RE('type')))) type = match[0];

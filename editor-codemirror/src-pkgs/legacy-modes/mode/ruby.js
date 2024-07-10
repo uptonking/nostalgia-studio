@@ -5,67 +5,67 @@ function wordObj(words) {
 }
 
 const keywordList = [
-    'alias',
-    'and',
-    'BEGIN',
-    'begin',
-    'break',
-    'case',
-    'class',
-    'def',
-    'defined?',
-    'do',
-    'else',
-    'elsif',
-    'END',
-    'end',
-    'ensure',
-    'false',
-    'for',
-    'if',
-    'in',
-    'module',
-    'next',
-    'not',
-    'or',
-    'redo',
-    'rescue',
-    'retry',
-    'return',
-    'self',
-    'super',
-    'then',
-    'true',
-    'undef',
-    'unless',
-    'until',
-    'when',
-    'while',
-    'yield',
-    'nil',
-    'raise',
-    'throw',
-    'catch',
-    'fail',
-    'loop',
-    'callcc',
-    'caller',
-    'lambda',
-    'proc',
-    'public',
-    'protected',
-    'private',
-    'require',
-    'load',
-    'require_relative',
-    'extend',
-    'autoload',
-    '__END__',
-    '__FILE__',
-    '__LINE__',
-    '__dir__',
-  ];
-  const keywords = wordObj(keywordList);
+  'alias',
+  'and',
+  'BEGIN',
+  'begin',
+  'break',
+  'case',
+  'class',
+  'def',
+  'defined?',
+  'do',
+  'else',
+  'elsif',
+  'END',
+  'end',
+  'ensure',
+  'false',
+  'for',
+  'if',
+  'in',
+  'module',
+  'next',
+  'not',
+  'or',
+  'redo',
+  'rescue',
+  'retry',
+  'return',
+  'self',
+  'super',
+  'then',
+  'true',
+  'undef',
+  'unless',
+  'until',
+  'when',
+  'while',
+  'yield',
+  'nil',
+  'raise',
+  'throw',
+  'catch',
+  'fail',
+  'loop',
+  'callcc',
+  'caller',
+  'lambda',
+  'proc',
+  'public',
+  'protected',
+  'private',
+  'require',
+  'load',
+  'require_relative',
+  'extend',
+  'autoload',
+  '__END__',
+  '__FILE__',
+  '__LINE__',
+  '__dir__',
+];
+const keywords = wordObj(keywordList);
 
 const indentWords = wordObj([
   'def',
@@ -98,7 +98,7 @@ function tokenBase(stream, state) {
   }
   if (stream.eatSpace()) return null;
   const ch = stream.next();
-    let m;
+  let m;
   if (ch == '`' || ch == "'" || ch == '"') {
     return chain(
       readQuoted(ch, 'string', ch == '"' || ch == '`'),
@@ -111,7 +111,7 @@ function tokenBase(stream, state) {
     else return 'operator';
   } else if (ch == '%') {
     let style = 'string';
-      let embed = true;
+    let embed = true;
     if (stream.eat('s')) style = 'atom';
     else if (stream.eat(/[WQ]/)) style = 'string';
     else if (stream.eat(/[r]/)) style = 'string.special';
@@ -209,10 +209,10 @@ function tokenBase(stream, state) {
 
 function regexpAhead(stream) {
   const start = stream.pos;
-    let depth = 0;
-    let next;
-    let found = false;
-    let escaped = false;
+  let depth = 0;
+  let next;
+  let found = false;
+  let escaped = false;
   while ((next = stream.next()) != null) {
     if (!escaped) {
       if ('[{('.indexOf(next) > -1) {
@@ -267,7 +267,7 @@ function tokenBaseOnce() {
 function readQuoted(quote, style, embed, unescaped) {
   return function (stream, state) {
     let escaped = false;
-      let ch;
+    let ch;
 
     if (state.context.type === 'read-quoted-paused') {
       state.context = state.context.prev;
@@ -328,7 +328,7 @@ export const ruby = {
     curPunc = null;
     if (stream.sol()) state.indented = stream.indentation();
     let style = state.tokenize[state.tokenize.length - 1](stream, state);
-      let kwtype;
+    let kwtype;
     let thisTok = curPunc;
     if (style == 'variable') {
       const word = stream.current();

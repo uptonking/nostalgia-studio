@@ -80,7 +80,7 @@ function base(stream, state) {
 
 function inString(stream, state) {
   let escaped = false;
-    let next;
+  let next;
   while ((next = stream.next())) {
     if (next == '"' && !escaped) {
       state.tokenize = base;
@@ -92,7 +92,8 @@ function inString(stream, state) {
 }
 
 function inComment(stream, state) {
-  let next; let last;
+  let next;
+  let last;
   while ((next = stream.next())) {
     if (next == '#' && last == '|') {
       state.tokenize = base;

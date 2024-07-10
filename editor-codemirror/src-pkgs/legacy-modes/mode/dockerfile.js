@@ -31,15 +31,15 @@ const others = [
 
 // Collect all Dockerfile directives
 const instructions = [from, expose].concat(shells).concat(others);
-  const instructionRegex = '(' + instructions.join('|') + ')';
-  const instructionOnlyLine = new RegExp(
-    '^(\\s*)' + instructionRegex + '(\\s*)(#.*)?$',
-    'i',
-  );
-  const instructionWithArguments = new RegExp(
-    '^(\\s*)' + instructionRegex + '(\\s+)',
-    'i',
-  );
+const instructionRegex = '(' + instructions.join('|') + ')';
+const instructionOnlyLine = new RegExp(
+  '^(\\s*)' + instructionRegex + '(\\s*)(#.*)?$',
+  'i',
+);
+const instructionWithArguments = new RegExp(
+  '^(\\s*)' + instructionRegex + '(\\s+)',
+  'i',
+);
 
 export const dockerFile = simpleMode({
   start: [

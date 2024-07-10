@@ -9,6 +9,6 @@
     "target": "es2020",
     "module": "es2020",
     "moduleResolution": "node"
-  },
+  }
   // "include": ["*/src/*.ts", "*/test/*.ts", "demo/demo.ts"]
 }

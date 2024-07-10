@@ -46,7 +46,7 @@ export function moveCompletionSelection(
     )
       return false;
     let step = 1;
-      let tooltip: TooltipView | null;
+    let tooltip: TooltipView | null;
     if (by == 'page' && (tooltip = getTooltip(view, cState.open.tooltip)))
       step = Math.max(
         2,
@@ -117,7 +117,7 @@ class RunningQuery {
 }
 
 const MaxUpdateCount = 50;
-  const MinAbortTime = 1000;
+const MinAbortTime = 1000;
 
 const enum CompositionState {
   None,
@@ -207,7 +207,7 @@ export const completionPlugin = ViewPlugin.fromClass(
       this.debounceUpdate = -1;
       this.pendingStart = false;
       const { state } = this.view;
-        const cState = state.field(completionState);
+      const cState = state.field(completionState);
       for (const active of cState.active) {
         if (
           active.state == State.Pending &&
@@ -219,11 +219,12 @@ export const completionPlugin = ViewPlugin.fromClass(
 
     startQuery(active: ActiveSource) {
       const { state } = this.view;
-        const pos = cur(state);
+      const pos = cur(state);
       const context = new CompletionContext(
         state,
         pos,
         active.explicitPos == pos,
+        this.view,
       );
       const pending = new RunningQuery(active, context);
       this.running.push(pending);
@@ -315,7 +316,8 @@ export const completionPlugin = ViewPlugin.fromClass(
           state.tooltip &&
           this.view.state.facet(completionConfig).closeOnBlur
         ) {
-          const dialog = state.open && getTooltip(this.view, state.open.tooltip);
+          const dialog =
+            state.open && getTooltip(this.view, state.open.tooltip);
           if (
             !dialog ||
             !dialog.dom.contains(event.relatedTarget as HTMLElement)

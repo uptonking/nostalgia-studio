@@ -1,6 +1,6 @@
 function words(str) {
   const obj = {};
-    const words = str.split(' ');
+  const words = str.split(' ');
   for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
@@ -75,7 +75,7 @@ function tokenBase(stream, state) {
 
 function tokenCComment(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next()) != null) {
     if (maybeEnd && ch == '/') {
       state.tokenize = tokenBase;
@@ -88,7 +88,7 @@ function tokenCComment(stream, state) {
 
 function tokenSGMLComment(stream, state) {
   let dashes = 0;
-    let ch;
+  let ch;
   while ((ch = stream.next()) != null) {
     if (dashes >= 2 && ch == '>') {
       state.tokenize = tokenBase;
@@ -102,7 +102,7 @@ function tokenSGMLComment(stream, state) {
 function tokenString(quote) {
   return function (stream, state) {
     let escaped = false;
-      let ch;
+    let ch;
     while ((ch = stream.next()) != null) {
       if (ch == quote && !escaped) break;
       escaped = !escaped && ch == '\\';

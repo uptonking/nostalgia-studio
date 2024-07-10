@@ -79,7 +79,8 @@ export class SelectionRange {
   /// Map this range through a change, producing a valid range in the
   /// updated document.
   map(change: ChangeDesc, assoc = -1): SelectionRange {
-    let from; let to;
+    let from;
+    let to;
     if (this.empty) {
       from = to = change.mapPos(this.from, assoc);
     } else {
@@ -117,7 +118,11 @@ export class SelectionRange {
   /// Convert a JSON representation of a range to a `SelectionRange`
   /// instance.
   static fromJSON(json: any): SelectionRange {
-    if (!json || typeof json.anchor !== 'number' || typeof json.head !== 'number')
+    if (
+      !json ||
+      typeof json.anchor !== 'number' ||
+      typeof json.head !== 'number'
+    )
       throw new RangeError('Invalid JSON representation for SelectionRange');
     return EditorSelection.range(json.anchor, json.head);
   }
@@ -287,10 +292,10 @@ export class EditorSelection {
     mainIndex = ranges.indexOf(main);
     for (let i = 1; i < ranges.length; i++) {
       const range = ranges[i];
-        const prev = ranges[i - 1];
+      const prev = ranges[i - 1];
       if (range.empty ? range.from <= prev.to : range.from < prev.to) {
         const from = prev.from;
-          const to = Math.max(range.to, prev.to);
+        const to = Math.max(range.to, prev.to);
         if (i <= mainIndex) mainIndex--;
         ranges.splice(
           --i,

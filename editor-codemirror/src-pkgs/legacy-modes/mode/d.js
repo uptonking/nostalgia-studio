@@ -1,6 +1,6 @@
 function words(str) {
   const obj = {};
-    const words = str.split(' ');
+  const words = str.split(' ');
   for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
@@ -33,12 +33,12 @@ const parserConfig = {
 };
 
 const statementIndentUnit = parserConfig.statementIndentUnit;
-  const keywords = parserConfig.keywords;
-  const builtin = parserConfig.builtin;
-  const blockKeywords = parserConfig.blockKeywords;
-  const atoms = parserConfig.atoms;
-  const hooks = parserConfig.hooks;
-  const multiLineStrings = parserConfig.multiLineStrings;
+const keywords = parserConfig.keywords;
+const builtin = parserConfig.builtin;
+const blockKeywords = parserConfig.blockKeywords;
+const atoms = parserConfig.atoms;
+const hooks = parserConfig.hooks;
+const multiLineStrings = parserConfig.multiLineStrings;
 const isOperatorChar = /[+\-*&%=<>!?|\/]/;
 
 let curPunc;
@@ -96,8 +96,8 @@ function tokenBase(stream, state) {
 function tokenString(quote) {
   return function (stream, state) {
     let escaped = false;
-      let next;
-      let end = false;
+    let next;
+    let end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -112,7 +112,7 @@ function tokenString(quote) {
 
 function tokenComment(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = null;
@@ -125,7 +125,7 @@ function tokenComment(stream, state) {
 
 function tokenNestedComment(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = null;
@@ -206,7 +206,7 @@ export const d = {
   indent: function (state, textAfter, cx) {
     if (state.tokenize != tokenBase && state.tokenize != null) return null;
     let ctx = state.context;
-      const firstChar = textAfter && textAfter.charAt(0);
+    const firstChar = textAfter && textAfter.charAt(0);
     if (ctx.type == 'statement' && firstChar == '}') ctx = ctx.prev;
     const closing = firstChar == ctx.type;
     if (ctx.type == 'statement')

@@ -7,7 +7,11 @@ import {
   syntaxTree,
 } from '@codemirror/language';
 import { type Completion, CompletionContext } from '@codemirror/autocomplete';
-import { type MarkdownExtension, MarkdownParser, parseCode } from '@lezer/markdown';
+import {
+  type MarkdownExtension,
+  MarkdownParser,
+  parseCode,
+} from '@lezer/markdown';
 import { html, htmlCompletionSource } from '@codemirror/lang-html';
 import {
   commonmarkLanguage,
@@ -78,7 +82,7 @@ export function markdown(
     );
   const extensions = config.extensions ? [config.extensions] : [];
   const support = [htmlNoMatch.support];
-    let defaultCode;
+  let defaultCode;
   if (defaultCodeLanguage instanceof LanguageSupport) {
     support.push(defaultCodeLanguage.support);
     defaultCode = defaultCodeLanguage.language;
@@ -101,7 +105,7 @@ export function markdown(
 
 function htmlTagCompletion(context: CompletionContext) {
   const { state, pos } = context;
-    const m = /<[:\-\.\w\u00b7-\uffff]*$/.exec(state.sliceDoc(pos - 25, pos));
+  const m = /<[:\-\.\w\u00b7-\uffff]*$/.exec(state.sliceDoc(pos - 25, pos));
   if (!m) return null;
   let tree = syntaxTree(state).resolveInner(pos, -1);
   while (tree && !tree.type.isTop) {

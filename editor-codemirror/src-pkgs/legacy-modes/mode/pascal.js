@@ -1,6 +1,6 @@
 function words(str) {
   const obj = {};
-    const words = str.split(' ');
+  const words = str.split(' ');
   for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
@@ -69,8 +69,8 @@ function tokenBase(stream, state) {
 function tokenString(quote) {
   return function (stream, state) {
     let escaped = false;
-      let next;
-      let end = false;
+    let next;
+    let end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -85,7 +85,7 @@ function tokenString(quote) {
 
 function tokenComment(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next())) {
     if (ch == ')' && maybeEnd) {
       state.tokenize = null;

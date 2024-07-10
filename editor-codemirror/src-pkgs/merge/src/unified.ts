@@ -187,12 +187,12 @@ function deletionWidget(state: EditorState, chunk: Chunk) {
 
     const content = dom.appendChild(document.createElement('del'));
     const changes = chunk.changes;
-      let changeI = 0;
-      let inside = false;
+    let changeI = 0;
+    let inside = false;
     function add(from: number, to: number, cls: string) {
       for (let at = from; at < to; ) {
         let nextStop = to;
-          const nodeCls = cls + (inside ? ' cm-deletedText' : '');
+        const nodeCls = cls + (inside ? ' cm-deletedText' : '');
         if (highlightChanges && changeI < changes.length) {
           const nextBound = inside
             ? changes[changeI].toA
@@ -219,7 +219,7 @@ function deletionWidget(state: EditorState, chunk: Chunk) {
 
     if (lang) {
       const tree = lang.parser.parse(text);
-        let pos = 0;
+      let pos = 0;
       highlightTree(
         tree,
         { style: (tags) => highlightingFor(state, tags) },
@@ -249,7 +249,7 @@ function deletionWidget(state: EditorState, chunk: Chunk) {
 /// longer be highlighted unless it is edited again.
 export function acceptChunk(view: EditorView, pos?: number) {
   const { state } = view;
-    const at = pos ?? state.selection.main.head;
+  const at = pos ?? state.selection.main.head;
   const chunk = view.state
     .field(ChunkField)
     .find((ch) => ch.fromB <= at && ch.endB >= at);
@@ -277,7 +277,7 @@ export function acceptChunk(view: EditorView, pos?: number) {
 /// to the content it has in the original document.
 export function rejectChunk(view: EditorView, pos?: number) {
   const { state } = view;
-    const at = pos ?? state.selection.main.head;
+  const at = pos ?? state.selection.main.head;
   const chunk = state
     .field(ChunkField)
     .find((ch) => ch.fromB <= at && ch.endB >= at);

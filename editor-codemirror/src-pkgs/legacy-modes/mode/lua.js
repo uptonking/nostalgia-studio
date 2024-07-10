@@ -220,7 +220,7 @@ function normal(stream, state) {
 function bracketed(level, style) {
   return function (stream, state) {
     let curlev = null;
-      let ch;
+    let ch;
     while ((ch = stream.next()) != null) {
       if (curlev == null) {
         if (ch == ']') curlev = 0;
@@ -237,7 +237,7 @@ function bracketed(level, style) {
 function string(quote) {
   return function (stream, state) {
     let escaped = false;
-      let ch;
+    let ch;
     while ((ch = stream.next()) != null) {
       if (ch == quote && !escaped) break;
       escaped = !escaped && ch == '\\';

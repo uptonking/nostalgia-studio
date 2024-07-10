@@ -16,7 +16,7 @@ export enum Direction {
 }
 
 const LTR = Direction.LTR;
-  const RTL = Direction.RTL;
+const RTL = Direction.RTL;
 
 // Codes used for character types:
 const enum T {
@@ -51,13 +51,13 @@ const ArabicTypes = dec(
 );
 
 const Brackets = Object.create(null);
-  const BracketStack: number[] = [];
+const BracketStack: number[] = [];
 // There's a lot more in
 // https://www.unicode.org/Public/UCD/latest/ucd/BidiBrackets.txt,
 // which are left out to keep code size down.
 for (const p of ['()', '[]', '{}']) {
   const l = p.charCodeAt(0);
-    const r = p.charCodeAt(1);
+  const r = p.charCodeAt(1);
   Brackets[l] = r;
   Brackets[r] = -l;
 }
@@ -164,7 +164,7 @@ export function isolatesEq(a: readonly Isolate[], b: readonly Isolate[]) {
   if (a.length != b.length) return false;
   for (let i = 0; i < a.length; i++) {
     const iA = a[i];
-      const iB = b[i];
+    const iB = b[i];
     if (
       iA.from != iB.from ||
       iA.to != iB.to ||
@@ -190,7 +190,7 @@ function computeCharTypes(
 ) {
   for (let iI = 0; iI <= isolates.length; iI++) {
     const from = iI ? isolates[iI - 1].to : rFrom;
-      const to = iI < isolates.length ? isolates[iI].from : rTo;
+    const to = iI < isolates.length ? isolates[iI].from : rTo;
     const prevType = iI ? T.NI : outerType;
 
     // W1. Examine each non-spacing mark (NSM) in the level run, and
@@ -258,7 +258,7 @@ function processBracketPairs(
 
   for (let iI = 0, sI = 0, context = 0; iI <= isolates.length; iI++) {
     const from = iI ? isolates[iI - 1].to : rFrom;
-      const to = iI < isolates.length ? isolates[iI].from : rTo;
+    const to = iI < isolates.length ? isolates[iI].from : rTo;
     // N0. Process bracket pairs in an isolating run sequence
     // sequentially in the logical order of the text positions of the
     // opening paired brackets using the logic given below. Within this
@@ -318,7 +318,7 @@ function processNeutrals(
 ) {
   for (let iI = 0, prev = outerType; iI <= isolates.length; iI++) {
     const from = iI ? isolates[iI - 1].to : rFrom;
-      let to = iI < isolates.length ? isolates[iI].from : rTo;
+    let to = iI < isolates.length ? isolates[iI].from : rTo;
     // N1. A sequence of neutrals takes the direction of the
     // surrounding strong text if the text on both sides has the same
     // direction. European and Arabic numbers act as if they were R in
@@ -387,7 +387,7 @@ function emitSpans(
       // we scan a section of other characters (which, if ourType ==
       // T.L, may contain both T.R and T.AN chars).
       let sameDir = true;
-        let isNum = false;
+      let isNum = false;
       if (iI == isolates.length || iCh < isolates[iI].from) {
         const next = types[iCh];
         if (next != ourType) {
@@ -452,7 +452,7 @@ function emitSpans(
     // going from the back of the section to the front
     for (let iCh = to, iI = isolates.length; iCh > from; ) {
       let sameDir = true;
-        let isNum = false;
+      let isNum = false;
       if (!iI || iCh > isolates[iI - 1].to) {
         const next = types[iCh - 1];
         if (next != ourType) {
@@ -538,7 +538,7 @@ export function computeOrder(
   if (isolates.length)
     while (line.length > types.length) types[types.length] = T.NI; // Make sure types array has no gaps
   const order: BidiSpan[] = [];
-    const level = direction == LTR ? 0 : 1;
+  const level = direction == LTR ? 0 : 1;
   computeSectionOrder(line, level, level, isolates, 0, line.length, order);
   return order;
 }
@@ -577,7 +577,7 @@ export function moveVisually(
     start.assoc,
   );
   let span = order[spanI];
-    let spanEnd = span.side(forward, dir);
+  let spanEnd = span.side(forward, dir);
   // End of span
   if (startIndex == spanEnd) {
     const nextI = (spanI += forward ? 1 : -1);

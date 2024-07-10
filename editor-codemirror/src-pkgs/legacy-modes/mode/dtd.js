@@ -38,7 +38,7 @@ function tokenBase(stream, state) {
 
 function tokenSGMLComment(stream, state) {
   let dashes = 0;
-    let ch;
+  let ch;
   while ((ch = stream.next()) != null) {
     if (dashes >= 2 && ch == '>') {
       state.tokenize = tokenBase;
@@ -52,7 +52,7 @@ function tokenSGMLComment(stream, state) {
 function tokenString(quote) {
   return function (stream, state) {
     let escaped = false;
-      let ch;
+    let ch;
     while ((ch = stream.next()) != null) {
       if (ch == quote && !escaped) {
         state.tokenize = tokenBase;

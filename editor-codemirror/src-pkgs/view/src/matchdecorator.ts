@@ -128,7 +128,7 @@ export class MatchDecorator {
   /// plugin.
   createDeco(view: EditorView) {
     const build = new RangeSetBuilder<Decoration>();
-      const add = build.add.bind(build);
+    const add = build.add.bind(build);
     for (const { from, to } of matchRanges(view, this.maxLength))
       iterMatches(view.state.doc, this.regexp, from, to, (from, m) =>
         this.addMatch(m, view, from, add),
@@ -141,7 +141,7 @@ export class MatchDecorator {
   /// the view state before the update.
   updateDeco(update: ViewUpdate, deco: DecorationSet) {
     let changeFrom = 1e9;
-      let changeTo = -1;
+    let changeTo = -1;
     if (update.docChanged)
       update.changes.iterChanges((_f, _t, from, to) => {
         if (to > update.view.viewport.from && from < update.view.viewport.to) {
@@ -169,12 +169,12 @@ export class MatchDecorator {
   ) {
     for (const r of view.visibleRanges) {
       let from = Math.max(r.from, updateFrom);
-        let to = Math.min(r.to, updateTo);
+      let to = Math.min(r.to, updateTo);
       if (to > from) {
         const fromLine = view.state.doc.lineAt(from);
-          const toLine = fromLine.to < to ? view.state.doc.lineAt(to) : fromLine;
+        const toLine = fromLine.to < to ? view.state.doc.lineAt(to) : fromLine;
         let start = Math.max(r.from, fromLine.from);
-          let end = Math.min(r.to, toLine.to);
+        let end = Math.min(r.to, toLine.to);
         if (this.boundary) {
           for (; from > fromLine.from; from--)
             if (this.boundary.test(fromLine.text[from - 1 - fromLine.from])) {
@@ -188,7 +188,7 @@ export class MatchDecorator {
             }
         }
         const ranges: Range<Decoration>[] = [];
-          let m;
+        let m;
         const add = (from: number, to: number, deco: Decoration) =>
           ranges.push(deco.range(from, to));
         if (fromLine == toLine) {

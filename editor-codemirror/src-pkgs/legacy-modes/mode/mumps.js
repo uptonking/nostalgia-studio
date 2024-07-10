@@ -3,7 +3,9 @@ function wordRegexp(words) {
 }
 
 const singleOperators = new RegExp("^[\\+\\-\\*/&#!_?\\\\<>=\\'\\[\\]]");
-const doubleOperators = new RegExp("^(('=)|(<=)|(>=)|('>)|('<)|([[)|(]])|(^$))");
+const doubleOperators = new RegExp(
+  "^(('=)|(<=)|(>=)|('>)|('<)|([[)|(]])|(^$))",
+);
 const singleDelimiters = new RegExp('^[\\.,:]');
 const brackets = new RegExp('[()]');
 const identifiers = new RegExp('^[%A-Za-z][A-Za-z0-9]*');

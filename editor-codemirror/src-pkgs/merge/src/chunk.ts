@@ -99,7 +99,7 @@ export class Chunk {
 
 function fromLine(fromA: number, fromB: number, a: Text, b: Text) {
   const lineA = a.lineAt(fromA);
-    const lineB = b.lineAt(fromB);
+  const lineB = b.lineAt(fromB);
   return lineA.to == fromA &&
     lineB.to == fromB &&
     fromA < a.length &&
@@ -110,7 +110,7 @@ function fromLine(fromA: number, fromB: number, a: Text, b: Text) {
 
 function toLine(toA: number, toB: number, a: Text, b: Text) {
   const lineA = a.lineAt(toA);
-    const lineB = b.lineAt(toB);
+  const lineB = b.lineAt(toB);
   return lineA.from == toA && lineB.from == toB
     ? [toA, toB]
     : [lineA.to + 1, lineB.to + 1];
@@ -136,7 +136,12 @@ function toChunks(
     const chunk = [change.offset(-fromA + offA, -fromB + offB)];
     while (i < changes.length - 1) {
       const next = changes[i + 1];
-      const [nextA, nextB] = fromLine(next.fromA + offA, next.fromB + offB, a, b);
+      const [nextA, nextB] = fromLine(
+        next.fromA + offA,
+        next.fromB + offB,
+        a,
+        b,
+      );
       if (nextA > toA + 1 && nextB > toB + 1) break;
       chunk.push(next.offset(-fromA + offA, -fromB + offB));
       [toA, toB] = toLine(next.toA + offA, next.toB + offB, a, b);
@@ -176,18 +181,20 @@ function findPos(
   start: boolean,
 ): [number, number] {
   let lo = 0;
-    let hi = chunks.length;
+  let hi = chunks.length;
   for (;;) {
     if (lo == hi) {
       let refA = 0;
-        let refB = 0;
+      let refB = 0;
       if (lo) ({ toA: refA, toB: refB } = chunks[lo - 1]);
       const off = pos - (isA ? refA : refB);
       return [refA + off, refB + off];
     }
     const mid = (lo + hi) >> 1;
-      const chunk = chunks[mid];
-    const [from, to] = isA ? [chunk.fromA, chunk.toA] : [chunk.fromB, chunk.toB];
+    const chunk = chunks[mid];
+    const [from, to] = isA
+      ? [chunk.fromA, chunk.toA]
+      : [chunk.fromB, chunk.toB];
     if (from > pos) hi = mid;
     else if (to <= pos) lo = mid + 1;
     else return start ? [chunk.fromA, chunk.fromB] : [chunk.toA, chunk.toB];
@@ -203,15 +210,15 @@ function findRangesForChange(
   const ranges: UpdateRange[] = [];
   changes.iterChangedRanges((cFromA, cToA, cFromB, cToB) => {
     let fromA = 0;
-      let toA = isA ? changes.length : otherLen;
+    let toA = isA ? changes.length : otherLen;
     let fromB = 0;
-      let toB = isA ? otherLen : changes.length;
+    let toB = isA ? otherLen : changes.length;
     if (cFromA > updateMargin)
       [fromA, fromB] = findPos(chunks, cFromA - updateMargin, isA, true);
     if (cToA < changes.length - updateMargin)
       [toA, toB] = findPos(chunks, cToA + updateMargin, isA, false);
     const lenDiff = cToB - cFromB - (cToA - cFromA);
-      let last;
+    let last;
     const [diffA, diffB] = isA ? [lenDiff, 0] : [0, lenDiff];
     if (ranges.length && (last = ranges[ranges.length - 1]).toA >= fromA)
       ranges[ranges.length - 1] = {
@@ -239,7 +246,7 @@ function updateChunks(
   for (let i = 0, offA = 0, offB = 0, chunkI = 0; ; i++) {
     const range = i == ranges.length ? null : ranges[i];
     const fromA = range ? range.fromA + offA : a.length;
-      const fromB = range ? range.fromB + offB : b.length;
+    const fromB = range ? range.fromB + offB : b.length;
     while (chunkI < chunks.length) {
       const next = chunks[chunkI];
       if (next.toA + offA > fromA || next.toB + offB > fromB) break;
@@ -248,7 +255,7 @@ function updateChunks(
     }
     if (!range) break;
     const toA = range.toA + offA + range.diffA;
-      const toB = range.toB + offB + range.diffB;
+    const toB = range.toB + offB + range.diffB;
     const diff = presentableDiff(
       a.sliceString(fromA, toA),
       b.sliceString(fromB, toB),

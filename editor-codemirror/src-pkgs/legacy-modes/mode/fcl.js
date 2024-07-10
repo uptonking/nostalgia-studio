@@ -85,7 +85,7 @@ function tokenBase(stream, state) {
 
 function tokenComment(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next())) {
     if ((ch == '/' || ch == ')') && maybeEnd) {
       state.tokenize = tokenBase;

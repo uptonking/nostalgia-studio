@@ -1,6 +1,6 @@
 function words(str) {
   const obj = {};
-    const words = str.split(' ');
+  const words = str.split(' ');
   for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
@@ -65,10 +65,10 @@ const parserConfig = {
 };
 
 const keywords = parserConfig.keywords;
-  const fileNCtrlMaskOptions = parserConfig.fileNCtrlMaskOptions;
-  const externalCommands = parserConfig.externalCommands;
-  const multiLineStrings = parserConfig.multiLineStrings;
-  const indentStatements = parserConfig.indentStatements !== false;
+const fileNCtrlMaskOptions = parserConfig.fileNCtrlMaskOptions;
+const externalCommands = parserConfig.externalCommands;
+const multiLineStrings = parserConfig.multiLineStrings;
+const indentStatements = parserConfig.indentStatements !== false;
 const isOperatorChar = /[\|]/;
 let curPunc;
 
@@ -111,8 +111,8 @@ function tokenBase(stream, state) {
 function tokenString(quote) {
   return function (stream, state) {
     let escaped = false;
-      let next;
-      let end = false;
+    let next;
+    let end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         let afterNext = stream.peek();

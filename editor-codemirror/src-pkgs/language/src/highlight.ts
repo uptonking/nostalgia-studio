@@ -149,7 +149,7 @@ export function syntaxHighlighting(
   },
 ): Extension {
   const ext: Extension[] = [treeHighlighter];
-    let themeType: string | undefined;
+  let themeType: string | undefined;
   if (highlighter instanceof HighlightStyle) {
     if (highlighter.module)
       ext.push(EditorView.styleModule.of(highlighter.module));
@@ -222,10 +222,10 @@ class TreeHighlighter {
 
   update(update: ViewUpdate) {
     const tree = syntaxTree(update.state);
-      const highlighters = getHighlighters(update.state);
+    const highlighters = getHighlighters(update.state);
     const styleChange = highlighters != getHighlighters(update.startState);
     const { viewport } = update.view;
-      const decoratedToMapped = update.changes.mapPos(this.decoratedTo, 1);
+    const decoratedToMapped = update.changes.mapPos(this.decoratedTo, 1);
     if (
       tree.length < viewport.to &&
       !styleChange &&

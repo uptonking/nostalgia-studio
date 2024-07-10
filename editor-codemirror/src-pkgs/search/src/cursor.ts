@@ -91,7 +91,7 @@ export class SearchCursor implements Iterator<{ from: number; to: number }> {
         return this;
       }
       const str = fromCodePoint(next);
-        const start = this.bufferStart + this.bufferPos;
+      const start = this.bufferStart + this.bufferPos;
       this.bufferPos += codePointSize(next);
       const norm = this.normalize(str);
       for (let i = 0, pos = start; ; i++) {
@@ -113,7 +113,7 @@ export class SearchCursor implements Iterator<{ from: number; to: number }> {
     let match: null | { from: number; to: number } = null;
     for (let i = 0; i < this.matches.length; i += 2) {
       const index = this.matches[i];
-        let keep = false;
+      let keep = false;
       if (this.query.charCodeAt(index) == code) {
         if (index == this.query.length - 1) {
           match = { from: this.matches[i + 1], to: end };

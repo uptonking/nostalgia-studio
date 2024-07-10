@@ -128,7 +128,7 @@ export function mkPython(parserConf) {
   const hangingIndent = parserConf.hangingIndent;
 
   let myKeywords = commonKeywords;
-    let myBuiltins = commonBuiltins;
+  let myBuiltins = commonBuiltins;
   if (parserConf.extra_keywords != undefined)
     myKeywords = myKeywords.concat(parserConf.extra_keywords);
 

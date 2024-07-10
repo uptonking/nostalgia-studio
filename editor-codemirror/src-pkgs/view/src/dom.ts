@@ -166,15 +166,15 @@ export function scrollRectIntoView(
   ltr: boolean,
 ) {
   const doc = dom.ownerDocument!;
-    const win = doc.defaultView || window;
+  const win = doc.defaultView || window;
 
   for (let cur: any = dom, stop = false; cur && !stop; ) {
     if (cur.nodeType == 1) {
       // Element
       let bounding: Rect;
-        const top = cur == doc.body;
+      const top = cur == doc.body;
       let scaleX = 1;
-        let scaleY = 1;
+      let scaleY = 1;
       if (top) {
         bounding = windowRect(win);
       } else {
@@ -199,7 +199,7 @@ export function scrollRectIntoView(
       }
 
       let moveX = 0;
-        let moveY = 0;
+      let moveY = 0;
       if (y == 'nearest') {
         if (rect.top < bounding.top) {
           moveY = -(bounding.top - rect.top + yMargin);
@@ -212,7 +212,7 @@ export function scrollRectIntoView(
         }
       } else {
         const rectHeight = rect.bottom - rect.top;
-          const boundingHeight = bounding.bottom - bounding.top;
+        const boundingHeight = bounding.bottom - bounding.top;
         const targetTop =
           y == 'center' && rectHeight <= boundingHeight
             ? rect.top + rectHeight / 2 - boundingHeight / 2
@@ -247,7 +247,7 @@ export function scrollRectIntoView(
           win.scrollBy(moveX, moveY);
         } else {
           let movedX = 0;
-            let movedY = 0;
+          let movedY = 0;
           if (moveY) {
             const start = cur.scrollTop;
             cur.scrollTop += moveY / scaleY;
@@ -372,8 +372,8 @@ export function focusPreventScroll(dom: HTMLElement) {
     preventScrollSupported = false;
     for (let i = 0; i < stack.length; ) {
       const elt = stack[i++] as HTMLElement;
-        const top = stack[i++] as number;
-        const left = stack[i++] as number;
+      const top = stack[i++] as number;
+      const left = stack[i++] as number;
       if (elt.scrollTop != top) elt.scrollTop = top;
       if (elt.scrollLeft != left) elt.scrollLeft = left;
     }
@@ -438,7 +438,7 @@ export function clearAttributes(node: HTMLElement) {
 
 export function atElementStart(doc: HTMLElement, selection: SelectionRange) {
   let node = selection.focusNode;
-    let offset = selection.focusOffset;
+  let offset = selection.focusOffset;
   if (!node || selection.anchorNode != node || selection.anchorOffset != offset)
     return false;
   // Safari can report bogus offsets (#1152)

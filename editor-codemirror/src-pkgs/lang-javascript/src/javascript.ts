@@ -33,8 +33,8 @@ export const javascriptLanguage = LRLanguage.define({
         LabeledStatement: flatIndent,
         SwitchBody: (context) => {
           const after = context.textAfter;
-            const closed = /^\s*\}/.test(after);
-            const isCase = /^\s*(case|default)\b/.test(after);
+          const closed = /^\s*\}/.test(after);
+          const isCase = /^\s*(case|default)\b/.test(after);
           return (
             context.baseIndent + (closed ? 0 : isCase ? 1 : 2) * context.unit
           );
@@ -188,11 +188,11 @@ export const autoCloseTags = EditorView.inputHandler.of(
     )
       return false;
     const base = defaultInsert();
-      const { state } = base;
+    const { state } = base;
     const closeTags = state.changeByRange((range) => {
       const { head } = range;
-        let around = syntaxTree(state).resolveInner(head - 1, -1);
-        let name;
+      let around = syntaxTree(state).resolveInner(head - 1, -1);
+      let name;
       if (around.name == 'JSXStartTag') around = around.parent!;
       if (
         state.doc.sliceString(head - 1, head) != text ||
@@ -203,7 +203,7 @@ export const autoCloseTags = EditorView.inputHandler.of(
         return { range, changes: { from: head, insert: `</>` } };
       } else if (text == '/' && around.name == 'JSXStartCloseTag') {
         const empty = around.parent!;
-          const base = empty.parent;
+        const base = empty.parent;
         if (
           base &&
           empty.from == head - 2 &&

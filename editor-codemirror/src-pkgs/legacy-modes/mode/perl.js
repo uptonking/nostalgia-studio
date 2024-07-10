@@ -503,8 +503,8 @@ function tokenChain(stream, state, chain, style, tail) {
   state.tail = null;
   state.tokenize = function (stream, state) {
     let e = false;
-      let c;
-      let i = 0;
+    let c;
+    let i = 0;
     while ((c = stream.next())) {
       if (c === chain[i] && !e) {
         if (chain[++i] !== undefined) {

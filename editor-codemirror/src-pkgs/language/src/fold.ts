@@ -53,7 +53,7 @@ export function foldInside(
   node: SyntaxNode,
 ): { from: number; to: number } | null {
   const first = node.firstChild;
-    const last = node.lastChild;
+  const last = node.lastChild;
   return first && first.to < last!.from
     ? { from: first.to, to: last!.type.isError ? node.to : last!.from }
     : null;
@@ -110,7 +110,7 @@ type DocRange = { from: number; to: number };
 
 function mapRange(range: DocRange, mapping: ChangeDesc) {
   const from = mapping.mapPos(range.from, 1);
-    const to = mapping.mapPos(range.to, -1);
+  const to = mapping.mapPos(range.to, -1);
   return from >= to ? undefined : { from, to };
 }
 
@@ -168,7 +168,7 @@ export const foldState = StateField.define<DecorationSet>({
     // Clear folded ranges that cover the selection head
     if (tr.selection) {
       let onSelection = false;
-        const { head } = tr.selection.main;
+      const { head } = tr.selection.main;
       folded.between(head, head, (a, b) => {
         if (a < head && b > head) onSelection = true;
       });
@@ -195,7 +195,7 @@ export const foldState = StateField.define<DecorationSet>({
     const ranges = [];
     for (let i = 0; i < value.length; ) {
       const from = value[i++];
-        const to = value[i++];
+      const to = value[i++];
       if (typeof from !== 'number' || typeof to !== 'number')
         throw new RangeError('Invalid JSON for fold state');
       ranges.push(foldWidget.range(from, to));
@@ -271,7 +271,7 @@ function announceFold(
   fold = true,
 ) {
   const lineFrom = view.state.doc.lineAt(range.from).number;
-    const lineTo = view.state.doc.lineAt(range.to).number;
+  const lineTo = view.state.doc.lineAt(range.to).number;
   return EditorView.announce.of(
     `${view.state.phrase(fold ? 'Folded lines' : 'Unfolded lines')} ${lineFrom} ${view.state.phrase(
       'to',
@@ -288,10 +288,10 @@ function announceFold(
 /// entirely).
 export const foldAll: Command = (view) => {
   const { state } = view;
-    const effects = [];
+  const effects = [];
   for (let pos = 0; pos < state.doc.length; ) {
     const line = view.lineBlockAt(pos);
-      const range = foldable(state, line.from, line.to);
+    const range = foldable(state, line.from, line.to);
     if (range) effects.push(foldEffect.of(range));
     pos = (range ? view.lineBlockAt(range.to) : line).to + 1;
   }
@@ -411,7 +411,7 @@ export function codeFolding(config?: FoldConfig): Extension {
 
 function widgetToDOM(view: EditorView, prepared: any) {
   const { state } = view;
-    const conf = state.facet(foldConfig);
+  const conf = state.facet(foldConfig);
   const onclick = (event: Event) => {
     const line = view.lineBlockAt(view.posAtDOM(event.target as HTMLElement));
     const folded = findFold(view.state, line.from, line.to);
@@ -508,7 +508,7 @@ class FoldMarker extends GutterMarker {
 export function foldGutter(config: FoldGutterConfig = {}): Extension {
   const fullConfig = { ...foldGutterDefaults, ...config };
   const canFold = new FoldMarker(fullConfig, true);
-    const canUnfold = new FoldMarker(fullConfig, false);
+  const canUnfold = new FoldMarker(fullConfig, false);
 
   const markers = ViewPlugin.fromClass(
     class {

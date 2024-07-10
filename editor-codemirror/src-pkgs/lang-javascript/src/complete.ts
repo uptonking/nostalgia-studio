@@ -64,7 +64,7 @@ function getScope(doc: Text, node: SyntaxNode) {
   if (cached) return cached;
 
   const completions: Completion[] = [];
-    let top = true;
+  let top = true;
   function def(node: SyntaxNodeRef, type: string) {
     const name = doc.sliceString(node.from, node.to);
     completions.push({ label: name, type });
@@ -137,7 +137,7 @@ function pathFor(
   const path: string[] = [];
   for (;;) {
     const obj = member.firstChild;
-      let prop;
+    let prop;
     if (obj?.name == 'VariableName') {
       path.push(read(obj));
       return { path: path.reverse(), name };
@@ -193,7 +193,7 @@ function enumeratePropertyCompletions(
   top: boolean,
 ): readonly Completion[] {
   const options: Completion[] = [];
-    const seen: Set<string> = new Set();
+  const seen: Set<string> = new Set();
   for (let depth = 0; ; depth++) {
     for (const name of (Object.getOwnPropertyNames || Object.keys)(obj)) {
       if (

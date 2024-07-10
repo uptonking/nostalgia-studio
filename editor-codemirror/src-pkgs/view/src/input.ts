@@ -132,8 +132,8 @@ export class InputState {
 
   ensureHandlers(plugins: readonly PluginInstance[]) {
     const handlers = computeHandlers(plugins);
-      const prev = this.handlers;
-      const dom = this.view.contentDOM;
+    const prev = this.handlers;
+    const dom = this.view.contentDOM;
     for (const type in handlers)
       if (type != 'scroll') {
         const passive = !handlers[type].handlers.length;
@@ -424,7 +424,7 @@ class MouseSelection {
     this.select((this.lastEvent = event));
 
     let sx = 0;
-      let sy = 0;
+    let sy = 0;
     const rect = this.scrollParent?.getBoundingClientRect() || {
       left: 0,
       top: 0,
@@ -484,7 +484,7 @@ class MouseSelection {
     let ranges = null;
     for (let i = 0; i < sel.ranges.length; i++) {
       const range = sel.ranges[i];
-        let updated = null;
+      let updated = null;
       if (range.empty) {
         const pos = skipAtomicRanges(this.atoms, range.from, 0);
         if (pos != range.from) updated = EditorSelection.cursor(pos, -1);
@@ -507,9 +507,9 @@ class MouseSelection {
 
   select(event: MouseEvent) {
     const { view } = this;
-      const selection = this.skipAtoms(
-        this.style.get(event, this.extend, this.multiple),
-      );
+    const selection = this.skipAtoms(
+      this.style.get(event, this.extend, this.multiple),
+    );
     if (
       this.mustSelect ||
       !selection.eq(view.state.selection, this.dragging === false)
@@ -613,9 +613,9 @@ function capturePaste(view: EditorView) {
 
 function doPaste(view: EditorView, input: string) {
   const { state } = view;
-    let changes;
-    let i = 1;
-    const text = state.toText(input);
+  let changes;
+  let i = 1;
+  const text = state.toText(input);
   const byLine = text.lines == state.selection.ranges.length;
   const linewise =
     lastLinewiseCopy != null &&
@@ -718,9 +718,9 @@ function rangeForClick(
   } else {
     // Triple click
     const visual = LineView.find(view.docView, pos);
-      const line = view.state.doc.lineAt(visual ? visual.posAtEnd : pos);
+    const line = view.state.doc.lineAt(visual ? visual.posAtEnd : pos);
     const from = visual ? visual.posAtStart : line.from;
-      let to = visual ? visual.posAtEnd : line.to;
+    let to = visual ? visual.posAtEnd : line.to;
     if (to < view.state.doc.length && to == line.to) to++;
     return EditorSelection.range(from, to);
   }
@@ -764,13 +764,13 @@ function queryPos(
 
 const BadMouseDetail = browser.ie && browser.ie_version <= 11;
 let lastMouseDown: MouseEvent | null = null;
-  let lastMouseDownCount = 0;
-  let lastMouseDownTime = 0;
+let lastMouseDownCount = 0;
+let lastMouseDownTime = 0;
 
 function getClickType(event: MouseEvent) {
   if (!BadMouseDetail) return event.detail;
   const last = lastMouseDown;
-    const lastTime = lastMouseDownTime;
+  const lastTime = lastMouseDownTime;
   lastMouseDown = event;
   lastMouseDownTime = Date.now();
   return (lastMouseDownCount =
@@ -784,7 +784,7 @@ function getClickType(event: MouseEvent) {
 
 function basicMouseSelection(view: EditorView, event: MouseEvent) {
   const start = queryPos(view, event);
-    const type = getClickType(event);
+  const type = getClickType(event);
   let startSel = view.state.selection;
   return {
     update(update) {
@@ -795,12 +795,12 @@ function basicMouseSelection(view: EditorView, event: MouseEvent) {
     },
     get(event, extend, multiple) {
       const cur = queryPos(view, event);
-        let removed;
+      let removed;
       let range = rangeForClick(view, cur.pos, cur.bias, type);
       if (start.pos != cur.pos && !extend) {
         const startRange = rangeForClick(view, start.pos, start.bias, type);
         const from = Math.min(startRange.from, range.from);
-          const to = Math.max(startRange.to, range.to);
+        const to = Math.max(startRange.to, range.to);
         range =
           from < range.from
             ? EditorSelection.range(from, to)
@@ -843,7 +843,7 @@ handlers.dragstart = (view, event: DragEvent) => {
     const cView = view.docView.nearest(event.target as HTMLElement);
     if (cView && cView.isWidget) {
       const from = cView.posAtStart;
-        const to = from + cView.length;
+      const to = from + cView.length;
       if (from >= range.to || to <= range.from)
         range = EditorSelection.range(from, to);
     }
@@ -874,7 +874,10 @@ function dropText(
   direct: boolean,
 ) {
   if (!text) return;
-  const dropPos = view.posAtCoords({ x: event.clientX, y: event.clientY }, false);
+  const dropPos = view.posAtCoords(
+    { x: event.clientX, y: event.clientY },
+    false,
+  );
 
   const { draggedContent } = view.inputState;
   const del =
@@ -904,7 +907,7 @@ handlers.drop = (view, event: DragEvent) => {
   if (files && files.length) {
     // For a file drop, read the file's text.
     const text = Array(files.length);
-      let read = 0;
+    let read = 0;
     const finishFile = () => {
       if (++read == files.length)
         dropText(
@@ -967,8 +970,8 @@ function captureCopy(view: EditorView, text: string) {
 
 function copiedRange(state: EditorState) {
   const content = [];
-    const ranges: { from: number; to: number }[] = [];
-    let linewise = false;
+  const ranges: { from: number; to: number }[] = [];
+  let linewise = false;
   for (const range of state.selection.ranges)
     if (!range.empty) {
       content.push(state.sliceDoc(range.from, range.to));

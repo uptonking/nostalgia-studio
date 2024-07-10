@@ -239,8 +239,8 @@ function longComment(stream, state) {
 
 function indent(stream, state, type = 'coffee') {
   let offset = 0;
-    let align = false;
-    let alignOffset = null;
+  let align = false;
+  let alignOffset = null;
   for (let scope = state.scope; scope; scope = scope.prev) {
     if (scope.type === 'coffee' || scope.type == '}') {
       offset = scope.offset + stream.indentUnit;

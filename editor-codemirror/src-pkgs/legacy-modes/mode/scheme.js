@@ -1,15 +1,15 @@
 const BUILTIN = 'builtin';
-  const COMMENT = 'comment';
-  const STRING = 'string';
-  const SYMBOL = 'symbol';
-  const ATOM = 'atom';
-  const NUMBER = 'number';
-  const BRACKET = 'bracket';
+const COMMENT = 'comment';
+const STRING = 'string';
+const SYMBOL = 'symbol';
+const ATOM = 'atom';
+const NUMBER = 'number';
+const BRACKET = 'bracket';
 const INDENT_WORD_SKIP = 2;
 
 function makeKeywords(str) {
   const obj = {};
-    const words = str.split(' ');
+  const words = str.split(' ');
   for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
@@ -70,7 +70,7 @@ function isHexNumber(stream) {
 
 function processEscapedSequence(stream, options) {
   let next;
-    let escaped = false;
+  let escaped = false;
   while ((next = stream.next()) != null) {
     if (next == options.token && !escaped) {
       options.state.mode = false;
@@ -121,7 +121,7 @@ export const scheme = {
         break;
       case 'comment': // comment parsing mode
         var next;
-          var maybeEnd = false;
+        var maybeEnd = false;
         while ((next = stream.next()) != null) {
           if (next == '#' && maybeEnd) {
             state.mode = false;
@@ -175,8 +175,8 @@ export const scheme = {
             returnType = COMMENT;
           } else {
             let numTest = null;
-              let hasExactness = false;
-              let hasRadix = true;
+            let hasExactness = false;
+            let hasRadix = true;
             if (stream.eat(/[ei]/i)) {
               hasExactness = true;
             } else {
@@ -215,7 +215,7 @@ export const scheme = {
         } else if (ch == '(' || ch == '[') {
           let keyWord = '';
           const indentTemp = stream.column();
-            let letter;
+          let letter;
           /**
            Either
            (indent-word ..

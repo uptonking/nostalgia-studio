@@ -65,10 +65,10 @@ class TooltipViewManager {
     }
 
     const tooltipViews: TooltipView[] = [];
-      const newAbove: boolean[] | null = above ? [] : null;
+    const newAbove: boolean[] | null = above ? [] : null;
     for (let i = 0; i < tooltips.length; i++) {
       const tip = tooltips[i];
-        let known = -1;
+      let known = -1;
       if (!tip) continue;
       for (let i = 0; i < this.tooltips.length; i++) {
         const other = this.tooltips[i];
@@ -316,8 +316,8 @@ const tooltipPlugin = ViewPlugin.fromClass(
     readMeasure(): Measured {
       const editor = this.view.dom.getBoundingClientRect();
       let scaleX = 1;
-        let scaleY = 1;
-        let makeAbsolute = false;
+      let scaleY = 1;
+      let makeAbsolute = false;
       if (this.position == 'fixed' && this.manager.tooltipViews.length) {
         const { dom } = this.manager.tooltipViews[0];
         if (browser.gecko) {
@@ -375,10 +375,10 @@ const tooltipPlugin = ViewPlugin.fromClass(
       const others = [];
       for (let i = 0; i < this.manager.tooltips.length; i++) {
         const tooltip = this.manager.tooltips[i];
-          const tView = this.manager.tooltipViews[i];
-          const { dom } = tView;
+        const tView = this.manager.tooltipViews[i];
+        const { dom } = tView;
         const pos = measured.pos[i];
-          const size = measured.size[i];
+        const size = measured.size[i];
         // Hide tooltips that are outside of the editor.
         if (
           !pos ||
@@ -395,9 +395,9 @@ const tooltipPlugin = ViewPlugin.fromClass(
           : null;
         const arrowHeight = arrow ? Arrow.Size : 0;
         const width = size.right - size.left;
-          let height = knownHeight.get(tView) ?? size.bottom - size.top;
+        let height = knownHeight.get(tView) ?? size.bottom - size.top;
         const offset = tView.offset || noOffset;
-          const ltr = this.view.textDirection == Direction.LTR;
+        const ltr = this.view.textDirection == Direction.LTR;
         const left =
           size.width > space.right - space.left
             ? ltr
@@ -798,7 +798,7 @@ class HoverPlugin {
     const desc = view.docView.nearest(lastMove.target);
     if (!desc) return;
     let pos: number;
-      let side: -1 | 1 = 1;
+    let side: -1 | 1 = 1;
     if (desc instanceof WidgetView) {
       pos = desc.posAtStart;
     } else {
@@ -869,7 +869,7 @@ class HoverPlugin {
       this.pending
     ) {
       const { pos } = active[0] || this.pending!;
-        const end = active[0]?.end ?? pos;
+      const end = active[0]?.end ?? pos;
       if (
         pos == end
           ? this.view.posAtCoords(this.lastMove) != pos

@@ -225,7 +225,7 @@ function mkGas(arch) {
 
   function nextUntilUnescaped(stream, end) {
     let escaped = false;
-      let next;
+    let next;
     while ((next = stream.next()) != null) {
       if (next === end && !escaped) {
         return false;
@@ -237,7 +237,7 @@ function mkGas(arch) {
 
   function clikeComment(stream, state) {
     let maybeEnd = false;
-      let ch;
+    let ch;
     while ((ch = stream.next()) != null) {
       if (ch === '/' && maybeEnd) {
         state.tokenize = null;
@@ -266,8 +266,8 @@ function mkGas(arch) {
       }
 
       let style;
-        let cur;
-        const ch = stream.next();
+      let cur;
+      const ch = stream.next();
 
       if (ch === '/') {
         if (stream.eat('*')) {

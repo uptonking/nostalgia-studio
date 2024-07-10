@@ -391,7 +391,7 @@ function tokenComment(stream, state) {
 
 function tokenChar(stream, state) {
   let isChar = false;
-    let match;
+  let match;
   if (stream.match(chars)) {
     isChar = true;
   } else if ((match = stream.match(/\\u([a-f0-9]{1,4})(?=')/i))) {

@@ -147,7 +147,7 @@ function specialCharPlugin() {
               if (code == 9) {
                 const line = doc.lineAt(pos);
                 const size = view.state.tabSize;
-                  const col = countColumn(line.text, size, pos - line.from);
+                const col = countColumn(line.text, size, pos - line.from);
                 return Decoration.replace({
                   widget: new TabWidget(
                     ((size - (col % size)) * this.view.defaultCharacterWidth) /

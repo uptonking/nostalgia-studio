@@ -24,18 +24,23 @@ import {
   nativeSelectionHidden,
   contentAttributes,
 } from './extension';
-import { WidgetType, Decoration, type DecorationSet, BlockType } from './decoration';
+import {
+  WidgetType,
+  Decoration,
+  type DecorationSet,
+  BlockType,
+} from './decoration';
 import type { EditorView } from './editorview';
 import { Direction } from './bidi';
 
 function visiblePixelRange(dom: HTMLElement, paddingTop: number): Rect {
   const rect = dom.getBoundingClientRect();
   const doc = dom.ownerDocument;
-    const win = doc.defaultView || window;
+  const win = doc.defaultView || window;
   let left = Math.max(0, rect.left);
-    let right = Math.min(win.innerWidth, rect.right);
+  let right = Math.min(win.innerWidth, rect.right);
   let top = Math.max(0, rect.top);
-    let bottom = Math.min(win.innerHeight, rect.bottom);
+  let bottom = Math.min(win.innerHeight, rect.bottom);
   for (
     let parent = dom.parentNode as Node | null;
     parent && parent != doc.body;
@@ -113,7 +118,7 @@ export class LineGap {
     if (a.length != b.length) return false;
     for (let i = 0; i < a.length; i++) {
       const gA = a[i];
-        const gB = b[i];
+      const gB = b[i];
       if (gA.from != gB.from || gA.to != gB.to || gA.size != gB.size)
         return false;
     }
@@ -258,7 +263,7 @@ export class ViewState {
 
   updateForViewport() {
     const viewports = [this.viewport];
-      const { main } = this.state.selection;
+    const { main } = this.state.selection;
     for (let i = 0; i <= 1; i++) {
       const pos = i ? main.head : main.anchor;
       if (!viewports.some(({ from, to }) => pos >= from && pos <= to)) {
@@ -373,7 +378,7 @@ export class ViewState {
 
   measure(view: EditorView) {
     const dom = view.contentDOM;
-      const style = window.getComputedStyle(dom);
+    const style = window.getComputedStyle(dom);
     const oracle = this.heightOracle;
     const whiteSpace = style.whiteSpace!;
     this.defaultTextDirection =
@@ -388,7 +393,7 @@ export class ViewState {
     this.contentDOMHeight = domRect.height;
     this.mustMeasureContent = false;
     let result = 0;
-      let bias = 0;
+    let bias = 0;
 
     if (domRect.width && domRect.height) {
       const { scaleX, scaleY } = getScale(dom, domRect);
@@ -429,7 +434,7 @@ export class ViewState {
       this.paddingTop,
     );
     const dTop = pixelViewport.top - this.pixelViewport.top;
-      const dBottom = pixelViewport.bottom - this.pixelViewport.bottom;
+    const dBottom = pixelViewport.bottom - this.pixelViewport.bottom;
     this.pixelViewport = pixelViewport;
     const inView =
       this.pixelViewport.bottom > this.pixelViewport.top &&
@@ -551,7 +556,7 @@ export class ViewState {
     // since the last update). It'll hold a number between 0 and 1
     const marginTop = 0.5 - Math.max(-0.5, Math.min(0.5, bias / VP.Margin / 2));
     const map = this.heightMap;
-      const oracle = this.heightOracle;
+    const oracle = this.heightOracle;
     const { visibleTop, visibleBottom } = this;
     let viewport = new Viewport(
       map.lineAt(
@@ -578,7 +583,7 @@ export class ViewState {
           this.pixelViewport.bottom - this.pixelViewport.top,
         );
         const block = map.lineAt(head, QueryType.ByPos, oracle, 0, 0);
-          let topPos;
+        let topPos;
         if (scrollTarget.y == 'center')
           topPos = (block.top + block.bottom) / 2 - viewHeight / 2;
         else if (
@@ -610,7 +615,7 @@ export class ViewState {
 
   mapViewport(viewport: Viewport, changes: ChangeDesc) {
     const from = changes.mapPos(viewport.from, -1);
-      const to = changes.mapPos(viewport.to, 1);
+    const to = changes.mapPos(viewport.to, 1);
     return new Viewport(
       this.heightMap.lineAt(
         from,
@@ -681,8 +686,8 @@ export class ViewState {
   ensureLineGaps(current: readonly LineGap[], mayMeasure?: EditorView) {
     const wrapping = this.heightOracle.lineWrapping;
     const margin = wrapping ? LG.MarginWrap : LG.Margin;
-      const halfMargin = margin >> 1;
-      const doubleMargin = margin << 1;
+    const halfMargin = margin >> 1;
+    const doubleMargin = margin << 1;
     // The non-wrapping logic won't work at all in predominantly right-to-left text.
     if (this.defaultTextDirection != Direction.LTR && !wrapping) return [];
     const gaps: LineGap[] = [];
@@ -694,7 +699,7 @@ export class ViewState {
     ) => {
       if (to - from < halfMargin) return;
       const sel = this.state.selection.main;
-        const avoid = [sel.from];
+      const avoid = [sel.from];
       if (!sel.empty) avoid.push(sel.to);
       for (const pos of avoid) {
         if (pos > from && pos < to) {
@@ -737,12 +742,14 @@ export class ViewState {
       const structure = lineStructure(line.from, line.to, this.stateDeco);
       if (structure.total < doubleMargin) return;
       const target = this.scrollTarget ? this.scrollTarget.range.head : null;
-      let viewFrom; let viewTo;
+      let viewFrom;
+      let viewTo;
       if (wrapping) {
         const marginHeight =
           (margin / this.heightOracle.lineLength) *
           this.heightOracle.lineHeight;
-        let top; let bot;
+        let top;
+        let bot;
         if (target != null) {
           const targetFrac = findFraction(structure, target);
           const spaceFrac =
@@ -759,7 +766,8 @@ export class ViewState {
       } else {
         const totalWidth = structure.total * this.heightOracle.charWidth;
         const marginWidth = margin * this.heightOracle.charWidth;
-        let left; let right;
+        let left;
+        let right;
         if (target != null) {
           const targetFrac = findFraction(structure, target);
           const spaceFrac =
@@ -788,7 +796,8 @@ export class ViewState {
   }
 
   gapSize(line: BlockInfo, from: number, to: number, structure: LineStructure) {
-    const fraction = findFraction(structure, to) - findFraction(structure, from);
+    const fraction =
+      findFraction(structure, to) - findFraction(structure, from);
     if (this.heightOracle.lineWrapping) {
       return line.height * fraction;
     } else {
@@ -906,8 +915,8 @@ function lineStructure(
   stateDeco: readonly DecorationSet[],
 ): LineStructure {
   const ranges = [];
-    let pos = from;
-    let total = 0;
+  let pos = from;
+  let total = 0;
   RangeSet.spans(
     stateDeco,
     from,
@@ -937,7 +946,7 @@ function findPosition({ total, ranges }: LineStructure, ratio: number): number {
   let dist = Math.floor(total * ratio);
   for (let i = 0; ; i++) {
     const { from, to } = ranges[i];
-      const size = to - from;
+    const size = to - from;
     if (dist <= size) return from + dist;
     dist -= size;
   }
@@ -1004,8 +1013,8 @@ class BigScaler implements YScaler {
     viewports: readonly Viewport[],
   ) {
     let vpHeight = 0;
-      let base = 0;
-      let domBase = 0;
+    let base = 0;
+    let domBase = 0;
     this.viewports = viewports.map(({ from, to }) => {
       const top = heightMap.lineAt(from, QueryType.ByPos, oracle, 0, 0).top;
       const bottom = heightMap.lineAt(to, QueryType.ByPos, oracle, 0, 0).bottom;
@@ -1056,7 +1065,7 @@ class BigScaler implements YScaler {
 function scaleBlock(block: BlockInfo, scaler: YScaler): BlockInfo {
   if (scaler.scale == 1) return block;
   const bTop = scaler.toDOM(block.top);
-    const bBottom = scaler.toDOM(block.bottom);
+  const bBottom = scaler.toDOM(block.bottom);
   return new BlockInfo(
     block.from,
     block.length,

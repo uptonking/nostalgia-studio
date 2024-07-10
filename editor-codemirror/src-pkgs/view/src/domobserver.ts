@@ -216,7 +216,7 @@ export class DOMObserver {
     const wasChanged = this.selectionChanged;
     if (!this.readSelectionRange() || this.delayedAndroidKey) return;
     const { view } = this;
-      const sel = this.selectionRange;
+    const sel = this.selectionRange;
     if (
       view.state.facet(editable)
         ? view.root.activeElement != this.dom
@@ -300,7 +300,7 @@ export class DOMObserver {
   listenForScroll() {
     this.parentCheck = -1;
     let i = 0;
-      let changed: HTMLElement[] | null = null;
+    let changed: HTMLElement[] | null = null;
     for (let dom = this.dom as any; dom; ) {
       if (dom.nodeType == 1) {
         if (
@@ -397,7 +397,8 @@ export class DOMObserver {
         // it is probably part of a weird chain of updates, and should
         // be ignored if it returns the DOM to its previous state.
         force:
-          this.lastChange < Date.now() - 50 || Boolean(this.delayedAndroidKey?.force),
+          this.lastChange < Date.now() - 50 ||
+          Boolean(this.delayedAndroidKey?.force),
       };
   }
 
@@ -433,8 +434,8 @@ export class DOMObserver {
     if (records.length) this.queue = [];
 
     let from = -1;
-      let to = -1;
-      let typeOver = false;
+    let to = -1;
+    let typeOver = false;
     for (const record of records) {
       const range = this.readMutation(record);
       if (!range) continue;
@@ -598,9 +599,9 @@ function findChild(
 
 function buildSelectionRangeFromRange(view: EditorView, range: StaticRange) {
   let anchorNode = range.startContainer;
-    let anchorOffset = range.startOffset;
+  let anchorOffset = range.startOffset;
   let focusNode = range.endContainer;
-    let focusOffset = range.endOffset;
+  let focusOffset = range.endOffset;
   const curAnchor = view.docView.domAtPos(view.state.selection.main.anchor);
   // Since such a range doesn't distinguish between anchor and head,
   // use a heuristic that flips it around if its end matches the
@@ -713,7 +714,7 @@ class EditContextManager {
     });
     context.addEventListener('characterboundsupdate', (e) => {
       const rects: DOMRect[] = [];
-        let prev: DOMRect | null = null;
+      let prev: DOMRect | null = null;
       for (
         let i = this.toEditorPos(e.rangeStart),
           end = this.toEditorPos(e.rangeEnd);
@@ -725,7 +726,7 @@ class EditContextManager {
           (rect &&
             new DOMRect(
               rect.left,
-              rect.right,
+              rect.top,
               rect.right - rect.left,
               rect.bottom - rect.top,
             )) ||
@@ -739,7 +740,7 @@ class EditContextManager {
       const deco = [];
       for (const format of e.getTextFormats()) {
         const lineStyle = format.underlineStyle;
-          const thickness = format.underlineThickness;
+        const thickness = format.underlineThickness;
         if (lineStyle != 'None' && thickness != 'None') {
           const style = `text-decoration: underline ${
             lineStyle == 'Dashed'
@@ -787,8 +788,8 @@ class EditContextManager {
 
   applyEdits(update: ViewUpdate) {
     let off = 0;
-      let abort = false;
-      let pending = this.pendingContextChange;
+    let abort = false;
+    let pending = this.pendingContextChange;
     update.changes.iterChanges((fromA, toA, _fromB, _toB, insert) => {
       if (abort) return;
 
@@ -801,6 +802,7 @@ class EditContextManager {
         ) {
           pending = this.pendingContextChange = null; // Match
           off += dLen;
+          this.to += dLen;
           return;
         } else {
           // Mismatch, revert

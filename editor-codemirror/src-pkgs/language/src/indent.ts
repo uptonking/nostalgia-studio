@@ -1,4 +1,9 @@
-import { NodeProp, type SyntaxNode, type NodeIterator, type Tree } from '@lezer/common';
+import {
+  NodeProp,
+  type SyntaxNode,
+  type NodeIterator,
+  type Tree,
+} from '@lezer/common';
 import {
   EditorState,
   type Extension,
@@ -48,8 +53,8 @@ export function getIndentUnit(state: EditorState) {
 /// tabs.
 export function indentString(state: EditorState, cols: number) {
   let result = '';
-    const ts = state.tabSize;
-    let ch = state.facet(indentUnit)[0];
+  const ts = state.tabSize;
+  let ch = state.facet(indentUnit)[0];
   if (ch == '\t') {
     while (cols >= ts) {
       result += '\t';
@@ -264,10 +269,10 @@ function indentStrategy(
   const strategy = tree.type.prop(indentNodeProp);
   if (strategy) return strategy;
   const first = tree.firstChild;
-    let close: readonly string[] | undefined;
+  let close: readonly string[] | undefined;
   if (first && (close = first.type.prop(NodeProp.closedBy))) {
     const last = tree.lastChild;
-      const closed = last && close.indexOf(last.name) > -1;
+    const closed = last && close.indexOf(last.name) > -1;
     return (cx) =>
       delimitedStrategy(
         cx,
@@ -357,7 +362,7 @@ function isParent(parent: SyntaxNode, of: SyntaxNode) {
 function bracketedAligned(context: TreeIndentContext) {
   const tree = context.node;
   const openToken = tree.childAfter(tree.from);
-    const last = tree.lastChild;
+  const last = tree.lastChild;
   if (!openToken) return null;
   const sim = context.options.simulateBreak;
   const openLine = context.state.doc.lineAt(openToken.from);
@@ -403,7 +408,7 @@ function delimitedStrategy(
   closedAt?: number,
 ) {
   const after = context.textAfter;
-    const space = after.match(/^\s*/)![0].length;
+  const space = after.match(/^\s*/)![0].length;
   const closed =
     (closing && after.slice(space, space + closing.length) == closing) ||
     closedAt == context.pos + space;
@@ -459,14 +464,14 @@ export function indentOnInput(): Extension {
     );
     if (!rules.length) return tr;
     const doc = tr.newDoc;
-      const { head } = tr.newSelection.main;
-      const line = doc.lineAt(head);
+    const { head } = tr.newSelection.main;
+    const line = doc.lineAt(head);
     if (head > line.from + DontIndentBeyond) return tr;
     const lineStart = doc.sliceString(line.from, head);
     if (!rules.some((r) => r.test(lineStart))) return tr;
     const { state } = tr;
-      let last = -1;
-      const changes = [];
+    let last = -1;
+    const changes = [];
     for (const { head } of state.selection.ranges) {
       const line = state.doc.lineAt(head);
       if (line.from == last) continue;

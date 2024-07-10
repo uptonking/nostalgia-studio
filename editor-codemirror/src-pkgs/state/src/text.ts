@@ -100,9 +100,9 @@ export abstract class Text implements Iterable<string> {
     if (other == this) return true;
     if (other.length != this.length || other.lines != this.lines) return false;
     const start = this.scanIdentical(other, 1);
-      const end = this.length - this.scanIdentical(other, -1);
+    const end = this.length - this.scanIdentical(other, -1);
     const a = new RawTextCursor(this);
-      const b = new RawTextCursor(other);
+    const b = new RawTextCursor(other);
     for (let skip = start, pos = start; ; ) {
       a.next(skip);
       b.next(skip);
@@ -226,7 +226,7 @@ class TextLeaf extends Text {
   ): Line {
     for (let i = 0; ; i++) {
       const string = this.text[i];
-        const end = offset + string.length;
+      const end = offset + string.length;
       if ((isLine ? line : end) >= target)
         return new Line(offset, end, line, string);
       offset = end + 1;
@@ -277,7 +277,7 @@ class TextLeaf extends Text {
     let result = '';
     for (let pos = 0, i = 0; pos <= to && i < this.text.length; i++) {
       const line = this.text[i];
-        const end = pos + line.length;
+      const end = pos + line.length;
       if (pos > from && i) result += lineSep;
       if (from < end && to > pos)
         result += line.slice(Math.max(0, from - pos), to - pos);
@@ -296,7 +296,7 @@ class TextLeaf extends Text {
 
   static split(text: readonly string[], target: Text[]): Text[] {
     let part = [];
-      let len = -1;
+    let len = -1;
     for (const line of text) {
       part.push(line);
       len += line.length + 1;
@@ -334,8 +334,8 @@ class TextNode extends Text {
   ): Line {
     for (let i = 0; ; i++) {
       const child = this.children[i];
-        const end = offset + child.length;
-        const endLine = line + child.lines - 1;
+      const end = offset + child.length;
+      const endLine = line + child.lines - 1;
       if ((isLine ? endLine : end) >= target)
         return child.lineInner(target, isLine, line, offset);
       offset = end + 1;
@@ -346,7 +346,7 @@ class TextNode extends Text {
   decompose(from: number, to: number, target: Text[], open: Open) {
     for (let i = 0, pos = 0; pos <= to && i < this.children.length; i++) {
       const child = this.children[i];
-        const end = pos + child.length;
+      const end = pos + child.length;
       if (from <= end && to >= pos) {
         const childOpen =
           open & ((pos <= from ? Open.From : 0) | (end >= to ? Open.To : 0));
@@ -362,7 +362,7 @@ class TextNode extends Text {
     if (text.lines < this.lines)
       for (let i = 0, pos = 0; i < this.children.length; i++) {
         const child = this.children[i];
-          const end = pos + child.length;
+        const end = pos + child.length;
         // Fast path: if the change only affects one child and the
         // child's size remains in the acceptable range, only update
         // that child
@@ -389,7 +389,7 @@ class TextNode extends Text {
     let result = '';
     for (let i = 0, pos = 0; i < this.children.length && pos <= to; i++) {
       const child = this.children[i];
-        const end = pos + child.length;
+      const end = pos + child.length;
       if (pos > from && i) result += lineSep;
       if (from < end && to > pos)
         result += child.sliceString(from - pos, to - pos, lineSep);
@@ -412,7 +412,7 @@ class TextNode extends Text {
     for (; ; iA += dir, iB += dir) {
       if (iA == eA || iB == eB) return length;
       const chA = this.children[iA];
-        const chB = other.children[iB];
+      const chB = other.children[iB];
       if (chA != chB) return length + chA.scanIdentical(chB, dir);
       length += chA.length + 1;
     }
@@ -430,12 +430,12 @@ class TextNode extends Text {
       return new TextLeaf(flat, length);
     }
     const chunk = Math.max(Tree.Branch, lines >> Tree.BranchShift);
-      const maxChunk = chunk << 1;
-      const minChunk = chunk >> 1;
+    const maxChunk = chunk << 1;
+    const minChunk = chunk >> 1;
     const chunked: Text[] = [];
-      let currentLines = 0;
-      let currentLen = -1;
-      const currentChunk: Text[] = [];
+    let currentLines = 0;
+    let currentLen = -1;
+    const currentChunk: Text[] = [];
     function add(child: Text) {
       let last;
       if (child.lines > maxChunk && child instanceof TextNode) {
@@ -498,7 +498,7 @@ function appendText(
 ): string[] {
   for (let pos = 0, i = 0, first = true; i < text.length && pos <= to; i++) {
     let line = text[i];
-      const end = pos + line.length;
+    const end = pos + line.length;
     if (end >= from) {
       if (end > to) line = line.slice(0, to - pos);
       if (pos < from) line = line.slice(from - pos);
@@ -549,8 +549,8 @@ class RawTextCursor implements TextIterator {
     for (;;) {
       const last = this.nodes.length - 1;
       const top = this.nodes[last];
-        const offsetValue = this.offsets[last];
-        const offset = offsetValue >> 1;
+      const offsetValue = this.offsets[last];
+      const offset = offsetValue >> 1;
       const size =
         top instanceof TextLeaf ? top.text.length : top.children!.length;
       if (offset == (dir > 0 ? size : 0)) {

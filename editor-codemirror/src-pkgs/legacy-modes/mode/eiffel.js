@@ -105,7 +105,7 @@ function tokenBase(stream, state) {
 function readQuoted(quote, style, unescaped) {
   return function (stream, state) {
     let escaped = false;
-      let ch;
+    let ch;
     while ((ch = stream.next()) != null) {
       if (ch == quote && (unescaped || !escaped)) {
         state.tokenize.pop();

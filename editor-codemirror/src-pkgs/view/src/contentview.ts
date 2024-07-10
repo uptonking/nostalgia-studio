@@ -41,7 +41,7 @@ export abstract class ContentView {
   flags: number = ViewFlag.NodeDirty;
   abstract length: number;
   abstract children: ContentView[];
-  breakAfter: number=0;
+  breakAfter: number = 0;
 
   get overrideDOMText(): Text | null {
     return null;
@@ -77,7 +77,7 @@ export abstract class ContentView {
     if (this.flags & ViewFlag.NodeDirty) {
       const parent = this.dom as HTMLElement;
       let prev: Node | null = null;
-        let next;
+      let next;
       for (const child of this.children) {
         if (child.flags & ViewFlag.Dirty) {
           if (
@@ -165,16 +165,16 @@ export abstract class ContentView {
     to: number;
   } | null {
     let fromI = -1;
-      let fromStart = -1;
-      let toI = -1;
-      let toEnd = -1;
+    let fromStart = -1;
+    let toI = -1;
+    let toEnd = -1;
     for (
       let i = 0, pos = offset, prevEnd = offset;
       i < this.children.length;
       i++
     ) {
       const child = this.children[i];
-        const end = pos + child.length;
+      const end = pos + child.length;
       if (pos < from && end > to) return child.domBoundsAround(from, to, pos);
       if (end >= from && fromI == -1) {
         fromI = i;
@@ -326,7 +326,8 @@ export abstract class ContentView {
   }
 
   destroy() {
-    for (const child of this.children) if (child.parent == this) child.destroy();
+    for (const child of this.children)
+      if (child.parent == this) child.destroy();
     this.parent = null;
   }
 }

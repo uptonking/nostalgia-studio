@@ -110,11 +110,11 @@ const matchHighlighter = ViewPlugin.fromClass(
     getDeco(view: EditorView) {
       const conf = view.state.facet(highlightConfig);
       const { state } = view;
-        const sel = state.selection;
+      const sel = state.selection;
       if (sel.ranges.length > 1) return Decoration.none;
       const range = sel.main;
-        let query;
-        let check = null;
+      let query;
+      let check = null;
       if (range.empty) {
         if (!conf.highlightWordAroundCursor) return Decoration.none;
         const word = state.wordAt(range.head);
@@ -185,7 +185,7 @@ const selectWord: StateCommand = ({ state, dispatch }) => {
 function findNextOccurrence(state: EditorState, query: string) {
   const { main, ranges } = state.selection;
   const word = state.wordAt(main.head);
-    const fullWord = word && word.from == main.from && word.to == main.to;
+  const fullWord = word && word.from == main.from && word.to == main.to;
   for (
     let cycled = false,
       cursor = new SearchCursor(state.doc, query, ranges[ranges.length - 1].to);

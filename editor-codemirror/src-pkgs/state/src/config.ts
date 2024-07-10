@@ -16,7 +16,7 @@ export function combineConfig<Config extends object>(
   for (const config of configs)
     for (const key of Object.keys(config) as (keyof Config)[]) {
       const value = config[key];
-        const current = result[key];
+      const current = result[key];
       if (current === undefined) result[key] = value;
       else if (current === value || value === undefined) {
       } // No conflict

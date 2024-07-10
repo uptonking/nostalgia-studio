@@ -1,15 +1,15 @@
 const BUILTIN = 'builtin';
-  const COMMENT = 'comment';
-  const STRING = 'string';
-  const ATOM = 'atom';
-  const NUMBER = 'number';
-  const KEYWORD = 'keyword';
-  const MODTAG = 'header';
-  const COBOLLINENUM = 'def';
-  const PERIOD = 'link';
+const COMMENT = 'comment';
+const STRING = 'string';
+const ATOM = 'atom';
+const NUMBER = 'number';
+const KEYWORD = 'keyword';
+const MODTAG = 'header';
+const COBOLLINENUM = 'def';
+const PERIOD = 'link';
 function makeKeywords(str) {
   const obj = {};
-    const words = str.split(' ');
+  const words = str.split(' ');
   for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }

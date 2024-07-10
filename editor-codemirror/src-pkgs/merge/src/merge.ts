@@ -49,10 +49,10 @@ const moveByChunk =
   (dir: -1 | 1): StateCommand =>
   ({ state, dispatch }) => {
     const chunks = state.field(ChunkField, false);
-      const conf = state.facet(mergeConfig);
+    const conf = state.facet(mergeConfig);
     if (!chunks || !chunks.length || !conf) return false;
     const { head } = state.selection.main;
-      let pos = 0;
+    let pos = 0;
     for (let i = chunks.length - 1; i >= 0; i--) {
       const chunk = chunks[i];
       const [from, to] =

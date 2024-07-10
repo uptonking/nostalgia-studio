@@ -1,6 +1,6 @@
 function words(str) {
   const obj = {};
-    const words = str.split(' ');
+  const words = str.split(' ');
   for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
@@ -54,16 +54,16 @@ const defaults = {
 
 export function asn1(parserConfig) {
   const keywords = parserConfig.keywords || defaults.keywords;
-    const cmipVerbs = parserConfig.cmipVerbs || defaults.cmipVerbs;
-    const compareTypes = parserConfig.compareTypes || defaults.compareTypes;
-    const status = parserConfig.status || defaults.status;
-    const tags = parserConfig.tags || defaults.tags;
-    const storage = parserConfig.storage || defaults.storage;
-    const modifier = parserConfig.modifier || defaults.modifier;
-    const accessTypes = parserConfig.accessTypes || defaults.accessTypes;
-    const multiLineStrings =
-      parserConfig.multiLineStrings || defaults.multiLineStrings;
-    const indentStatements = parserConfig.indentStatements !== false;
+  const cmipVerbs = parserConfig.cmipVerbs || defaults.cmipVerbs;
+  const compareTypes = parserConfig.compareTypes || defaults.compareTypes;
+  const status = parserConfig.status || defaults.status;
+  const tags = parserConfig.tags || defaults.tags;
+  const storage = parserConfig.storage || defaults.storage;
+  const modifier = parserConfig.modifier || defaults.modifier;
+  const accessTypes = parserConfig.accessTypes || defaults.accessTypes;
+  const multiLineStrings =
+    parserConfig.multiLineStrings || defaults.multiLineStrings;
+  const indentStatements = parserConfig.indentStatements !== false;
   const isOperatorChar = /[\|\^]/;
   let curPunc;
 
@@ -109,8 +109,8 @@ export function asn1(parserConfig) {
   function tokenString(quote) {
     return function (stream, state) {
       let escaped = false;
-        let next;
-        let end = false;
+      let next;
+      let end = false;
       while ((next = stream.next()) != null) {
         if (next == quote && !escaped) {
           let afterNext = stream.peek();

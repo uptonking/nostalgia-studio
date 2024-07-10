@@ -37,7 +37,7 @@ function storeWords(
 ) {
   for (let lines = doc.iterLines(), pos = 0; !lines.next().done; ) {
     const { value } = lines;
-      let m;
+    let m;
     wordRE.lastIndex = 0;
     while ((m = wordRE.exec(value))) {
       if (!seen[m[0]] && pos + m.index != ignoreAt) {
@@ -61,7 +61,7 @@ function collectWords(
   const cached = big && cache.get(doc);
   if (cached) return cached;
   const result: Completion[] = [];
-    const seen: { [word: string]: boolean } = Object.create(null);
+  const seen: { [word: string]: boolean } = Object.create(null);
   if (doc.children) {
     let pos = 0;
     for (const ch of doc.children) {

@@ -9,7 +9,7 @@ function isNumber(word) {
 function tokenString(quote) {
   return function (stream, state) {
     let escaped = false;
-      let next;
+    let next;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) break;
       escaped = !escaped && next == '\\';

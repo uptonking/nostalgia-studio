@@ -159,7 +159,8 @@ export class SearchQuery {
     this.literal = Boolean(config.literal);
     this.regexp = Boolean(config.regexp);
     this.replace = config.replace || '';
-    this.valid = Boolean(this.search) && (!this.regexp || validRegExp(this.search));
+    this.valid =
+      Boolean(this.search) && (!this.regexp || validRegExp(this.search));
     this.unquoted = this.unquote(this.search);
     this.wholeWord = Boolean(config.wholeWord);
   }
@@ -304,7 +305,7 @@ class StringQuery extends QueryType<SearchResult> {
         pos - FindPrev.ChunkSize - this.spec.unquoted.length,
       );
       const cursor = stringCursor(this.spec, state, start, pos);
-        let range: SearchResult | null = null;
+      let range: SearchResult | null = null;
       while (!cursor.nextOverlapping().done) range = cursor.value;
       if (range) return range;
       if (start == from) return null;
@@ -325,7 +326,7 @@ class StringQuery extends QueryType<SearchResult> {
 
   matchAll(state: EditorState, limit: number) {
     const cursor = stringCursor(this.spec, state, 0, state.doc.length);
-      const ranges = [];
+    const ranges = [];
     while (!cursor.next().done) {
       if (ranges.length >= limit) return null;
       ranges.push(cursor.value);
@@ -404,7 +405,7 @@ class RegExpQuery extends QueryType<RegExpResult> {
     for (let size = 1; ; size++) {
       const start = Math.max(from, to - size * FindPrev.ChunkSize);
       const cursor = regexpCursor(this.spec, state, start, to);
-        let range: RegExpResult | null = null;
+      let range: RegExpResult | null = null;
       while (!cursor.next().done) range = cursor.value;
       if (range && (start == from || range.from > start + 10)) return range;
       if (start == from) return null;
@@ -434,7 +435,7 @@ class RegExpQuery extends QueryType<RegExpResult> {
 
   matchAll(state: EditorState, limit: number) {
     const cursor = regexpCursor(this.spec, state, 0, state.doc.length);
-      const ranges = [];
+    const ranges = [];
     while (!cursor.next().done) {
       if (ranges.length >= limit) return null;
       ranges.push(cursor.value);
@@ -505,9 +506,9 @@ class SearchState {
 }
 
 const matchMark = Decoration.mark({ class: 'cm-searchMatch' });
-  const selectedMatchMark = Decoration.mark({
-    class: 'cm-searchMatch cm-searchMatch-selected',
-  });
+const selectedMatchMark = Decoration.mark({
+  class: 'cm-searchMatch cm-searchMatch-selected',
+});
 
 const searchHighlighter = ViewPlugin.fromClass(
   class {
@@ -596,7 +597,7 @@ export const findNext = searchCommand((view, { query }) => {
 /// of the document to start searching at the end again.
 export const findPrevious = searchCommand((view, { query }) => {
   const { state } = view;
-    const { from } = state.selection.main;
+  const { from } = state.selection.main;
   const prev = query.prevMatch(state, from, from);
   if (!prev) return false;
   const selection = EditorSelection.single(prev.from, prev.to);
@@ -632,7 +633,7 @@ export const selectSelectionMatches: StateCommand = ({ state, dispatch }) => {
   if (sel.ranges.length > 1 || sel.main.empty) return false;
   const { from, to } = sel.main;
   const ranges = [];
-    let main = 0;
+  let main = 0;
   for (
     let cur = new SearchCursor(state.doc, state.sliceDoc(from, to));
     !cur.next().done;
@@ -654,13 +655,13 @@ export const selectSelectionMatches: StateCommand = ({ state, dispatch }) => {
 /// Replace the current match of the search query.
 export const replaceNext = searchCommand((view, { query }) => {
   const { state } = view;
-    const { from, to } = state.selection.main;
+  const { from, to } = state.selection.main;
   if (state.readOnly) return false;
   let next = query.nextMatch(state, from, from);
   if (!next) return false;
   const changes = [];
-    let selection: EditorSelection | undefined;
-    let replacement: Text | undefined;
+  let selection: EditorSelection | undefined;
+  let replacement: Text | undefined;
   const effects: StateEffect<unknown>[] = [];
   if (next.from == from && next.to == to) {
     replacement = state.toText(query.getReplacement(next));
@@ -987,9 +988,9 @@ function announceMatch(
   { from, to }: { from: number; to: number },
 ) {
   const line = view.state.doc.lineAt(from);
-    const lineEnd = view.state.doc.lineAt(to).to;
+  const lineEnd = view.state.doc.lineAt(to).to;
   const start = Math.max(line.from, from - AnnounceMargin);
-    const end = Math.min(lineEnd, to + AnnounceMargin);
+  const end = Math.min(lineEnd, to + AnnounceMargin);
   let text = view.state.sliceDoc(start, end);
   if (start != line.from) {
     for (let i = 0; i < AnnounceMargin; i++)

@@ -21,7 +21,7 @@ export function attrsEq(
   if (!a) a = noAttrs;
   if (!b) b = noAttrs;
   const keysA = Object.keys(a!);
-    const keysB = Object.keys(b!);
+  const keysB = Object.keys(b!);
   if (
     keysA.length - (ignore && keysA.indexOf(ignore) > -1 ? 1 : 0) !=
     keysB.length - (ignore && keysB.indexOf(ignore) > -1 ? 1 : 0)

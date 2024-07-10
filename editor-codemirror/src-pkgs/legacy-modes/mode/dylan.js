@@ -314,9 +314,9 @@ function tokenBase(stream, state) {
 
 function tokenComment(stream, state) {
   let maybeEnd = false;
-    let maybeNested = false;
-    let nestedCount = 0;
-    let ch;
+  let maybeNested = false;
+  let nestedCount = 0;
+  let ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       if (nestedCount > 0) {
@@ -337,8 +337,8 @@ function tokenComment(stream, state) {
 function tokenString(quote, style) {
   return function (stream, state) {
     let escaped = false;
-      let next;
-      let end = false;
+    let next;
+    let end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;

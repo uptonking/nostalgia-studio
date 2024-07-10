@@ -31,12 +31,12 @@ declare global {
 export function groupAt(state: EditorState, pos: number, bias: 1 | -1 = 1) {
   const categorize = state.charCategorizer(pos);
   const line = state.doc.lineAt(pos);
-    const linePos = pos - line.from;
+  const linePos = pos - line.from;
   if (line.length == 0) return EditorSelection.cursor(pos);
   if (linePos == 0) bias = 1;
   else if (linePos == line.length) bias = -1;
   let from = linePos;
-    let to = linePos;
+  let to = linePos;
   if (bias < 0) from = findClusterBreak(line.text, linePos, false);
   else to = findClusterBreak(line.text, linePos);
   const cat = categorize(line.text.slice(from, to));
@@ -93,11 +93,14 @@ function domPosAtCoords(
   y: number,
 ): { node: Node; offset: number } {
   let closest;
-    let closestRect!: ClientRect;
-    let closestX!: number;
-    let closestY!: number;
-    let closestOverlap = false;
-  let above; let below; let aboveRect; let belowRect;
+  let closestRect!: ClientRect;
+  let closestX!: number;
+  let closestY!: number;
+  let closestOverlap = false;
+  let above;
+  let below;
+  let aboveRect;
+  let belowRect;
   for (
     let child: Node | null = parent.firstChild;
     child;
@@ -109,7 +112,7 @@ function domPosAtCoords(
       if (closestRect && yOverlap(closestRect, rect))
         rect = upTop(upBot(rect, closestRect.bottom), closestRect.top);
       const dx = getdx(x, rect);
-        const dy = getdy(y, rect);
+      const dy = getdy(y, rect);
       if (dx == 0 && dy == 0)
         return child.nodeType == 3
           ? domPosInText(child as Text, x, y)
@@ -171,8 +174,8 @@ function domPosInText(
 ): { node: Node; offset: number } {
   const len = node.nodeValue!.length;
   let closestOffset = -1;
-    let closestDY = 1e9;
-    let generalSide = 0;
+  let closestDY = 1e9;
+  let generalSide = 0;
   for (let i = 0; i < len; i++) {
     const rects = textRange(node, i, i + 1).getClientRects();
     for (let j = 0; j < rects.length; j++) {
@@ -182,7 +185,7 @@ function domPosInText(
       const dy = (rect.top > y ? rect.top - y : y - rect.bottom) - 1;
       if (rect.left - 1 <= x && rect.right + 1 >= x && dy < closestDY) {
         const right = x >= (rect.left + rect.right) / 2;
-          let after = right;
+        let after = right;
         if (browser.chrome || browser.gecko) {
           // Check for RTL on browsers that support getting client
           // rects for empty ranges.
@@ -213,11 +216,11 @@ export function posAtCoords(
   bias: -1 | 1 = -1,
 ): number | null {
   const content = view.contentDOM.getBoundingClientRect();
-    const docTop = content.top + view.viewState.paddingTop;
+  const docTop = content.top + view.viewState.paddingTop;
   let block;
-    const { docHeight } = view.viewState;
+  const { docHeight } = view.viewState;
   let { x, y } = coords;
-    let yOffset = y - docTop;
+  let yOffset = y - docTop;
   if (yOffset < 0) return 0;
   if (yOffset > docHeight) return view.state.doc.length;
 
@@ -273,7 +276,7 @@ export function posAtCoords(
   // There's visible editor content under the point, so we can try
   // using caret(Position|Range)FromPoint as a shortcut
   let node: Node | undefined;
-    let offset: number = -1;
+  let offset: number = -1;
   if (element && view.docView.nearest(element)?.isEditable != false) {
     if (doc.caretPositionFromPoint) {
       const pos = doc.caretPositionFromPoint(x, y);
@@ -421,11 +424,11 @@ export function moveByChar(
   by?: (initial: string) => (next: string) => boolean,
 ) {
   let line = view.state.doc.lineAt(start.head);
-    let spans = view.bidiSpans(line);
+  let spans = view.bidiSpans(line);
   const direction = view.textDirectionAt(line.from);
   for (let cur = start, check: null | ((next: string) => boolean) = null; ; ) {
     let next = moveVisually(line, spans, direction, cur, forward);
-      let char = movedOver;
+    let char = movedOver;
     if (!next) {
       if (line.number == (forward ? view.state.doc.lines : 1)) return cur;
       char = '\n';
@@ -460,14 +463,14 @@ export function moveVertically(
   distance?: number,
 ) {
   const startPos = start.head;
-    const dir: -1 | 1 = forward ? 1 : -1;
+  const dir: -1 | 1 = forward ? 1 : -1;
   if (startPos == (forward ? view.state.doc.length : 0))
     return EditorSelection.cursor(startPos, start.assoc);
   let goal = start.goalColumn;
-    let startY;
+  let startY;
   const rect = view.contentDOM.getBoundingClientRect();
   const startCoords = view.coordsAtPos(startPos, start.assoc || -1);
-    const docTop = view.documentTop;
+  const docTop = view.documentTop;
   if (startCoords) {
     if (goal == null) goal = startCoords.left - rect.left;
     startY = dir < 0 ? startCoords.top : startCoords.bottom;

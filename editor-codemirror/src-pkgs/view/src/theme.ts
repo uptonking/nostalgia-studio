@@ -10,8 +10,8 @@ export const darkTheme = Facet.define<boolean, boolean>({
 });
 
 export const baseThemeID = StyleModule.newName();
-  export const baseLightID = StyleModule.newName();
-  export const baseDarkID = StyleModule.newName();
+export const baseLightID = StyleModule.newName();
+export const baseDarkID = StyleModule.newName();
 
 export const lightDarkIDs = {
   '&light': '.' + baseLightID,

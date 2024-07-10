@@ -12,11 +12,11 @@ function mkJavaScript(parserConfig) {
       return { type: type, style: 'keyword' };
     }
     const A = kw('keyword a');
-      const B = kw('keyword b');
-      const C = kw('keyword c');
-      const D = kw('keyword d');
+    const B = kw('keyword b');
+    const C = kw('keyword c');
+    const D = kw('keyword d');
     const operator = kw('operator');
-      const atom = { type: 'atom', style: 'atom' };
+    const atom = { type: 'atom', style: 'atom' };
 
     return {
       if: kw('if'),
@@ -69,8 +69,8 @@ function mkJavaScript(parserConfig) {
 
   function readRegexp(stream) {
     let escaped = false;
-      let next;
-      let inSet = false;
+    let next;
+    let inSet = false;
     while ((next = stream.next()) != null) {
       if (!escaped) {
         if (next == '/' && !inSet) return;
@@ -83,7 +83,8 @@ function mkJavaScript(parserConfig) {
 
   // Used as scratch variables to communicate multiple values without
   // consing up tons of objects.
-  let type; let content;
+  let type;
+  let content;
   function ret(tp, style, cont) {
     type = tp;
     content = cont;
@@ -173,7 +174,7 @@ function mkJavaScript(parserConfig) {
   function tokenString(quote) {
     return function (stream, state) {
       let escaped = false;
-        let next;
+      let next;
       if (jsonldMode && stream.peek() == '@' && stream.match(isJsonldKeyword)) {
         state.tokenize = tokenBase;
         return ret('jsonld-keyword', 'meta');
@@ -189,7 +190,7 @@ function mkJavaScript(parserConfig) {
 
   function tokenComment(stream, state) {
     let maybeEnd = false;
-      let ch;
+    let ch;
     while ((ch = stream.next())) {
       if (ch == '/' && maybeEnd) {
         state.tokenize = tokenBase;
@@ -202,7 +203,7 @@ function mkJavaScript(parserConfig) {
 
   function tokenQuasi(stream, state) {
     let escaped = false;
-      let next;
+    let next;
     while ((next = stream.next()) != null) {
       if (!escaped && (next == '`' || (next == '$' && stream.eat('{')))) {
         state.tokenize = tokenBase;
@@ -235,7 +236,7 @@ function mkJavaScript(parserConfig) {
     }
 
     let depth = 0;
-      let sawSomething = false;
+    let sawSomething = false;
     for (var pos = arrow - 1; pos >= 0; --pos) {
       const ch = stream.string.charAt(pos);
       const bracket = brackets.indexOf(ch);
@@ -312,7 +313,11 @@ function mkJavaScript(parserConfig) {
     if (!state.lexical.hasOwnProperty('align')) state.lexical.align = true;
 
     while (true) {
-      const combinator = cc.length ? cc.pop() : jsonMode ? expression : statement;
+      const combinator = cc.length
+        ? cc.pop()
+        : jsonMode
+          ? expression
+          : statement;
       if (combinator(type, content)) {
         while (cc.length && cc[cc.length - 1].lex) cc.pop()();
         if (cx.marked) return cx.marked;
@@ -412,7 +417,7 @@ function mkJavaScript(parserConfig) {
   function pushlex(type, info) {
     const result = function () {
       const state = cx.state;
-        let indent = state.indented;
+      let indent = state.indented;
       if (state.lexical.type == 'stat') indent = state.lexical.indented;
       else
         for (
@@ -1076,7 +1081,7 @@ function mkJavaScript(parserConfig) {
     if (type == ':') return cont(typeexpr, maybeAssign);
     if (value == '=') return cont(expressionNoComma);
     const context = cx.state.lexical.prev;
-      const isInterface = context && context.info == 'interface';
+    const isInterface = context && context.info == 'interface';
     return pass(isInterface ? functiondecl : functiondef);
   }
   function afterExport(type, value) {
@@ -1180,7 +1185,10 @@ function mkJavaScript(parserConfig) {
         context: parserConfig.localVars && new Context(null, null, false),
         indented: 0,
       };
-      if (parserConfig.globalVars && typeof parserConfig.globalVars === 'object')
+      if (
+        parserConfig.globalVars &&
+        typeof parserConfig.globalVars === 'object'
+      )
         state.globalVars = parserConfig.globalVars;
       return state;
     },
@@ -1206,8 +1214,8 @@ function mkJavaScript(parserConfig) {
         return null;
       if (state.tokenize != tokenBase) return 0;
       const firstChar = textAfter && textAfter.charAt(0);
-        let lexical = state.lexical;
-        let top;
+      let lexical = state.lexical;
+      let top;
       // Kludge to prevent 'maybelse' from blocking lexical scope pops
       if (!/^\s*else\b/.test(textAfter))
         for (let i = state.cc.length - 1; i >= 0; --i) {
@@ -1226,7 +1234,7 @@ function mkJavaScript(parserConfig) {
       if (statementIndent && lexical.type == ')' && lexical.prev.type == 'stat')
         lexical = lexical.prev;
       const type = lexical.type;
-        const closing = firstChar == type;
+      const closing = firstChar == type;
 
       if (type == 'vardef')
         return (

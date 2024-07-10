@@ -56,10 +56,10 @@ function optionContent(
         const labelElt = document.createElement('span');
         labelElt.className = 'cm-completionLabel';
         const label = completion.displayLabel || completion.label;
-          let off = 0;
+        let off = 0;
         for (let j = 0; j < match.length; ) {
           const from = match[j++];
-            const to = match[j++];
+          const to = match[j++];
           if (from > off)
             labelElt.appendChild(
               document.createTextNode(label.slice(off, from)),
@@ -224,7 +224,7 @@ class CompletionTooltip {
 
   updateSel() {
     const cState = this.view.state.field(this.stateField);
-      const open = cState.open!;
+    const open = cState.open!;
     if (
       (open.selected > -1 && open.selected < this.range.from) ||
       open.selected >= this.range.to
@@ -354,7 +354,7 @@ class CompletionTooltip {
     let curSection: string | null = null;
     for (let i = range.from; i < range.to; i++) {
       const { completion, match } = options[i];
-        const { section } = completion;
+      const { section } = completion;
       if (section) {
         const name = typeof section === 'string' ? section : section.name;
         if (name != curSection && (i > range.from || range.from == 0)) {

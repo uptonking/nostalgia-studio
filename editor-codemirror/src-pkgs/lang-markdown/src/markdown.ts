@@ -61,7 +61,7 @@ function findSectionEnd(headerNode: SyntaxNode, level: number) {
   let last = headerNode;
   for (;;) {
     const next = last.nextSibling;
-      let heading;
+    let heading;
     if (!next || ((heading = isHeading(next.type)) != null && heading <= level))
       break;
     last = next;

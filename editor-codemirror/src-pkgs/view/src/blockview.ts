@@ -107,7 +107,7 @@ export class LineView extends ContentView implements BlockView {
   // Only called when building a line view in ContentBuilder
   addLineDeco(deco: LineDecoration) {
     const attrs = deco.spec.attributes;
-      const cls = deco.spec.class;
+    const cls = deco.spec.class;
     if (attrs) this.attrs = combineAttrs(attrs, this.attrs || {});
     if (cls) this.attrs = combineAttrs({ class: cls }, this.attrs || {});
   }
@@ -162,7 +162,7 @@ export class LineView extends ContentView implements BlockView {
   } | null {
     if (this.children.length == 0 || this.length > 20) return null;
     let totalWidth = 0;
-      let textHeight!: number;
+    let textHeight!: number;
     for (const child of this.children) {
       if (!(child instanceof TextView) || /[^ -~]/.test(child.text))
         return null;
@@ -186,7 +186,7 @@ export class LineView extends ContentView implements BlockView {
     // height is larger than the text height.
     if (!this.children.length && rect && this.parent) {
       const { heightOracle } = this.parent.view.viewState;
-        const height = rect.bottom - rect.top;
+      const height = rect.bottom - rect.top;
       if (
         Math.abs(height - heightOracle.lineHeight) < 2 &&
         heightOracle.textHeight < height
@@ -220,7 +220,7 @@ export class LineView extends ContentView implements BlockView {
   static find(docView: DocView, pos: number): LineView | null {
     for (let i = 0, off = 0; i < docView.children.length; i++) {
       const block = docView.children[i];
-        const end = off + block.length;
+      const end = off + block.length;
       if (end >= pos) {
         if (block instanceof LineView) return block;
         if (end > pos) break;

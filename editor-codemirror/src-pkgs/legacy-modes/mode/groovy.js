@@ -1,6 +1,6 @@
 function words(str) {
   const obj = {};
-    const words = str.split(' ');
+  const words = str.split(' ');
   for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
@@ -88,8 +88,8 @@ function startString(quote, stream, state) {
   }
   function t(stream, state) {
     let escaped = false;
-      let next;
-      let end = !tripleQuoted;
+    let next;
+    let end = !tripleQuoted;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         if (!tripleQuoted) {
@@ -147,7 +147,7 @@ function tokenVariableDeref(stream, state) {
 
 function tokenComment(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize.pop();
@@ -257,7 +257,7 @@ export const groovy = {
   indent: function (state, textAfter, cx) {
     if (!state.tokenize[state.tokenize.length - 1].isBase) return null;
     const firstChar = textAfter && textAfter.charAt(0);
-      let ctx = state.context;
+    let ctx = state.context;
     if (ctx.type == 'statement' && !expectExpression(state.lastToken, true))
       ctx = ctx.prev;
     const closing = firstChar == ctx.type;

@@ -6,21 +6,21 @@ import { tags as t } from '@lezer/highlight';
 // Using https://github.com/one-dark/vscode-one-dark-theme/ as reference for the colors
 
 const chalky = '#e5c07b';
-  const coral = '#e06c75';
-  const cyan = '#56b6c2';
-  const invalid = '#ffffff';
-  const ivory = '#abb2bf';
-  const stone = '#7d8799'; // Brightened compared to original to increase contrast
-  const malibu = '#61afef';
-  const sage = '#98c379';
-  const whiskey = '#d19a66';
-  const violet = '#c678dd';
-  const darkBackground = '#21252b';
-  const highlightBackground = '#2c313a';
-  const background = '#282c34';
-  const tooltipBackground = '#353a42';
-  const selection = '#3E4451';
-  const cursor = '#528bff';
+const coral = '#e06c75';
+const cyan = '#56b6c2';
+const invalid = '#ffffff';
+const ivory = '#abb2bf';
+const stone = '#7d8799'; // Brightened compared to original to increase contrast
+const malibu = '#61afef';
+const sage = '#98c379';
+const whiskey = '#d19a66';
+const violet = '#c678dd';
+const darkBackground = '#21252b';
+const highlightBackground = '#2c313a';
+const background = '#282c34';
+const tooltipBackground = '#353a42';
+const selection = '#3E4451';
+const cursor = '#528bff';
 
 /// The colors used in the theme, as CSS color strings.
 export const color = {

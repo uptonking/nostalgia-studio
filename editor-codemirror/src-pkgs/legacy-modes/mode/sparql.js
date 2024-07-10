@@ -174,7 +174,7 @@ function eatPnLocal(stream) {
 function tokenLiteral(quote) {
   return function (stream, state) {
     let escaped = false;
-      let ch;
+    let ch;
     while ((ch = stream.next()) != null) {
       if (ch == quote && !escaped) {
         state.tokenize = tokenBase;

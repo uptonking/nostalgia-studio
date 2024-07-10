@@ -1,6 +1,9 @@
 import type { EditorState, Text } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
-import type { CompletionContext, CompletionResult } from '@codemirror/autocomplete';
+import type {
+  CompletionContext,
+  CompletionResult,
+} from '@codemirror/autocomplete';
 import type { SyntaxNode } from '@lezer/common';
 
 /// Type used to specify tags to complete.
@@ -662,7 +665,7 @@ function completeStartTag(
   pos: number,
 ) {
   const options = [];
-    let level = 0;
+  let level = 0;
   for (const tagName of allowedChildren(state.doc, tree, schema))
     options.push({ label: '<' + tagName, type: 'type' });
   for (const open of openTags(state.doc, tree))
@@ -687,7 +690,7 @@ function completeAttrName(
   to: number,
 ) {
   const elt = findParentElement(tree);
-    const info = elt ? schema.tags[elementName(state.doc, elt)] : null;
+  const info = elt ? schema.tags[elementName(state.doc, elt)] : null;
   const localAttrs = info && info.attrs ? Object.keys(info.attrs) : [];
   const names =
     info && info.globalAttrs === false
@@ -712,20 +715,20 @@ function completeAttrValue(
 ) {
   const nameNode = tree.parent?.getChild('AttributeName');
   const options = [];
-    let token = undefined;
+  let token = undefined;
   if (nameNode) {
     const attrName = state.sliceDoc(nameNode.from, nameNode.to);
     let attrs: readonly string[] | null | undefined =
       schema.globalAttrs[attrName];
     if (!attrs) {
       const elt = findParentElement(tree);
-        const info = elt ? schema.tags[elementName(state.doc, elt)] : null;
+      const info = elt ? schema.tags[elementName(state.doc, elt)] : null;
       attrs = info?.attrs && info.attrs[attrName];
     }
     if (attrs) {
       let base = state.sliceDoc(from, to).toLowerCase();
-        let quoteStart = '"';
-        let quoteEnd = '"';
+      let quoteStart = '"';
+      let quoteEnd = '"';
       if (/^['"]/.test(base)) {
         token = base[0] == '"' ? /^[^"]*$/ : /^[^']*$/;
         quoteStart = '';
@@ -751,8 +754,8 @@ function htmlCompletionFor(
   context: CompletionContext,
 ): CompletionResult | null {
   const { state, pos } = context;
-    let tree = syntaxTree(state).resolveInner(pos, -1);
-    let around = tree.resolve(pos);
+  let tree = syntaxTree(state).resolveInner(pos, -1);
+  let around = tree.resolve(pos);
   for (
     let scan = pos, before;
     around == tree && (before = tree.childBefore(scan));

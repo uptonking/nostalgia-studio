@@ -77,7 +77,7 @@ function buildChunkDeco(
   gutterBuilder: RangeSetBuilder<GutterMarker> | null,
 ) {
   const from = isA ? chunk.fromA : chunk.fromB;
-    const to = isA ? chunk.toA : chunk.toB;
+  const to = isA ? chunk.toA : chunk.toB;
   let changeI = 0;
   if (from != to) {
     builder.add(from, from, changedLine);
@@ -101,7 +101,7 @@ function buildChunkDeco(
           const nextFrom = from + (isA ? nextChange.fromA : nextChange.fromB);
           const nextTo = from + (isA ? nextChange.toA : nextChange.toB);
           const chFrom = Math.max(pos, nextFrom);
-            const chTo = Math.min(lineEnd, nextTo);
+          const chTo = Math.min(lineEnd, nextTo);
           if (chFrom < chTo) builder.add(chFrom, chTo, changedText);
           if (nextTo < lineEnd) changeI++;
           else break;
@@ -114,7 +114,7 @@ function buildChunkDeco(
 function getChunkDeco(view: EditorView) {
   const chunks = view.state.field(ChunkField);
   const { side, highlightChanges, markGutter } = view.state.facet(mergeConfig);
-    const isA = side == 'a';
+  const isA = side == 'a';
   const builder = new RangeSetBuilder<Decoration>();
   const gutterBuilder = markGutter ? new RangeSetBuilder<GutterMarker>() : null;
   const { from, to } = view.viewport;
@@ -187,13 +187,13 @@ export function updateSpacers(
   chunks: readonly Chunk[],
 ) {
   const buildA = new RangeSetBuilder<Decoration>();
-    const buildB = new RangeSetBuilder<Decoration>();
+  const buildB = new RangeSetBuilder<Decoration>();
   const spacersA = a.state.field(Spacers).iter();
-    const spacersB = b.state.field(Spacers).iter();
+  const spacersB = b.state.field(Spacers).iter();
   let posA = 0;
-    let posB = 0;
-    let offA = 0;
-    let offB = 0;
+  let posB = 0;
+  let offA = 0;
+  let offB = 0;
   chunks: for (let chunkI = 0; ; chunkI++) {
     const chunk = chunkI < chunks.length ? chunks[chunkI] : null;
     // A range at posA/posB is unchanged, must be aligned.
@@ -269,7 +269,7 @@ export function updateSpacers(
   }
 
   const decoA = buildA.finish();
-    const decoB = buildB.finish();
+  const decoB = buildB.finish();
   if (!RangeSet.eq([decoA], [a.state.field(Spacers)]))
     a.dispatch({ effects: adjustSpacers.of(decoA) });
   if (!RangeSet.eq([decoB], [b.state.field(Spacers)]))
@@ -319,7 +319,7 @@ class CollapseWidget extends WidgetType {
 
 function mapPos(pos: number, chunks: readonly Chunk[], isA: boolean) {
   let startOur = 0;
-    let startOther = 0;
+  let startOther = 0;
   for (let i = 0; ; i++) {
     const next = i < chunks.length ? chunks[i] : null;
     if (!next || (isA ? next.fromA : next.fromB) >= pos)

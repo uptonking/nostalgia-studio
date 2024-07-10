@@ -36,14 +36,14 @@ export function esLint(eslint: any, config?: any) {
 
   return (view: EditorView) => {
     const { state } = view;
-      const found: Diagnostic[] = [];
+    const found: Diagnostic[] = [];
     for (const { from, to } of javascriptLanguage.findRegions(state)) {
       const fromLine = state.doc.lineAt(from);
-        const offset = {
-          line: fromLine.number - 1,
-          col: from - fromLine.from,
-          pos: from,
-        };
+      const offset = {
+        line: fromLine.number - 1,
+        col: from - fromLine.from,
+        pos: from,
+      };
       for (const d of eslint.verify(state.sliceDoc(from, to), config))
         found.push(translateDiagnostic(d, state.doc, offset));
     }
@@ -80,8 +80,8 @@ function translateDiagnostic(
   };
   if (input.fix) {
     const { range, text } = input.fix;
-      const from = range[0] + offset.pos - start;
-      const to = range[1] + offset.pos - start;
+    const from = range[0] + offset.pos - start;
+    const to = range[1] + offset.pos - start;
     result.actions = [
       {
         name: 'fix',

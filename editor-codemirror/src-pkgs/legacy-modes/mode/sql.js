@@ -1,19 +1,19 @@
 export function sql(parserConfig) {
   const client = parserConfig.client || {};
-    const atoms = parserConfig.atoms || { false: true, true: true, null: true };
-    const builtin = parserConfig.builtin || set(defaultBuiltin);
-    const keywords = parserConfig.keywords || set(sqlKeywords);
-    const operatorChars = parserConfig.operatorChars || /^[*+\-%<>!=&|~^\/]/;
-    const support = parserConfig.support || {};
-    const hooks = parserConfig.hooks || {};
-    const dateSQL = parserConfig.dateSQL || {
-      date: true,
-      time: true,
-      timestamp: true,
-    };
-    const backslashStringEscapes = parserConfig.backslashStringEscapes !== false;
-    const brackets = parserConfig.brackets || /^[\{}\(\)\[\]]/;
-    const punctuation = parserConfig.punctuation || /^[;.,:]/;
+  const atoms = parserConfig.atoms || { false: true, true: true, null: true };
+  const builtin = parserConfig.builtin || set(defaultBuiltin);
+  const keywords = parserConfig.keywords || set(sqlKeywords);
+  const operatorChars = parserConfig.operatorChars || /^[*+\-%<>!=&|~^\/]/;
+  const support = parserConfig.support || {};
+  const hooks = parserConfig.hooks || {};
+  const dateSQL = parserConfig.dateSQL || {
+    date: true,
+    time: true,
+    timestamp: true,
+  };
+  const backslashStringEscapes = parserConfig.backslashStringEscapes !== false;
+  const brackets = parserConfig.brackets || /^[\{}\(\)\[\]]/;
+  const punctuation = parserConfig.punctuation || /^[;.,:]/;
 
   function tokenBase(stream, state) {
     const ch = stream.next();
@@ -149,7 +149,7 @@ export function sql(parserConfig) {
   function tokenLiteral(quote, backslashEscapes) {
     return function (stream, state) {
       let escaped = false;
-        let ch;
+      let ch;
       while ((ch = stream.next()) != null) {
         if (ch == quote && !escaped) {
           state.tokenize = tokenBase;
@@ -308,7 +308,7 @@ var sqlKeywords =
 // turn a space-separated list into an array
 function set(str) {
   const obj = {};
-    const words = str.split(' ');
+  const words = str.split(' ');
   for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }

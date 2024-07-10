@@ -157,15 +157,15 @@ function defaultPositionInfo(
   tooltip: HTMLElement,
 ) {
   const rtl = view.textDirection == Direction.RTL;
-    let left = rtl;
-    let narrow = false;
+  let left = rtl;
+  let narrow = false;
   let side = 'top';
-    let offset;
-    let maxWidth;
+  let offset;
+  let maxWidth;
   const spaceLeft = list.left - space.left;
-    const spaceRight = space.right - list.right;
+  const spaceRight = space.right - list.right;
   const infoWidth = info.right - info.left;
-    const infoHeight = info.bottom - info.top;
+  const infoHeight = info.bottom - info.top;
   if (left && spaceLeft < Math.min(infoWidth, spaceRight)) left = false;
   else if (!left && spaceRight < Math.min(infoWidth, spaceLeft)) left = true;
   if (infoWidth <= (left ? spaceLeft : spaceRight)) {

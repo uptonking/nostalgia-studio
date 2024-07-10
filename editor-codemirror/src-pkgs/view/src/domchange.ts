@@ -70,9 +70,9 @@ export class DOMChange {
         (vp.from > 0 || vp.to < view.state.doc.length)
       ) {
         const from = Math.min(head, anchor);
-          const to = Math.max(head, anchor);
+        const to = Math.max(head, anchor);
         const offFrom = vp.from - from;
-          const offTo = vp.to - to;
+        const offTo = vp.to - to;
         if (
           (offFrom == 0 || offFrom == 1 || from == 0) &&
           (offTo == 0 || offTo == -1 || to == view.state.doc.length)
@@ -92,7 +92,7 @@ export function applyDOMChange(
 ): boolean {
   let change: undefined | { from: number; to: number; insert: Text };
   let { newSel } = domChange;
-    const sel = view.state.selection.main;
+  const sel = view.state.selection.main;
   const lastKey =
     view.inputState.lastKeyTime > Date.now() - 100
       ? view.inputState.lastKeyCode
@@ -100,7 +100,7 @@ export function applyDOMChange(
   if (domChange.bounds) {
     const { from, to } = domChange.bounds;
     let preferredPos = sel.from;
-      let preferredSide = null;
+    let preferredSide = null;
     // Prefer anchoring to end when Backspace is pressed (or, on
     // Android, when something was deleted)
     if (
@@ -215,7 +215,7 @@ export function applyDOMChange(
     return applyDOMChangeInner(view, change, newSel, lastKey);
   } else if (newSel && !newSel.main.eq(sel)) {
     let scrollIntoView = false;
-      let userEvent = 'select';
+    let userEvent = 'select';
     if (view.inputState.lastSelectionTime > Date.now() - 50) {
       if (view.inputState.lastSelectionOrigin == 'select')
         scrollIntoView = true;
@@ -288,8 +288,8 @@ function applyDefaultInsert(
   newSel: EditorSelection | null,
 ): Transaction {
   let tr: TransactionSpec;
-    const startState = view.state;
-    const sel = startState.selection.main;
+  const startState = view.state;
+  const sel = startState.selection.main;
   if (
     change.from >= sel.from &&
     change.to <= sel.to &&
@@ -323,7 +323,7 @@ function applyDefaultInsert(
     ) {
       const replaced = view.state.sliceDoc(change.from, change.to);
       let compositionRange: { from: number; to: number };
-        const composition = newSel && findCompositionNode(view, newSel.main.head);
+      const composition = newSel && findCompositionNode(view, newSel.main.head);
       if (composition) {
         const dLen = change.insert.length - (change.to - change.from);
         compositionRange = {
@@ -334,12 +334,12 @@ function applyDefaultInsert(
         compositionRange = view.state.doc.lineAt(sel.head);
       }
       const offset = sel.to - change.to;
-        const size = sel.to - sel.from;
+      const size = sel.to - sel.from;
       tr = startState.changeByRange((range) => {
         if (range.from == sel.from && range.to == sel.to)
           return { changes, range: mainSel || range.map(changes) };
         const to = range.to - offset;
-          const from = to - replaced.length;
+        const from = to - replaced.length;
         if (
           range.to - range.from != size ||
           view.state.sliceDoc(from, to) != replaced ||
@@ -352,11 +352,11 @@ function applyDefaultInsert(
         )
           return { range };
         const rangeChanges = startState.changes({
-            from,
-            to,
-            insert: change!.insert,
-          });
-          const selOff = range.to - sel.to;
+          from,
+          to,
+          insert: change!.insert,
+        });
+        const selOff = range.to - sel.to;
         return {
           changes: rangeChanges,
           range: !mainSel
@@ -401,7 +401,7 @@ function findDiff(
   while (from < minLen && a.charCodeAt(from) == b.charCodeAt(from)) from++;
   if (from == minLen && a.length == b.length) return null;
   let toA = a.length;
-    let toB = b.length;
+  let toB = b.length;
   while (toA > 0 && toB > 0 && a.charCodeAt(toA - 1) == b.charCodeAt(toB - 1)) {
     toA--;
     toB--;
@@ -446,7 +446,7 @@ function selectionFromPoints(
 ): EditorSelection | null {
   if (points.length == 0) return null;
   const anchor = points[0].pos;
-    const head = points.length == 2 ? points[1].pos : anchor;
+  const head = points.length == 2 ? points[1].pos : anchor;
   return anchor > -1 && head > -1
     ? EditorSelection.single(anchor + base, head + base)
     : null;

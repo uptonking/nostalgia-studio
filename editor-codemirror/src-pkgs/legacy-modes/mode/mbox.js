@@ -17,12 +17,20 @@ const rfc2822 = [
   'Return-Path',
   'Received',
 ];
-const rfc2822NoEmail = ['Date', 'Subject', 'Comments', 'Keywords', 'Resent-Date'];
+const rfc2822NoEmail = [
+  'Date',
+  'Subject',
+  'Comments',
+  'Keywords',
+  'Resent-Date',
+];
 
 const whitespace = /^[ \t]/;
 const separator = /^From /; // See RFC 4155
 const rfc2822Header = new RegExp('^(' + rfc2822.join('|') + '): ');
-const rfc2822HeaderNoEmail = new RegExp('^(' + rfc2822NoEmail.join('|') + '): ');
+const rfc2822HeaderNoEmail = new RegExp(
+  '^(' + rfc2822NoEmail.join('|') + '): ',
+);
 const header = /^[^:]+:/; // Optional fields defined in RFC 2822
 const email = /^[^ ]+@[^ ]+/;
 const untilEmail = /^.*?(?=[^ ]+?@[^ ]+)/;

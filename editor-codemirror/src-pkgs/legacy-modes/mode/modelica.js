@@ -1,6 +1,6 @@
 function words(str) {
   const obj = {};
-    const words = str.split(' ');
+  const words = str.split(' ');
   for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
@@ -32,7 +32,7 @@ function tokenLineComment(stream, state) {
 
 function tokenBlockComment(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next())) {
     if (maybeEnd && ch == '/') {
       state.tokenize = null;
@@ -45,7 +45,7 @@ function tokenBlockComment(stream, state) {
 
 function tokenString(stream, state) {
   let escaped = false;
-    let ch;
+  let ch;
   while ((ch = stream.next()) != null) {
     if (ch == '"' && !escaped) {
       state.tokenize = null;

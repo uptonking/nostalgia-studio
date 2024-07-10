@@ -111,7 +111,8 @@ function inText(stream, state) {
 }
 
 // Return variables for tokenizers
-let pluginName; let type;
+let pluginName;
+let type;
 function inPlugin(stream, state) {
   const ch = stream.next();
   let peek = stream.peek();
@@ -172,7 +173,8 @@ function inAttributeNoQuote() {
   };
 }
 
-let curState; let setStyle;
+let curState;
+let setStyle;
 function pass() {
   for (let i = arguments.length - 1; i >= 0; i--)
     curState.cc.push(arguments[i]);

@@ -7,9 +7,9 @@ const keywords = (function () {
     return { type: type, style: 'keyword' };
   }
   const operator = kw('operator');
-    const atom = { type: 'atom', style: 'atom' };
-    const punctuation = { type: 'punctuation', style: null };
-    const qualifier = { type: 'axis_specifier', style: 'qualifier' };
+  const atom = { type: 'atom', style: 'atom' };
+  const punctuation = { type: 'punctuation', style: null };
+  const qualifier = { type: 'axis_specifier', style: 'qualifier' };
 
   // kwObj is what is return from this function at the end
   const kwObj = {
@@ -318,8 +318,8 @@ function chain(stream, state, f) {
 // the primary mode tokenizer
 function tokenBase(stream, state) {
   const ch = stream.next();
-    let mightBeFunction = false;
-    const isEQName = isEQNameAhead(stream);
+  let mightBeFunction = false;
+  const isEQName = isEQNameAhead(stream);
 
   // an XML tag (if not in some sub, chained tokenizer)
   if (ch == '<') {
@@ -337,7 +337,7 @@ function tokenBase(stream, state) {
     const isclose = stream.eat('/');
     stream.eatSpace();
     let tagName = '';
-      let c;
+    let c;
     while ((c = stream.eat(/[^\s\u00a0=<>\"\'\/?]/))) tagName += c;
 
     return chain(stream, state, tokenTag(tagName, isclose));
@@ -453,9 +453,9 @@ function tokenBase(stream, state) {
 // handle comments, including nested
 function tokenComment(stream, state) {
   let maybeEnd = false;
-    let maybeNested = false;
-    let nestedCount = 0;
-    let ch;
+  let maybeNested = false;
+  let nestedCount = 0;
+  let ch;
   while ((ch = stream.next())) {
     if (ch == ')' && maybeEnd) {
       if (nestedCount > 0) nestedCount--;

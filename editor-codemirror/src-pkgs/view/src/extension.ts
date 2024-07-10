@@ -370,11 +370,11 @@ export function getIsolatedRanges(
     point() {},
     span(fromDoc, toDoc, active, open) {
       const from = fromDoc - line.from;
-        const to = toDoc - line.from;
+      const to = toDoc - line.from;
       let level = result;
       for (let i = active.length - 1; i >= 0; i--, open--) {
         let direction = active[i].spec.bidiIsolate;
-          let update;
+        let update;
         if (direction == null) direction = autoDirection(line.text, from, to);
         if (
           open > 0 &&
@@ -400,9 +400,9 @@ export const scrollMargins =
 
 export function getScrollMargins(view: EditorView) {
   let left = 0;
-    let right = 0;
-    let top = 0;
-    let bottom = 0;
+  let right = 0;
+  let top = 0;
+  let bottom = 0;
   for (const source of view.state.facet(scrollMargins)) {
     const m = source(view);
     if (m) {
@@ -443,7 +443,7 @@ export class ChangedRange {
 
   addToSet(set: ChangedRange[]): ChangedRange[] {
     let i = set.length;
-      let me: ChangedRange = this;
+    let me: ChangedRange = this;
     for (; i > 0; i--) {
       const range = set[i - 1];
       if (range.fromA > me.toA) continue;
@@ -463,13 +463,13 @@ export class ChangedRange {
     const result: ChangedRange[] = [];
     for (let dI = 0, rI = 0, posA = 0, posB = 0; ; dI++) {
       const next = dI == diff.length ? null : diff[dI];
-        const off = posA - posB;
+      const off = posA - posB;
       const end = next ? next.fromB : 1e9;
       while (rI < ranges.length && ranges[rI] < end) {
         const from = ranges[rI];
-          const to = ranges[rI + 1];
+        const to = ranges[rI + 1];
         const fromB = Math.max(posB, from);
-          const toB = Math.min(end, to);
+        const toB = Math.min(end, to);
         if (fromB <= toB)
           new ChangedRange(fromB + off, toB + off, fromB, toB).addToSet(result);
         if (to > end) break;

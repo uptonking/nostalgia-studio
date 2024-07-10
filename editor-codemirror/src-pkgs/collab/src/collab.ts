@@ -119,7 +119,7 @@ export function receiveUpdates(state: EditorState, updates: readonly Update[]) {
 
   version += updates.length;
   let effects: readonly StateEffect<any>[] = [];
-    let changes = null;
+  let changes = null;
 
   let own = 0;
   for (const update of updates) {
@@ -211,7 +211,7 @@ export function rebaseUpdates(
 ) {
   if (!over.length || !updates.length) return updates;
   let changes: ChangeDesc | null = null;
-    let skip = 0;
+  let skip = 0;
   for (const update of over) {
     const other = skip < updates.length ? updates[skip] : null;
     if (other && other.clientID == update.clientID) {

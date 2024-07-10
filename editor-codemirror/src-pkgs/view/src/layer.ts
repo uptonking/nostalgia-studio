@@ -150,14 +150,14 @@ function rectanglesForRange(
   if (range.to <= view.viewport.from || range.from >= view.viewport.to)
     return [];
   const from = Math.max(range.from, view.viewport.from);
-    const to = Math.min(range.to, view.viewport.to);
+  const to = Math.min(range.to, view.viewport.to);
 
   const ltr = view.textDirection == Direction.LTR;
   const content = view.contentDOM;
-    const contentRect = content.getBoundingClientRect();
-    const base = getBase(view);
+  const contentRect = content.getBoundingClientRect();
+  const base = getBase(view);
   const lineElt = content.querySelector('.cm-line');
-    const lineStyle = lineElt && window.getComputedStyle(lineElt);
+  const lineStyle = lineElt && window.getComputedStyle(lineElt);
   const leftSide =
     contentRect.left +
     (lineStyle
@@ -168,7 +168,7 @@ function rectanglesForRange(
     contentRect.right - (lineStyle ? parseInt(lineStyle.paddingRight) : 0);
 
   const startBlock = blockAt(view, from);
-    const endBlock = blockAt(view, to);
+  const endBlock = blockAt(view, to);
   let visualStart: { from: number; to: number } | null =
     startBlock.type == BlockType.Text ? startBlock : null;
   let visualEnd: { from: number; to: number } | null =
@@ -238,8 +238,8 @@ function rectanglesForRange(
     line: { from: number; to: number },
   ) {
     let top = 1e9;
-      let bottom = -1e9;
-      const horizontal: number[] = [];
+    let bottom = -1e9;
+    const horizontal: number[] = [];
     function addSpan(
       from: number,
       fromOpen: boolean,
@@ -272,7 +272,7 @@ function rectanglesForRange(
     }
 
     const start = from ?? line.from;
-      const end = to ?? line.to;
+    const end = to ?? line.to;
     // Split the range by visible range and document line
     for (const r of view.visibleRanges)
       if (r.to > start && r.from < end) {
@@ -284,7 +284,7 @@ function rectanglesForRange(
           const docLine = view.state.doc.lineAt(pos);
           for (const span of view.bidiSpans(docLine)) {
             const spanFrom = span.from + docLine.from;
-              const spanTo = span.to + docLine.from;
+            const spanTo = span.to + docLine.from;
             if (spanFrom >= endPos) break;
             if (spanTo > pos)
               addSpan(
@@ -382,7 +382,7 @@ class LayerView {
 
   setOrder(state: EditorState) {
     let pos = 0;
-      const order = state.facet(layerOrder);
+    const order = state.facet(layerOrder);
     while (pos < order.length && order[pos] != this.layer) pos++;
     this.dom.style.zIndex = String((this.layer.above ? 150 : -1) - pos);
   }
@@ -406,7 +406,7 @@ class LayerView {
       markers.some((p, i) => !sameMarker(p, this.drawn[i]))
     ) {
       let old = this.dom.firstChild;
-        let oldI = 0;
+      let oldI = 0;
       for (const marker of markers) {
         if (
           marker.update &&

@@ -57,13 +57,13 @@ class Snippet {
 
   instantiate(state: EditorState, pos: number) {
     const text = [];
-      const lineStart = [pos];
+    const lineStart = [pos];
     const lineObj = state.doc.lineAt(pos);
-      const baseIndent = /^\s*/.exec(lineObj.text)![0];
+    const baseIndent = /^\s*/.exec(lineObj.text)![0];
     for (let line of this.lines) {
       if (text.length) {
         let indent = baseIndent;
-          const tabs = /^\t*/.exec(line)![0].length;
+        const tabs = /^\t*/.exec(line)![0].length;
         for (let i = 0; i < tabs; i++) indent += state.facet(indentUnit);
         lineStart.push(pos + indent.length - tabs);
         line = indent + line.slice(tabs);
@@ -85,15 +85,15 @@ class Snippet {
   static parse(template: string) {
     const fields: { seq: number | null; name: string }[] = [];
     const lines = [];
-      const positions: FieldPos[] = [];
-      let m;
+    const positions: FieldPos[] = [];
+    let m;
     for (let line of template.split(/\r\n?|\n/)) {
       while (
         (m = /[#$]\{(?:(\d+)(?::([^}]*))?|((?:\\[{}]|[^}])*))\}/.exec(line))
       ) {
         const seq = m[1] ? Number(m[1]) : null;
-          const rawName = m[2] || m[3] || '';
-          let found = -1;
+        const rawName = m[2] || m[3] || '';
+        let found = -1;
         const name = rawName.replace(/\\[{}]/g, (m) => m[1]);
         for (let i = 0; i < fields.length; i++) {
           if (
@@ -293,7 +293,7 @@ function moveField(dir: 1 | -1): StateCommand {
     const active = state.field(snippetState, false);
     if (!active || (dir < 0 && active.active == 0)) return false;
     const next = active.active + dir;
-      const last = dir > 0 && !active.ranges.some((r) => r.field == next + dir);
+    const last = dir > 0 && !active.ranges.some((r) => r.field == next + dir);
     dispatch(
       state.update({
         selection: fieldSelection(active.ranges, next),
@@ -325,7 +325,9 @@ export const prevSnippetField = moveField(-1);
 /// `nextSnippetField` to move to.
 export function hasNextSnippetField(state: EditorState) {
   const active = state.field(snippetState, false);
-  return Boolean(active && active.ranges.some((r) => r.field == active!.active + 1));
+  return Boolean(
+    active && active.ranges.some((r) => r.field == active!.active + 1),
+  );
 }
 
 /// Returns true if there is an active snippet and a previous field
@@ -371,7 +373,7 @@ export function snippetCompletion(
 const snippetPointerHandler = EditorView.domEventHandlers({
   mousedown(event, view) {
     const active = view.state.field(snippetState, false);
-      let pos: number | null;
+    let pos: number | null;
     if (
       !active ||
       (pos = view.posAtCoords({ x: event.clientX, y: event.clientY })) == null

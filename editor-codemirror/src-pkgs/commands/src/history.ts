@@ -82,7 +82,7 @@ const historyField_ = StateField.define({
     const fromHist = tr.annotation(fromHistory);
     if (fromHist) {
       const item = HistEvent.fromTransaction(tr, fromHist.selection);
-        const from = fromHist.side;
+      const from = fromHist.side;
       let other = from == BranchName.Done ? state.undone : state.done;
       if (item)
         other = updateBranch(other, other.length, config.minDepth, item);
@@ -101,7 +101,7 @@ const historyField_ = StateField.define({
 
     const event = HistEvent.fromTransaction(tr);
     const time = tr.annotation(Transaction.time)!;
-      const userEvent = tr.annotation(Transaction.userEvent);
+    const userEvent = tr.annotation(Transaction.userEvent);
     if (event) state = state.addChanges(event, time, userEvent, config, tr);
     else if (tr.selection)
       state = state.addSelection(
@@ -294,12 +294,12 @@ function updateBranch(
 
 function isAdjacent(a: ChangeDesc, b: ChangeDesc): boolean {
   const ranges: number[] = [];
-    let isAdjacent = false;
+  let isAdjacent = false;
   a.iterChangedRanges((f, t) => ranges.push(f, t));
   b.iterChangedRanges((_f, _t, f, t) => {
     for (let i = 0; i < ranges.length; ) {
       const from = ranges[i++];
-        const to = ranges[i++];
+      const to = ranges[i++];
       if (t >= from && f <= to) isAdjacent = true;
     }
   });
@@ -356,7 +356,7 @@ function popSelection(branch: Branch): Branch {
 function addMappingToBranch(branch: Branch, mapping: ChangeDesc) {
   if (!branch.length) return branch;
   let length = branch.length;
-    let selections = none;
+  let selections = none;
   while (length) {
     const event = mapEvent(branch[length - 1], mapping, selections);
     if ((event.changes && !event.changes.empty) || event.effects.length) {
@@ -389,7 +389,7 @@ function mapEvent(
   if (!event.changes) return HistEvent.selection(selections);
 
   const mappedChanges = event.changes.map(mapping);
-    const before = mapping.mapDesc(event.changes, true);
+  const before = mapping.mapDesc(event.changes, true);
   const fullMapping = event.mapped ? event.mapped.composeDesc(before) : before;
   return new HistEvent(
     mappedChanges,
@@ -422,7 +422,7 @@ class HistoryState {
     tr: Transaction,
   ): HistoryState {
     let done = this.done;
-      const lastEvent = done[done.length - 1];
+    const lastEvent = done[done.length - 1];
     if (
       lastEvent &&
       lastEvent.changes &&
@@ -496,7 +496,7 @@ class HistoryState {
     const branch = side == BranchName.Done ? this.done : this.undone;
     if (branch.length == 0) return null;
     const event = branch[branch.length - 1];
-      const selection = event.selectionsAfter[0] || state.selection;
+    const selection = event.selectionsAfter[0] || state.selection;
     if (onlySelection && event.selectionsAfter.length) {
       return state.update({
         selection: event.selectionsAfter[event.selectionsAfter.length - 1],

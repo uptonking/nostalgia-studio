@@ -101,7 +101,8 @@ export function mkXML(parserConfig) {
   for (var prop in parserConfig) config[prop] = parserConfig[prop];
 
   // Return variables for tokenizers
-  let type; let setStyle;
+  let type;
+  let setStyle;
 
   function inText(stream, state) {
     function chain(parser) {
@@ -331,7 +332,7 @@ export function mkXML(parserConfig) {
       return attrEqState;
     } else if (type == 'endTag' || type == 'selfcloseTag') {
       const tagName = state.tagName;
-        const tagStart = state.tagStart;
+      const tagStart = state.tagStart;
       state.tagName = state.tagStart = null;
       if (
         type == 'selfcloseTag' ||

@@ -152,9 +152,12 @@ const variableBuiltins = buildRegexp(
   { prefix: '\\$', suffix: '' },
 );
 
-const builtins = buildRegexp([symbolBuiltins, namedBuiltins, variableBuiltins], {
-  suffix: notCharacterOrDash,
-});
+const builtins = buildRegexp(
+  [symbolBuiltins, namedBuiltins, variableBuiltins],
+  {
+    suffix: notCharacterOrDash,
+  },
+);
 
 const grammar = {
   keyword: keywords,
@@ -320,7 +323,7 @@ function tokenInterpolation(stream, state, parentTokenize) {
 
 function tokenComment(stream, state) {
   let maybeEnd = false;
-    let ch;
+  let ch;
   while ((ch = stream.next()) != null) {
     if (maybeEnd && ch == '>') {
       state.tokenize = tokenBase;
