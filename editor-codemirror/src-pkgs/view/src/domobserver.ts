@@ -1,25 +1,26 @@
+import { EditorSelection, type EditorState, Text } from '@codemirror/state';
+
 import browser from './browser';
 import { ContentView, ViewFlag } from './contentview';
+import { Decoration } from './decoration';
+import {
+  atElementStart,
+  deepActiveElement,
+  dispatchKey,
+  DOMSelectionState,
+  getSelection,
+  hasSelection,
+  isEquivalentPosition,
+} from './dom';
+import { applyDOMChange, applyDOMChangeInner, DOMChange } from './domchange';
+import type { EditContext } from './editcontext';
 import type { EditorView } from './editorview';
 import {
   editable,
-  type ViewUpdate,
-  setEditContextFormatting,
   type MeasureRequest,
+  setEditContextFormatting,
+  type ViewUpdate,
 } from './extension';
-import {
-  hasSelection,
-  getSelection,
-  DOMSelectionState,
-  isEquivalentPosition,
-  deepActiveElement,
-  dispatchKey,
-  atElementStart,
-} from './dom';
-import { DOMChange, applyDOMChange, applyDOMChangeInner } from './domchange';
-import type { EditContext } from './editcontext';
-import { Decoration } from './decoration';
-import { Text, EditorSelection, type EditorState } from '@codemirror/state';
 
 const observeOptions = {
   childList: true,
@@ -575,6 +576,10 @@ export class DOMObserver {
     clearTimeout(this.resizeTimeout);
     this.win.cancelAnimationFrame(this.delayedFlush);
     this.win.cancelAnimationFrame(this.flushingAndroidKey);
+    if (this.editContext) {
+      this.view.contentDOM.editContext = null;
+      this.editContext.destroy();
+    }
   }
 }
 
@@ -670,6 +675,7 @@ class EditContextManager {
   // user action on some Android keyboards)
   pendingContextChange: { from: number; to: number; insert: Text } | null =
     null;
+  handlers: { [name: string]: (e: any) => void } = Object.create(null);
 
   constructor(view: EditorView) {
     this.resetRange(view.state);
@@ -684,7 +690,7 @@ class EditContextManager {
       ),
       selectionEnd: this.toContextPos(view.state.selection.main.head),
     }));
-    context.addEventListener('textupdate', (e) => {
+    this.handlers.textupdate = (e) => {
       const { anchor } = view.state.selection.main;
       const change = {
         from: this.toEditorPos(e.updateRangeStart),
@@ -696,23 +702,27 @@ class EditContextManager {
       if (change.from == this.from && anchor < this.from) change.from = anchor;
       else if (change.to == this.to && anchor > this.to) change.to = anchor;
 
-      // Edit context sometimes fire empty changes
+      // Edit contexts sometimes fire empty changes
       if (change.from == change.to && !change.insert.length) return;
 
       this.pendingContextChange = change;
-      applyDOMChangeInner(
-        view,
-        change,
-        EditorSelection.single(
-          this.toEditorPos(e.selectionStart),
-          this.toEditorPos(e.selectionEnd),
-        ),
-      );
+      if (!view.state.readOnly)
+        applyDOMChangeInner(
+          view,
+          change,
+          EditorSelection.single(
+            this.toEditorPos(e.selectionStart),
+            this.toEditorPos(e.selectionEnd),
+          ),
+        );
       // If the transaction didn't flush our change, revert it so
       // that the context is in sync with the editor state again.
-      if (this.pendingContextChange) this.revertPending(view.state);
-    });
-    context.addEventListener('characterboundsupdate', (e) => {
+      if (this.pendingContextChange) {
+        this.revertPending(view.state);
+        this.setSelection(view.state);
+      }
+    };
+    this.handlers.characterboundsupdate = (e) => {
       const rects: DOMRect[] = [];
       let prev: DOMRect | null = null;
       for (
@@ -735,8 +745,8 @@ class EditContextManager {
         rects.push(prev);
       }
       context.updateCharacterBounds(e.rangeStart, rects);
-    });
-    context.addEventListener('textformatupdate', (e) => {
+    };
+    this.handlers.textformatupdate = (e) => {
       const deco = [];
       for (const format of e.getTextFormats()) {
         const lineStyle = format.underlineStyle;
@@ -760,17 +770,19 @@ class EditContextManager {
       view.dispatch({
         effects: setEditContextFormatting.of(Decoration.set(deco)),
       });
-    });
-    context.addEventListener('compositionstart', () => {
+    };
+    this.handlers.compositionstart = () => {
       if (view.inputState.composing < 0) {
         view.inputState.composing = 0;
         view.inputState.compositionFirstChange = true;
       }
-    });
-    context.addEventListener('compositionend', () => {
+    };
+    this.handlers.compositionend = () => {
       view.inputState.composing = -1;
       view.inputState.compositionFirstChange = null;
-    });
+    };
+    for (const event in this.handlers)
+      context.addEventListener(event as any, this.handlers[event]);
 
     this.measureReq = {
       read: (view) => {
@@ -841,6 +853,7 @@ class EditContextManager {
   }
 
   update(update: ViewUpdate) {
+    const reverted = this.pendingContextChange;
     if (!this.applyEdits(update) || !this.rangeIsValid(update.state)) {
       this.pendingContextChange = null;
       this.resetRange(update.state);
@@ -850,7 +863,7 @@ class EditContextManager {
         update.state.doc.sliceString(this.from, this.to),
       );
       this.setSelection(update.state);
-    } else if (update.docChanged || update.selectionSet) {
+    } else if (update.docChanged || update.selectionSet || reverted) {
       this.setSelection(update.state);
     }
     if (update.geometryChanged || update.docChanged || update.selectionSet)
@@ -868,7 +881,7 @@ class EditContextManager {
     this.pendingContextChange = null;
     this.editContext.updateText(
       this.toContextPos(pending.from),
-      this.toContextPos(pending.to + pending.insert.length),
+      this.toContextPos(pending.from + pending.insert.length),
       state.doc.sliceString(pending.from, pending.to),
     );
   }
@@ -900,5 +913,10 @@ class EditContextManager {
   }
   toContextPos(editorPos: number) {
     return editorPos - this.from;
+  }
+
+  destroy() {
+    for (const event in this.handlers)
+      this.editContext.removeEventListener(event as any, this.handlers[event]);
   }
 }

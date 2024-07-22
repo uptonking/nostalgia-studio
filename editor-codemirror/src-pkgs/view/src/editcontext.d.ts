@@ -74,6 +74,8 @@ export declare class EditContext {
     type: 'compositionend',
     handler: (event: CompositionEvent) => void,
   ): void;
+
+  removeEventListener(type: string, handler: (event: any) => void): void;
 }
 
 declare global {

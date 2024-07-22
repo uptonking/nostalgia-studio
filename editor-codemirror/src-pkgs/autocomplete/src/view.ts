@@ -161,6 +161,7 @@ export const completionPlugin = ViewPlugin.fromClass(
         const query = this.running[i];
         if (
           doesReset ||
+          (query.context.abortOnDocChange && update.docChanged) ||
           (query.updates.length + update.transactions.length > MaxUpdateCount &&
             Date.now() - query.time > MinAbortTime)
         ) {

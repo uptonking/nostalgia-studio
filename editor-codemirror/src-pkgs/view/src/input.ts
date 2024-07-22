@@ -28,7 +28,7 @@ import {
   focusPreventScroll,
   type Rect,
   dispatchKey,
-  scrollableParent,
+  scrollableParents,
 } from './dom';
 
 // This will also be where dragging info and such goes
@@ -380,7 +380,7 @@ class MouseSelection {
   extend: boolean;
   multiple: boolean;
   lastEvent: MouseEvent;
-  scrollParent: HTMLElement | null;
+  scrollParents: { x?: HTMLElement; y?: HTMLElement };
   scrollSpeed = { x: 0, y: 0 };
   scrolling = -1;
   atoms: readonly RangeSet<any>[];
@@ -392,7 +392,7 @@ class MouseSelection {
     private mustSelect: boolean,
   ) {
     this.lastEvent = startEvent;
-    this.scrollParent = scrollableParent(view.contentDOM);
+    this.scrollParents = scrollableParents(view.contentDOM);
     this.atoms = view.state.facet(atomicRanges).map((f) => f(view));
     const doc = view.contentDOM.ownerDocument!;
     doc.addEventListener('mousemove', (this.move = this.move.bind(this)));
@@ -425,22 +425,24 @@ class MouseSelection {
 
     let sx = 0;
     let sy = 0;
-    const rect = this.scrollParent?.getBoundingClientRect() || {
-      left: 0,
-      top: 0,
-      right: this.view.win.innerWidth,
-      bottom: this.view.win.innerHeight,
-    };
+    let left = 0;
+    let top = 0;
+    let right = this.view.win.innerWidth;
+    let bottom = this.view.win.innerHeight;
+    if (this.scrollParents.x)
+      ({ left, right } = this.scrollParents.x.getBoundingClientRect());
+    if (this.scrollParents.y)
+      ({ top, bottom } = this.scrollParents.y.getBoundingClientRect());
     const margins = getScrollMargins(this.view);
 
-    if (event.clientX - margins.left <= rect.left + dragScrollMargin)
-      sx = -dragScrollSpeed(rect.left - event.clientX);
-    else if (event.clientX + margins.right >= rect.right - dragScrollMargin)
-      sx = dragScrollSpeed(event.clientX - rect.right);
-    if (event.clientY - margins.top <= rect.top + dragScrollMargin)
-      sy = -dragScrollSpeed(rect.top - event.clientY);
-    else if (event.clientY + margins.bottom >= rect.bottom - dragScrollMargin)
-      sy = dragScrollSpeed(event.clientY - rect.bottom);
+    if (event.clientX - margins.left <= left + dragScrollMargin)
+      sx = -dragScrollSpeed(left - event.clientX);
+    else if (event.clientX + margins.right >= right - dragScrollMargin)
+      sx = dragScrollSpeed(event.clientX - right);
+    if (event.clientY - margins.top <= top + dragScrollMargin)
+      sy = -dragScrollSpeed(top - event.clientY);
+    else if (event.clientY + margins.bottom >= bottom - dragScrollMargin)
+      sy = dragScrollSpeed(event.clientY - bottom);
     this.setScrollSpeed(sx, sy);
   }
 
@@ -471,12 +473,16 @@ class MouseSelection {
   }
 
   scroll() {
-    if (this.scrollParent) {
-      this.scrollParent.scrollLeft += this.scrollSpeed.x;
-      this.scrollParent.scrollTop += this.scrollSpeed.y;
-    } else {
-      this.view.win.scrollBy(this.scrollSpeed.x, this.scrollSpeed.y);
+    let { x, y } = this.scrollSpeed;
+    if (x && this.scrollParents.x) {
+      this.scrollParents.x.scrollLeft += x;
+      x = 0;
     }
+    if (y && this.scrollParents.y) {
+      this.scrollParents.y.scrollTop += y;
+      y = 0;
+    }
+    if (x || y) this.view.win.scrollBy(x, y);
     if (this.dragging === false) this.select(this.lastEvent);
   }
 

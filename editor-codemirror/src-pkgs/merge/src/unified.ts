@@ -1,27 +1,28 @@
+import { highlightingFor, language } from '@codemirror/language';
 import {
-  EditorView,
+  ChangeSet,
+  EditorState,
+  Prec,
+  RangeSet,
+  RangeSetBuilder,
+  StateEffect,
+  StateField,
+  Text,
+} from '@codemirror/state';
+import {
   Decoration,
   type DecorationSet,
-  WidgetType,
+  EditorView,
   gutter,
   GutterMarker,
+  WidgetType,
 } from '@codemirror/view';
-import {
-  EditorState,
-  Text,
-  Prec,
-  RangeSetBuilder,
-  StateField,
-  StateEffect,
-  RangeSet,
-  ChangeSet,
-} from '@codemirror/state';
-import { language, highlightingFor } from '@codemirror/language';
 import { highlightTree } from '@lezer/highlight';
+
 import { Chunk, defaultDiffConfig } from './chunk';
-import { setChunks, ChunkField, mergeConfig } from './merge';
-import type { Change, DiffConfig } from './diff';
 import { decorateChunks } from './deco';
+import type { Change, DiffConfig } from './diff';
+import { ChunkField, mergeConfig, setChunks } from './merge';
 import { baseTheme } from './theme';
 
 interface UnifiedMergeConfig {
@@ -193,27 +194,30 @@ function deletionWidget(state: EditorState, chunk: Chunk) {
       for (let at = from; at < to; ) {
         let nextStop = to;
         const nodeCls = cls + (inside ? ' cm-deletedText' : '');
+        let flip = false;
         if (highlightChanges && changeI < changes.length) {
-          const nextBound = inside
-            ? changes[changeI].toA
-            : changes[changeI].fromA;
+          const nextBound = Math.max(
+            0,
+            inside ? changes[changeI].toA : changes[changeI].fromA,
+          );
           if (nextBound <= nextStop) {
             nextStop = nextBound;
             if (inside) changeI++;
-            inside = !inside;
+            flip = true;
           }
         }
         if (nextStop > at) {
           const node = document.createTextNode(text.slice(at, nextStop));
           if (nodeCls) {
-            const span = dom.appendChild(document.createElement('span'));
+            const span = content.appendChild(document.createElement('span'));
             span.className = nodeCls;
-            content.appendChild(node);
+            span.appendChild(node);
           } else {
             content.appendChild(node);
           }
         }
         at = nextStop;
+        if (flip) inside = !inside;
       }
     }
 
