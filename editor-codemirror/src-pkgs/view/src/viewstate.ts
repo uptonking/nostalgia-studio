@@ -14,6 +14,8 @@ import {
   MeasuredHeights,
   QueryType,
   heightRelevantDecoChanges,
+  clearHeightChangeFlag,
+  heightChangeFlag,
 } from './heightmap';
 import {
   decorations,
@@ -318,13 +320,15 @@ export class ViewState {
     const scrollAnchor = this.scrolledToBottom
       ? null
       : this.scrollAnchorAt(this.scrollTop);
+    clearHeightChangeFlag();
     this.heightMap = this.heightMap.applyChanges(
       this.stateDeco,
       update.startState.doc,
       this.heightOracle.setDoc(this.state.doc),
       heightChanges,
     );
-    if (this.heightMap.height != prevHeight) update.flags |= UpdateFlag.Height;
+    if (this.heightMap.height != prevHeight || heightChangeFlag)
+      update.flags |= UpdateFlag.Height;
     if (scrollAnchor) {
       this.scrollAnchorPos = update.changes.mapPos(scrollAnchor.from, -1);
       this.scrollAnchorHeight = scrollAnchor.top;
@@ -484,7 +488,7 @@ export class ViewState {
       if (dTop > 0 && dBottom > 0) bias = Math.max(dTop, dBottom);
       else if (dTop < 0 && dBottom < 0) bias = Math.min(dTop, dBottom);
 
-      oracle.heightChanged = false;
+      clearHeightChangeFlag();
       for (const vp of this.viewports) {
         const heights =
           vp.from == this.viewport.from
@@ -506,7 +510,7 @@ export class ViewState {
           new MeasuredHeights(vp.from, heights),
         );
       }
-      if (oracle.heightChanged) result |= UpdateFlag.Height;
+      if (heightChangeFlag) result |= UpdateFlag.Height;
     }
 
     const viewportChange =

@@ -34,6 +34,7 @@ export {
   tooltips,
   getTooltip,
   hoverTooltip,
+  HoverTooltipSource,
   hasHoverTooltips,
   closeHoverTooltips,
   repositionTooltips,
@@ -58,6 +59,8 @@ import {
   HeightOracle,
   MeasuredHeights,
   QueryType,
+  clearHeightChangeFlag,
+  heightChangeFlag,
 } from './heightmap';
 import { ChangedRange } from './extension';
 import { computeOrder, moveVisually } from './bidi';
@@ -70,4 +73,6 @@ export const __test = {
   ChangedRange,
   computeOrder,
   moveVisually,
+  clearHeightChangeFlag,
+  getHeightChangeFlag: () => heightChangeFlag,
 };

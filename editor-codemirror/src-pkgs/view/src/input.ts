@@ -30,6 +30,7 @@ import {
   dispatchKey,
   scrollableParents,
 } from './dom';
+import { applyDOMChangeInner } from './domchange';
 
 // This will also be where dragging info and such goes
 export class InputState {
@@ -732,9 +733,8 @@ function rangeForClick(
   }
 }
 
-const insideY = (y: number, rect: Rect) => y >= rect.top && y <= rect.bottom;
 const inside = (x: number, y: number, rect: Rect) =>
-  insideY(y, rect) && x >= rect.left && x <= rect.right;
+  y >= rect.top && y <= rect.bottom && x >= rect.left && x <= rect.right;
 
 // Try to determine, for the given coordinates, associated with the
 // given position, whether they are related to the element before or
@@ -753,8 +753,8 @@ function findPositionSide(view: EditorView, pos: number, x: number, y: number) {
   const after = line.coordsAt(off, 1);
   if (after && inside(x, y, after)) return 1;
   // This is probably a line wrap point. Pick before if the point is
-  // beside it.
-  return before && insideY(y, before) ? -1 : 1;
+  // above its bottom.
+  return before && before.bottom >= y ? -1 : 1;
 }
 
 function queryPos(
@@ -1108,7 +1108,25 @@ observers.contextmenu = (view) => {
   view.inputState.lastContextMenu = Date.now();
 };
 
-handlers.beforeinput = (view, event) => {
+handlers.beforeinput = (view, event: InputEvent) => {
+  // In EditContext mode, we must handle insertReplacementText events
+  // directly, to make spell checking corrections work
+  if (event.inputType == 'insertReplacementText' && view.observer.editContext) {
+    const text = event.dataTransfer?.getData('text/plain');
+    const ranges = event.getTargetRanges();
+    if (text && ranges.length) {
+      const r = ranges[0];
+      const from = view.posAtDOM(r.startContainer, r.startOffset);
+      const to = view.posAtDOM(r.endContainer, r.endOffset);
+      applyDOMChangeInner(
+        view,
+        { from, to, insert: view.state.toText(text) },
+        null,
+      );
+      return true;
+    }
+  }
+
   // Because Chrome Android doesn't fire useful key events, use
   // beforeinput to detect backspace (and possibly enter and delete,
   // but those usually don't even seem to fire beforeinput events at

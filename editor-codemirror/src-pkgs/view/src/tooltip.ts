@@ -404,13 +404,19 @@ const tooltipPlugin = ViewPlugin.fromClass(
               ? space.left
               : space.right - size.width
             : ltr
-              ? Math.min(
-                  pos.left - (arrow ? Arrow.Offset : 0) + offset.x,
-                  space.right - width,
-                )
-              : Math.max(
+              ? Math.max(
                   space.left,
-                  pos.left - width + (arrow ? Arrow.Offset : 0) - offset.x,
+                  Math.min(
+                    pos.left - (arrow ? Arrow.Offset : 0) + offset.x,
+                    space.right - width,
+                  ),
+                )
+              : Math.min(
+                  Math.max(
+                    space.left,
+                    pos.left - width + (arrow ? Arrow.Offset : 0) - offset.x,
+                  ),
+                  space.right - width,
                 );
         let above = this.above[i];
         if (
@@ -736,7 +742,9 @@ const enum Hover {
   MaxDist = 6,
 }
 
-type HoverSource = (
+/// The type of function that can be used as a [hover tooltip
+/// source](#view.hoverTooltip^source).
+export type HoverTooltipSource = (
   view: EditorView,
   pos: number,
   side: -1 | 1,
@@ -754,7 +762,7 @@ class HoverPlugin {
 
   constructor(
     readonly view: EditorView,
-    readonly source: HoverSource,
+    readonly source: HoverTooltipSource,
     readonly field: StateField<readonly Tooltip[]>,
     readonly setHover: StateEffectType<readonly Tooltip[]>,
     readonly hoverTime: number,
@@ -965,8 +973,13 @@ function isOverRange(
 /// Note that all hover tooltips are hosted within a single tooltip
 /// container element. This allows multiple tooltips over the same
 /// range to be "merged" together without overlapping.
+///
+/// The return value is a valid [editor extension](#state.Extension)
+/// but also provides an `active` property holding a state field that
+/// can be used to read the currently active tooltips produced by this
+/// extension.
 export function hoverTooltip(
-  source: HoverSource,
+  source: HoverTooltipSource,
   options: {
     /// Controls whether a transaction hides the tooltip. The default
     /// is to not hide.
@@ -978,7 +991,7 @@ export function hoverTooltip(
     /// milliseconds. Defaults to 300ms.
     hoverTime?: number;
   } = {},
-): Extension {
+): Extension & { active: StateField<readonly Tooltip[]> } {
   const setHover = StateEffect.define<readonly Tooltip[]>();
   const hoverState = StateField.define<readonly Tooltip[]>({
     create() {
@@ -1014,20 +1027,23 @@ export function hoverTooltip(
     provide: (f) => showHoverTooltip.from(f),
   });
 
-  return [
-    hoverState,
-    ViewPlugin.define(
-      (view) =>
-        new HoverPlugin(
-          view,
-          source,
-          hoverState,
-          setHover,
-          options.hoverTime || Hover.Time,
-        ),
-    ),
-    showHoverTooltipHost,
-  ];
+  return {
+    active: hoverState,
+    extension: [
+      hoverState,
+      ViewPlugin.define(
+        (view) =>
+          new HoverPlugin(
+            view,
+            source,
+            hoverState,
+            setHover,
+            options.hoverTime || Hover.Time,
+          ),
+      ),
+      showHoverTooltipHost,
+    ],
+  };
 }
 
 /// Get the active tooltip view for a given tooltip, if available.

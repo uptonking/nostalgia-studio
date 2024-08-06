@@ -17,8 +17,8 @@ const storiesNames = Object.keys(stories);
 // console.log(';; stories ', stories)
 
 export function ExamplesApp() {
-  const [currentStory, setCurrentStory] = useState(storiesNames[0]);
-  // const [currentStory, setCurrentStory] = useState('A5t1LazyList');
+  // const [currentStory, setCurrentStory] = useState(storiesNames[0]);
+  const [currentStory, setCurrentStory] = useState('B1a1MergeViewUnified');
 
   const CurrentExampleComponent = currentStory
     ? stories[currentStory]

@@ -5,7 +5,7 @@ import { basicSetup, EditorView } from 'codemirror';
 import { markdown } from '@codemirror/lang-markdown';
 import { Compartment } from '@codemirror/state';
 
-export const CMMinimal = () => {
+export const TypewriterAnimation = () => {
   const content = `# CodeMirror v6
 
 This is an cm example at 20240806

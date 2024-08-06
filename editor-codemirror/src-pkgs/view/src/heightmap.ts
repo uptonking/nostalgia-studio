@@ -1,21 +1,27 @@
 import {
+  Text,
   type ChangeSet,
   RangeSet,
   type SpanIterator,
-  Text,
 } from '@codemirror/state';
-
 import {
-  addRange,
-  BlockType,
-  type Decoration,
   type DecorationSet,
   PointDecoration,
+  type Decoration,
+  BlockType,
+  addRange,
   type WidgetType,
 } from './decoration';
 import type { ChangedRange } from './extension';
 
 const wrappingWhiteSpace = ['pre-wrap', 'normal', 'pre-line', 'break-spaces'];
+
+// Used to track, during updateHeight, if any actual heights changed
+export let heightChangeFlag = false;
+
+export function clearHeightChangeFlag() {
+  heightChangeFlag = false;
+}
 
 export class HeightOracle {
   doc: Text = Text.empty;
@@ -24,8 +30,6 @@ export class HeightOracle {
   charWidth: number = 7;
   textHeight: number = 14; // The height of the actual font (font-size)
   lineLength: number = 30;
-  // Used to track, during updateHeight, if any actual heights changed
-  heightChanged: boolean = false;
 
   constructor(public lineWrapping: boolean) {}
 
@@ -249,9 +253,9 @@ export abstract class HeightMap {
   ): HeightMap;
   abstract toString(): void;
 
-  setHeight(oracle: HeightOracle, height: number) {
+  setHeight(height: number) {
     if (this.height != height) {
-      if (Math.abs(this.height - height) > Epsilon) oracle.heightChanged = true;
+      if (Math.abs(this.height - height) > Epsilon) heightChangeFlag = true;
       this.height = height;
     }
   }
@@ -309,7 +313,7 @@ export abstract class HeightMap {
         fromB,
         toB,
       );
-      me = me.replace(fromA, toA, nodes);
+      me = replace(me, me.replace(fromA, toA, nodes));
     }
     return me.updateHeight(oracle, 0);
   }
@@ -371,6 +375,12 @@ export abstract class HeightMap {
   }
 }
 
+function replace(old: HeightMap, val: HeightMap) {
+  if (old == val) return old;
+  if (old.constructor != val.constructor) heightChangeFlag = true;
+  return val;
+}
+
 HeightMap.prototype.size = 1;
 
 class HeightMapBlock extends HeightMap {
@@ -415,7 +425,7 @@ class HeightMapBlock extends HeightMap {
     measured?: MeasuredHeights,
   ) {
     if (measured && measured.from <= offset && measured.more)
-      this.setHeight(oracle, measured.heights[measured.index++]);
+      this.setHeight(measured.heights[measured.index++]);
     this.outdated = false;
     return this;
   }
@@ -463,10 +473,9 @@ class HeightMapText extends HeightMapBlock {
     measured?: MeasuredHeights,
   ) {
     if (measured && measured.from <= offset && measured.more)
-      this.setHeight(oracle, measured.heights[measured.index++]);
+      this.setHeight(measured.heights[measured.index++]);
     else if (force || this.outdated)
       this.setHeight(
-        oracle,
         Math.max(
           this.widgetHeight,
           oracle.heightForLine(this.length - this.collapsed),
@@ -660,10 +669,10 @@ class HeightMapGap extends HeightMap {
         Math.abs(singleHeight - this.heightMetrics(oracle, offset).perLine) >=
           Epsilon
       )
-        oracle.heightChanged = true;
-      return result;
+        heightChangeFlag = true;
+      return replace(this, result);
     } else if (force || this.outdated) {
-      this.setHeight(oracle, oracle.heightForGap(offset, offset + this.length));
+      this.setHeight(oracle.heightForGap(offset, offset + this.length));
       this.outdated = false;
     }
     return this;
@@ -820,9 +829,9 @@ class HeightMapBranch extends HeightMap {
   balanced(left: HeightMap, right: HeightMap): HeightMap {
     if (left.size > 2 * right.size || right.size > 2 * left.size)
       return HeightMap.of(this.break ? [left, null, right] : [left, right]);
-    this.left = left;
-    this.right = right;
-    this.height = left.height + right.height;
+    this.left = replace(this.left, left);
+    this.right = replace(this.right, right);
+    this.setHeight(left.height + right.height);
     this.outdated = left.outdated || right.outdated;
     this.size = left.size + right.size;
     this.length = left.length + this.break + right.length;

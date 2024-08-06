@@ -1,26 +1,25 @@
-import { EditorSelection, type EditorState, Text } from '@codemirror/state';
-
 import browser from './browser';
 import { ContentView, ViewFlag } from './contentview';
-import { Decoration } from './decoration';
-import {
-  atElementStart,
-  deepActiveElement,
-  dispatchKey,
-  DOMSelectionState,
-  getSelection,
-  hasSelection,
-  isEquivalentPosition,
-} from './dom';
-import { applyDOMChange, applyDOMChangeInner, DOMChange } from './domchange';
-import type { EditContext } from './editcontext';
 import type { EditorView } from './editorview';
 import {
   editable,
-  type MeasureRequest,
-  setEditContextFormatting,
   type ViewUpdate,
+  setEditContextFormatting,
+  type MeasureRequest,
 } from './extension';
+import {
+  hasSelection,
+  getSelection,
+  DOMSelectionState,
+  isEquivalentPosition,
+  deepActiveElement,
+  dispatchKey,
+  atElementStart,
+} from './dom';
+import { DOMChange, applyDOMChange, applyDOMChangeInner } from './domchange';
+import type { EditContext } from './editcontext';
+import { Decoration } from './decoration';
+import { Text, EditorSelection, type EditorState } from '@codemirror/state';
 
 const observeOptions = {
   childList: true,
@@ -191,7 +190,10 @@ export class DOMObserver {
   }
 
   onPrint(event: Event) {
-    if (event.type == 'change' && !(event as MediaQueryListEvent).matches)
+    if (
+      (event.type == 'change' || !event.type) &&
+      !(event as MediaQueryListEvent).matches
+    )
       return;
     this.view.viewState.printing = true;
     this.view.measure();
@@ -538,9 +540,11 @@ export class DOMObserver {
 
   addWindowListeners(win: Window) {
     win.addEventListener('resize', this.onResize);
-    if (this.printQuery)
-      this.printQuery.addEventListener('change', this.onPrint);
-    else win.addEventListener('beforeprint', this.onPrint);
+    if (this.printQuery) {
+      if (this.printQuery.addEventListener)
+        this.printQuery.addEventListener('change', this.onPrint);
+      else this.printQuery.addListener(this.onPrint);
+    } else win.addEventListener('beforeprint', this.onPrint);
     win.addEventListener('scroll', this.onScroll);
     win.document.addEventListener('selectionchange', this.onSelectionChange);
   }
@@ -548,9 +552,11 @@ export class DOMObserver {
   removeWindowListeners(win: Window) {
     win.removeEventListener('scroll', this.onScroll);
     win.removeEventListener('resize', this.onResize);
-    if (this.printQuery)
-      this.printQuery.removeEventListener('change', this.onPrint);
-    else win.removeEventListener('beforeprint', this.onPrint);
+    if (this.printQuery) {
+      if (this.printQuery.removeEventListener)
+        this.printQuery.removeEventListener('change', this.onPrint);
+      else this.printQuery.removeListener(this.onPrint);
+    } else win.removeEventListener('beforeprint', this.onPrint);
     win.document.removeEventListener('selectionchange', this.onSelectionChange);
   }
 

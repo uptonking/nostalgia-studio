@@ -181,6 +181,25 @@ export const Spacers = StateField.define<DecorationSet>({
 
 const epsilon = 0.01;
 
+function compareSpacers(a: DecorationSet, b: DecorationSet) {
+  if (a.size != b.size) return false;
+  const iA = a.iter();
+  const iB = b.iter();
+  while (iA.value) {
+    if (
+      iA.from != iB.from ||
+      Math.abs(
+        (iA.value.spec.widget as Spacer).height -
+          (iB.value!.spec.widget as Spacer).height,
+      ) > 1
+    )
+      return false;
+    iA.next();
+    iB.next();
+  }
+  return true;
+}
+
 export function updateSpacers(
   a: EditorView,
   b: EditorView,
@@ -194,10 +213,14 @@ export function updateSpacers(
   let posB = 0;
   let offA = 0;
   let offB = 0;
+  const vpA = a.viewport;
+  const vpB = b.viewport;
   chunks: for (let chunkI = 0; ; chunkI++) {
     const chunk = chunkI < chunks.length ? chunks[chunkI] : null;
+    const endA = chunk ? chunk.fromA : a.state.doc.length;
+    const endB = chunk ? chunk.fromB : b.state.doc.length;
     // A range at posA/posB is unchanged, must be aligned.
-    if (posA < (chunk ? chunk.fromA : a.state.doc.length)) {
+    if (posA < endA) {
       const heightA = a.lineBlockAt(posA).top + offA;
       const heightB = b.lineBlockAt(posB).top + offB;
       const diff = heightA - heightB;
@@ -225,9 +248,27 @@ export function updateSpacers(
         );
       }
     }
-    if (!chunk) break;
-    posA = chunk.toA;
-    posB = chunk.toB;
+    // If the viewport starts inside the unchanged range (on both
+    // sides), add another sync at the top of the viewport. That way,
+    // big unchanged chunks with possibly inaccurate estimated heights
+    // won't cause the content to misalign (#1408)
+    if (
+      endA > posA + 1000 &&
+      posA < vpA.from &&
+      endA > vpA.from &&
+      posB < vpB.from &&
+      endB > vpB.from
+    ) {
+      const off = Math.min(vpA.from - posA, vpB.from - posB);
+      posA += off;
+      posB += off;
+      chunkI--;
+    } else if (!chunk) {
+      break;
+    } else {
+      posA = chunk.toA;
+      posB = chunk.toB;
+    }
     while (spacersA.value && spacersA.from < posA) {
       offA -= (spacersA.value.spec.widget as Spacer).height;
       spacersA.next();
@@ -270,9 +311,9 @@ export function updateSpacers(
 
   const decoA = buildA.finish();
   const decoB = buildB.finish();
-  if (!RangeSet.eq([decoA], [a.state.field(Spacers)]))
+  if (!compareSpacers(decoA, a.state.field(Spacers)))
     a.dispatch({ effects: adjustSpacers.of(decoA) });
-  if (!RangeSet.eq([decoB], [b.state.field(Spacers)]))
+  if (!compareSpacers(decoB, b.state.field(Spacers)))
     b.dispatch({ effects: adjustSpacers.of(decoB) });
 }
 
