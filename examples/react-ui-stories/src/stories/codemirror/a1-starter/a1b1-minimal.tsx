@@ -8,7 +8,7 @@ import { Compartment } from '@codemirror/state';
 export const CMMinimal = () => {
   const content = `# CodeMirror v6
 
-This is an cm example at 20240806
+This is an codemirror example with basicSetup at 20240806
 
 ## Lists
 
@@ -30,14 +30,16 @@ This is an cm example at 20240806
       doc: content,
       parent: editorRef.current,
     });
+    window['edd'] = editor;
 
     return () => {
       editor.destroy();
+      window['edd'] = undefined;
     };
   }, [content]);
 
   return (
-    <div id='CMEditor'>
+    <div className='idCMEditor'>
       <div ref={editorRef} />
     </div>
   );

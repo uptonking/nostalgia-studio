@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { basicSetup, EditorView } from 'codemirror';
 
 import { markdown } from '@codemirror/lang-markdown';
-import { unifiedMergeView } from '@codemirror/merge';
+import { animatableMergeView } from '@codemirror/merge';
 import { Compartment } from '@codemirror/state';
 
 const doc1 = `one
@@ -38,7 +38,7 @@ const docSix =
     .replace('tea', 'coffee')
     .replace(/b/g, 'B') + '\nSix';
 
-export const MergeViewUnified = () => {
+export const MergeViewAnimatable = () => {
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export const MergeViewUnified = () => {
       extensions: [
         basicSetup,
         // language.of(markdown()),
-        unifiedMergeView({
+        animatableMergeView({
           original: doc,
           gutter: true,
           highlightChanges: true,
