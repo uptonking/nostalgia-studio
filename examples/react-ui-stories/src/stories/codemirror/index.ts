@@ -3,3 +3,9 @@ export { MergeViewUnified as B1a1MergeViewUnified } from './b1-features/b1a1-mer
 export { MergeViewSided as B1a2MergeViewSided } from './b1-features/b1a2-merge-view-sided';
 export { MergeViewAnimatable as B1a3MergeViewAnimatable } from './b1-features/b1a3-merge-view-animatable';
 export { TypewriterAnimation as B1b1TypewriterAnimation } from './b1-features/b1b1-typewriter';
+export { DecoMarkUnderline as B1b4DecoMarkUnderline } from './b1-features/b1b4-deco-mark-underline';
+export { DecoWidgetCheckbox as B1b5DecoWidgetCheckbox } from './b1-features/b1b5-deco-widget-boolean-checkbox';
+export { DecoLineZebra as B1b6DecoLineZebra } from './b1-features/b1b6-deco-line-zebra';
+export { DecoAtomicRanges as B1b7DecoAtomicRanges } from './b1-features/b1b7-deco-atomic-ranges';
+export { UndoableEffects as B1c1UndoableEffects } from './b1-features/b1c1-undoable-effects';
+export { SplitEditors as B1c2SplitEditors } from './b1-features/b1c2-split-editors';
