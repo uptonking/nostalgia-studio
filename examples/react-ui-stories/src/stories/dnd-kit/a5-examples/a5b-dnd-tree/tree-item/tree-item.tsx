@@ -6,7 +6,7 @@ import React, {
 
 import cx from 'clsx';
 
-import { type UniqueIdentifier } from '@dnd-kit/core';
+import type { UniqueIdentifier } from '@dnd-kit/core';
 
 import { Action, Handle, Remove } from '../../../components';
 import styles from './tree-item.module.scss';

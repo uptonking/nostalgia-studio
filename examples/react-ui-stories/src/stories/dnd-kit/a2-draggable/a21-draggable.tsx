@@ -11,7 +11,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { type Coordinates } from '@dnd-kit/utilities';
+import type { Coordinates } from '@dnd-kit/utilities';
 
 import { type Axis, Draggable, Wrapper } from '../components';
 

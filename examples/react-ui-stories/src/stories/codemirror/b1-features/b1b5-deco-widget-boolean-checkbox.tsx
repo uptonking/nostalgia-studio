@@ -104,7 +104,6 @@ const checkboxPlugin = ViewPlugin.fromClass(
 );
 
 export const DecoWidgetCheckbox = () => {
-
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

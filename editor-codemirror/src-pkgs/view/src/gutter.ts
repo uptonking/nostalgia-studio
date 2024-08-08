@@ -171,8 +171,9 @@ const gutterView = ViewPlugin.fromClass(
         // (such as during scrolling), since for large updates that is
         // faster.
         const vpA = this.prevViewport;
-          const vpB = update.view.viewport;
-        const vpOverlap = Math.min(vpA.to, vpB.to) - Math.max(vpA.from, vpB.from);
+        const vpB = update.view.viewport;
+        const vpOverlap =
+          Math.min(vpA.to, vpB.to) - Math.max(vpA.from, vpB.from);
         this.syncGutters(vpOverlap < (vpB.to - vpB.from) * 0.8);
       }
       if (update.geometryChanged) {
@@ -228,7 +229,7 @@ const gutterView = ViewPlugin.fromClass(
 
     updateGutters(update: ViewUpdate) {
       const prev = update.startState.facet(activeGutters);
-        const cur = update.state.facet(activeGutters);
+      const cur = update.state.facet(activeGutters);
       let change =
         update.docChanged ||
         update.heightChanged ||
@@ -314,8 +315,8 @@ class UpdateContext {
     markers: readonly GutterMarker[],
   ) {
     const { gutter } = this;
-      const above = (block.top - this.height) / view.scaleY;
-      const height = block.height / view.scaleY;
+    const above = (block.top - this.height) / view.scaleY;
+    const height = block.height / view.scaleY;
     if (this.i == gutter.elements.length) {
       const newElt = new GutterElement(view, height, above, markers);
       gutter.elements.push(newElt);
@@ -374,7 +375,7 @@ class SingleGutterView {
     for (const prop in config.domEventHandlers) {
       this.dom.addEventListener(prop, (event: Event) => {
         let target = event.target as HTMLElement;
-          let y;
+        let y;
         if (target != this.dom && this.dom.contains(target)) {
           while (target.parentNode != this.dom)
             target = target.parentNode as HTMLElement;
@@ -453,11 +454,11 @@ class GutterElement {
 
   setMarkers(view: EditorView, markers: readonly GutterMarker[]) {
     let cls = 'cm-gutterElement';
-      let domPos = this.dom.firstChild;
+    let domPos = this.dom.firstChild;
     for (let iNew = 0, iOld = 0; ; ) {
       let skipTo = iOld;
-        const marker = iNew < markers.length ? markers[iNew++] : null;
-        let matched = false;
+      const marker = iNew < markers.length ? markers[iNew++] : null;
+      let matched = false;
       if (marker) {
         const c = marker.elementClass;
         if (c) cls += ' ' + c;
@@ -528,7 +529,7 @@ const lineNumberConfig = Facet.define<
           const result: Handlers = Object.assign({}, a);
           for (const event in b) {
             const exists = result[event];
-              const add = b[event];
+            const add = b[event];
             result[event] = exists
               ? (view, line, event) =>
                   exists(view, line, event) || add(view, line, event)
@@ -611,7 +612,7 @@ const activeLineGutterHighlighter = gutterLineClass.compute(
   ['selection'],
   (state) => {
     const marks = [];
-      let last = -1;
+    let last = -1;
     for (const range of state.selection.ranges) {
       const linePos = state.doc.lineAt(range.head).from;
       if (linePos > last) {

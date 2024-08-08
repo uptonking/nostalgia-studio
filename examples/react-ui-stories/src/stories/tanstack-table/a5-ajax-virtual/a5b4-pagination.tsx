@@ -256,7 +256,7 @@ function Filter({
             old?.[1],
           ])
         }
-        placeholder={`Min`}
+        placeholder='Min'
         className='w-24 border shadow rounded'
       />
       <input
@@ -268,7 +268,7 @@ function Filter({
             e.target.value,
           ])
         }
-        placeholder={`Max`}
+        placeholder='Max'
         className='w-24 border shadow rounded'
       />
     </div>
@@ -277,7 +277,7 @@ function Filter({
       type='text'
       value={(columnFilterValue ?? '') as string}
       onChange={(e) => column.setFilterValue(e.target.value)}
-      placeholder={`Search...`}
+      placeholder='Search...'
       className='w-36 border shadow rounded'
     />
   );

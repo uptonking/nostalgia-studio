@@ -64,7 +64,7 @@ export const MergeViewSided = () => {
       revertControls: 'a-to-b',
       // renderRevertControl: ,11111
       highlightChanges: true,
-      collapseUnchanged: { margin: 2, minSize: 3, },
+      collapseUnchanged: { margin: 2, minSize: 3 },
       // diffConfig:{ scanLimit: 10000 },1111
     });
     window['edd'] = view;

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { css } from '@linaria/core';
-import { type ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef } from '@tanstack/react-table';
 
 import { FixedHeightTable } from '../components/fixed-height-table';
 import { WindowHeightTable } from '../components/window-height-table';

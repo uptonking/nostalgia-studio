@@ -59,7 +59,7 @@ export const A1b1AutoInputSimple = () => {
 
   return (
     <div style={{ border: '3px solid #edeff0' }}>
-      <div id='autocomplete'></div>
+      <div id='autocomplete' />
     </div>
   );
 };

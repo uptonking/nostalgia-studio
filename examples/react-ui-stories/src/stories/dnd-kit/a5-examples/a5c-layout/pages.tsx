@@ -2,13 +2,11 @@ import React, { useMemo, useState } from 'react';
 
 import cx from 'clsx';
 
-import {
-  type DragEndEvent,
-  type DragStartEvent,
-  type MeasuringConfiguration,
-  type UniqueIdentifier,
-} from '@dnd-kit/core';
-import {
+import type {
+  DragEndEvent,
+  DragStartEvent,
+  MeasuringConfiguration,
+  UniqueIdentifier,
   closestCenter,
   defaultDropAnimationSideEffects,
   DndContext,

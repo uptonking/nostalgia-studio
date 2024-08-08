@@ -65,7 +65,7 @@ class PlaceholderWidget extends WidgetType {
   }
 }
 
-export const DecoAtomicRanges = () => {
+export const DecoReplaceAtomicRanges = () => {
   const content = `# CodeMirror v6
 
 This is an [[codemirror]] example at 20240806

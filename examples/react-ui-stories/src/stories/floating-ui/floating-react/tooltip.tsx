@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { type Placement } from '@floating-ui/core/src/types';
+import type { Placement } from '@floating-ui/core/src/types';
 import {
   autoUpdate,
   flip,

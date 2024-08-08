@@ -11,7 +11,7 @@ import {
 } from '@tanstack/react-table';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
-import { type Person } from '../utils/makeData';
+import type { Person } from '../utils/makeData';
 
 type FixedHeightTableProps = {
   /** The data to render */
