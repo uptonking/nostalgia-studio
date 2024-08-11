@@ -19,14 +19,14 @@ const lineHighlightState = StateField.define<DecorationSet>({
     return Decoration.none;
   },
   update(lines, tr) {
-    lines = lines.map(tr.changes);
-    for (const e of tr.effects) {
-      if (e.is(addLineHighlight)) {
-        lines = Decoration.none;
-        lines = lines.update({ add: [lineHighlightDeco.range(e.value)] });
+    let _lines = lines.map(tr.changes);
+    for (const ef of tr.effects) {
+      if (ef.is(addLineHighlight)) {
+        _lines = Decoration.none;
+        _lines = _lines.update({ add: [lineHighlightDeco.range(ef.value)] });
       }
     }
-    return lines;
+    return _lines;
   },
   provide: (f) => EditorView.decorations.from(f),
 });
@@ -38,10 +38,13 @@ const lineHighlightDeco = Decoration.line({
   },
 });
 
+/**
+ * typewriter effect use css-only animation
+ */
 export const DecoLineTypewriter = () => {
   const content = `# CodeMirror v6
 
-This is an cm example at 20240806
+This is an codemirror line decoration example at 20240806
 
 ## Lists
 
