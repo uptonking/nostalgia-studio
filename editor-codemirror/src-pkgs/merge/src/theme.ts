@@ -42,10 +42,12 @@ export const baseTheme = EditorView.baseTheme({
   },
 
   '&.cm-merge-a .cm-changedLine, .cm-deletedChunk': {
-    backgroundColor: 'rgba(160, 128, 100, .08)',
+    // backgroundColor: 'rgba(160, 128, 100, .08)',
+    backgroundColor: '#ffebe9',
   },
   '&.cm-merge-b .cm-changedLine': {
-    backgroundColor: 'rgba(100, 160, 128, .08)',
+    // backgroundColor: 'rgba(100, 160, 128, .08)',
+    backgroundColor: '#dafbe1',
   },
 
   '&light.cm-merge-a .cm-changedText, &light .cm-deletedChunk .cm-deletedText':
@@ -78,6 +80,9 @@ export const baseTheme = EditorView.baseTheme({
     '& .cm-chunkButtons': {
       position: 'absolute',
       insetInlineEnd: '5px',
+    },
+    '& del': {
+      textDecoration: 'none',
     },
     '& button': {
       border: 'none',

@@ -25,23 +25,20 @@ import type { Change, DiffConfig } from './diff';
 import { ChunkField, mergeConfig, setChunks } from './merge';
 import { baseTheme } from './theme';
 
-interface UnifiedMergeConfig {
-  /// The other document to compare the editor content with.
+interface AnimatableDiffViewConfig {
+  /** original document to compare with */
   original: Text | string;
-  /// By default, the merge view will mark inserted and deleted text
-  /// in changed chunks. Set this to false to turn that off.
-  highlightChanges?: boolean;
-  /// Controls whether a gutter marker is shown next to changed lines.
+  /** whether to show highlighted gutter on the changed line. default is true. */
   gutter?: boolean;
-  /// By default, deleted chunks are highlighted using the main
-  /// editor's language. Since these are just fragments, not full
-  /// documents, this doesn't always work well. Set this option to
-  /// false to disable syntax highlighting for deleted lines.
+  /** whether to show typewriter animation for inserted lines. default is false. */
+  showDiffAnimation?: boolean;
+  /** whether to highlight the inserted/deleted characters. default is true. */
+  highlightChanges?: boolean;
+  /** whether to highlight deleted line using original lang syntax.  */
   syntaxHighlightDeletions?: boolean;
-  /// Controls whether accept/reject buttons are displayed for each
-  /// changed chunk. Defaults to true.
+  /** whether to show accept/reject buttons for each changed chunk. default is true. */
   mergeControls?: boolean;
-  /// Pass options to the diff algorithm.
+  /** options to the diff algorithm */
   diffConfig?: DiffConfig;
 }
 
@@ -49,7 +46,7 @@ const deletedChunkGutterMarker = new (class extends GutterMarker {
   elementClass = 'cm-deletedLineGutter';
 })();
 
-const unifiedChangeGutter = Prec.low(
+const diffChangeGutter = Prec.low(
   gutter({
     class: 'cm-changeGutter',
     markers: (view) => view.plugin(decorateChunks)?.gutter || RangeSet.empty,
@@ -58,17 +55,18 @@ const unifiedChangeGutter = Prec.low(
   }),
 );
 
-/** Create an extension that causes the editor to display changes
- * between its content and the given original document. Changed
- * chunks will be highlighted, with uneditable widgets displaying the
- * original text displayed above the new text.
+/** Create an extension that makes the editor show diff changes
+ * between its document and the original document.
+ *
+ * todo make diff animation pausable
  */
-export function animatableMergeView(config: UnifiedMergeConfig) {
+export function animatableDiffView(config: AnimatableDiffViewConfig) {
   const orig =
     typeof config.original === 'string'
       ? Text.of(config.original.split(/\r?\n/))
       : config.original;
   const diffConf = config.diffConfig || defaultDiffConfig;
+
   return [
     Prec.low(decorateChunks),
     deletedChunks,
@@ -103,7 +101,7 @@ export function animatableMergeView(config: UnifiedMergeConfig) {
       side: 'b',
     }),
     originalDoc.init(() => orig),
-    config.gutter !== false ? unifiedChangeGutter : [],
+    config.gutter !== false ? diffChangeGutter : [],
     ChunkField.init((state) => Chunk.build(orig, state.doc, diffConf)),
   ];
 }
@@ -144,12 +142,17 @@ const DeletionWidgets: WeakMap<readonly Change[], Decoration> = new WeakMap();
 
 class DeletionWidget extends WidgetType {
   dom: HTMLElement | null = null;
-  constructor(readonly buildDOM: (view: EditorView) => HTMLElement) {
+  readonly buildDOM: (view: EditorView) => HTMLElement;
+
+  constructor(buildDOM: (view: EditorView) => HTMLElement) {
     super();
+    this.buildDOM = buildDOM;
   }
+
   eq(other: DeletionWidget) {
-    return this.dom == other.dom;
+    return this.dom === other.dom;
   }
+
   toDOM(view: EditorView) {
     return this.dom || (this.dom = this.buildDOM(view));
   }

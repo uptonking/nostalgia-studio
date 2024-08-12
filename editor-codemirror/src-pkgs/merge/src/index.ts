@@ -15,7 +15,7 @@ export {
   updateOriginalDoc,
 } from './unified';
 export {
-  animatableMergeView,
+  animatableDiffView,
   // acceptChunk,
   // rejectChunk,
   // getOriginalDoc,

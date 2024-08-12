@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react';
 import { basicSetup, EditorView } from 'codemirror';
 
 import { markdown } from '@codemirror/lang-markdown';
-import { animatableMergeView } from '@codemirror/merge';
+import { animatableDiffView } from '@codemirror/merge';
 import { Compartment } from '@codemirror/state';
 
 const doc1 = `one
@@ -47,10 +47,10 @@ export const MergeViewAnimatable = () => {
       extensions: [
         basicSetup,
         // language.of(markdown()),
-        animatableMergeView({
+        animatableDiffView({
           original: doc,
           gutter: true,
-          highlightChanges: true,
+          highlightChanges: false,
           syntaxHighlightDeletions: true,
           mergeControls: false,
           // diffConfig:{ scanLimit: 10000 },

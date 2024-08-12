@@ -12,6 +12,13 @@ import {
 } from '@codemirror/state';
 import { Decoration, type DecorationSet } from '@codemirror/view';
 
+const lineHighlightDeco = Decoration.line({
+  attributes: {
+    style: 'background-color: #d2ffff',
+    class: 'cm-line-typewriter',
+  },
+});
+
 const addLineHighlight = StateEffect.define<number>();
 
 const lineHighlightState = StateField.define<DecorationSet>({
@@ -22,6 +29,7 @@ const lineHighlightState = StateField.define<DecorationSet>({
     let _lines = lines.map(tr.changes);
     for (const ef of tr.effects) {
       if (ef.is(addLineHighlight)) {
+        // stop the current line
         _lines = Decoration.none;
         _lines = _lines.update({ add: [lineHighlightDeco.range(ef.value)] });
       }
@@ -31,15 +39,8 @@ const lineHighlightState = StateField.define<DecorationSet>({
   provide: (f) => EditorView.decorations.from(f),
 });
 
-const lineHighlightDeco = Decoration.line({
-  attributes: {
-    style: 'background-color: #d2ffff',
-    class: 'cm-line-typewriter',
-  },
-});
-
 /**
- * typewriter effect use css-only animation
+ * typewriter effect on mouseover use css-only animation 
  */
 export const DecoLineTypewriter = () => {
   const content = `# CodeMirror v6

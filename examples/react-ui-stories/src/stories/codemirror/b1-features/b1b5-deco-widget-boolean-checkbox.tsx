@@ -13,15 +13,20 @@ import {
 import { syntaxTree } from '@codemirror/language';
 import { javascript } from '@codemirror/lang-javascript';
 
+/** define a subclass of WidgetType that draws the widget */
 class CheckboxWidget extends WidgetType {
   constructor(readonly checked: boolean) {
     super();
   }
 
+  // When the view updates itself, if it finds it already has a drawn instance of
+  // such a widget in the position where the widget occurs (using eq to determine equivalence), it will simply reuse that.
   eq(other: CheckboxWidget) {
     return other.checked === this.checked;
   }
 
+  // wraps the checkbox in a <span> element, mostly because Firefox handles checkboxes
+  // with contenteditable=false poorly
   toDOM() {
     const wrap = document.createElement('span');
     wrap.setAttribute('aria-hidden', 'true');
@@ -32,12 +37,15 @@ class CheckboxWidget extends WidgetType {
     return wrap;
   }
 
+  // tells the editor to not ignore events that happen in the widget
+  // This is necessary to allow an editor-wide event handler (defined later) to handle interaction with it.
   ignoreEvent() {
     return false;
   }
 }
 
-function checkboxes(view: EditorView) {
+/** locate boolean literals in the visible editor parts and create widgets for them */
+function createCheckboxes(view: EditorView) {
   const widgets = [];
   for (const { from, to } of view.visibleRanges) {
     syntaxTree(view.state).iterate({
@@ -59,23 +67,27 @@ function checkboxes(view: EditorView) {
   return Decoration.set(widgets);
 }
 
-function toggleBoolean(view: EditorView, pos: number) {
+function toggleBooleanCmd(view: EditorView, pos: number) {
   const before = view.state.doc.sliceString(Math.max(0, pos - 5), pos);
   let change;
-  if (before === 'false') change = { from: pos - 5, to: pos, insert: 'true' };
-  else if (before.endsWith('true'))
+  if (before === 'false') {
+    change = { from: pos - 5, to: pos, insert: 'true' };
+  } else if (before.endsWith('true')) {
     change = { from: pos - 4, to: pos, insert: 'false' };
-  else return false;
+  } else {
+    return false;
+  }
   view.dispatch({ changes: change });
   return true;
 }
 
+// keeps an up-to-date decoration set as the document or viewport changes.
 const checkboxPlugin = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
 
     constructor(view: EditorView) {
-      this.decorations = checkboxes(view);
+      this.decorations = createCheckboxes(view);
     }
 
     update(update: ViewUpdate) {
@@ -84,30 +96,34 @@ const checkboxPlugin = ViewPlugin.fromClass(
         update.viewportChanged ||
         syntaxTree(update.startState) !== syntaxTree(update.state)
       )
-        this.decorations = checkboxes(update.view);
+        this.decorations = createCheckboxes(update.view);
     }
   },
   {
     decorations: (v) => v.decorations,
 
     eventHandlers: {
+      // as long as the plugin is active, the given mousedown should be registered. 
       mousedown: (e, view) => {
         const target = e.target as HTMLElement;
         if (
           target.nodeName === 'INPUT' &&
           target.parentElement!.classList.contains('cm-boolean-toggle')
         )
-          return toggleBoolean(view, view.posAtDOM(target));
+          return toggleBooleanCmd(view, view.posAtDOM(target));
       },
     },
   },
 );
 
+/**
+ * a plugin that displays a checkbox widget next to boolean literals
+ * - Widget decorations don't directly contain their widget DOM.
+ */
 export const DecoWidgetCheckbox = () => {
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const language = new Compartment();
     const editor = new EditorView({
       // extensions: [basicSetup, language.of(markdown())],
       // doc: content,

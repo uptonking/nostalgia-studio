@@ -13,20 +13,27 @@ import {
   WidgetType,
 } from '@codemirror/view';
 
+/**
+ * - `MatchDecorator` is a helper class that can be used to quickly set up view plugins
+ *   that decorate all matches of a given regular expression in the viewport.
+ */
 const placeholderMatcher = new MatchDecorator({
   regexp: /\[\[(\w+)\]\]/g,
+
   decoration: (match) =>
     Decoration.replace({
       widget: new PlaceholderWidget(match[1]),
     }),
 });
 
-const placeholders = ViewPlugin.fromClass(
+const placeholdersPlugin = ViewPlugin.fromClass(
   class {
     placeholders: DecorationSet;
+
     constructor(view: EditorView) {
       this.placeholders = placeholderMatcher.createDeco(view);
     }
+    
     update(update: ViewUpdate) {
       this.placeholders = placeholderMatcher.updateDeco(
         update,
@@ -36,6 +43,7 @@ const placeholders = ViewPlugin.fromClass(
   },
   {
     decorations: (instance) => instance.placeholders,
+    // provides the decoration set as atomic ranges
     provide: (plugin) =>
       EditorView.atomicRanges.of((view) => {
         return view.plugin(plugin)?.placeholders || Decoration.none;
@@ -65,6 +73,11 @@ class PlaceholderWidget extends WidgetType {
   }
 }
 
+/**
+ * `atomicRanges` facet can be provided range sets (usually the same set as the decorations)
+ *   and will make sure cursor motion skips the ranges in that set.
+ * - It is possible to implement something like that in a custom way with transaction filters
+ */
 export const DecoReplaceAtomicRanges = () => {
   const content = `# CodeMirror v6
 
@@ -86,7 +99,8 @@ This is an [[codemirror]] example at 20240806
   useEffect(() => {
     const language = new Compartment();
     const editor = new EditorView({
-      extensions: [basicSetup, language.of(markdown()), placeholders],
+      // extensions: [basicSetup, language.of(markdown()), placeholders],
+      extensions: [basicSetup, placeholdersPlugin],
       doc: content,
       parent: editorRef.current,
     });
