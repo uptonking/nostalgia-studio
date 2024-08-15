@@ -19,3 +19,4 @@ export { SplitEditors as B1c2SplitEditors } from './b1-features/b1c2-split-edito
 export { AutocompleteCm as B1d1AutocompleteCm } from './b1-features/b1d1-autocomplete';
 export { CursorTooltip as B1d2CursorTooltip } from './b1-features/b1d2-cursor-tooltip';
 export { LintCm as B1e2LintCm } from './b1-features/b1e2-lint';
+export { Theming as C1a1Theming } from './c1-styling/c1a1-theming';
