@@ -40,7 +40,7 @@ const lineHighlightState = StateField.define<DecorationSet>({
 });
 
 /**
- * typewriter effect on mouseover use css-only animation 
+ * typewriter effect on mouseover use css-only animation
  */
 export const DecoLineTypewriter = () => {
   const content = `# CodeMirror v6

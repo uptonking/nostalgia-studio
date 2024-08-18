@@ -103,7 +103,7 @@ const checkboxPlugin = ViewPlugin.fromClass(
     decorations: (v) => v.decorations,
 
     eventHandlers: {
-      // as long as the plugin is active, the given mousedown should be registered. 
+      // as long as the plugin is active, the given mousedown should be registered.
       mousedown: (e, view) => {
         const target = e.target as HTMLElement;
         if (

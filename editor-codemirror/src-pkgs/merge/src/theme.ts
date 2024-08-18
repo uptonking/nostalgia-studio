@@ -43,8 +43,8 @@ export const baseTheme = EditorView.baseTheme({
 
   '&light.cm-merge-a .cm-changedLine, .cm-deletedChunk': {
     // backgroundColor: 'rgba(160, 128, 100, .08)',
-    // backgroundColor: '#ffebe9',
-    backgroundColor: '#ff0000',
+    // backgroundColor: '#ff0000',
+    backgroundColor: '#ffebe9',
   },
   '&light.cm-merge-b .cm-changedLine': {
     // backgroundColor: 'rgba(100, 160, 128, .08)',

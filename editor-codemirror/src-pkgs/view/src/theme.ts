@@ -67,6 +67,7 @@ export const baseTheme = buildTheme(
       overflowX: 'auto',
       position: 'relative',
       zIndex: 0,
+      overflowAnchor: 'none',
     },
 
     '.cm-content': {
@@ -231,6 +232,7 @@ export const baseTheme = buildTheme(
       position: 'sticky',
       left: 0,
       right: 0,
+      zIndex: 300,
     },
     '&light .cm-panels': {
       backgroundColor: '#f5f5f5',

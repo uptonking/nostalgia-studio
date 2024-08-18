@@ -9,9 +9,13 @@ import {
   noChildren,
   ViewFlag,
 } from './contentview';
-import type { LineDecoration, PointDecoration, WidgetType } from './decoration';
+import {
+  type LineDecoration,
+  type PointDecoration,
+  WidgetType,
+} from './decoration';
 import type { DocView } from './docview';
-import { clearAttributes, clientRectsFor, type Rect } from './dom';
+import { clientRectsFor, type Rect, flattenRect, clearAttributes } from './dom';
 import type { EditorView } from './editorview';
 import {
   coordsInChildren,
@@ -334,7 +338,13 @@ export class BlockWidgetView extends ContentView implements BlockView {
   }
 
   coordsAt(pos: number, side: number) {
-    return this.widget.coordsAt(this.dom!, pos, side);
+    const custom = this.widget.coordsAt(this.dom!, pos, side);
+    if (custom) return custom;
+    if (this.widget instanceof BlockGapWidget) return null;
+    return flattenRect(
+      this.dom!.getBoundingClientRect(),
+      this.length ? pos == 0 : side <= 0,
+    );
   }
 
   destroy() {
@@ -349,5 +359,39 @@ export class BlockWidgetView extends ContentView implements BlockView {
       : side < 0
         ? startSide < 0
         : endSide > 0;
+  }
+}
+
+export class BlockGapWidget extends WidgetType {
+  constructor(readonly height: number) {
+    super();
+  }
+
+  toDOM() {
+    const elt = document.createElement('div');
+    elt.className = 'cm-gap';
+    this.updateDOM(elt);
+    return elt;
+  }
+
+  eq(other: BlockGapWidget) {
+    return other.height == this.height;
+  }
+
+  updateDOM(elt: HTMLElement) {
+    elt.style.height = this.height + 'px';
+    return true;
+  }
+
+  get editable() {
+    return true;
+  }
+
+  get estimatedHeight() {
+    return this.height;
+  }
+
+  ignoreEvent() {
+    return false;
   }
 }

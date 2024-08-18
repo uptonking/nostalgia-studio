@@ -20,7 +20,7 @@ const addUnderline = StateEffect.define<{ from: number; to: number }>({
   }),
 });
 
-// defines a state field that tracks which parts of the document are underlined, 
+// defines a state field that tracks which parts of the document are underlined,
 // and provides mark decoration that draw those underlines.
 const underlineState = StateField.define<DecorationSet>({
   create() {

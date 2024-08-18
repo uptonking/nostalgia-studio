@@ -931,12 +931,18 @@ class HoverPlugin {
 const tooltipMargin = 4;
 
 function isInTooltip(tooltip: HTMLElement, event: MouseEvent) {
-  const rect = tooltip.getBoundingClientRect();
+  let { left, right, top, bottom } = tooltip.getBoundingClientRect();
+  let arrow;
+  if ((arrow = tooltip.querySelector('.cm-tooltip-arrow'))) {
+    const arrowRect = arrow.getBoundingClientRect();
+    top = Math.min(arrowRect.top, top);
+    bottom = Math.max(arrowRect.bottom, bottom);
+  }
   return (
-    event.clientX >= rect.left - tooltipMargin &&
-    event.clientX <= rect.right + tooltipMargin &&
-    event.clientY >= rect.top - tooltipMargin &&
-    event.clientY <= rect.bottom + tooltipMargin
+    event.clientX >= left - tooltipMargin &&
+    event.clientX <= right + tooltipMargin &&
+    event.clientY >= top - tooltipMargin &&
+    event.clientY <= bottom + tooltipMargin
   );
 }
 

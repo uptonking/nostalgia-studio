@@ -11,14 +11,18 @@ import {
   DOMPos,
   replaceRange,
 } from './contentview';
-import { type BlockView, LineView, BlockWidgetView } from './blockview';
+import {
+  type BlockView,
+  LineView,
+  BlockWidgetView,
+  BlockGapWidget,
+} from './blockview';
 import { TextView, MarkView } from './inlineview';
 import { ContentBuilder } from './buildview';
 import browser from './browser';
 import {
   Decoration,
   type DecorationSet,
-  WidgetType,
   addRange,
   MarkDecoration,
 } from './decoration';
@@ -57,7 +61,7 @@ type Composition = {
 };
 
 export class DocView extends ContentView {
-  declare children: BlockView[];
+  children!: BlockView[];
 
   decorations: readonly DecorationSet[] = [];
   dynamicDecorationMap: boolean[] = [false];
@@ -84,7 +88,7 @@ export class DocView extends ContentView {
   impreciseHead: DOMPos | null = null;
   forceSelection = false;
 
-  declare dom: HTMLElement;
+  dom!: HTMLElement;
 
   // Used by the resize observer to ignore resizes that we caused
   // ourselves
@@ -874,40 +878,6 @@ function betweenUneditable(pos: DOMPos) {
       (pos.node.childNodes[pos.offset] as HTMLElement).contentEditable ==
         'false')
   );
-}
-
-class BlockGapWidget extends WidgetType {
-  constructor(readonly height: number) {
-    super();
-  }
-
-  toDOM() {
-    const elt = document.createElement('div');
-    elt.className = 'cm-gap';
-    this.updateDOM(elt);
-    return elt;
-  }
-
-  eq(other: BlockGapWidget) {
-    return other.height == this.height;
-  }
-
-  updateDOM(elt: HTMLElement) {
-    elt.style.height = this.height + 'px';
-    return true;
-  }
-
-  get editable() {
-    return true;
-  }
-
-  get estimatedHeight() {
-    return this.height;
-  }
-
-  ignoreEvent() {
-    return false;
-  }
 }
 
 export function findCompositionNode(

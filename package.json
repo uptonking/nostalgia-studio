@@ -49,7 +49,7 @@
     "format": "prettier \"**/*.{js,jsx,ts,tsx,mjs,mts,cjs,json}\" --write",
     "format:check": "npm run formatter -- --check",
     "lint": "eslint src --ext .ts,.tsx --fix -o eslint.log",
-    "lint1": "eslint --ext .js,.ts,.tsx .",
+    "lint1": "eslint --ext .js,.ts,.tsx --fix ./editor-codemirror",
     "syncpack-fix": "syncpack-fix-mismatches",
     "syncpack-ls": "syncpack-list-mismatches",
     "help": "echo 'exec npm run build to build all projects'"

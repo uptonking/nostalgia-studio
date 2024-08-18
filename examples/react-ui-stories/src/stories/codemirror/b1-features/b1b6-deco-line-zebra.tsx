@@ -67,14 +67,12 @@ export function zebraStripes(options: { step?: number } = {}): Extension {
   ];
 }
 
-
-
 /** iterates over the visible lines, creating a line decoration for every Nth line */
 function createStripeDeco(view: EditorView) {
   const step = view.state.facet(stepSize);
   const builder = new RangeSetBuilder<Decoration>();
   for (const { from, to } of view.visibleRanges) {
-    for (let pos = from; pos <= to;) {
+    for (let pos = from; pos <= to; ) {
       const line = view.state.doc.lineAt(pos);
       if (line.number % step === 0) {
         builder.add(line.from, line.from, stripeDeco);

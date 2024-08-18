@@ -55,6 +55,17 @@ GutterMarker.prototype.point = true;
 /// in all gutters for the line).
 export const gutterLineClass = Facet.define<RangeSet<GutterMarker>>();
 
+/// Facet used to add a class to all gutter elements next to a widget.
+/// Should not provide widgets with a `toDOM` method.
+export const gutterWidgetClass =
+  Facet.define<
+    (
+      view: EditorView,
+      widget: WidgetType,
+      block: BlockInfo,
+    ) => GutterMarker | null
+  >();
+
 type Handlers = {
   [event: string]: (view: EditorView, line: BlockInfo, event: Event) => boolean;
 };
@@ -346,7 +357,12 @@ class UpdateContext {
 
   widget(view: EditorView, block: BlockInfo) {
     const marker = this.gutter.config.widgetMarker(view, block.widget!, block);
-    if (marker) this.addElement(view, block, [marker]);
+    let markers = marker ? [marker] : null;
+    for (const cls of view.state.facet(gutterWidgetClass)) {
+      const marker = cls(view, block.widget!, block);
+      if (marker) (markers || (markers = [])).push(marker);
+    }
+    if (markers) this.addElement(view, block, markers);
   }
 
   finish() {
@@ -516,6 +532,16 @@ interface LineNumberConfig {
 /// Facet used to provide markers to the line number gutter.
 export const lineNumberMarkers = Facet.define<RangeSet<GutterMarker>>();
 
+/// Facet used to create markers in the line number gutter next to widgets.
+export const lineNumberWidgetMarker =
+  Facet.define<
+    (
+      view: EditorView,
+      widget: WidgetType,
+      block: BlockInfo,
+    ) => GutterMarker | null
+  >();
+
 const lineNumberConfig = Facet.define<
   LineNumberConfig,
   Required<LineNumberConfig>
@@ -572,7 +598,13 @@ const lineNumberGutter = activeGutters.compute([lineNumberConfig], (state) => ({
       formatNumber(view, view.state.doc.lineAt(line.from).number),
     );
   },
-  widgetMarker: () => null,
+  widgetMarker: (view, widget, block) => {
+    for (const m of view.state.facet(lineNumberWidgetMarker)) {
+      const result = m(view, widget, block);
+      if (result) return result;
+    }
+    return null;
+  },
   lineMarkerChange: (update) =>
     update.startState.facet(lineNumberConfig) !=
     update.state.facet(lineNumberConfig),

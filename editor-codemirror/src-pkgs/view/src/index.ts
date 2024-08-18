@@ -47,7 +47,9 @@ export {
   gutters,
   GutterMarker,
   gutterLineClass,
+  gutterWidgetClass,
   lineNumberMarkers,
+  lineNumberWidgetMarker,
 } from './gutter';
 export {
   highlightWhitespace,

@@ -33,7 +33,7 @@ const placeholdersPlugin = ViewPlugin.fromClass(
     constructor(view: EditorView) {
       this.placeholders = placeholderMatcher.createDeco(view);
     }
-    
+
     update(update: ViewUpdate) {
       this.placeholders = placeholderMatcher.updateDeco(
         update,

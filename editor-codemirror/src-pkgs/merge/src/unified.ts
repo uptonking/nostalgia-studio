@@ -1,28 +1,27 @@
-import { highlightingFor, language } from '@codemirror/language';
 import {
-  ChangeSet,
-  EditorState,
-  Prec,
-  RangeSet,
-  RangeSetBuilder,
-  StateEffect,
-  StateField,
-  Text,
-} from '@codemirror/state';
-import {
+  EditorView,
   Decoration,
   type DecorationSet,
-  EditorView,
+  WidgetType,
   gutter,
   GutterMarker,
-  WidgetType,
 } from '@codemirror/view';
+import {
+  EditorState,
+  Text,
+  Prec,
+  RangeSetBuilder,
+  StateField,
+  StateEffect,
+  RangeSet,
+  ChangeSet,
+} from '@codemirror/state';
+import { language, highlightingFor } from '@codemirror/language';
 import { highlightTree } from '@lezer/highlight';
-
 import { Chunk, defaultDiffConfig } from './chunk';
-import { decorateChunks } from './deco';
+import { setChunks, ChunkField, mergeConfig } from './merge';
 import type { Change, DiffConfig } from './diff';
-import { ChunkField, mergeConfig, setChunks } from './merge';
+import { decorateChunks, collapseUnchanged } from './deco';
 import { baseTheme } from './theme';
 
 interface UnifiedMergeConfig {
@@ -43,6 +42,11 @@ interface UnifiedMergeConfig {
   mergeControls?: boolean;
   /// Pass options to the diff algorithm.
   diffConfig?: DiffConfig;
+  /// When given, long stretches of unchanged text are collapsed.
+  /// `margin` gives the number of lines to leave visible after/before
+  /// a change (default is 3), and `minSize` gives the minimum amount
+  /// of collapsible lines that need to be present (defaults to 4).
+  collapseUnchanged?: { margin?: number; minSize?: number };
 }
 
 const deletedChunkGutterMarker = new (class extends GutterMarker {
@@ -103,6 +107,7 @@ export function unifiedMergeView(config: UnifiedMergeConfig) {
     }),
     originalDoc.init(() => orig),
     config.gutter !== false ? unifiedChangeGutter : [],
+    config.collapseUnchanged ? collapseUnchanged(config.collapseUnchanged) : [],
     ChunkField.init((state) => Chunk.build(orig, state.doc, diffConf)),
   ];
 }
