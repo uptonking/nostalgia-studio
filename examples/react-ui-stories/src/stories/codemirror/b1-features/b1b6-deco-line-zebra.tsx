@@ -50,9 +50,10 @@ const showStripesPlugin = ViewPlugin.fromClass(
   },
 );
 
-/** The facet takes any number of step values
+/** The facet takes any number of step values, default is 2
+ * - facets are always available on every state, we can simply read the value
  */
-const stepSize = Facet.define<number, number>({
+const stepSizeFacet = Facet.define<number, number>({
   // even if multiple instances of the extension are added
   combine: (values) => (values.length ? Math.min(...values) : 2),
 });
@@ -62,14 +63,14 @@ const stepSize = Facet.define<number, number>({
 export function zebraStripes(options: { step?: number } = {}): Extension {
   return [
     baseTheme,
-    options.step == null ? [] : stepSize.of(options.step),
+    options.step == null ? [] : stepSizeFacet.of(options.step),
     showStripesPlugin,
   ];
 }
 
 /** iterates over the visible lines, creating a line decoration for every Nth line */
 function createStripeDeco(view: EditorView) {
-  const step = view.state.facet(stepSize);
+  const step = view.state.facet(stepSizeFacet);
   const builder = new RangeSetBuilder<Decoration>();
   for (const { from, to } of view.visibleRanges) {
     for (let pos = from; pos <= to; ) {

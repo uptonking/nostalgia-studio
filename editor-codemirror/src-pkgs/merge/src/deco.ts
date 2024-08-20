@@ -26,16 +26,19 @@ export const decorateChunks = ViewPlugin.fromClass(
     gutter: RangeSet<GutterMarker> | null;
 
     constructor(view: EditorView) {
+      console.log(';; ins-deco-ctor ');
       ({ deco: this.deco, gutter: this.gutter } = getChunkDeco(view));
     }
 
     update(update: ViewUpdate) {
-      if (
+      const shouldUpdate =
         update.docChanged ||
         update.viewportChanged ||
         chunksChanged(update.startState, update.state) ||
-        configChanged(update.startState, update.state)
-      )
+        configChanged(update.startState, update.state);
+      console.log(';; ins-deco-up ', shouldUpdate);
+
+      if (shouldUpdate)
         ({ deco: this.deco, gutter: this.gutter } = getChunkDeco(update.view));
     }
   },
@@ -113,6 +116,7 @@ function buildChunkDeco(
 
 function getChunkDeco(view: EditorView) {
   const chunks = view.state.field(ChunkField);
+  console.log(';; chunks ', chunks);
   const { side, highlightChanges, markGutter } = view.state.facet(mergeConfig);
   const isA = side == 'a';
   const builder = new RangeSetBuilder<Decoration>();

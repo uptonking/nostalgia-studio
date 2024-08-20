@@ -29,17 +29,17 @@ export {
   snippetKeymap,
 } from './snippet';
 export {
-  Completion,
-  CompletionInfo,
-  CompletionSection,
-  CompletionContext,
-  CompletionSource,
-  CompletionResult,
-  pickedCompletion,
+  CompletionContext, pickedCompletion,
   completeFromList,
   ifIn,
   ifNotIn,
-  insertCompletionText,
+  insertCompletionText
+} from './completion';
+export type {
+  Completion,
+  CompletionInfo,
+  CompletionSection, CompletionSource,
+  CompletionResult
 } from './completion';
 export {
   startCompletion,
@@ -49,12 +49,12 @@ export {
 } from './view';
 export { completeAnyWord } from './word';
 export {
-  CloseBracketConfig,
   closeBrackets,
   closeBracketsKeymap,
   deleteBracketPair,
-  insertBracket,
+  insertBracket
 } from './closebrackets';
+export type { CloseBracketConfig } from './closebrackets';
 
 /// Returns an extension that enables autocompletion.
 export function autocompletion(config: CompletionConfig = {}): Extension {

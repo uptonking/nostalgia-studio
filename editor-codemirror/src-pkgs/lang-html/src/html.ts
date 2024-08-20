@@ -25,10 +25,9 @@ import {
   eventAttributes,
 } from './complete';
 export {
-  htmlCompletionSource,
-  TagSpec,
-  htmlCompletionSourceWith,
+  htmlCompletionSource, htmlCompletionSourceWith
 } from './complete';
+export type { TagSpec } from './complete';
 
 type NestedLang = {
   tag: string;

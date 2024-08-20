@@ -21,6 +21,7 @@ const lineHighlightField = StateField.define<DecorationSet>({
     lines = lines.map(tr.changes);
     for (const e of tr.effects) {
       if (e.is(addLineHighlight)) {
+        // remove old deco
         lines = Decoration.none;
         lines = lines.update({ add: [lineHighlightMark.range(e.value)] });
       }

@@ -1,9 +1,7 @@
 export {
   language,
   Language,
-  LRLanguage,
-  Sublanguage,
-  sublanguageProp,
+  LRLanguage, sublanguageProp,
   defineLanguageFacet,
   syntaxTree,
   ensureSyntaxTree,
@@ -14,8 +12,9 @@ export {
   syntaxTreeAvailable,
   syntaxParserRunning,
   forceParsing,
-  DocInput,
+  DocInput
 } from './language';
+export type { Sublanguage } from './language';
 
 export {
   IndentContext,
@@ -55,20 +54,17 @@ export {
 export {
   HighlightStyle,
   syntaxHighlighting,
-  highlightingFor,
-  TagStyle,
-  defaultHighlightStyle,
+  highlightingFor, defaultHighlightStyle
 } from './highlight';
+export type { TagStyle } from './highlight';
 
 export {
-  bracketMatching,
-  Config,
-  matchBrackets,
-  MatchResult,
-  bracketMatchingHandle,
+  bracketMatching, matchBrackets, bracketMatchingHandle
 } from './matchbrackets';
+export type { Config, MatchResult } from './matchbrackets';
 
-export { StreamLanguage, StreamParser } from './stream-parser';
+export { StreamLanguage } from './stream-parser';
+export type { StreamParser } from './stream-parser';
 
 export { StringStream } from './stringstream';
 

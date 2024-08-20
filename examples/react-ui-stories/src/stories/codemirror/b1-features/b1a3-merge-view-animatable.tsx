@@ -1,10 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { basicSetup, EditorView } from 'codemirror';
 
-import { markdown } from '@codemirror/lang-markdown';
 import { animatableDiffView } from '@codemirror/merge';
-import { Compartment } from '@codemirror/state';
+import { Compartment, StateEffect, type ChangeSpec } from '@codemirror/state';
 
 const doc1 = `one
 two
@@ -42,23 +41,49 @@ const docSix =
     .replace('tea', 'coffee')
     .replace(/b/g, 'B') + '\nSix';
 
+type DiffViewConfig = {
+  enableDiff: boolean;
+  showTypeWriterAnimation: boolean;
+  showGutter: boolean;
+  enableHighlightChanges: boolean;
+  showMergeControls: boolean;
+  showTypewriterAnimation: boolean;
+};
+
+const initialDiffViewConfig = {
+  enableDiff: true,
+  showTypeWriterAnimation: false,
+  showGutter: true,
+  enableHighlightChanges: false,
+  showMergeControls: false,
+  showTypewriterAnimation: false
+};
+
+const animatableMergeViewCompartment = new Compartment();
+
 export const MergeViewAnimatable = () => {
   const editorRef = useRef<HTMLDivElement>(null);
 
+  const [diffViewConfig, setDiffViewConfig] = useState<DiffViewConfig>(
+    initialDiffViewConfig,
+  );
+
   useEffect(() => {
-    const language = new Compartment();
     const editor = new EditorView({
       extensions: [
         basicSetup,
-        // language.of(markdown()),
-        animatableDiffView({
-          original: doc,
-          gutter: true,
-          highlightChanges: false,
-          syntaxHighlightDeletions: true,
-          mergeControls: false,
-          // diffConfig:{ scanLimit: 10000 },
-        }),
+        animatableMergeViewCompartment.of(
+          initialDiffViewConfig.enableDiff
+            ? animatableDiffView({
+                original: doc,
+                gutter: initialDiffViewConfig.showGutter,
+                highlightChanges: initialDiffViewConfig.enableHighlightChanges,
+                syntaxHighlightDeletions: true,
+                mergeControls: initialDiffViewConfig.showMergeControls,
+                // diffConfig:{ scanLimit: 10000 },
+              })
+            : [],
+        ),
       ],
       doc: docSix,
       parent: editorRef.current,
@@ -71,8 +96,88 @@ export const MergeViewAnimatable = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const effects: StateEffect<any>[] = [];
+    // const changes: ChangeSpec[] = [];
+    effects.push(
+      animatableMergeViewCompartment.reconfigure(
+        diffViewConfig?.enableDiff
+          ? animatableDiffView({
+              original: doc,
+              gutter: diffViewConfig.showGutter,
+              highlightChanges: diffViewConfig.enableHighlightChanges,
+              syntaxHighlightDeletions: true,
+              mergeControls: diffViewConfig.showMergeControls,
+            })
+          : [],
+      ),
+    );
+    window['edd'].dispatch({
+      effects: effects,
+      // changes: changes,
+    });
+  }, [diffViewConfig]);
+
   return (
     <div className='idCMEditor'>
+      <div className='configToolbar' style={{ display: 'flex', gap: '10px' }}>
+        <div>
+          <input
+            id='EnableDiff'
+            type='checkbox'
+            checked={Boolean(diffViewConfig.enableDiff)}
+            onChange={(evt) =>
+              setDiffViewConfig({
+                ...diffViewConfig,
+                enableDiff: evt.target.checked,
+              })
+            }
+          />
+          <label htmlFor='EnableDiff'>Enable Diff</label>
+        </div>
+        <div>
+          <input
+            id='MergeViewGutter'
+            type='checkbox'
+            checked={Boolean(diffViewConfig.showGutter)}
+            onChange={(evt) =>
+              setDiffViewConfig({
+                ...diffViewConfig,
+                showGutter: evt.target.checked,
+              })
+            }
+          />
+          <label htmlFor='MergeViewGutter'>Gutter</label>
+        </div>
+        <div>
+          <input
+            id='MergeViewHighlightChanges'
+            type='checkbox'
+            checked={Boolean(diffViewConfig.enableHighlightChanges)}
+            onChange={(evt) =>
+              setDiffViewConfig({
+                ...diffViewConfig,
+                enableHighlightChanges: evt.target.checked,
+              })
+            }
+          />
+          <label htmlFor='MergeViewHighlightChanges'>Highlight Changes</label>
+        </div>
+        <div>
+          <input
+            id='typewriterAnimation'
+            type='checkbox'
+            checked={Boolean(diffViewConfig.showTypeWriterAnimation)}
+            onChange={(evt) =>
+              setDiffViewConfig({
+                ...diffViewConfig,
+                showTypeWriterAnimation: evt.target.checked,
+              })
+            }
+          />
+          <label htmlFor='typewriterAnimation'>Typewriter</label>
+        </div>
+      </div>
       <div ref={editorRef} />
     </div>
   );

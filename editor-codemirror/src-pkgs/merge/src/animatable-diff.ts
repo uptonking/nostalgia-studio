@@ -68,10 +68,13 @@ export function animatableDiffView(config: AnimatableDiffViewConfig) {
   const diffConf = config.diffConfig || defaultDiffConfig;
 
   return [
+    // decorate new lines in latest editor content, with green bg
     Prec.low(decorateChunks),
+    // insert deleted lines as widget, with red bg
     deletedChunks,
     baseTheme,
     EditorView.editorAttributes.of({ class: 'cm-merge-b' }),
+    // update old or new doc by updateOriginalDoc effect
     EditorState.transactionExtender.of((tr) => {
       const updateDoc = tr.effects.find((e) => e.is(updateOriginalDoc));
       if (!tr.docChanged && !updateDoc) return null;
@@ -94,8 +97,8 @@ export function animatableDiffView(config: AnimatableDiffViewConfig) {
       return { effects: setChunks.of(chunks) };
     }),
     mergeConfig.of({
-      highlightChanges: config.highlightChanges !== false,
       markGutter: config.gutter !== false,
+      highlightChanges: config.highlightChanges !== false,
       syntaxHighlightDeletions: config.syntaxHighlightDeletions !== false,
       mergeControls: config.mergeControls !== false,
       side: 'b',

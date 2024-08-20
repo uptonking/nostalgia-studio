@@ -30,7 +30,6 @@ import { type SyntaxNode, NodeProp } from '@lezer/common';
 import { toggleComment, toggleBlockComment } from './comment';
 
 export {
-  CommentTokens,
   toggleComment,
   toggleLineComment,
   lineComment,
@@ -38,8 +37,9 @@ export {
   toggleBlockComment,
   blockComment,
   blockUncomment,
-  toggleBlockCommentByLine,
+  toggleBlockCommentByLine
 } from './comment';
+export type { CommentTokens } from './comment';
 export {
   history,
   historyKeymap,

@@ -1,45 +1,50 @@
 export {
-  EditorView,
+  EditorView
+} from './editorview';
+export type {
   EditorViewConfig,
   DOMEventMap,
-  DOMEventHandlers,
+  DOMEventHandlers
 } from './editorview';
 export {
-  Command,
-  ViewPlugin,
-  PluginValue,
-  PluginSpec,
-  ViewUpdate,
-  logException,
+  ViewPlugin, ViewUpdate,
+  logException
 } from './extension';
-export { Decoration, DecorationSet, WidgetType, BlockType } from './decoration';
+export type {
+  Command, PluginValue,
+  PluginSpec
+} from './extension';
+export { Decoration, WidgetType, BlockType } from './decoration';
+export type { DecorationSet } from './decoration';
 export { BlockInfo } from './heightmap';
-export { MouseSelectionStyle } from './input';
+export type { MouseSelectionStyle } from './input';
 export { BidiSpan, Direction } from './bidi';
-export { KeyBinding, keymap, runScopeHandlers } from './keymap';
+export { keymap, runScopeHandlers } from './keymap';
+export type { KeyBinding } from './keymap';
 export { drawSelection, getDrawSelectionConfig } from './draw-selection';
 export { dropCursor } from './dropcursor';
 export { highlightSpecialChars } from './special-chars';
 export { scrollPastEnd } from './scrollpastend';
 export { highlightActiveLine } from './active-line';
 export { placeholder } from './placeholder';
-export { Rect } from './dom';
-export { layer, LayerMarker, RectangleMarker } from './layer';
+export type { Rect } from './dom';
+export { layer, RectangleMarker } from './layer';
+export type { LayerMarker } from './layer';
 export { MatchDecorator } from './matchdecorator';
 export { rectangularSelection, crosshairCursor } from './rectangular-selection';
 export {
-  showTooltip,
-  Tooltip,
-  TooltipView,
-  tooltips,
+  showTooltip, tooltips,
   getTooltip,
-  hoverTooltip,
-  HoverTooltipSource,
-  hasHoverTooltips,
+  hoverTooltip, hasHoverTooltips,
   closeHoverTooltips,
-  repositionTooltips,
+  repositionTooltips
 } from './tooltip';
-export { showPanel, PanelConstructor, Panel, getPanel, panels } from './panel';
+export type {
+  Tooltip,
+  TooltipView, HoverTooltipSource
+} from './tooltip';
+export { showPanel, getPanel, panels } from './panel';
+export type { PanelConstructor, Panel } from './panel';
 export {
   lineNumbers,
   highlightActiveLineGutter,
