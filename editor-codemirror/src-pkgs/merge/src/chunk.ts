@@ -21,9 +21,9 @@ export class Chunk {
     /// past the end of the last line in the chunk if it does.
     readonly toA: number,
     /// The start of the chunk in document B.
-    readonly fromB: number,
+    public fromB: number,
     /// The end of the chunk in document A.
-    readonly toB: number,
+    public toB: number,
   ) {}
 
   /// @internal

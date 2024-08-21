@@ -1,19 +1,11 @@
-export {
-  EditorView
-} from './editorview';
+export { EditorView } from './editorview';
 export type {
   EditorViewConfig,
   DOMEventMap,
-  DOMEventHandlers
+  DOMEventHandlers,
 } from './editorview';
-export {
-  ViewPlugin, ViewUpdate,
-  logException
-} from './extension';
-export type {
-  Command, PluginValue,
-  PluginSpec
-} from './extension';
+export { ViewPlugin, ViewUpdate, logException } from './extension';
+export type { Command, PluginValue, PluginSpec } from './extension';
 export { Decoration, WidgetType, BlockType } from './decoration';
 export type { DecorationSet } from './decoration';
 export { BlockInfo } from './heightmap';
@@ -33,16 +25,15 @@ export type { LayerMarker } from './layer';
 export { MatchDecorator } from './matchdecorator';
 export { rectangularSelection, crosshairCursor } from './rectangular-selection';
 export {
-  showTooltip, tooltips,
+  showTooltip,
+  tooltips,
   getTooltip,
-  hoverTooltip, hasHoverTooltips,
+  hoverTooltip,
+  hasHoverTooltips,
   closeHoverTooltips,
-  repositionTooltips
+  repositionTooltips,
 } from './tooltip';
-export type {
-  Tooltip,
-  TooltipView, HoverTooltipSource
-} from './tooltip';
+export type { Tooltip, TooltipView, HoverTooltipSource } from './tooltip';
 export { showPanel, getPanel, panels } from './panel';
 export type { PanelConstructor, Panel } from './panel';
 export {

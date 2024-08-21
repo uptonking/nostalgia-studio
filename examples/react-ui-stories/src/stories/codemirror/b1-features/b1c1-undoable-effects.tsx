@@ -2,11 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import { basicSetup, EditorView } from 'codemirror';
 
-import {
-  Decoration,
-  type DecorationSet,
-  keymap,
-} from '@codemirror/view';
+import { Decoration, type DecorationSet, keymap } from '@codemirror/view';
 import {
   StateField,
   StateEffect,

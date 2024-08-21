@@ -1,7 +1,8 @@
 export {
   language,
   Language,
-  LRLanguage, sublanguageProp,
+  LRLanguage,
+  sublanguageProp,
   defineLanguageFacet,
   syntaxTree,
   ensureSyntaxTree,
@@ -12,7 +13,7 @@ export {
   syntaxTreeAvailable,
   syntaxParserRunning,
   forceParsing,
-  DocInput
+  DocInput,
 } from './language';
 export type { Sublanguage } from './language';
 
@@ -54,12 +55,15 @@ export {
 export {
   HighlightStyle,
   syntaxHighlighting,
-  highlightingFor, defaultHighlightStyle
+  highlightingFor,
+  defaultHighlightStyle,
 } from './highlight';
 export type { TagStyle } from './highlight';
 
 export {
-  bracketMatching, matchBrackets, bracketMatchingHandle
+  bracketMatching,
+  matchBrackets,
+  bracketMatchingHandle,
 } from './matchbrackets';
 export type { Config, MatchResult } from './matchbrackets';
 

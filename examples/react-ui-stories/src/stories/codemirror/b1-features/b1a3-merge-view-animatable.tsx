@@ -43,8 +43,7 @@ line12
 line13
 line14
 line15
-new line after will highlight current line
-`;
+new line after will highlight current line`;
 // new string with insert/delete/update op
 const docSix =
   doc
@@ -73,8 +72,9 @@ const initialDiffViewConfig = {
 const animatableMergeViewCompartment = new Compartment();
 
 const maxHeightEditor = EditorView.theme({
-  '&': { width: '70vw', 
-    // maxHeight: '20vh' 
+  '&': {
+    width: '70vw',
+    maxHeight: '40vh',
   },
   '.cm-scroller': { overflow: 'auto' },
 });
@@ -173,20 +173,22 @@ export const MergeViewAnimatable = () => {
           />
           <label htmlFor='MergeViewGutter'>Gutter</label>
         </div>
-        <div>
-          <input
-            id='MergeViewHighlightChanges'
-            type='checkbox'
-            checked={Boolean(diffViewConfig.enableHighlightChanges)}
-            onChange={(evt) =>
-              setDiffViewConfig({
-                ...diffViewConfig,
-                enableHighlightChanges: evt.target.checked,
-              })
-            }
-          />
-          <label htmlFor='MergeViewHighlightChanges'>Highlight Changes</label>
-        </div>
+        {diffViewConfig.showTypewriterAnimation ? null : (
+          <div>
+            <input
+              id='MergeViewHighlightChanges'
+              type='checkbox'
+              checked={Boolean(diffViewConfig.enableHighlightChanges)}
+              onChange={(evt) =>
+                setDiffViewConfig({
+                  ...diffViewConfig,
+                  enableHighlightChanges: evt.target.checked,
+                })
+              }
+            />
+            <label htmlFor='MergeViewHighlightChanges'>Highlight Changes</label>
+          </div>
+        )}
         <div>
           <input
             id='typewriterAnimation'

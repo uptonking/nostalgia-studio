@@ -29,17 +29,19 @@ export {
   snippetKeymap,
 } from './snippet';
 export {
-  CompletionContext, pickedCompletion,
+  CompletionContext,
+  pickedCompletion,
   completeFromList,
   ifIn,
   ifNotIn,
-  insertCompletionText
+  insertCompletionText,
 } from './completion';
 export type {
   Completion,
   CompletionInfo,
-  CompletionSection, CompletionSource,
-  CompletionResult
+  CompletionSection,
+  CompletionSource,
+  CompletionResult,
 } from './completion';
 export {
   startCompletion,
@@ -52,7 +54,7 @@ export {
   closeBrackets,
   closeBracketsKeymap,
   deleteBracketPair,
-  insertBracket
+  insertBracket,
 } from './closebrackets';
 export type { CloseBracketConfig } from './closebrackets';
 

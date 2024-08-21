@@ -1,12 +1,12 @@
 .cm-line-typewriter {
   // color: coral;
   animation:
-    typing 8s steps(22),
-    blink 0.125s step-end infinite alternate;
+    typing 0.875s steps(22),
+    blink 0.0625s step-end infinite alternate;
   border-right: 1.5px solid;
 
   width: 100%;
-  overflow: hidden; 
+  // overflow: hidden;
 }
 
 @keyframes typing {

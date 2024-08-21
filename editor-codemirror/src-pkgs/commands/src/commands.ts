@@ -37,7 +37,7 @@ export {
   toggleBlockComment,
   blockComment,
   blockUncomment,
-  toggleBlockCommentByLine
+  toggleBlockCommentByLine,
 } from './comment';
 export type { CommentTokens } from './comment';
 export {
