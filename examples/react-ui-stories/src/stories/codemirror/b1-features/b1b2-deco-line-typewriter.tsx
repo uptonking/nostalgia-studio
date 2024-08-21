@@ -21,6 +21,7 @@ const lineHighlightDeco = Decoration.line({
 
 const addLineHighlight = StateEffect.define<number>();
 
+/** put decorations in StateField */
 const lineHighlightState = StateField.define<DecorationSet>({
   create() {
     return Decoration.none;

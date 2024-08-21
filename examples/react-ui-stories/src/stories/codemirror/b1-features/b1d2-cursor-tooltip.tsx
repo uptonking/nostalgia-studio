@@ -40,7 +40,7 @@ export const wordHover = hoverTooltip((view, pos, side) => {
   };
 });
 
-const cursorTooltipField = StateField.define<readonly Tooltip[]>({
+const cursorTooltipState = StateField.define<readonly Tooltip[]>({
   create: getCursorTooltips,
 
   update(tooltips, tr) {
@@ -81,7 +81,7 @@ export const CursorTooltip = () => {
 
     const editor = new EditorView({
       doc: 'Move through this text to\nsee your tooltip\n',
-      extensions: [basicSetup, cursorTooltipField, cursorTooltipBaseTheme],
+      extensions: [basicSetup, cursorTooltipState, cursorTooltipBaseTheme],
       parent: editorRef.current,
     });
 

@@ -24,6 +24,7 @@ import { decorateChunks } from './deco';
 import type { Change, DiffConfig } from './diff';
 import { ChunkField, mergeConfig, setChunks } from './merge';
 import { baseTheme } from './theme';
+import { diffPlayControllerState } from './animation-controller';
 
 interface AnimatableDiffViewConfig {
   /** original document to compare with */
@@ -31,7 +32,7 @@ interface AnimatableDiffViewConfig {
   /** whether to show highlighted gutter on the changed line. default is true. */
   gutter?: boolean;
   /** whether to show typewriter animation for inserted lines. default is false. */
-  showDiffAnimation?: boolean;
+  showTypewriterAnimation?: boolean;
   /** whether to highlight the inserted/deleted characters. default is true. */
   highlightChanges?: boolean;
   /** whether to highlight deleted line using original lang syntax.  */
@@ -66,8 +67,10 @@ export function animatableDiffView(config: AnimatableDiffViewConfig) {
       ? Text.of(config.original.split(/\r?\n/))
       : config.original;
   const diffConf = config.diffConfig || defaultDiffConfig;
+  // console.log(';; config ', config);
 
   return [
+    diffPlayControllerState,
     // decorate new lines in latest editor content, with green bg
     Prec.low(decorateChunks),
     // insert deleted lines as widget, with red bg
@@ -98,6 +101,7 @@ export function animatableDiffView(config: AnimatableDiffViewConfig) {
     }),
     mergeConfig.of({
       markGutter: config.gutter !== false,
+      showTypewriterAnimation: config.showTypewriterAnimation === true,
       highlightChanges: config.highlightChanges !== false,
       syntaxHighlightDeletions: config.syntaxHighlightDeletions !== false,
       mergeControls: config.mergeControls !== false,

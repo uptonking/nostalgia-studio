@@ -1,10 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { basicSetup, EditorView } from 'codemirror';
 
 import {
-  ViewPlugin,
-  type ViewUpdate,
   Decoration,
   type DecorationSet,
   keymap,
@@ -14,9 +12,6 @@ import {
   StateEffect,
   type ChangeDesc,
   Compartment,
-  type Extension,
-  RangeSetBuilder,
-  Facet,
 } from '@codemirror/state';
 import { invertedEffects } from '@codemirror/commands';
 

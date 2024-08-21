@@ -50,6 +50,10 @@ export const baseTheme = EditorView.baseTheme({
     // backgroundColor: 'rgba(100, 160, 128, .08)',
     backgroundColor: '#dafbe1',
   },
+  '&light.cm-merge-b .cm-line-hidden': {
+    // backgroundColor: 'rgba(100, 160, 128, .08)',
+    display: 'none',
+  },
 
   '&light.cm-merge-a .cm-changedText, &light .cm-deletedChunk .cm-deletedText':
     {

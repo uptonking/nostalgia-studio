@@ -4362,6 +4362,11 @@ acc18zip={!Account_Create_Change_Request__c.Postal_Zip_Code__c}&amp;acc10={!Acco
 
 `;
 
+const maxHeightEditor = EditorView.theme({
+  '&': { width: '70vw', maxHeight: '40vh' },
+  '.cm-scroller': { overflow: 'auto' },
+});
+
 export const GitConflicts = () => {
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -4370,8 +4375,8 @@ export const GitConflicts = () => {
     const editor = new EditorView({
       extensions: [
         basicSetup,
+        maxHeightEditor,
         gitConflicts(),
-        // basicSetup,
         lineNumbers(),
         xml(),
       ],
@@ -4384,7 +4389,7 @@ export const GitConflicts = () => {
       editor.destroy();
       window['edd'] = undefined;
     };
-  }, [content]);
+  }, []);
 
   return (
     <div className='idCMEditor'>

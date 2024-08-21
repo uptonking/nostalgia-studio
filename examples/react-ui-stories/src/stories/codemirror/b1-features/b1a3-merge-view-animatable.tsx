@@ -3,7 +3,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { basicSetup, EditorView } from 'codemirror';
 
 import { animatableDiffView } from '@codemirror/merge';
-import { Compartment, StateEffect, type ChangeSpec } from '@codemirror/state';
+import {
+  Compartment,
+  type StateEffect,
+  type ChangeSpec,
+} from '@codemirror/state';
 
 const doc1 = `one
 two
@@ -31,7 +35,16 @@ With Options API, we define a component's logic using an object of options such 
 通过组合式 API，我们可以使用导入的 API 函数来描述组件逻辑。在单文件组件中，组合式 API 通常会与 <script setup> 搭配使用。这个 setup attribute 是一个标识，告诉 Vue 需要在编译时进行一些处理，让我们可以更简洁地使用组合式 API。比如，<script setup> 中的导入和顶层变量/函数都能够在模板中直接使用。
 With Composition API, we define a component's logic using imported API functions. In SFCs, Composition API is typically used with <script setup>. The setup attribute is a hint that makes Vue perform compile-time transforms that allow us to use Composition API with less boilerplate. For example, imports and top-level variables / functions declared in <script setup> are directly usable in the template.
 examples are strings with insert/delete/update op
-new line after will highlight current line`;
+line8
+line9
+line10
+line11
+line12
+line13
+line14
+line15
+new line after will highlight current line
+`;
 // new string with insert/delete/update op
 const docSix =
   doc
@@ -43,23 +56,28 @@ const docSix =
 
 type DiffViewConfig = {
   enableDiff: boolean;
-  showTypeWriterAnimation: boolean;
+  showTypewriterAnimation: boolean;
   showGutter: boolean;
   enableHighlightChanges: boolean;
   showMergeControls: boolean;
-  showTypewriterAnimation: boolean;
 };
 
 const initialDiffViewConfig = {
   enableDiff: true,
-  showTypeWriterAnimation: false,
+  showTypewriterAnimation: true,
   showGutter: true,
   enableHighlightChanges: false,
   showMergeControls: false,
-  showTypewriterAnimation: false
 };
 
 const animatableMergeViewCompartment = new Compartment();
+
+const maxHeightEditor = EditorView.theme({
+  '&': { width: '70vw', 
+    // maxHeight: '20vh' 
+  },
+  '.cm-scroller': { overflow: 'auto' },
+});
 
 export const MergeViewAnimatable = () => {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -72,11 +90,14 @@ export const MergeViewAnimatable = () => {
     const editor = new EditorView({
       extensions: [
         basicSetup,
+        maxHeightEditor,
         animatableMergeViewCompartment.of(
           initialDiffViewConfig.enableDiff
             ? animatableDiffView({
                 original: doc,
                 gutter: initialDiffViewConfig.showGutter,
+                showTypewriterAnimation:
+                  initialDiffViewConfig.showTypewriterAnimation,
                 highlightChanges: initialDiffViewConfig.enableHighlightChanges,
                 syntaxHighlightDeletions: true,
                 mergeControls: initialDiffViewConfig.showMergeControls,
@@ -105,6 +126,7 @@ export const MergeViewAnimatable = () => {
           ? animatableDiffView({
               original: doc,
               gutter: diffViewConfig.showGutter,
+              showTypewriterAnimation: diffViewConfig.showTypewriterAnimation,
               highlightChanges: diffViewConfig.enableHighlightChanges,
               syntaxHighlightDeletions: true,
               mergeControls: diffViewConfig.showMergeControls,
@@ -118,8 +140,10 @@ export const MergeViewAnimatable = () => {
     });
   }, [diffViewConfig]);
 
+  // console.log(';; render-config ', diffViewConfig);
+
   return (
-    <div className='idCMEditor'>
+    <div className='idCMEditor' style={{}}>
       <div className='configToolbar' style={{ display: 'flex', gap: '10px' }}>
         <div>
           <input
@@ -167,11 +191,11 @@ export const MergeViewAnimatable = () => {
           <input
             id='typewriterAnimation'
             type='checkbox'
-            checked={Boolean(diffViewConfig.showTypeWriterAnimation)}
+            checked={Boolean(diffViewConfig.showTypewriterAnimation)}
             onChange={(evt) =>
               setDiffViewConfig({
                 ...diffViewConfig,
-                showTypeWriterAnimation: evt.target.checked,
+                showTypewriterAnimation: evt.target.checked,
               })
             }
           />

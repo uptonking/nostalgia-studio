@@ -1,9 +1,9 @@
 .cm-line-typewriter {
-  color: coral;
+  // color: coral;
   animation:
-    typing 2s steps(22),
-    blink 0.5s step-end infinite alternate;
-  border-right: 3px solid;
+    typing 8s steps(22),
+    blink 0.125s step-end infinite alternate;
+  border-right: 1.5px solid;
 
   width: 100%;
   overflow: hidden; 

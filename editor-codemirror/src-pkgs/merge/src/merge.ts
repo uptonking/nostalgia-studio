@@ -11,8 +11,9 @@ import type { Chunk } from './chunk';
 
 type Config = {
   sibling?: () => EditorView;
-  highlightChanges: boolean;
   markGutter: boolean;
+  showTypewriterAnimation: boolean;
+  highlightChanges: boolean;
   syntaxHighlightDeletions?: boolean;
   mergeControls?: boolean;
   side: 'a' | 'b';
