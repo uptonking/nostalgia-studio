@@ -6,7 +6,8 @@
   border-right: 1.5px solid;
 
   width: 100%;
-  // overflow: hidden;
+  // 👇 make characters on the right of the line invisible
+  overflow: hidden;
 }
 
 @keyframes typing {

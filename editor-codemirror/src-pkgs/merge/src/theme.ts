@@ -54,7 +54,20 @@ export const baseTheme = EditorView.baseTheme({
     // backgroundColor: 'rgba(100, 160, 128, .08)',
     display: 'none',
   },
-
+  '&.cm-merge-b .cm-line-typing': {
+    animation:
+      'typing 0.25s steps(22), blink 0.0125s step-end infinite alternate',
+    borderRight: '1.5px solid',
+    width: '100%',
+    // 👇 make characters on the right of the line invisible
+    overflow: 'hidden',
+  },
+  '@keyframes typing': {
+    from: { width: '0px' },
+  },
+  '@keyframes blink': {
+    '50%': { borderColor: 'transparent' },
+  },
   '&light.cm-merge-a .cm-changedText, &light .cm-deletedChunk .cm-deletedText':
     {
       background:

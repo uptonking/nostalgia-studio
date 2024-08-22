@@ -69,7 +69,7 @@ const initialDiffViewConfig = {
   showMergeControls: false,
 };
 
-const animatableMergeViewCompartment = new Compartment();
+const animatableDiffViewCompartment = new Compartment();
 
 const maxHeightEditor = EditorView.theme({
   '&': {
@@ -91,7 +91,7 @@ export const MergeViewAnimatable = () => {
       extensions: [
         basicSetup,
         maxHeightEditor,
-        animatableMergeViewCompartment.of(
+        animatableDiffViewCompartment.of(
           initialDiffViewConfig.enableDiff
             ? animatableDiffView({
                 original: doc,
@@ -121,7 +121,7 @@ export const MergeViewAnimatable = () => {
     const effects: StateEffect<any>[] = [];
     // const changes: ChangeSpec[] = [];
     effects.push(
-      animatableMergeViewCompartment.reconfigure(
+      animatableDiffViewCompartment.reconfigure(
         diffViewConfig?.enableDiff
           ? animatableDiffView({
               original: doc,

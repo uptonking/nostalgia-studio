@@ -16,20 +16,23 @@ export const diffPlayControllerState = StateField.define({
   create() {
     return {
       playLineNumber: -10,
+      /** todo support pause */
       isDiffPaused: false,
+      /** to reduce unnecessary computation of chunksByLine, before lines count is known
+       * - because playLineNumber isn't aware of the total lines count
+       */
       isDiffCompleted: false,
     };
   },
 
   update(value, tr) {
     let currentLineNumber = { ...value };
-    // console.log(';; no. ', currentLineNumber.playLineNumber);
     for (const effect of tr.effects) {
       if (effect.is(autoPlayDiffEffect)) {
         currentLineNumber = {
           ...currentLineNumber,
           playLineNumber:
-            currentLineNumber.playLineNumber === -10
+            currentLineNumber.playLineNumber < 0
               ? 0
               : ++currentLineNumber.playLineNumber,
         };
@@ -41,13 +44,20 @@ export const diffPlayControllerState = StateField.define({
         };
       }
     }
+    // console.log(
+    //   ';; no.-done ',
+    //   currentLineNumber.playLineNumber,
+    //   currentLineNumber.isDiffCompleted,
+    // );
     return currentLineNumber;
   },
 });
 
-export function diffPlayLineNumberChanged(s1: EditorState, s2: EditorState) {
+export function diffPlayStateChanged(s1: EditorState, s2: EditorState) {
   return (
     s1.field(diffPlayControllerState, false).playLineNumber !==
-    s2.field(diffPlayControllerState, false).playLineNumber
+      s2.field(diffPlayControllerState, false).playLineNumber ||
+    s1.field(diffPlayControllerState, false).isDiffCompleted !==
+      s2.field(diffPlayControllerState, false).isDiffCompleted
   );
 }

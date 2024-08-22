@@ -23,7 +23,7 @@ import { ChunkField, mergeConfig } from './merge';
 import {
   autoPlayDiffEffect,
   diffPlayControllerState,
-  diffPlayLineNumberChanged,
+  diffPlayStateChanged,
   setIsDiffCompleted,
 } from './animation-controller';
 
@@ -49,11 +49,11 @@ export const decorateChunks = ViewPlugin.fromClass(
         view,
         this.chunksByLine,
       ));
-      console.log(
-        ';; ins-deco-ctor ',
-        view.state.field(ChunkField),
-        this.chunksByLine,
-      );
+      // console.log(
+      //   ';; ins-deco-ctor ',
+      //   view.state.field(ChunkField),
+      //   this.chunksByLine,
+      // );
 
       this.autoPlayDiffAnimation();
     }
@@ -62,8 +62,8 @@ export const decorateChunks = ViewPlugin.fromClass(
       const diffPlayState = this.editView.state.field(diffPlayControllerState);
       const { showTypewriterAnimation } =
         this.editView.state.facet(mergeConfig);
-      let chunks = this.editView.state.field(ChunkField);
-      if (showTypewriterAnimation) {
+      let chunks = this.editView.state.field(ChunkField) as Chunk[];
+      if (showTypewriterAnimation && !diffPlayState.isDiffCompleted) {
         chunks = this.chunksByLine;
       }
 
@@ -72,19 +72,17 @@ export const decorateChunks = ViewPlugin.fromClass(
         update.viewportChanged ||
         chunksChanged(update.startState, update.state) ||
         configChanged(update.startState, update.state) ||
-        (diffPlayState.playLineNumber > -1 &&
-          diffPlayState.playLineNumber < chunks.length &&
-          diffPlayLineNumberChanged(update.startState, update.state));
+        diffPlayStateChanged(update.startState, update.state);
 
-      console.log(
-        ';; ins-deco-up ',
-        shouldUpdate,
-        diffPlayState.playLineNumber,
-      );
+      // console.log(
+      //   ';; ins-deco-up ',
+      //   shouldUpdate,
+      //   diffPlayState.playLineNumber,
+      // );
       if (shouldUpdate) {
         ({ deco: this.deco, gutter: this.gutter } = getChunkDeco(
           update.view,
-          this.chunksByLine,
+          chunks,
         ));
       }
     }
@@ -110,13 +108,17 @@ export const decorateChunks = ViewPlugin.fromClass(
           this.editView.dispatch({
             effects: [
               EditorView.scrollIntoView(
-                EditorSelection.range(nextChunk.fromB, nextChunk.toB),
+                nextChunk.fromB,
+                // EditorSelection.range(nextChunk.fromB, nextChunk.toB), // full
               ),
               autoPlayDiffEffect.of(undefined),
             ],
           });
         } else {
-          if (showTypewriterAnimation) {
+          if (
+            showTypewriterAnimation &&
+            currentDiffPlayLineNumber >= this.chunksByLine.length - 1
+          ) {
             this.editView.dispatch({
               effects: [setIsDiffCompleted.of(true)],
             });
@@ -124,7 +126,7 @@ export const decorateChunks = ViewPlugin.fromClass(
           window.clearInterval(this.autoPlayIntervalId);
           this.autoPlayIntervalId = 0;
         }
-      }, 1000);
+      }, 750);
     }
 
     destroy() {
@@ -191,7 +193,7 @@ const changedLineHiddenDeco = Decoration.line({
   class: 'cm-changedLine cm-line-hidden',
 });
 const changedLineTypewriterDeco = Decoration.line({
-  class: 'cm-changedLine cm-line-typewriter',
+  class: 'cm-changedLine cm-line-typing',
 });
 const changedTextDeco = Decoration.mark({ class: 'cm-changedText' });
 const insertedDeco = Decoration.mark({
@@ -239,7 +241,7 @@ function buildChunkDeco({
     );
     builder.add(from, to, isA ? deletedDeco : insertedDeco);
     if (gutterBuilder) gutterBuilder.add(from, from, changedLineGutterMarker);
-    // console.log(';; buildChunkDeco ', displayStatus);
+    console.log(';; buildChunkDeco ', displayStatus);
     for (
       let iter = doc.iterRange(from, to - 1), pos = from;
       !iter.next().done;
@@ -283,16 +285,16 @@ function getChunkDeco(view: EditorView, chunksByLine?: Chunk[]) {
   const currentDiffPlayLineNumber = diffPlayState.playLineNumber;
   const isDiffCompleted = diffPlayState.isDiffCompleted;
   let chunks = view.state.field(ChunkField);
-  if (showTypewriterAnimation && !isDiffCompleted && chunksByLine) {
+  if (showTypewriterAnimation && chunksByLine && !isDiffCompleted) {
     chunks = chunksByLine;
   }
-  console.log(
-    ';; chunks ',
-    side,
-    showTypewriterAnimation,
-    currentDiffPlayLineNumber,
-    // chunks,
-  );
+  // console.log(
+  //   ';; chunks ',
+  //   side,
+  //   isDiffCompleted,
+  //   currentDiffPlayLineNumber,
+  //   // chunks,
+  // );
 
   const isA = side === 'a';
   const builder = new RangeSetBuilder<Decoration>();
@@ -302,6 +304,17 @@ function getChunkDeco(view: EditorView, chunksByLine?: Chunk[]) {
     const chunk = chunks[i];
     if ((isA ? chunk.fromA : chunk.fromB) >= to) break;
     if ((isA ? chunk.toA : chunk.toB) > from) {
+      let displayStatus: 'show' | 'hidden' | 'typing' = 'show';
+      if (showTypewriterAnimation) {
+        if (i === currentDiffPlayLineNumber) {
+          displayStatus = 'typing';
+        } else if (
+          i > currentDiffPlayLineNumber ||
+          currentDiffPlayLineNumber < 0
+        ) {
+          displayStatus = 'hidden';
+        }
+      }
       buildChunkDeco({
         chunk: chunk,
         doc: view.state.doc,
@@ -309,12 +322,7 @@ function getChunkDeco(view: EditorView, chunksByLine?: Chunk[]) {
         highlight: highlightChanges,
         builder,
         gutterBuilder,
-        displayStatus:
-          showTypewriterAnimation && !isDiffCompleted
-            ? i > currentDiffPlayLineNumber || currentDiffPlayLineNumber < 0
-              ? 'hidden'
-              : 'typing'
-            : 'show',
+        displayStatus,
       });
     }
   }
