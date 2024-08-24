@@ -5,24 +5,35 @@ import {
   type EditorState,
 } from '@codemirror/state';
 
-export const pauseDiffEffect = StateEffect.define<boolean>();
+export type DiffPlayState = {
+  /** current line number of changed-chunks being played, start from 0 */
+  playLineNumber: number;
+  /** todo support to pause diff animation */
+  isDiffPaused: boolean;
+  /** to reduce unnecessary computation of chunksByLine, before lines count is known
+   * - because playLineNumber isn't aware of the total lines count
+   */
+  isDiffCompleted: boolean;
+};
+
+const initialDiffPlayState: DiffPlayState = {
+  playLineNumber: -10,
+  isDiffPaused: false,
+  isDiffCompleted: false,
+};
+
+export const resetDiffPlayState = StateEffect.define();
 export const autoPlayDiffEffect = StateEffect.define<number | undefined>();
 export const setIsDiffCompleted = StateEffect.define<boolean>();
+// export const setDiffPlayLineNumber = StateEffect.define<number | undefined>();
+export const pauseDiffEffect = StateEffect.define<boolean>();
 
 /** take effect only if `showTypewriterAnimation` is true
  * - <0 means not showing animation
  */
-export const diffPlayControllerState = StateField.define({
+export const diffPlayControllerState = StateField.define<DiffPlayState>({
   create() {
-    return {
-      playLineNumber: -10,
-      /** todo support pause */
-      isDiffPaused: false,
-      /** to reduce unnecessary computation of chunksByLine, before lines count is known
-       * - because playLineNumber isn't aware of the total lines count
-       */
-      isDiffCompleted: false,
-    };
+    return initialDiffPlayState;
   },
 
   update(value, tr) {
@@ -37,11 +48,20 @@ export const diffPlayControllerState = StateField.define({
               : ++currentLineNumber.playLineNumber,
         };
       }
+      // if (effect.is(setDiffPlayLineNumber)) {
+      //   currentLineNumber = {
+      //     ...currentLineNumber,
+      //     playLineNumber: effect.value || -10,
+      //   };
+      // }
       if (effect.is(setIsDiffCompleted)) {
         currentLineNumber = {
           ...currentLineNumber,
           isDiffCompleted: Boolean(effect.value),
         };
+      }
+      if (effect.is(resetDiffPlayState)) {
+        currentLineNumber = initialDiffPlayState;
       }
     }
     // console.log(

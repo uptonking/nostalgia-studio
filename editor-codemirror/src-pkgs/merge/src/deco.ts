@@ -24,6 +24,7 @@ import {
   autoPlayDiffEffect,
   diffPlayControllerState,
   diffPlayStateChanged,
+  resetDiffPlayState,
   setIsDiffCompleted,
 } from './animation-controller';
 
@@ -42,6 +43,7 @@ export const decorateChunks = ViewPlugin.fromClass(
       this.editView = view;
       const { showTypewriterAnimation } =
         this.editView.state.facet(mergeConfig);
+      // 🧐 only computed on constructor, not on update; not work for diff-off2on
       this.chunksByLine = showTypewriterAnimation
         ? splitChunksByLine(view)
         : [];
@@ -54,17 +56,34 @@ export const decorateChunks = ViewPlugin.fromClass(
       //   view.state.field(ChunkField),
       //   this.chunksByLine,
       // );
-
-      this.autoPlayDiffAnimation();
+      if (
+        showTypewriterAnimation &&
+        this.autoPlayIntervalId === 0 &&
+        this.chunksByLine.length > 0
+      ) {
+        console.log(';; startDiffTimer 1');
+        this.autoPlayDiffAnimation();
+      }
     }
 
     update(update: ViewUpdate) {
       const diffPlayState = this.editView.state.field(diffPlayControllerState);
       const { showTypewriterAnimation } =
         this.editView.state.facet(mergeConfig);
+
       let chunks = this.editView.state.field(ChunkField) as Chunk[];
       if (showTypewriterAnimation && !diffPlayState.isDiffCompleted) {
+        // if (showTypewriterAnimation) {
         chunks = this.chunksByLine;
+      }
+
+      if (!showTypewriterAnimation) {
+        if (diffPlayState.isDiffCompleted) {
+          queueMicrotask(() => {
+            console.log(';; clean completed ');
+            this.cleanAutoPlayDiffTimer();
+          });
+        }
       }
 
       const shouldUpdate =
@@ -74,16 +93,22 @@ export const decorateChunks = ViewPlugin.fromClass(
         configChanged(update.startState, update.state) ||
         diffPlayStateChanged(update.startState, update.state);
 
-      // console.log(
-      //   ';; ins-deco-up ',
-      //   shouldUpdate,
-      //   diffPlayState.playLineNumber,
-      // );
+      // console.log(';; ins-deco-up ', shouldUpdate, diffPlayState);
       if (shouldUpdate) {
         ({ deco: this.deco, gutter: this.gutter } = getChunkDeco(
           update.view,
           chunks,
         ));
+      }
+
+      if (
+        showTypewriterAnimation &&
+        this.autoPlayIntervalId === 0 &&
+        this.chunksByLine.length > 0 &&
+        !diffPlayState.isDiffCompleted
+      ) {
+        console.log(';; startDiffTimer 2');
+        this.autoPlayDiffAnimation();
       }
     }
 
@@ -91,49 +116,60 @@ export const decorateChunks = ViewPlugin.fromClass(
       this.autoPlayIntervalId = window.setInterval(() => {
         const { showTypewriterAnimation } =
           this.editView.state.facet(mergeConfig);
+        if (!showTypewriterAnimation) {
+          this.cleanAutoPlayDiffTimer();
+          return;
+        }
+
         const diffPlayState = this.editView.state.field(
           diffPlayControllerState,
         );
         const currentDiffPlayLineNumber = diffPlayState.playLineNumber;
 
-        if (
-          showTypewriterAnimation &&
-          currentDiffPlayLineNumber < this.chunksByLine.length - 1
-        ) {
+        // console.log(
+        //   ';; autoPlay ',
+        //   currentDiffPlayLineNumber,
+        //   this.chunksByLine.length,
+        // );
+        if (currentDiffPlayLineNumber < this.chunksByLine.length - 1) {
           const nextChunk =
             this.chunksByLine[
               currentDiffPlayLineNumber < 0 ? 0 : currentDiffPlayLineNumber + 1
             ];
-          console.log(';; autoPlay ', currentDiffPlayLineNumber, nextChunk);
-          this.editView.dispatch({
-            effects: [
-              EditorView.scrollIntoView(
-                nextChunk.fromB,
-                // EditorSelection.range(nextChunk.fromB, nextChunk.toB), // full
-              ),
-              autoPlayDiffEffect.of(undefined),
-            ],
-          });
-        } else {
-          if (
-            showTypewriterAnimation &&
-            currentDiffPlayLineNumber >= this.chunksByLine.length - 1
-          ) {
+          if (nextChunk) {
             this.editView.dispatch({
-              effects: [setIsDiffCompleted.of(true)],
+              effects: [
+                EditorView.scrollIntoView(
+                  nextChunk.fromB,
+                  // EditorSelection.range(nextChunk.fromB, nextChunk.toB), // full
+                ),
+                autoPlayDiffEffect.of(undefined),
+              ],
             });
           }
+        } else {
           window.clearInterval(this.autoPlayIntervalId);
           this.autoPlayIntervalId = 0;
+          this.editView.dispatch({
+            effects: [
+              setIsDiffCompleted.of(true),
+              // setDiffPlayLineNumber.of(-10),
+            ],
+          });
         }
-      }, 750);
+      }, 1500);
     }
 
     destroy() {
-      if (this.autoPlayIntervalId) {
-        window.clearInterval(this.autoPlayIntervalId);
-        this.autoPlayIntervalId = 0;
-      }
+      this.cleanAutoPlayDiffTimer();
+    }
+
+    cleanAutoPlayDiffTimer() {
+      window.clearInterval(this.autoPlayIntervalId);
+      this.autoPlayIntervalId = 0;
+      this.editView.dispatch({
+        effects: [resetDiffPlayState.of(undefined)],
+      });
     }
   },
   {
@@ -241,7 +277,7 @@ function buildChunkDeco({
     );
     builder.add(from, to, isA ? deletedDeco : insertedDeco);
     if (gutterBuilder) gutterBuilder.add(from, from, changedLineGutterMarker);
-    console.log(';; buildChunkDeco ', displayStatus);
+    // console.log(';; buildChunkDeco ', displayStatus);
     for (
       let iter = doc.iterRange(from, to - 1), pos = from;
       !iter.next().done;
@@ -305,7 +341,7 @@ function getChunkDeco(view: EditorView, chunksByLine?: Chunk[]) {
     if ((isA ? chunk.fromA : chunk.fromB) >= to) break;
     if ((isA ? chunk.toA : chunk.toB) > from) {
       let displayStatus: 'show' | 'hidden' | 'typing' = 'show';
-      if (showTypewriterAnimation) {
+      if (showTypewriterAnimation && !isDiffCompleted) {
         if (i === currentDiffPlayLineNumber) {
           displayStatus = 'typing';
         } else if (

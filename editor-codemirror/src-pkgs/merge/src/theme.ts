@@ -50,13 +50,19 @@ export const baseTheme = EditorView.baseTheme({
     // backgroundColor: 'rgba(100, 160, 128, .08)',
     backgroundColor: '#dafbe1',
   },
+  '&dark.cm-merge-a .cm-changedLine, .cm-deletedChunk': {
+    backgroundColor: 'rgba(239, 68, 68, 0.3)',
+  },
+  '&dark.cm-merge-b .cm-changedLine': {
+    backgroundColor: 'rgba(16, 185, 129, 0.3)',
+  },
   '&light.cm-merge-b .cm-line-hidden': {
     // backgroundColor: 'rgba(100, 160, 128, .08)',
     display: 'none',
   },
   '&.cm-merge-b .cm-line-typing': {
     animation:
-      'typing 0.25s steps(22), blink 0.0125s step-end infinite alternate',
+      'typing 1.25s steps(20), blink 0.025s step-end infinite alternate',
     borderRight: '1.5px solid',
     width: '100%',
     // 👇 make characters on the right of the line invisible
