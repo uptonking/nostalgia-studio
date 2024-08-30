@@ -60,13 +60,15 @@ import {
   editable,
   inputHandler,
   focusChangeEffect,
-  perLineTextDirection,
   scrollIntoView,
   UpdateFlag,
   ScrollTarget,
   bidiIsolatedRanges,
   getIsolatedRanges,
   scrollHandler,
+  clipboardInputFilter,
+  clipboardOutputFilter,
+  perLineTextDirection,
 } from './extension';
 import {
   theme,
@@ -1248,6 +1250,13 @@ export class EditorView {
   /// that would be applied for this input. This can be useful when
   /// dispatching the custom behavior as a separate transaction.
   static inputHandler = inputHandler;
+
+  /// Functions provided in this facet will be used to transform text
+  /// pasted or dropped into the editor.
+  static clipboardInputFilter = clipboardInputFilter;
+
+  /// Transform text copied or dragged from the editor.
+  static clipboardOutputFilter = clipboardOutputFilter;
 
   /// Scroll handlers can override how things are scrolled into view.
   /// If they return `true`, no further handling happens for the

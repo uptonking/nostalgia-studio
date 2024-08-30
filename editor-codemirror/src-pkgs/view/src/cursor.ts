@@ -11,7 +11,7 @@ import type { EditorView } from './editorview';
 import { BlockType } from './decoration';
 import { LineView } from './blockview';
 import { atomicRanges } from './extension';
-import { clientRectsFor, textRange, type Rect } from './dom';
+import { clientRectsFor, textRange, type Rect, maxOffset } from './dom';
 import { moveVisually, movedOver, Direction } from './bidi';
 import type { BlockInfo } from './heightmap';
 import browser from './browser';
@@ -293,6 +293,11 @@ export function posAtCoords(
           node = undefined;
       }
     }
+
+    // Chrome will return offsets into <input> elements without child
+    // nodes, which will lead to a null deref below, so clip the
+    // offset to the node size.
+    if (node) offset = Math.min(maxOffset(node), offset);
   }
 
   // No luck, do our own (potentially expensive) search

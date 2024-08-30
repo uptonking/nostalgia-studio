@@ -389,13 +389,14 @@ export function insertCompletionText(
           state.sliceDoc(from, to)
       )
         return { range };
+      const lines = state.toText(text);
       return {
         changes: {
           from: range.from + fromOff,
           to: to == main.from ? range.to : range.from + toOff,
-          insert: text,
+          insert: lines,
         },
-        range: EditorSelection.cursor(range.from + fromOff + text.length),
+        range: EditorSelection.cursor(range.from + fromOff + lines.length),
       };
     }),
     scrollIntoView: true,

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { basicSetup, EditorView } from 'codemirror';
 
@@ -102,11 +102,9 @@ const invertHighlight = invertedEffects.of((tr) => {
   const ranges = tr.startState.field(highlightedRanges);
   tr.changes.iterChangedRanges((chFrom, chTo) => {
     ranges.between(chFrom, chTo, (rFrom, rTo) => {
-      if (rFrom >= chFrom || rTo <= chTo) {
-        const from = Math.max(chFrom, rFrom);
-        const to = Math.min(chTo, rTo);
-        if (from < to) found.push(addHighlight.of({ from, to }));
-      }
+      const from = Math.max(chFrom, rFrom);
+      const to = Math.min(chTo, rTo);
+      if (from < to) found.push(addHighlight.of({ from, to }));
     });
   });
   return found;

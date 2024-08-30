@@ -54,6 +54,11 @@ export const focusChangeEffect =
     (state: EditorState, focusing: boolean) => StateEffect<any> | null
   >();
 
+export const clipboardInputFilter =
+  Facet.define<(text: string, state: EditorState) => string>();
+export const clipboardOutputFilter =
+  Facet.define<(text: string, state: EditorState) => string>();
+
 export const perLineTextDirection = Facet.define<boolean, boolean>({
   combine: (values) => values.some((x) => x),
 });

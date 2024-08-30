@@ -5,6 +5,7 @@ import {
   type RangeSet,
   Annotation,
   type Text,
+  type Facet,
 } from '@codemirror/state';
 import type { EditorView } from './editorview';
 import { ContentView } from './contentview';
@@ -20,6 +21,8 @@ import {
   type PluginInstance,
   focusChangeEffect,
   getScrollMargins,
+  clipboardInputFilter,
+  clipboardOutputFilter,
 } from './extension';
 import browser from './browser';
 import { groupAt, skipAtomicRanges } from './cursor';
@@ -618,7 +621,17 @@ function capturePaste(view: EditorView) {
   }, 50);
 }
 
+function textFilter(
+  state: EditorState,
+  facet: Facet<(value: string, state: EditorState) => string>,
+  text: string,
+) {
+  for (const filter of state.facet(facet)) text = filter(text, state);
+  return text;
+}
+
 function doPaste(view: EditorView, input: string) {
+  input = textFilter(view.state, clipboardInputFilter, input);
   const { state } = view;
   let changes;
   let i = 1;
@@ -861,7 +874,11 @@ handlers.dragstart = (view, event: DragEvent) => {
   if (event.dataTransfer) {
     event.dataTransfer.setData(
       'Text',
-      view.state.sliceDoc(range.from, range.to),
+      textFilter(
+        view.state,
+        clipboardOutputFilter,
+        view.state.sliceDoc(range.from, range.to),
+      ),
     );
     event.dataTransfer.effectAllowed = 'copyMove';
   }
@@ -879,6 +896,7 @@ function dropText(
   text: string,
   direct: boolean,
 ) {
+  text = textFilter(view.state, clipboardInputFilter, text);
   if (!text) return;
   const dropPos = view.posAtCoords(
     { x: event.clientX, y: event.clientY },
@@ -1000,7 +1018,15 @@ function copiedRange(state: EditorState) {
     linewise = true;
   }
 
-  return { text: content.join(state.lineBreak), ranges, linewise };
+  return {
+    text: textFilter(
+      state,
+      clipboardOutputFilter,
+      content.join(state.lineBreak),
+    ),
+    ranges,
+    linewise,
+  };
 }
 
 let lastLinewiseCopy: string | null = null;
