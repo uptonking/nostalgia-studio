@@ -119,6 +119,11 @@ export function rangeHighlighting() {
   return [highlightedRanges, invertHighlight, highlightKeymap];
 }
 
+/**
+ * ✨ an example of an extension that allows the user to highlight parts of the document, and undo that highlighting.
+ * - By default, the history extension only tracks changes to the document and selection
+ * - https://codemirror.net/examples/inverted-effect/
+ */
 export const UndoableEffects = () => {
   const content = `# CodeMirror v6
 

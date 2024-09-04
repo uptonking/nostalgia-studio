@@ -17,7 +17,7 @@ const doc = `one cat
 two books to read
 three meals
 four cups of tea
-what a wonderful world to live 
+what a wonderful world to live
 five
 line8
 line9
@@ -39,7 +39,8 @@ const docSix =
     .replace(/b/g, 'B') + '\nSix';
 
 /**
- * 默认示例是左边旧代码可编辑，右边新代码不可编辑，与vscode相反
+ * ✨ 默认示例是左边旧代码可编辑，右边新代码不可编辑，与vscode相反
+ * - https://codemirror.net/try/?example=Merge%20View
  */
 export const MergeViewSided = () => {
   const editorRef = useRef<HTMLDivElement>(null);
