@@ -26,7 +26,10 @@ This is an cm example at 20240806
   useEffect(() => {
     const language = new Compartment();
     const editor = new EditorView({
-      extensions: [basicSetup, language.of(markdown())],
+      extensions: [
+        basicSetup,
+        // language.of(markdown())
+      ],
       doc: content,
       parent: editorRef.current,
     });

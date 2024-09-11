@@ -128,7 +128,6 @@ export const DecoWidgetCheckbox = () => {
       // extensions: [basicSetup, language.of(markdown())],
       // doc: content,
       doc: 'let value = true\nif (!value == false)\n  console.log("good")\n',
-      // extensions: [checkboxPlugin, basicSetup, javascript()],
       extensions: [basicSetup, checkboxPlugin, javascript()],
       parent: editorRef.current,
     });

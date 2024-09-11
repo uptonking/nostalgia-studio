@@ -12,6 +12,10 @@ export { DecoReplaceAtomicRanges as B1b3DecoReplaceAtomicRanges } from './b1-fea
 export { DecoLineTypewriter as B1b2DecoLineTypewriter } from './b1-features/b1b2-deco-line-typewriter';
 export { DecoMarkUnderline as B1b4DecoMarkUnderline } from './b1-features/b1b4-deco-mark-underline';
 export { DecoWidgetCheckbox as B1b5DecoWidgetCheckbox } from './b1-features/b1b5-deco-widget-boolean-checkbox';
+export { InputWidgetInline as B1b5InputWidget } from './b1-features/b1b5-input-widget';
+export { DynamicLetter as B1b5DynamicLetter } from './b1-features/b1b5-dynamic-letter';
+export { GutterForBlockWidget as B1b5GutterForBlock } from './b1-features/b1b5-gutter-for-block';
+export { ContenteditableNested as B1b5ContenteditableNested } from './b1-features/b1b5-contenteditable-nested';
 export { DecoLineZebra as B1b6DecoLineZebra } from './b1-features/b1b6-deco-line-zebra';
 export { DecoLineHighlight as B1b7DecoLineHighlight } from './b1-features/b1b7-deco-line-highlight';
 export { GutterTextNode as B1b8GutterTextNode } from './b1-features/b1b8-gutter-marker';

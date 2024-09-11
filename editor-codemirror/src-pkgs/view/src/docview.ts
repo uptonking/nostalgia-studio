@@ -88,7 +88,7 @@ export class DocView extends ContentView {
   impreciseHead: DOMPos | null = null;
   forceSelection = false;
 
-  dom!: HTMLElement;
+  declare dom: HTMLElement;
 
   // Used by the resize observer to ignore resizes that we caused
   // ourselves
