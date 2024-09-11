@@ -135,7 +135,11 @@ export function originalDocChangeEffect(
 const originalDoc = StateField.define<Text>({
   create: () => Text.empty,
   update(doc, tr) {
-    for (const e of tr.effects) if (e.is(updateOriginalDoc)) doc = e.value.doc;
+    for (const ef of tr.effects) {
+      if (ef.is(updateOriginalDoc)) {
+        doc = ef.value.doc;
+      }
+    }
     return doc;
   },
 });

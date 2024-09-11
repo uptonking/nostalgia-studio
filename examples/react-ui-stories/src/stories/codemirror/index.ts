@@ -13,11 +13,15 @@ export { DecoLineTypewriter as B1b2DecoLineTypewriter } from './b1-features/b1b2
 export { DecoMarkUnderline as B1b4DecoMarkUnderline } from './b1-features/b1b4-deco-mark-underline';
 export { DecoWidgetCheckbox as B1b5DecoWidgetCheckbox } from './b1-features/b1b5-deco-widget-boolean-checkbox';
 export { InputWidgetInline as B1b5InputWidget } from './b1-features/b1b5-input-widget';
-export { DynamicLetter as B1b5DynamicLetter } from './b1-features/b1b5-dynamic-letter';
-export { GutterForBlockWidget as B1b5GutterForBlock } from './b1-features/b1b5-gutter-for-block';
+export { DerivedLetter as B1b5DerivedLetter } from './b1-features/b1b5-derived-letter';
+export { DerivedText as B1b5DerivedText } from './b1-features/b1b5-derived-text';
 export { ContenteditableNested as B1b5ContenteditableNested } from './b1-features/b1b5-contenteditable-nested';
+export { MdLink as B1b5MdLink } from './b1-features/b1b5-md-link';
+export { MdToggleOnCursor as B1b5MdToggleOnCursor } from './b1-features/b1b5-md-toggle-on-cursor';
+export { BlockWidgetPerLine as B1b5BlockWidgetPerLine } from './b1-features/B1b5-block-per-line';
 export { DecoLineZebra as B1b6DecoLineZebra } from './b1-features/b1b6-deco-line-zebra';
 export { DecoLineHighlight as B1b7DecoLineHighlight } from './b1-features/b1b7-deco-line-highlight';
+export { GutterForBlockWidget as B1b8GutterForBlock } from './b1-features/b1b8-gutter-for-block';
 export { GutterTextNode as B1b8GutterTextNode } from './b1-features/b1b8-gutter-marker';
 export { UndoableEffects as B1c1UndoableEffects } from './b1-features/b1c1-undoable-effects';
 export { SplitEditors as B1c2SplitEditors } from './b1-features/b1c2-split-editors';

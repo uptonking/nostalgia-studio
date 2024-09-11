@@ -52,7 +52,7 @@ const firstLetterState = StateField.define({
   provide: (f) => EditorView.decorations.from(f),
 });
 
-export const DynamicLetter = () => {
+export const DerivedLetter = () => {
   const content = `CodeMirror v6
 
 This is an cm example at 20240806
