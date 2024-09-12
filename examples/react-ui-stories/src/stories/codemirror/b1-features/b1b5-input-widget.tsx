@@ -49,7 +49,8 @@ const inputWidgetPlugin = ViewPlugin.define(
 );
 
 /**
- * 浏览器的选区默认是浅蓝色，codemirror的选区默认是浅紫色
+ * input as inline widget by Decoration.widget
+ * - 浏览器的选区默认是浅蓝色，codemirror的选区默认是浅紫色
  * - [Inability to use ::selector with an <input /> widget when using the `drawSelection` plugin - v6 - discuss.CodeMirror](https://discuss.codemirror.net/t/inability-to-use-selector-with-an-input-widget-when-using-the-drawselection-plugin/8182)
  */
 export const InputWidgetInline = () => {
@@ -74,7 +75,7 @@ This is an cm example at 20240806
     const language = new Compartment();
     const editor = new EditorView({
       extensions: [
-        // basicSetup,
+        basicSetup,
         // language.of(markdown())
         inputWidgetPlugin,
         drawSelection(), // enable this line for built-in ::selection to work

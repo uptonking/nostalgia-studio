@@ -92,7 +92,7 @@ export const MergeViewAnimatable = () => {
         basicSetup,
         maxHeightEditor,
         animatableDiffViewCompartment.of(
-          initialDiffViewConfig.enableDiff
+          initialDiffViewConfig.enableDiff && docSix !== doc
             ? animatableDiffView({
                 original: doc,
                 gutter: initialDiffViewConfig.showGutter,

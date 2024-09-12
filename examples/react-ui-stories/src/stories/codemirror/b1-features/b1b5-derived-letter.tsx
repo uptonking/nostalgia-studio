@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 
 import { basicSetup, EditorView } from 'codemirror';
 
-import { markdown } from '@codemirror/lang-markdown';
 import { Compartment, StateField } from '@codemirror/state';
 import { WidgetType, Decoration } from '@codemirror/view';
 
@@ -24,8 +23,11 @@ class FirstLetter extends WidgetType {
     return dom;
   }
 
+  /**
+   * 👇 修改其他行时，也会执行此方法； 需要减少执行次数
+   */
   updateDOM(dom, view) {
-    console.log('updating');
+    console.log('updateDOM-ing');
     dom.textContent = this.letter;
     return true;
   }
@@ -52,6 +54,10 @@ const firstLetterState = StateField.define({
   provide: (f) => EditorView.decorations.from(f),
 });
 
+/**
+ * block widget has no line number
+ * - Decoration.widget
+ */
 export const DerivedLetter = () => {
   const content = `CodeMirror v6
 

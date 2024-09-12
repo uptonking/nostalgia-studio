@@ -2,6 +2,7 @@ export { CMMinimal as A1b1Minimal } from './a1-starter/a1b1-minimal';
 export { MergeViewUnified as B1a1MergeViewUnified } from './b1-features/b1a1-merge-view-unified';
 export { MergeViewSided as B1a2MergeViewSided } from './b1-features/b1a2-merge-view-sided';
 export { MergeViewAnimatable as B1a3MergeViewAnimatable } from './b1-features/b1a3-merge-view-animatable';
+export { CmdkInputCard as B1a3CmdkInputCard } from './b1-features/b1a3-cmdk-input-card';
 export { GitConflicts as B1a4GitConflicts } from './b1-features/b1a4-git-conflicts';
 export { TypewriterAnimation as B1b1TypewriterAnimation } from './b1-features/b1b1-typewriter';
 export {

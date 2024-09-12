@@ -25,9 +25,10 @@ class TokenWidget extends WidgetType {
 
   toDOM() {
     const el = document.createElement('div');
+    el.style.backgroundColor = '#f1f1f1';
 
     el.setAttribute('aria-hidden', 'true');
-    el.innerText = `TESTING(${this.id})`;
+    el.innerText = `TOKEN ( ${this.id} )`;
 
     return el;
   }
@@ -46,8 +47,8 @@ const decorator = (state: EditorState) => {
 
       if (type.name === 'Paragraph') {
         const result = specialTokenRegex.exec(state.doc.sliceString(from, to));
-
         if (result && result.groups && result.groups.id) {
+          // 👇 render widget before line start
           decorations.push(
             Decoration.widget({
               widget: new TokenWidget(result.groups.id),
@@ -97,6 +98,10 @@ const initial = [
   'How are you doing?',
 ].join('\n');
 
+/**
+ * block widget has no line number
+ * - Decoration.widget
+ */
 export const DerivedText = () => {
   const editorRef = useRef<HTMLDivElement>(null);
 

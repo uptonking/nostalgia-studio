@@ -6,7 +6,10 @@ import { javascript } from '@codemirror/lang-javascript';
 import { EditorState, StateField, Compartment } from '@codemirror/state';
 import { Decoration, WidgetType } from '@codemirror/view';
 
-class MyWidget extends WidgetType {
+/**
+ * block widget
+ */
+class HelloWidget extends WidgetType {
   toDOM() {
     const el = document.createElement('div');
     el.innerHTML = "Hello world! (it's a widget)";
@@ -22,7 +25,7 @@ const buildDecos = (state) => {
 
   return Decoration.set([
     Decoration.replace({
-      widget: new MyWidget(),
+      widget: new HelloWidget(),
       inclusive: true,
       block: true,
     }).range(line.from, line.to),
@@ -40,6 +43,9 @@ export const decosExtension = StateField.define({
   provide: (f) => EditorView.decorations.from(f),
 });
 
+/**
+ * block widget by Decoration.replace
+ */
 export const MdToggleOnCursor = () => {
   const content = `console.log('hello')
 

@@ -29,7 +29,7 @@ class EditableDivWidget extends WidgetType {
     return wrap;
   }
 
-  // ignoreEvent can be used to configure which kinds of events inside the widget 
+  // ignoreEvent can be used to configure which kinds of events inside the widget
   // should be ignored by the editor. The default is to ignore all events.
   // We want to handle all events for this widget.
   ignoreEvent(event: Event) {
@@ -98,6 +98,10 @@ const state = EditorState.fromJSON(
   },
 );
 
+/**
+ * nested block widget are rendered by Decoration.replace
+ * - original line number is hidden
+ */
 export const ContenteditableNested = () => {
   const editorRef = useRef<HTMLDivElement>(null);
 

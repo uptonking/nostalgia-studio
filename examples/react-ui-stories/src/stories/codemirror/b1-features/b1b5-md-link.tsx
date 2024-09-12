@@ -13,8 +13,8 @@ import {
 import { Decoration, WidgetType, type DecorationSet } from '@codemirror/view';
 
 class Link extends WidgetType {
-  text: any;
-  url: any;
+  text: string;
+  url: string;
 
   constructor(text, url) {
     super();
@@ -71,6 +71,7 @@ const decorationsField = StateField.define({
 
 /**
  * 只有编辑器获取到focus且光标不在link文本位置时才会显示link蓝色样式，否则显示link纯文本
+ * - 使用Decoration.replace渲染link为inline widget
  */
 export const MdLink = () => {
   const content = `# CodeMirror v6

@@ -118,7 +118,8 @@ const checkboxPlugin = ViewPlugin.fromClass(
 
 /**
  * a plugin that displays a checkbox widget next to boolean literals
- * - Widget decorations don't directly contain their widget DOM.
+ * - Widget decorations don't directly contain their widget DOM
+ * - inline, Decoration.widget
  */
 export const DecoWidgetCheckbox = () => {
   const editorRef = useRef<HTMLDivElement>(null);
