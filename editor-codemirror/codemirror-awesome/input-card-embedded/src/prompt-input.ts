@@ -1,14 +1,14 @@
-import { getChunks, rejectChunk, unifiedMergeView } from '@codemirror/merge';
+import { getChunks, rejectChunk, animatableDiffView } from '@codemirror/merge';
 import {
   Compartment,
-  EditorState,
+  type EditorState,
   type Extension,
   Prec,
 } from '@codemirror/state';
 import {
   Decoration,
   type DecorationSet,
-  EditorView,
+  type EditorView,
   ViewPlugin,
   type ViewUpdate,
   WidgetType,
@@ -16,32 +16,38 @@ import {
 } from '@codemirror/view';
 
 import {
+  ICON_CLOSE,
   ICON_ERROR,
   ICON_LOADING,
   ICON_PROMPT,
   ICON_SEND,
   ICON_STOP,
-  ICON_CLOSE,
 } from './icons-svg';
 import { promptInputTheme } from './styling-theme';
-import type { InputWidgetOptions, ChatReq, ChatRes } from './types';
+import type { ChatReq, ChatRes, InputWidgetOptions } from './types';
+import {
+  PROMPT_PLACEHOLDER_ERROR,
+  PROMPT_PLACEHOLDER_NORMAL,
+  PROMPT_TIPS_NORMAL,
+  PROMPT_TIPS_REQUESTING,
+} from './utils';
 
-const inputPluginCompartment = new Compartment();
-const unifiedMergeViewCompartment = new Compartment();
-
-type Pos = { from: number; to: number };
+export const inputWidgetPluginCompartment = new Compartment();
+export const animeDiffViewCompartment = new Compartment();
 
 export function isPromptInputActive(state: EditorState) {
-  return inputPluginCompartment.get(state) instanceof ViewPlugin;
+  return inputWidgetPluginCompartment.get(state) instanceof ViewPlugin;
 }
 
-export function isUnifiedMergeViewActive(state: EditorState) {
-  const mergeViewExt = unifiedMergeViewCompartment.get(state);
-  if (mergeViewExt) {
-    return (mergeViewExt as Extension[]).length > 0;
+export function isAnimeDiffViewActive(state: EditorState) {
+  const diffViewExt = animeDiffViewCompartment.get(state);
+  if (diffViewExt) {
+    return (diffViewExt as Extension[]).length > 0;
   }
   return false;
 }
+
+type Pos = { from: number; to: number };
 
 /**
  * show/hide the input widget
@@ -56,9 +62,9 @@ export function activePromptInput(
   source = 'hotkey',
   pos?: Pos,
 ) {
-  // if (isUnifiedMergeViewActive(view.state)) {
-  //   rejectChunks(view);
-  // }
+  if (isAnimeDiffViewActive(view.state)) {
+    rejectChunks(view);
+  }
 
   // update the selection pos
   let { from, to } = view.state.selection.main;
@@ -89,10 +95,10 @@ export function activePromptInput(
   }
 
   view.dispatch({
-    effects: inputPluginCompartment.reconfigure([]),
+    effects: inputWidgetPluginCompartment.reconfigure([]),
   });
   view.dispatch({
-    effects: inputPluginCompartment.reconfigure(
+    effects: inputWidgetPluginCompartment.reconfigure(
       inputPlugin(defPrompt, immediate),
     ),
   });
@@ -104,8 +110,8 @@ export function activePromptInput(
 function unloadPromptPlugins(view: EditorView) {
   view.dispatch({
     effects: [
-      unifiedMergeViewCompartment.reconfigure([]),
-      inputPluginCompartment.reconfigure([]),
+      animeDiffViewCompartment.reconfigure([]),
+      inputWidgetPluginCompartment.reconfigure([]),
     ],
   });
 }
@@ -126,18 +132,18 @@ function replaceSelection(view: EditorView, pos: Pos, content: string) {
     userEvent: 'ai.replace',
   });
 
-  // todo show diff with ai response
-  // view.dispatch({
-  //   effects: unifiedMergeViewCompartment.reconfigure(
-  //     unifiedMergeView({
-  //       original: oriDoc,
-  //       highlightChanges: false,
-  //       gutter: true,
-  //       syntaxHighlightDeletions: true,
-  //       mergeControls: false,
-  //     }),
-  //   ),
-  // });
+  view.dispatch({
+    effects: animeDiffViewCompartment.reconfigure(
+      animatableDiffView({
+        original: oriDoc,
+        showTypewriterAnimation:true,
+        gutter: false,
+        highlightChanges: false,
+        syntaxHighlightDeletions: true,
+        mergeControls: false,
+      }),
+    ),
+  });
 }
 
 function rejectChunks(view: EditorView) {
@@ -165,12 +171,6 @@ function moveCursorAfterAccept(view: EditorView) {
   const { to } = view.state.selection.main;
   view.dispatch({ selection: { anchor: to, head: to } });
 }
-
-const PROMPT_TIPS_NORMAL = 'AI results may be incorrect';
-const PROMPT_TIPS_REQUESTING = 'AI is coding...';
-const PROMPT_PLACEHOLDER_NORMAL = 'Enter a prompt to modify selection...';
-const PROMPT_PLACEHOLDER_ERROR =
-  'Error occurred. Please try to regenerate or input another instruction.';
 
 type PromptInputStatus = 'normal' | 'requesting' | 'req_success' | 'req_error';
 
@@ -202,7 +202,7 @@ class PromptInputWidget extends WidgetType {
       cancelChat(this.chatId);
     }
 
-    if (isUnifiedMergeViewActive(view.state)) {
+    if (isAnimeDiffViewActive(view.state)) {
       rejectChunks(view);
       recoverSelection(view, this.oriSelPos);
     }
@@ -232,8 +232,7 @@ class PromptInputWidget extends WidgetType {
       <div class="cm-ai-prompt-input-actions">
         <button id="cm-ai-prompt-btn-accept">Accept</button>
         <button id="cm-ai-prompt-btn-discard">Discard</button>
-        <button id="cm-ai-prompt-btn-gen">Regenerate</button>
-        <button id="cm-ai-prompt-btn-add-use-db">Add "use {db};"</button>
+       <!-- <button id="cm-ai-prompt-btn-gen">Regenerate</button>  -->
       </div>
     `;
 
@@ -263,12 +262,9 @@ class PromptInputWidget extends WidgetType {
     const discardBtn = root.querySelector(
       'button#cm-ai-prompt-btn-discard',
     ) as HTMLButtonElement;
-    const genBtn = root.querySelector(
-      'button#cm-ai-prompt-btn-gen',
-    ) as HTMLButtonElement;
-    const addUseDbBtn = root.querySelector(
-      'button#cm-ai-prompt-btn-add-use-db',
-    ) as HTMLButtonElement;
+    // const regenBtn = root.querySelector(
+    //   'button#cm-ai-prompt-btn-gen',
+    // ) as HTMLButtonElement;
 
     // normal status is the initial status
     const normalStatus = () => {
@@ -313,7 +309,6 @@ class PromptInputWidget extends WidgetType {
       tips.style.display = 'none';
 
       actionBtns.style.display = 'flex';
-      addUseDbBtn.style.display = 'none';
 
       this.status = 'req_success';
     };
@@ -325,7 +320,7 @@ class PromptInputWidget extends WidgetType {
       input.value = '';
       input.placeholder =
         msg ??
-        // inputWidgetOptions.promptInputPlaceholderError ??
+        inputWidgetOptions.promptInputPlaceholderError ??
         PROMPT_PLACEHOLDER_ERROR;
 
       tips.style.display = 'none';
@@ -333,17 +328,16 @@ class PromptInputWidget extends WidgetType {
       actionBtns.style.display = 'flex';
       acceptBtn.style.display = 'none';
       discardBtn.style.display = 'none';
-      addUseDbBtn.style.display = 'none';
 
       this.status = 'req_error';
     };
-    // const noUseDBStatus = () => {
-    //   reqErrorStatus('Please write an "use {db};" SQL first!');
+    // const noAgentConnStatus = () => {
+    //   reqErrorStatus('failed to connect to agent');
 
     //   genBtn.style.display = 'none';
-    //   addUseDbBtn.style.display = 'initial';
+    //   addUseBtn.style.display = 'initial';
 
-    //   this.status = 'no_use_db_error';
+    //   this.status = 'no_agent_conn_error';
     // };
 
     const { chat, cancelChat, onEvent } = inputWidgetOptions;
@@ -353,7 +347,7 @@ class PromptInputWidget extends WidgetType {
         return;
       }
 
-      if (isUnifiedMergeViewActive(view.state)) {
+      if (isAnimeDiffViewActive(view.state)) {
         rejectChunks(view);
         recoverSelection(view, this.oriSelPos);
       }
@@ -403,7 +397,7 @@ class PromptInputWidget extends WidgetType {
     };
     rightIcon.onclick = () => {
       // if (!getCurDatabase(view.state)) {
-      //   noUseDBStatus();
+      //   noUseStatus();
       //   return;
       // }
 
@@ -444,13 +438,13 @@ class PromptInputWidget extends WidgetType {
       unloadPromptPlugins(view);
       view.focus();
     };
-    genBtn.onclick = async () => {
-      onEvent?.(view, 'gen.click', {
-        chatReq: this.chatReq,
-        chatRes: this.chatRes,
-      });
-      await handleRequest();
-    };
+    // regenBtn.onclick = async () => {
+    //   onEvent?.(view, 'gen.click', {
+    //     chatReq: this.chatReq,
+    //     chatRes: this.chatRes,
+    //   });
+    //   await handleRequest();
+    // };
 
     // todo fix hack
     setTimeout(() => {
@@ -459,8 +453,8 @@ class PromptInputWidget extends WidgetType {
       input.focus();
 
       // if (!getCurDatabase(view.state)) {
-      //   onEvent?.(view, 'no_use_db.error');
-      //   noUseDBStatus();
+      //   onEvent?.(view, 'no_ai.error');
+      //   noUseAiStatus();
       //   return;
       // }
 
@@ -537,7 +531,7 @@ const inputPlugin = (defPrompt: string, immediate: boolean) =>
 
       update(v: ViewUpdate) {
         // update the decoration pos if content changes
-        // for example: after clicking `Add use {db};` button to insert new content before the widget
+        // for example: after clicking button to insert new content before the widget
         this.decorations = this.decorations.map(v.changes);
       }
 
@@ -554,50 +548,48 @@ const inputPlugin = (defPrompt: string, immediate: boolean) =>
   );
 
 const promptInputKeyMaps = (hotkey?: string) =>
-  Prec.highest(
+  Prec.high(
     keymap.of([
       {
         key: hotkey || 'Mod-k',
         run: (view) => {
-          // if (getFirstNonUseTypeStatement(view.state)) {
-          // }
           activePromptInput(view);
-          // must return true to prevent propagation
-          // not sure where others register this key map as well
+          // return true to prevent propagation
           return true;
         },
       },
     ]),
   );
 
-// if prompt input widget is showing, user is not allowed to change the selection
-const selChangeListener = EditorState.transactionFilter.of((tr) => {
-  if (
-    !isPromptInputActive(tr.startState) ||
-    !tr.selection ||
-    tr.isUserEvent('ai.replace') ||
-    tr.isUserEvent('accept') ||
-    tr.isUserEvent('revert')
-  ) {
-    return tr;
-  }
-  return [];
-});
+/** if input widget is showing, user is not allowed to change the selection */
+// const selChangeListener = EditorState.transactionFilter.of((tr) => {
+//   // if (
+//   //   !isPromptInputActive(tr.startState) ||
+//   //   !tr.selection ||
+//   //   tr.isUserEvent('ai.replace') ||
+//   //   tr.isUserEvent('accept') ||
+//   //   tr.isUserEvent('revert')
+//   // ) {
+//   //   return tr;
+//   // }
 
-const inputListener = EditorView.inputHandler.of((update) => {
-  if (isPromptInputActive(update.state)) {
-    // add a shake css when user type something while the prompt input is active
-    const inputEle = document.querySelector('.cm-ai-prompt-input-root');
-    if (inputEle) {
-      inputEle.classList.add('shake');
+//   return tr
+// });
 
-      setTimeout(() => {
-        inputEle.classList.remove('shake');
-      }, 1000);
-    }
-  }
-  return false;
-});
+/** update input box style when input is */
+// const inputListener = EditorView.inputHandler.of((update) => {
+//   if (isPromptInputActive(update.state)) {
+//     const inputEle = document.querySelector('.cm-ai-prompt-input-root');
+//     if (inputEle) {
+//       inputEle.classList.add('shake');
+
+//       setTimeout(() => {
+//         inputEle.classList.remove('shake');
+//       }, 1000);
+//     }
+//   }
+//   return false;
+// });
 
 let inputWidgetOptions: InputWidgetOptions;
 
@@ -609,11 +601,11 @@ export function aiPromptInput(options: InputWidgetOptions): Extension {
   inputWidgetOptions = options;
 
   return [
-    inputPluginCompartment.of([]),
-    unifiedMergeViewCompartment.of([]),
     promptInputTheme,
+    inputWidgetPluginCompartment.of([]),
+    animeDiffViewCompartment.of([]),
     promptInputKeyMaps(options.hotkey),
-    selChangeListener,
-    inputListener,
+    // selChangeListener,
+    // inputListener,
   ];
 }

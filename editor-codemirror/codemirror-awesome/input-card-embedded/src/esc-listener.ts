@@ -1,7 +1,7 @@
 import { Decoration, type EditorView, ViewPlugin } from '@codemirror/view';
 
 /**
- * `Escape` hotkey can't be registered by `keymap.of([])` method
+ * `ESC` hotkey is not registered by `keymap.of([])` to avoid messing with tab/focus
  */
 export const escapeListener = ViewPlugin.fromClass(
   class {

@@ -14,8 +14,7 @@ const cmdkInputCard = inputCardEmbedded({
     await sleep(2000);
     return {
       status: 'success',
-      message:
-        'Ai coded;\n-- the data is mocked, replace by your own api when using',
+      message: ' ;;;AI CODED;\n-- replace mock data with your own api;;; ',
     };
   },
   cancelChat: () => {},
@@ -24,7 +23,7 @@ const cmdkInputCard = inputCardEmbedded({
 export const CmdkInputCard = () => {
   const content = `# CodeMirror v6
 
-Cmd+K is the shortcut for ai-assistanted single file editing
+Cmd+K is the shortcut for ai-assisted single file editing
 
 ## Lists
 

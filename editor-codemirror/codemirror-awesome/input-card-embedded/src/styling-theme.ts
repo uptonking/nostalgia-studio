@@ -32,6 +32,7 @@ export const promptInputTheme = EditorView.baseTheme({
       '& .cm-ai-prompt-input-icon-left': {
         left: '12px',
         top: '9px',
+        display:'none'
       },
       '& .cm-ai-prompt-input-icon-right': {
         right: '36px',
@@ -58,7 +59,7 @@ export const promptInputTheme = EditorView.baseTheme({
       '& input': {
         flex: '1 1 auto',
         borderRadius: '8px',
-        padding: '8px 36px',
+        padding: '8px 8px',
       },
       '& input:focus': {
         outline: 'none',

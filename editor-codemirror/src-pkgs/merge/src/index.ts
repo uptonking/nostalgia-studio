@@ -8,19 +8,19 @@ export type { MergeConfig, DirectMergeConfig } from './mergeview';
 
 export {
   unifiedMergeView,
-  acceptChunk,
-  rejectChunk,
-  getOriginalDoc,
-  originalDocChangeEffect,
-  updateOriginalDoc,
-} from './unified';
-export {
-  animatableDiffView,
   // acceptChunk,
   // rejectChunk,
   // getOriginalDoc,
   // originalDocChangeEffect,
   // updateOriginalDoc,
+} from './unified';
+export {
+  animatableDiffView,
+  acceptChunk,
+  rejectChunk,
+  getOriginalDoc,
+  originalDocChangeEffect,
+  updateOriginalDoc,
 } from './animatable-diff';
 
 export { Chunk } from './chunk';

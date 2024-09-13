@@ -35,7 +35,7 @@ interface AnimatableDiffViewConfig {
   showTypewriterAnimation?: boolean;
   /** whether to highlight the inserted/deleted characters. default is true. */
   highlightChanges?: boolean;
-  /** whether to highlight deleted line using original lang syntax.  */
+  /** whether to highlight deleted line using original lang syntax. */
   syntaxHighlightDeletions?: boolean;
   /** whether to show accept/reject buttons for each changed chunk. default is true. */
   mergeControls?: boolean;

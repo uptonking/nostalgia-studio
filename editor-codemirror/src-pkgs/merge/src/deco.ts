@@ -161,7 +161,10 @@ export const decorateChunks = ViewPlugin.fromClass(
     }
 
     destroy() {
-      this.cleanAutoPlayDiffTimer();
+      // this.cleanAutoPlayDiffTimer(); // not work
+      queueMicrotask(() => {
+        this.cleanAutoPlayDiffTimer();
+      });
     }
 
     cleanAutoPlayDiffTimer() {
