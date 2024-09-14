@@ -28,6 +28,9 @@ import {
   setIsDiffCompleted,
 } from './animation-controller';
 
+/**
+ * decorate chunks with line/mark decorations
+ */
 export const decorateChunks = ViewPlugin.fromClass(
   class {
     editView: EditorView;

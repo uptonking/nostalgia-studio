@@ -35,10 +35,11 @@ export const ChunkField = StateField.define<readonly Chunk[]>({
   },
 });
 
-/// Get the changed chunks for the merge view that this editor is part
-/// of, plus the side it is on if it is part of a `MergeView`. Returns
-/// null if the editor doesn't have a merge extension active or the
-/// merge view hasn't finished initializing yet.
+/** Get the changed chunks for the merge view that this editor is part
+ * of, plus the side it is on if it is part of a `MergeView`. Returns
+ * null if the editor doesn't have a merge extension active or the
+ * merge view hasn't finished initializing yet.
+ */
 export function getChunks(state: EditorState) {
   const field = state.field(ChunkField, false);
   if (!field) return null;

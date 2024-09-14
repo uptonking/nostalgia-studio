@@ -14,7 +14,7 @@ const cmdkInputCard = inputCardEmbedded({
     await sleep(2000);
     return {
       status: 'success',
-      message: ' ;;;AI CODED;\n-- replace mock data with your own api;;; ',
+      message: ' ;;;AI CODED;\n// replace mock data with your own api;;; ',
     };
   },
   cancelChat: () => {},

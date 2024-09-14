@@ -1,5 +1,7 @@
 import type { EditorView } from '@codemirror/view';
 
+export type Pos = { from: number; to: number };
+
 export type ChatReq = {
   prompt: string;
   refContent: string;
@@ -39,9 +41,9 @@ export type InputWidgetOptions = {
 
   /* chat with AI to get code from agent */
   chat: (view: EditorView, chatId: string, req: ChatReq) => Promise<ChatRes>;
-  cancelChat: (chatId: string) => void;
+  cancelChat?: (chatId: string) => void;
 
-  /* event call, for telemetry if you need */
+  /* event call, for telemetry or custom events after input widget showing */
   onEvent?: (
     view: EditorView,
     type: EventType,

@@ -24,8 +24,9 @@ import {
   ICON_STOP,
 } from './icons-svg';
 import { promptInputTheme } from './styling-theme';
-import type { ChatReq, ChatRes, InputWidgetOptions } from './types';
+import type { ChatReq, ChatRes, InputWidgetOptions, Pos } from './types';
 import {
+  getRefContent,
   PROMPT_PLACEHOLDER_ERROR,
   PROMPT_PLACEHOLDER_NORMAL,
   PROMPT_TIPS_NORMAL,
@@ -47,10 +48,8 @@ export function isAnimeDiffViewActive(state: EditorState) {
   return false;
 }
 
-type Pos = { from: number; to: number };
-
 /**
- * show/hide the input widget
+ * show the input widget
  */
 export function activePromptInput(
   view: EditorView,
@@ -116,18 +115,19 @@ function unloadPromptPlugins(view: EditorView) {
   });
 }
 
-function getRefContent(view: EditorView, pos: Pos) {
-  return view.state.doc.sliceString(pos.from, pos.to);
-}
-
-function replaceSelection(view: EditorView, pos: Pos, content: string) {
+export function replaceSelectedLines(
+  view: EditorView,
+  pos: Pos,
+  content: string,
+) {
   const oriDoc = view.state.doc.toString();
 
+  const lineStart = view.state.doc.lineAt(pos.from);
+  const lineEnd = view.state.doc.lineAt(pos.to);
   view.dispatch({
-    changes: { from: pos.from, to: pos.to, insert: content },
+    changes: { from: lineStart.from, to: lineEnd.to, insert: content },
     selection: {
-      anchor: pos.from,
-      head: pos.from + content.length,
+      anchor: lineStart.from,
     },
     userEvent: 'ai.replace',
   });
@@ -136,7 +136,32 @@ function replaceSelection(view: EditorView, pos: Pos, content: string) {
     effects: animeDiffViewCompartment.reconfigure(
       animatableDiffView({
         original: oriDoc,
-        showTypewriterAnimation:true,
+        showTypewriterAnimation: true,
+        gutter: false,
+        highlightChanges: false,
+        syntaxHighlightDeletions: true,
+        mergeControls: false,
+      }),
+    ),
+  });
+}
+
+export function replaceSelection(view: EditorView, pos: Pos, content: string) {
+  const oriDoc = view.state.doc.toString();
+
+  view.dispatch({
+    changes: { from: pos.from, to: pos.to, insert: content },
+    selection: {
+      anchor: pos.from,
+    },
+    userEvent: 'ai.replace',
+  });
+
+  view.dispatch({
+    effects: animeDiffViewCompartment.reconfigure(
+      animatableDiffView({
+        original: oriDoc,
+        showTypewriterAnimation: true,
         gutter: false,
         highlightChanges: false,
         syntaxHighlightDeletions: true,
@@ -155,7 +180,7 @@ function rejectChunks(view: EditorView) {
   }
 }
 
-// recover the previous selection when trigger regenerate
+// recover the previous selection when widget dismiss or regenerate
 function recoverSelection(view: EditorView, pos: Pos) {
   const { from, to } = pos;
 
@@ -193,7 +218,7 @@ class PromptInputWidget extends WidgetType {
 
   /** dismiss the prompt input widget by click `close` icon, or press `ESC` */
   dismiss(view: EditorView, by: 'icon' | 'esc_key' = 'icon'): void {
-    const { cancelChat, onEvent } = inputWidgetOptions;
+    const { cancelChat=()=>{}, onEvent } = inputWidgetOptions;
 
     onEvent?.(view, 'close', { by });
 
@@ -212,7 +237,6 @@ class PromptInputWidget extends WidgetType {
   }
 
   toDOM(view: EditorView) {
-    // root element
     const root = document.createElement('div');
     root.className = 'cm-ai-prompt-input-root';
     root.innerHTML = `
@@ -236,7 +260,6 @@ class PromptInputWidget extends WidgetType {
       </div>
     `;
 
-    // elements
     const form = root.querySelector('form') as HTMLFormElement;
     const input = form.querySelector('input') as HTMLInputElement;
     const leftIcon = form.querySelector(
@@ -248,11 +271,9 @@ class PromptInputWidget extends WidgetType {
     const closeIcon = root.querySelector(
       'button.cm-ai-prompt-input-icon-close',
     ) as HTMLButtonElement;
-
     const tips = root.querySelector(
       'span.cm-ai-prompt-input-tips',
     ) as HTMLSpanElement;
-
     const actionBtns = root.querySelector(
       'div.cm-ai-prompt-input-actions',
     ) as HTMLDivElement;
@@ -372,7 +393,8 @@ class PromptInputWidget extends WidgetType {
       this.chatRes = res;
 
       if (res.status === 'success') {
-        replaceSelection(view, this.oriSelPos, res.message);
+        // replaceSelection(view, this.oriSelPos, res.message);
+        replaceSelectedLines(view, this.oriSelPos, res.message);
         reqSuccessStatus();
       } else if (res.status === 'error') {
         reqErrorStatus(res.message);
@@ -389,7 +411,7 @@ class PromptInputWidget extends WidgetType {
     };
     form.onsubmit = async (e) => {
       e.preventDefault();
-      this.inputPrompt = input.value;
+      this.inputPrompt = input.value.trim();
       if (this.inputPrompt.length === 0) {
         return;
       }
@@ -479,31 +501,26 @@ class PromptInputWidget extends WidgetType {
   }
 
   ignoreEvent() {
-    // when true, widget handles events by self and stop propagation
+    // when true, widget handles events by widget itself and stop propagation
     // when false, let inputPlugin to handle events in the `eventHandlers`
     return true;
   }
 
   destroy(_dom: HTMLElement): void {
-    //
+    _dom?.remove();
   }
 }
 
+// todo rewrite with state field
 const inputPlugin = (defPrompt: string, immediate: boolean) =>
   ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
       promptInputWidget: PromptInputWidget;
 
-      dismissEventListener = (e: Event) => {
-        const source = (e as CustomEvent).detail.source;
-        this.promptInputWidget.dismiss(this.view, source);
-      };
-
       constructor(public view: EditorView) {
         const { from, to } = view.state.selection.main;
         const line = view.state.doc.lineAt(from);
-
         // show the widget before the selection head
         const pos = line.from - 1;
         if (pos < 0) {
@@ -535,6 +552,11 @@ const inputPlugin = (defPrompt: string, immediate: boolean) =>
         this.decorations = this.decorations.map(v.changes);
       }
 
+      dismissEventListener = (e: Event) => {
+        const source = (e as CustomEvent).detail.source;
+        this.promptInputWidget.dismiss(this.view, source);
+      };
+
       destroy() {
         document.removeEventListener(
           'dismiss_ai_widget',
@@ -561,22 +583,7 @@ const promptInputKeyMaps = (hotkey?: string) =>
     ]),
   );
 
-/** if input widget is showing, user is not allowed to change the selection */
-// const selChangeListener = EditorState.transactionFilter.of((tr) => {
-//   // if (
-//   //   !isPromptInputActive(tr.startState) ||
-//   //   !tr.selection ||
-//   //   tr.isUserEvent('ai.replace') ||
-//   //   tr.isUserEvent('accept') ||
-//   //   tr.isUserEvent('revert')
-//   // ) {
-//   //   return tr;
-//   // }
-
-//   return tr
-// });
-
-/** update input box style when input is */
+/** update input box style when ai is coding */
 // const inputListener = EditorView.inputHandler.of((update) => {
 //   if (isPromptInputActive(update.state)) {
 //     const inputEle = document.querySelector('.cm-ai-prompt-input-root');
@@ -605,7 +612,6 @@ export function aiPromptInput(options: InputWidgetOptions): Extension {
     inputWidgetPluginCompartment.of([]),
     animeDiffViewCompartment.of([]),
     promptInputKeyMaps(options.hotkey),
-    // selChangeListener,
     // inputListener,
   ];
 }
