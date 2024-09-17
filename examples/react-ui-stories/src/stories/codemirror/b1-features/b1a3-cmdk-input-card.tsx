@@ -14,7 +14,8 @@ const cmdkInputCard = inputCardEmbedded({
     await sleep(2000);
     return {
       status: 'success',
-      message: ' ;;;AI CODED;\n// replace mock data with your own api;;; ',
+      message:
+        '// ;;; AI CODED;\n// replace mock data with your own api\n// ;;;',
     };
   },
   cancelChat: () => {},
@@ -39,7 +40,6 @@ Cmd+K is the shortcut for ai-assisted single file editing
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const language = new Compartment();
     const editor = new EditorView({
       extensions: [
         basicSetup,

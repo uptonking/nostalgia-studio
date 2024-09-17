@@ -2,13 +2,12 @@ import React, { useEffect, useRef } from 'react';
 
 import { basicSetup, EditorView } from 'codemirror';
 
-import { markdown } from '@codemirror/lang-markdown';
 import { Compartment, EditorState } from '@codemirror/state';
 
 const tLight1 = EditorView.theme(
   {
     '&': {
-      color: 'black',
+      // color: 'black', // optional
       backgroundColor: '#f1f1f1',
     },
     '.cm-content': {
@@ -24,7 +23,7 @@ const tLight1 = EditorView.theme(
 const tDark1 = EditorView.theme(
   {
     '&': {
-      color: 'white',
+      color: 'white', // required
       backgroundColor: '#333',
     },
     '.cm-content': {
@@ -38,19 +37,7 @@ const tDark1 = EditorView.theme(
   { dark: true },
 );
 
-function createEditorState(initialContents, myTheme) {
-  const extensions = [themeConfig.of(themeMapping(tLight1))];
-  return EditorState.create({
-    doc: initialContents,
-    extensions,
-  });
-}
-
-function createEditorView(state, parent) {
-  return new EditorView({ state, parent });
-}
-
-const themeConfig = new Compartment();
+const themeConfigCompart = new Compartment();
 
 function themeMapping(myTheme) {
   switch (myTheme) {
@@ -65,8 +52,20 @@ function themeMapping(myTheme) {
 
 function changeEditorTheme(myEditor, myTheme) {
   myEditor.dispatch({
-    effects: themeConfig.reconfigure(themeMapping(myTheme)),
+    effects: themeConfigCompart.reconfigure(themeMapping(myTheme)),
   });
+}
+
+function createEditorState(initialContents, myTheme) {
+  const extensions = [themeConfigCompart.of(themeMapping(tLight1))];
+  return EditorState.create({
+    doc: initialContents,
+    extensions,
+  });
+}
+
+function createEditorView(state, parent) {
+  return new EditorView({ state, parent });
 }
 
 export const Theming = () => {
@@ -89,10 +88,12 @@ This is an cm example at 20240806
   const editView = useRef<EditorView>(null);
 
   useEffect(() => {
-    const language = new Compartment();
     const editor = new EditorView({
-      // extensions: [basicSetup, language.of(markdown())],
-      extensions: [themeConfig.of(themeMapping(tLight1))],
+      extensions: [
+        // basicSetup,
+        // language.of(markdown()),
+        themeConfigCompart.of(themeMapping(tLight1)),
+      ],
       doc: content,
       parent: editorRef.current,
     });
