@@ -748,6 +748,28 @@ const tags = [
   'ul',
 ].map((name) => ({ type: 'type', label: name }));
 
+const atRules = [
+  '@charset',
+  '@color-profile',
+  '@container',
+  '@counter-style',
+  '@font-face',
+  '@font-feature-values',
+  '@font-palette-values',
+  '@import',
+  '@keyframes',
+  '@layer',
+  '@media',
+  '@namespace',
+  '@page',
+  '@position-try',
+  '@property',
+  '@scope',
+  '@starting-style',
+  '@supports',
+  '@view-transition',
+].map((label) => ({ type: 'keyword', label }));
+
 const identifier = /^(\w[\w-]*|-\w[\w-]*|)$/;
 const variable = /^-(-[\w-]*)?$/;
 
@@ -852,6 +874,8 @@ export const defineCSSCompletionSource =
           };
       return { from: node.from, options: tags, validFor: identifier };
     }
+    if (node.name == 'AtKeyword')
+      return { from: node.from, options: atRules, validFor: identifier };
 
     if (!context.explicit) return null;
 

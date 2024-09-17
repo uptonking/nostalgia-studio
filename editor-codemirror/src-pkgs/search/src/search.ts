@@ -729,7 +729,7 @@ function defaultQuery(state: EditorState, fallback?: SearchQuery) {
   const config = state.facet(searchConfigFacet);
   return new SearchQuery({
     search:
-      (fallback?.literal ?? config.literal)
+      fallback?.literal ?? config.literal
         ? selText
         : selText.replace(/\n/g, '\\n'),
     caseSensitive: fallback?.caseSensitive ?? config.caseSensitive,

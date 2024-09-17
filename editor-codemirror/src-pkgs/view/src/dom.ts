@@ -20,12 +20,6 @@ export function contains(dom: Node, node: Node | null) {
     : false;
 }
 
-export function deepActiveElement(doc: Document) {
-  let elt = doc.activeElement;
-  while (elt && elt.shadowRoot) elt = elt.shadowRoot.activeElement;
-  return elt;
-}
-
 export function hasSelection(
   dom: HTMLElement,
   selection: SelectionRange,

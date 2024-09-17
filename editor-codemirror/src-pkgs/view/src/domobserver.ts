@@ -12,7 +12,6 @@ import {
   getSelection,
   DOMSelectionState,
   isEquivalentPosition,
-  deepActiveElement,
   dispatchKey,
   atElementStart,
 } from './dom';
@@ -223,7 +222,7 @@ export class DOMObserver {
     if (
       view.state.facet(editable)
         ? view.root.activeElement != this.dom
-        : !hasSelection(view.dom, sel)
+        : !hasSelection(this.dom, sel)
     )
       return;
 
@@ -264,7 +263,7 @@ export class DOMObserver {
     const range =
       (browser.safari &&
         (view.root as any).nodeType == 11 &&
-        deepActiveElement(this.dom.ownerDocument) == this.dom &&
+        view.root.activeElement == this.dom &&
         safariSelectionRangeHack(this.view, selection)) ||
       selection;
     if (!range || this.selectionRange.eq(range)) return false;

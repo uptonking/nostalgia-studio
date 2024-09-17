@@ -83,7 +83,6 @@ export const acceptCompletion: Command = (view: EditorView) => {
   )
     return false;
   return applyCompletion(view, cState.open.options[cState.open.selected]);
-  return true;
 };
 
 /// Explicitly start autocompletion.

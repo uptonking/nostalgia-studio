@@ -1,4 +1,3 @@
-
 import { EditorView } from '@codemirror/view';
 
 export const promptInputTheme = EditorView.baseTheme({
@@ -32,7 +31,7 @@ export const promptInputTheme = EditorView.baseTheme({
       '& .cm-ai-prompt-input-icon-left': {
         left: '12px',
         top: '9px',
-        display:'none'
+        display: 'none',
       },
       '& .cm-ai-prompt-input-icon-right': {
         right: '36px',

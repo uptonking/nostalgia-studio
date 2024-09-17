@@ -218,7 +218,7 @@ class PromptInputWidget extends WidgetType {
 
   /** dismiss the prompt input widget by click `close` icon, or press `ESC` */
   dismiss(view: EditorView, by: 'icon' | 'esc_key' = 'icon'): void {
-    const { cancelChat=()=>{}, onEvent } = inputWidgetOptions;
+    const { cancelChat = () => {}, onEvent } = inputWidgetOptions;
 
     onEvent?.(view, 'close', { by });
 

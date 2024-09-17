@@ -441,7 +441,10 @@ class HistoryState {
         config.minDepth,
         new HistEvent(
           event.changes.compose(lastEvent.changes),
-          conc(event.effects, lastEvent.effects),
+          conc(
+            StateEffect.mapEffects(event.effects, lastEvent.changes),
+            lastEvent.effects,
+          ),
           lastEvent.mapped,
           lastEvent.startSelection,
           none,

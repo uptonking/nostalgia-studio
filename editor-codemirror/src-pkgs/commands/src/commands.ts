@@ -30,6 +30,7 @@ import { type SyntaxNode, NodeProp } from '@lezer/common';
 import { toggleComment, toggleBlockComment } from './comment';
 
 export {
+  type CommentTokens,
   toggleComment,
   toggleLineComment,
   lineComment,
@@ -39,7 +40,6 @@ export {
   blockUncomment,
   toggleBlockCommentByLine,
 } from './comment';
-export type { CommentTokens } from './comment';
 export {
   history,
   historyKeymap,
@@ -614,18 +614,28 @@ export const selectLine: StateCommand = ({ state, dispatch }) => {
 /// syntax tree.
 export const selectParentSyntax: StateCommand = ({ state, dispatch }) => {
   const selection = updateSel(state.selection, (range) => {
-    const stack = syntaxTree(state).resolveStack(range.from, 1);
+    const tree = syntaxTree(state);
+    let stack = tree.resolveStack(range.from, 1);
+    if (range.empty) {
+      const stackBefore = tree.resolveStack(range.from, -1);
+      if (
+        stackBefore.node.from >= stack.node.from &&
+        stackBefore.node.to <= stack.node.to
+      )
+        stack = stackBefore;
+    }
     for (let cur: typeof stack | null = stack; cur; cur = cur.next) {
       const { node } = cur;
       if (
         ((node.from < range.from && node.to >= range.to) ||
           (node.to > range.to && node.from <= range.from)) &&
-        node.parent?.parent
+        cur.next
       )
         return EditorSelection.range(node.to, node.from);
     }
     return range;
   });
+  if (selection.eq(state.selection)) return false;
   dispatch(setSel(state, selection));
   return true;
 };

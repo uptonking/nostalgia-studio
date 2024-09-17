@@ -416,7 +416,7 @@ export function tokensFor(d: Dialect) {
       input.acceptToken(
         input.next == Ch.Dot || input.peek(-word.length - 1) == Ch.Dot
           ? Identifier
-          : (d.words[word.toLowerCase()] ?? Identifier),
+          : d.words[word.toLowerCase()] ?? Identifier,
       );
     }
   });
