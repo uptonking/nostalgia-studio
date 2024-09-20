@@ -11,6 +11,11 @@ import {
 } from '@codemirror/state';
 import { invertedEffects } from '@codemirror/commands';
 
+const highlight = Decoration.mark({
+  attributes: { style: `background-color: rgba(255, 50, 0, 0.3)` },
+});
+
+/** 只是作为stateField.update方法的参数 */
 const addHighlight = StateEffect.define<{ from: number; to: number }>({
   map: mapRange,
 });
@@ -34,7 +39,7 @@ function highlightSelection(view: EditorView) {
 }
 
 function unhighlightSelection(view: EditorView) {
-  const highlighted = view.state.field(highlightedRanges);
+  const highlighted = view.state.field(highlightedRangesState);
   const effects = [];
   for (const sel of view.state.selection.ranges) {
     highlighted.between(sel.from, sel.to, (rFrom, rTo) => {
@@ -47,19 +52,18 @@ function unhighlightSelection(view: EditorView) {
   return true;
 }
 
-const highlight = Decoration.mark({
-  attributes: { style: `background-color: rgba(255, 50, 0, 0.3)` },
-});
-
-const highlightedRanges = StateField.define({
+const highlightedRangesState = StateField.define({
   create() {
     return Decoration.none;
   },
   update(ranges, tr) {
     ranges = ranges.map(tr.changes);
-    for (const e of tr.effects) {
-      if (e.is(addHighlight)) ranges = addRange(ranges, e.value);
-      else if (e.is(removeHighlight)) ranges = cutRange(ranges, e.value);
+    for (const ef of tr.effects) {
+      if (ef.is(addHighlight)) {
+        ranges = addRange(ranges, ef.value);
+      } else if (ef.is(removeHighlight)) {
+        ranges = cutRange(ranges, ef.value);
+      }
     }
     return ranges;
   },
@@ -93,13 +97,17 @@ function addRange(ranges: DecorationSet, r: { from: number; to: number }) {
   });
 }
 
+/**
+ * The function we give to `invertedEffects` is called for every transaction, and 
+ * returns an array of effects that the history should store alongside the inverse of that transaction.
+ */
 const invertHighlight = invertedEffects.of((tr) => {
   const found = [];
   for (const e of tr.effects) {
     if (e.is(addHighlight)) found.push(removeHighlight.of(e.value));
     else if (e.is(removeHighlight)) found.push(addHighlight.of(e.value));
   }
-  const ranges = tr.startState.field(highlightedRanges);
+  const ranges = tr.startState.field(highlightedRangesState);
   tr.changes.iterChangedRanges((chFrom, chTo) => {
     ranges.between(chFrom, chTo, (rFrom, rTo) => {
       const from = Math.max(chFrom, rFrom);
@@ -115,8 +123,8 @@ const highlightKeymap = keymap.of([
   { key: 'Shift-Mod-h', run: unhighlightSelection },
 ]);
 
-export function rangeHighlighting() {
-  return [highlightedRanges, invertHighlight, highlightKeymap];
+export function rangeHighlightingExt() {
+  return [highlightedRangesState, invertHighlight, highlightKeymap];
 }
 
 /**
@@ -150,7 +158,7 @@ Try undoing and redoing a highlight action.
     const language = new Compartment();
     const editor = new EditorView({
       // extensions: [basicSetup, language.of(markdown())],
-      extensions: [basicSetup, rangeHighlighting()],
+      extensions: [basicSetup, rangeHighlightingExt()],
       doc: content,
       parent: editorRef.current,
     });
