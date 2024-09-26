@@ -27,26 +27,16 @@ import { promptInputTheme } from './styling-theme';
 import type { ChatReq, ChatRes, InputWidgetOptions, Pos } from './types';
 import {
   getRefContent,
+  isAnimeDiffViewActive,
   PROMPT_PLACEHOLDER_ERROR,
   PROMPT_PLACEHOLDER_NORMAL,
   PROMPT_TIPS_NORMAL,
   PROMPT_TIPS_REQUESTING,
 } from './utils';
-
-export const inputWidgetPluginCompartment = new Compartment();
-export const animeDiffViewCompartment = new Compartment();
-
-export function isPromptInputActive(state: EditorState) {
-  return inputWidgetPluginCompartment.get(state) instanceof ViewPlugin;
-}
-
-export function isAnimeDiffViewActive(state: EditorState) {
-  const diffViewExt = animeDiffViewCompartment.get(state);
-  if (diffViewExt) {
-    return (diffViewExt as Extension[]).length > 0;
-  }
-  return false;
-}
+import {
+  inputWidgetPluginCompartment,
+  animeDiffViewCompartment,
+} from './ext-parts';
 
 /**
  * show the input widget

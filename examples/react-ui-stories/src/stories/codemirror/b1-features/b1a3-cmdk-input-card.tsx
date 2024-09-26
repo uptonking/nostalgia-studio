@@ -11,14 +11,13 @@ function sleep(ms: number) {
 
 const cmdkInputCard = inputCardEmbedded({
   chat: async () => {
-    await sleep(2000);
+    await sleep(1000);
     return {
       status: 'success',
       message:
         '// ;;; AI CODED;\n// replace mock data with your own api\n// ;;;',
     };
   },
-  cancelChat: () => {},
 });
 
 export const CmdkInputCard = () => {

@@ -166,6 +166,7 @@ function cmd(side: BranchName, selection: boolean): StateCommand {
     state: EditorState;
     dispatch: (tr: Transaction) => void;
   }) {
+    console.log(';; undo/redo ', side);
     if (!selection && state.readOnly) return false;
     const historyState = state.field(historyField_, false);
     if (!historyState) return false;
