@@ -25,6 +25,7 @@ export { DecoLineHighlight as B1b7DecoLineHighlight } from './b1-features/b1b7-d
 export { GutterForBlockWidget as B1b8GutterForBlock } from './b1-features/b1b8-gutter-for-block';
 export { GutterTextNode as B1b8GutterTextNode } from './b1-features/b1b8-gutter-marker';
 export { UndoableEffects as B1c1UndoableEffects } from './b1-features/b1c1-undoable-effects';
+export { UndoableEffectsUndo as B1c1UndoableEffectsUndo } from './b1-features/b1c1-undoable-effects-undo';
 export { SplitEditors as B1c2SplitEditors } from './b1-features/b1c2-split-editors';
 export { SingleLineEditor as B1c3SingleLineEditor } from './b1-features/b1c3-single-line-editor';
 export { AutocompleteCm as B1d1AutocompleteCm } from './b1-features/b1d1-autocomplete';

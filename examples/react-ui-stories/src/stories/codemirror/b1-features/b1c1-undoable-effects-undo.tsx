@@ -141,7 +141,7 @@ export function rangeHighlightingExt() {
  * - By default, the history extension only tracks changes to the document and selection
  * - https://codemirror.net/examples/inverted-effect/
  */
-export const UndoableEffects = () => {
+export const UndoableEffectsUndo = () => {
   const content = `# CodeMirror v6
 
 This is an cm example at 20240806

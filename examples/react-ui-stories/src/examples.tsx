@@ -18,7 +18,8 @@ const storiesNames = Object.keys(stories);
 
 export function ExamplesApp() {
   // const [currentStory, setCurrentStory] = useState(storiesNames[0]);
-  const [currentStory, setCurrentStory] = useState('B1a3CmdkInputCard');
+  // const [currentStory, setCurrentStory] = useState('B1a3CmdkInputCard');
+  const [currentStory, setCurrentStory] = useState('B1c1UndoableEffectsUndo');
 
   const CurrentExampleComponent = currentStory
     ? stories[currentStory]
