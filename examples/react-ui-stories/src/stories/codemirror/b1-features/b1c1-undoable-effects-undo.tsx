@@ -63,19 +63,19 @@ function highlightSelection(view: EditorView) {
  * only creates effects for previously highlighted ranges that overlap the selection.
  * - If we had simply created them for the entire selected ranges, inverting those effects could cause things to be highlighted that were not previously highlighted.
  */
-function unhighlightSelection(view: EditorView) {
-  const highlighted = view.state.field(highlightedRangesState);
-  const effects = [];
-  for (const sel of view.state.selection.ranges) {
-    highlighted.between(sel.from, sel.to, (rFrom, rTo) => {
-      const from = Math.max(sel.from, rFrom);
-      const to = Math.min(sel.to, rTo);
-      if (from < to) effects.push(removeHighlight.of({ from, to }));
-    });
-  }
-  view.dispatch({ effects });
-  return true;
-}
+// function unhighlightSelection(view: EditorView) {
+//   const highlighted = view.state.field(highlightedRangesState);
+//   const effects = [];
+//   for (const sel of view.state.selection.ranges) {
+//     highlighted.between(sel.from, sel.to, (rFrom, rTo) => {
+//       const from = Math.max(sel.from, rFrom);
+//       const to = Math.min(sel.to, rTo);
+//       if (from < to) effects.push(removeHighlight.of({ from, to }));
+//     });
+//   }
+//   view.dispatch({ effects });
+//   return true;
+// }
 
 function cutRange(ranges: DecorationSet, r: { from: number; to: number }) {
   const leftover = [];
@@ -129,7 +129,7 @@ const invertHighlight = invertedEffects.of((tr) => {
 
 const highlightKeymap = keymap.of([
   { key: 'Mod-h', run: highlightSelection },
-  { key: 'Shift-Mod-h', run: unhighlightSelection },
+  // { key: 'Shift-Mod-h', run: unhighlightSelection },
 ]);
 
 export function rangeHighlightingExt() {
@@ -137,14 +137,17 @@ export function rangeHighlightingExt() {
 }
 
 /**
+ *
  * ✨ an example of an extension that allows the user to highlight parts of the document, and undo that highlighting.
  * - By default, the history extension only tracks changes to the document and selection
  * - https://codemirror.net/examples/inverted-effect/
+ *
+ * - ❓ 如何和文档编辑同时生效，如插入带颜色的文字
  */
 export const UndoableEffectsUndo = () => {
   const content = `# CodeMirror v6
 
-This is an cm example at 20240806
+eg20240806
 
 Select something and press ctrl/cmd-h to highlight it
 or shift-ctrl/cmd-h to remove highlighting.
