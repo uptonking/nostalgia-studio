@@ -24,8 +24,6 @@ export { DecoLineZebra as B1b6DecoLineZebra } from './b1-features/b1b6-deco-line
 export { DecoLineHighlight as B1b7DecoLineHighlight } from './b1-features/b1b7-deco-line-highlight';
 export { GutterForBlockWidget as B1b8GutterForBlock } from './b1-features/b1b8-gutter-for-block';
 export { GutterTextNode as B1b8GutterTextNode } from './b1-features/b1b8-gutter-marker';
-export { UndoableEffects as B1c1UndoableEffects } from './b1-features/b1c1-undoable-effects';
-export { UndoableEffectsUndo as B1c1UndoableEffectsUndo } from './b1-features/b1c1-undoable-effects-undo';
 export { SplitEditors as B1c2SplitEditors } from './b1-features/b1c2-split-editors';
 export { SingleLineEditor as B1c3SingleLineEditor } from './b1-features/b1c3-single-line-editor';
 export { AutocompleteCm as B1d1AutocompleteCm } from './b1-features/b1d1-autocomplete';
@@ -33,5 +31,8 @@ export { CustomCompletion as B1d2CustomCompletion } from './b1-features/b1d2-cus
 export { CursorTooltip as B1d3CursorTooltip } from './b1-features/b1d3-cursor-tooltip';
 export { LintCm as B1e2LintCm } from './b1-features/b1e2-lint';
 export { EffectInterval as B1f1EffectInterval } from './b1-features/b1f1-effect-interval';
+export { UndoableEffects as B1f2UndoableEffects } from './b1-features/b1f2-undoable-effects';
+export { UndoableEffectsUndo as B1f3UndoableEffectsUndo } from './b1-features/b1f3-undoable-effects-undo';
+export { AnnoMulti as B1f4AnnoMulti } from './b1-features/b1f4-anno-multi';
 export { Theming as C1a1Theming } from './c1-styling/c1a1-theming';
 export { MdCodeBlock as M1a1MdCodeBlock } from './m1-markdown/m1a1-code-block';
