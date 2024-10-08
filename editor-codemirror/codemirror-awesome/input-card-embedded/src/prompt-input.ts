@@ -1,7 +1,7 @@
 import { getChunks, rejectChunk, animatableDiffView } from '@codemirror/merge';
 import {
   Compartment,
-  type EditorState,
+  EditorState,
   type Extension,
   Prec,
 } from '@codemirror/state';
@@ -37,6 +37,7 @@ import {
   inputWidgetPluginCompartment,
   animeDiffViewCompartment,
 } from './ext-parts';
+import { cmdkDiffState } from './cmdk-diff-state';
 
 /**
  * show the input widget
@@ -573,6 +574,22 @@ const promptInputKeyMaps = (hotkey?: string) =>
     ]),
   );
 
+  const renderCmdkDiff = EditorState.transactionExtender.of(
+    (tr) => {
+      const showCmdkDiffBefore = tr.startState.field(cmdkDiffState);
+      const showCmdkDiffAfter = tr.state.field(cmdkDiffState);
+  
+      console.log(';; renderCmdkDiff ', showCmdkDiffBefore, showCmdkDiffAfter)
+      if (showCmdkDiffBefore !== showCmdkDiffAfter) {
+        // const canUseEmmet = validEmmetEditorLanguage(showCmdkDiffAfter);
+        return {
+          effects: []
+          // emCompart.reconfigure( canUseEmmet ? emmetExtensions : [] )
+        };
+      } 
+    }
+  );
+
 /** update input box style when ai is coding */
 // const inputListener = EditorView.inputHandler.of((update) => {
 //   if (isPromptInputActive(update.state)) {
@@ -602,6 +619,7 @@ export function aiPromptInput(options: InputWidgetOptions): Extension {
     inputWidgetPluginCompartment.of([]),
     animeDiffViewCompartment.of([]),
     promptInputKeyMaps(options.hotkey),
+    
     // inputListener,
   ];
 }
