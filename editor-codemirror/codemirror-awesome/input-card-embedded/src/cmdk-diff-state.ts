@@ -14,7 +14,7 @@ export const cmdkDiffState = StateField.define<CmdkDiffState>({
   update(val, tr) {
     for (const ef of tr.effects) {
       if (ef.is(showCmdkDiffView)) {
-        val = ef.value;
+        val = { ...val, ...ef.value };
       }
     }
     return val;

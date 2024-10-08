@@ -574,21 +574,29 @@ const promptInputKeyMaps = (hotkey?: string) =>
     ]),
   );
 
-  const renderCmdkDiff = EditorState.transactionExtender.of(
-    (tr) => {
-      const showCmdkDiffBefore = tr.startState.field(cmdkDiffState);
-      const showCmdkDiffAfter = tr.state.field(cmdkDiffState);
-  
-      console.log(';; renderCmdkDiff ', showCmdkDiffBefore, showCmdkDiffAfter)
-      if (showCmdkDiffBefore !== showCmdkDiffAfter) {
-        // const canUseEmmet = validEmmetEditorLanguage(showCmdkDiffAfter);
-        return {
-          effects: []
-          // emCompart.reconfigure( canUseEmmet ? emmetExtensions : [] )
-        };
-      } 
+const renderCmdkDiff = () => {
+  return EditorState.transactionExtender.of((tr) => {
+    const showCmdkDiffBefore = tr.startState.field(cmdkDiffState);
+    const showCmdkDiffAfter = tr.state.field(cmdkDiffState);
+
+    if (tr.isUserEvent('undo') || tr.isUserEvent('redo')) {
+      console.log(
+        ';; renderCmdkDiff ',
+        showCmdkDiffBefore,
+        showCmdkDiffAfter,
+        tr,
+      );
     }
-  );
+
+    if (showCmdkDiffBefore !== showCmdkDiffAfter) {
+      // const canUseEmmet = validEmmetEditorLanguage(showCmdkDiffAfter);
+      return {
+        effects: [],
+        // emCompart.reconfigure( canUseEmmet ? emmetExtensions : [] )
+      };
+    }
+  });
+};
 
 /** update input box style when ai is coding */
 // const inputListener = EditorView.inputHandler.of((update) => {
@@ -619,7 +627,7 @@ export function aiPromptInput(options: InputWidgetOptions): Extension {
     inputWidgetPluginCompartment.of([]),
     animeDiffViewCompartment.of([]),
     promptInputKeyMaps(options.hotkey),
-    
+    renderCmdkDiff(),
     // inputListener,
   ];
 }
