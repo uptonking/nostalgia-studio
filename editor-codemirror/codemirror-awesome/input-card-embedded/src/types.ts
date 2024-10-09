@@ -3,6 +3,7 @@ import type { EditorView } from '@codemirror/view';
 export type CmdkDiffState = {
   /** whether cmdk diff view is visible, default is false */
   showCmdkDiff: boolean;
+  showTypewriterAnimation?: boolean;
   /** prompt text from cmdk input */
   prompt: string;
   /** original content for cmdk diff view */

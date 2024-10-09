@@ -62,7 +62,7 @@ export const baseTheme = EditorView.baseTheme({
   },
   '&.cm-merge-b .cm-line-typing': {
     animation:
-      'typing 1.25s steps(20), blink 0.025s step-end infinite alternate',
+      'typing 1s steps(20), blink 0.025s step-end infinite alternate',
     borderRight: '1.5px solid',
     width: '100%',
     // 👇 make characters on the right of the line invisible

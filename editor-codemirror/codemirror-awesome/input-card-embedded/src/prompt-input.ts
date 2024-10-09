@@ -4,6 +4,7 @@ import {
   EditorState,
   type Extension,
   Prec,
+  StateField,
 } from '@codemirror/state';
 import {
   Decoration,
@@ -35,9 +36,12 @@ import {
 } from './utils';
 import {
   inputWidgetPluginCompartment,
-  animeDiffViewCompartment,
+  cmdkDiffViewCompartment,
+  showCmdkDiffView,
+  hideCmdkDiffView,
 } from './ext-parts';
 import { cmdkDiffState } from './cmdk-diff-state';
+import { historyField } from '@codemirror/commands';
 
 /**
  * show the input widget
@@ -100,7 +104,10 @@ export function activePromptInput(
 function unloadPromptPlugins(view: EditorView) {
   view.dispatch({
     effects: [
-      animeDiffViewCompartment.reconfigure([]),
+      hideCmdkDiffView.of({
+        showCmdkDiff: false,
+      }),
+      // cmdkDiffViewCompartment.reconfigure([]),
       inputWidgetPluginCompartment.reconfigure([]),
     ],
   });
@@ -117,48 +124,32 @@ export function replaceSelectedLines(
   const lineEnd = view.state.doc.lineAt(pos.to);
   view.dispatch({
     changes: { from: lineStart.from, to: lineEnd.to, insert: content },
-    selection: {
-      anchor: lineStart.from,
-    },
-    userEvent: 'ai.replace',
+    // selection: {
+    //   anchor: lineStart.from,
+    // },
+    // userEvent: 'ai.replace',
   });
 
   view.dispatch({
-    effects: animeDiffViewCompartment.reconfigure(
-      animatableDiffView({
-        original: oriDoc,
+    // changes: { from: lineStart.from, to: lineEnd.to, insert: content },
+    effects: [
+      showCmdkDiffView.of({
+        showCmdkDiff: true,
+        prompt: 'showCmdk',
+        originalContent: oriDoc,
         showTypewriterAnimation: true,
-        gutter: false,
-        highlightChanges: false,
-        syntaxHighlightDeletions: true,
-        mergeControls: false,
       }),
-    ),
-  });
-}
-
-export function replaceSelection(view: EditorView, pos: Pos, content: string) {
-  const oriDoc = view.state.doc.toString();
-
-  view.dispatch({
-    changes: { from: pos.from, to: pos.to, insert: content },
-    selection: {
-      anchor: pos.from,
-    },
-    userEvent: 'ai.replace',
-  });
-
-  view.dispatch({
-    effects: animeDiffViewCompartment.reconfigure(
-      animatableDiffView({
-        original: oriDoc,
-        showTypewriterAnimation: true,
-        gutter: false,
-        highlightChanges: false,
-        syntaxHighlightDeletions: true,
-        mergeControls: false,
-      }),
-    ),
+      // cmdkDiffViewCompartment.reconfigure(
+      //   animatableDiffView({
+      //     original: oriDoc,
+      //     showTypewriterAnimation: true,
+      //     gutter: false,
+      //     highlightChanges: false,
+      //     syntaxHighlightDeletions: true,
+      //     mergeControls: false,
+      //   }),
+      // ),
+    ],
   });
 }
 
@@ -574,28 +565,133 @@ const promptInputKeyMaps = (hotkey?: string) =>
     ]),
   );
 
-const renderCmdkDiff = () => {
+const cmdkDiffViewRender = () => {
   return EditorState.transactionExtender.of((tr) => {
-    const showCmdkDiffBefore = tr.startState.field(cmdkDiffState);
-    const showCmdkDiffAfter = tr.state.field(cmdkDiffState);
+    const cmdkDiffStateBefore = tr.startState.field(cmdkDiffState);
+    const cmdkDiffStateAfter = tr.state.field(cmdkDiffState);
 
+    // todo remove
     if (tr.isUserEvent('undo') || tr.isUserEvent('redo')) {
-      console.log(
-        ';; renderCmdkDiff ',
-        showCmdkDiffBefore,
-        showCmdkDiffAfter,
-        tr,
-      );
+      console.log(';; renderCmdkDiff-undo ', tr);
     }
 
-    if (showCmdkDiffBefore !== showCmdkDiffAfter) {
-      // const canUseEmmet = validEmmetEditorLanguage(showCmdkDiffAfter);
+    if (cmdkDiffStateBefore !== cmdkDiffStateAfter) {
+      console.log(
+        ';; renderCmdkDiff ',
+        cmdkDiffStateBefore,
+        cmdkDiffStateAfter,
+        tr,
+      );
+
+      if (cmdkDiffStateAfter.showCmdkDiff) {
+        return {
+          effects: [
+            cmdkDiffViewCompartment.reconfigure(
+              animatableDiffView({
+                original: cmdkDiffStateAfter.originalContent,
+                showTypewriterAnimation: Boolean(
+                  cmdkDiffStateAfter.showTypewriterAnimation,
+                ),
+                gutter: false,
+                highlightChanges: false,
+                syntaxHighlightDeletions: true,
+                mergeControls: false,
+              }),
+            ),
+          ],
+        };
+      }
+
+      if (tr.isUserEvent('undo') && !cmdkDiffStateAfter.showCmdkDiff) {
+        const history = tr.state.field(historyField, false);
+        const undoTwiceToOriginalTr = (history as any).pop(0, tr.state, false);
+        console.log(';; undo2 ', undoTwiceToOriginalTr);
+        if (undoTwiceToOriginalTr) {
+          // return {
+          //   effects: [
+          //     cmdkDiffViewCompartment.reconfigure([]),
+          //     undoTwiceToOriginalTr,
+          //   ],
+          // };
+        }
+      }
+
       return {
-        effects: [],
-        // emCompart.reconfigure( canUseEmmet ? emmetExtensions : [] )
+        effects: [cmdkDiffViewCompartment.reconfigure([])],
       };
     }
   });
+};
+
+const cmdkDiffUndoRedo = () => {
+  return EditorState.transactionExtender.of((tr) => {
+    const cmdkDiffStateBefore = tr.startState.field(cmdkDiffState);
+    const cmdkDiffStateAfter = tr.state.field(cmdkDiffState);
+
+    if (cmdkDiffStateBefore !== cmdkDiffStateAfter) {
+      console.log(
+        ';; cmdkDiffUndoRedo ',
+        cmdkDiffStateBefore,
+        cmdkDiffStateAfter,
+        tr,
+      );
+
+      if (cmdkDiffStateAfter.showCmdkDiff) {
+        // return {
+        //   effects: [
+        //     cmdkDiffViewCompartment.reconfigure(
+        //       animatableDiffView({
+        //         original: cmdkDiffStateAfter.originalContent,
+        //         showTypewriterAnimation: Boolean(
+        //           cmdkDiffStateAfter.showTypewriterAnimation,
+        //         ),
+        //         gutter: false,
+        //         highlightChanges: false,
+        //         syntaxHighlightDeletions: true,
+        //         mergeControls: false,
+        //       }),
+        //     ),
+        //   ],
+        // };
+      }
+
+      if (tr.isUserEvent('undo') && !cmdkDiffStateAfter.showCmdkDiff) {
+        const history = tr.state.field(historyField, false);
+        const undoTwiceToOriginal = (history as any).pop(0, tr.state, false);
+        console.log(';; undo2 ', undoTwiceToOriginal);
+
+        if (undoTwiceToOriginal) {
+          return {
+            effects: [undoTwiceToOriginal],
+          };
+        }
+      }
+
+      return {
+        effects: [],
+      };
+    }
+  });
+};
+
+export const cmdkUndo = (hotkey?: string) => {
+  return Prec.high(
+    keymap.of([
+      {
+        key: hotkey || 'Mod-z',
+        run: (view) => {
+          console.log(';; k-cmd-z');
+          // if (tr.isUserEvent('undo') || tr.isUserEvent('redo')) {
+          //   console.log(';; renderCmdkDiff-undo ', tr);
+          // }
+          const history = view.state.field(historyField);
+          console.log(history);
+
+          return false;
+        },
+      },
+    ]),
+  );
 };
 
 /** update input box style when ai is coding */
@@ -625,9 +721,10 @@ export function aiPromptInput(options: InputWidgetOptions): Extension {
   return [
     promptInputTheme,
     inputWidgetPluginCompartment.of([]),
-    animeDiffViewCompartment.of([]),
+    cmdkDiffViewCompartment.of([]),
     promptInputKeyMaps(options.hotkey),
-    renderCmdkDiff(),
+    // cmdkDiffUndoRedo(),
+    cmdkDiffViewRender(),
     // inputListener,
   ];
 }

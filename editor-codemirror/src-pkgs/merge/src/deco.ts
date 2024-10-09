@@ -160,7 +160,7 @@ export const decorateChunks = ViewPlugin.fromClass(
             ],
           });
         }
-      }, 1500);
+      }, 1000);
     }
 
     destroy() {
