@@ -4,7 +4,7 @@ import type { EditorState, Extension } from '@codemirror/state';
 import {
   inputWidgetPluginCompartment,
   cmdkDiffViewCompartment,
-} from './ext-parts';
+} from './cmdk-actions';
 
 export const PROMPT_TIPS_NORMAL = 'Esc to close, Enter to submit';
 export const PROMPT_TIPS_REQUESTING = 'AI coding...';
@@ -20,7 +20,7 @@ export function isPromptInputActive(state: EditorState) {
   return inputWidgetPluginCompartment.get(state) instanceof ViewPlugin;
 }
 
-export function isAnimeDiffViewActive(state: EditorState) {
+export function isCmdkDiffViewActive(state: EditorState) {
   const diffViewExt = cmdkDiffViewCompartment.get(state);
   if (Array.isArray(diffViewExt)) {
     return diffViewExt.length > 0;

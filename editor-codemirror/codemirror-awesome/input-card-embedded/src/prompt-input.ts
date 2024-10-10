@@ -1,11 +1,5 @@
 import { getChunks, rejectChunk, animatableDiffView } from '@codemirror/merge';
-import {
-  Compartment,
-  EditorState,
-  type Extension,
-  Prec,
-  StateField,
-} from '@codemirror/state';
+import { EditorState, type Extension, Prec } from '@codemirror/state';
 import {
   Decoration,
   type DecorationSet,
@@ -28,7 +22,7 @@ import { promptInputTheme } from './styling-theme';
 import type { ChatReq, ChatRes, InputWidgetOptions, Pos } from './types';
 import {
   getRefContent,
-  isAnimeDiffViewActive,
+  isCmdkDiffViewActive,
   PROMPT_PLACEHOLDER_ERROR,
   PROMPT_PLACEHOLDER_NORMAL,
   PROMPT_TIPS_NORMAL,
@@ -39,9 +33,10 @@ import {
   cmdkDiffViewCompartment,
   showCmdkDiffView,
   hideCmdkDiffView,
-} from './ext-parts';
-import { cmdkDiffState } from './cmdk-diff-state';
-import { historyField } from '@codemirror/commands';
+  enableUndoCmdkTwice,
+} from './cmdk-actions';
+import { cmdkDiffState, enableUndoRedoTwiceState } from './cmdk-diff-state';
+import { undo } from '@codemirror/commands';
 
 /**
  * show the input widget
@@ -50,13 +45,11 @@ export function activePromptInput(
   view: EditorView,
   defPrompt = '',
   immediate = false,
-  /**  where is this method called from
-   * -  maybe: 'hotkey', 'toolbar_button'
-   */
-  source = 'hotkey',
+  /**  where is this method called from */
+  source: 'hotkey' | 'toolbarButton' = 'hotkey',
   pos?: Pos,
 ) {
-  if (isAnimeDiffViewActive(view.state)) {
+  if (isCmdkDiffViewActive(view.state)) {
     rejectChunks(view);
   }
 
@@ -124,33 +117,37 @@ export function replaceSelectedLines(
   const lineEnd = view.state.doc.lineAt(pos.to);
   view.dispatch({
     changes: { from: lineStart.from, to: lineEnd.to, insert: content },
-    // selection: {
-    //   anchor: lineStart.from,
-    // },
+    selection: {
+      anchor: lineStart.from,
+    },
     // userEvent: 'ai.replace',
+    // annotations: cmdkReplaceAnno.of('cmdkReplaceAnno'),
   });
 
-  view.dispatch({
-    // changes: { from: lineStart.from, to: lineEnd.to, insert: content },
-    effects: [
-      showCmdkDiffView.of({
-        showCmdkDiff: true,
-        prompt: 'showCmdk',
-        originalContent: oriDoc,
-        showTypewriterAnimation: true,
-      }),
-      // cmdkDiffViewCompartment.reconfigure(
-      //   animatableDiffView({
-      //     original: oriDoc,
-      //     showTypewriterAnimation: true,
-      //     gutter: false,
-      //     highlightChanges: false,
-      //     syntaxHighlightDeletions: true,
-      //     mergeControls: false,
-      //   }),
-      // ),
-    ],
-  });
+  view.dispatch(
+    // { changes: { from: lineStart.from, to: lineEnd.to, insert: content } },
+
+    {
+      effects: [
+        showCmdkDiffView.of({
+          showCmdkDiff: true,
+          prompt: 'showCmdk',
+          originalContent: oriDoc,
+          showTypewriterAnimation: true,
+        }),
+        // cmdkDiffViewCompartment.reconfigure(
+        //   animatableDiffView({
+        //     original: oriDoc,
+        //     showTypewriterAnimation: true,
+        //     gutter: false,
+        //     highlightChanges: false,
+        //     syntaxHighlightDeletions: true,
+        //     mergeControls: false,
+        //   }),
+        // ),
+      ],
+    },
+  );
 }
 
 function rejectChunks(view: EditorView) {
@@ -209,7 +206,7 @@ class PromptInputWidget extends WidgetType {
       cancelChat(this.chatId);
     }
 
-    if (isAnimeDiffViewActive(view.state)) {
+    if (isCmdkDiffViewActive(view.state)) {
       rejectChunks(view);
       recoverSelection(view, this.oriSelPos);
     }
@@ -350,7 +347,7 @@ class PromptInputWidget extends WidgetType {
         return;
       }
 
-      if (isAnimeDiffViewActive(view.state)) {
+      if (isCmdkDiffViewActive(view.state)) {
         rejectChunks(view);
         recoverSelection(view, this.oriSelPos);
       }
@@ -570,14 +567,10 @@ const cmdkDiffViewRender = () => {
     const cmdkDiffStateBefore = tr.startState.field(cmdkDiffState);
     const cmdkDiffStateAfter = tr.state.field(cmdkDiffState);
 
-    // todo remove
-    if (tr.isUserEvent('undo') || tr.isUserEvent('redo')) {
-      console.log(';; renderCmdkDiff-undo ', tr);
-    }
-
     if (cmdkDiffStateBefore !== cmdkDiffStateAfter) {
       console.log(
         ';; renderCmdkDiff ',
+        cmdkDiffStateAfter.showCmdkDiff,
         cmdkDiffStateBefore,
         cmdkDiffStateAfter,
         tr,
@@ -603,72 +596,16 @@ const cmdkDiffViewRender = () => {
       }
 
       if (tr.isUserEvent('undo') && !cmdkDiffStateAfter.showCmdkDiff) {
-        const history = tr.state.field(historyField, false);
-        const undoTwiceToOriginalTr = (history as any).pop(0, tr.state, false);
-        console.log(';; undo2 ', undoTwiceToOriginalTr);
-        if (undoTwiceToOriginalTr) {
-          // return {
-          //   effects: [
-          //     cmdkDiffViewCompartment.reconfigure([]),
-          //     undoTwiceToOriginalTr,
-          //   ],
-          // };
-        }
+        return {
+          effects: [
+            cmdkDiffViewCompartment.reconfigure([]),
+            enableUndoCmdkTwice.of(true),
+          ],
+        };
       }
 
       return {
         effects: [cmdkDiffViewCompartment.reconfigure([])],
-      };
-    }
-  });
-};
-
-const cmdkDiffUndoRedo = () => {
-  return EditorState.transactionExtender.of((tr) => {
-    const cmdkDiffStateBefore = tr.startState.field(cmdkDiffState);
-    const cmdkDiffStateAfter = tr.state.field(cmdkDiffState);
-
-    if (cmdkDiffStateBefore !== cmdkDiffStateAfter) {
-      console.log(
-        ';; cmdkDiffUndoRedo ',
-        cmdkDiffStateBefore,
-        cmdkDiffStateAfter,
-        tr,
-      );
-
-      if (cmdkDiffStateAfter.showCmdkDiff) {
-        // return {
-        //   effects: [
-        //     cmdkDiffViewCompartment.reconfigure(
-        //       animatableDiffView({
-        //         original: cmdkDiffStateAfter.originalContent,
-        //         showTypewriterAnimation: Boolean(
-        //           cmdkDiffStateAfter.showTypewriterAnimation,
-        //         ),
-        //         gutter: false,
-        //         highlightChanges: false,
-        //         syntaxHighlightDeletions: true,
-        //         mergeControls: false,
-        //       }),
-        //     ),
-        //   ],
-        // };
-      }
-
-      if (tr.isUserEvent('undo') && !cmdkDiffStateAfter.showCmdkDiff) {
-        const history = tr.state.field(historyField, false);
-        const undoTwiceToOriginal = (history as any).pop(0, tr.state, false);
-        console.log(';; undo2 ', undoTwiceToOriginal);
-
-        if (undoTwiceToOriginal) {
-          return {
-            effects: [undoTwiceToOriginal],
-          };
-        }
-      }
-
-      return {
-        effects: [],
       };
     }
   });
@@ -680,12 +617,14 @@ export const cmdkUndo = (hotkey?: string) => {
       {
         key: hotkey || 'Mod-z',
         run: (view) => {
-          console.log(';; k-cmd-z');
-          // if (tr.isUserEvent('undo') || tr.isUserEvent('redo')) {
-          //   console.log(';; renderCmdkDiff-undo ', tr);
-          // }
-          const history = view.state.field(historyField);
-          console.log(history);
+          queueMicrotask(() => {
+            const undoTwiceState = view.state.field(enableUndoRedoTwiceState);
+            console.log(';; k-z-twice2 ', undoTwiceState);
+            if (undoTwiceState) {
+              undo(view);
+              view.dispatch({ effects: [enableUndoCmdkTwice.of(false)] });
+            }
+          });
 
           return false;
         },
@@ -723,8 +662,8 @@ export function aiPromptInput(options: InputWidgetOptions): Extension {
     inputWidgetPluginCompartment.of([]),
     cmdkDiffViewCompartment.of([]),
     promptInputKeyMaps(options.hotkey),
-    // cmdkDiffUndoRedo(),
     cmdkDiffViewRender(),
+    cmdkUndo(),
     // inputListener,
   ];
 }

@@ -3,7 +3,11 @@ import type { Extension } from '@codemirror/state';
 import type { InputWidgetOptions } from './types';
 import { escapeListener } from './esc-listener';
 import { aiPromptInput } from './prompt-input';
-import { cmdkDiffState, invertCmdkDiff } from './cmdk-diff-state';
+import {
+  cmdkDiffState,
+  enableUndoRedoTwiceState,
+  invertCmdkDiff,
+} from './cmdk-diff-state';
 
 export * from './prompt-input';
 export * from './types';
@@ -14,6 +18,7 @@ export * from './types';
 export function inputCardEmbedded(options: InputWidgetOptions): Extension {
   return [
     escapeListener,
+    enableUndoRedoTwiceState,
     cmdkDiffState,
     invertCmdkDiff,
     aiPromptInput(options),
