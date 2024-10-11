@@ -1,5 +1,10 @@
 import { getChunks, rejectChunk, animatableDiffView } from '@codemirror/merge';
-import { EditorState, type Extension, Prec } from '@codemirror/state';
+import {
+  EditorState,
+  type Extension,
+  Prec,
+  StateEffect,
+} from '@codemirror/state';
 import {
   Decoration,
   type DecorationSet,
@@ -21,6 +26,8 @@ import {
 import { promptInputTheme } from './styling-theme';
 import type { ChatReq, ChatRes, InputWidgetOptions, Pos } from './types';
 import {
+  cmdkRedo,
+  cmdkUndo,
   getRefContent,
   isCmdkDiffViewActive,
   PROMPT_PLACEHOLDER_ERROR,
@@ -34,9 +41,9 @@ import {
   showCmdkDiffView,
   hideCmdkDiffView,
   enableUndoCmdkTwice,
+  setIsDocUpdatedBeforeShowDiff,
 } from './cmdk-actions';
 import { cmdkDiffState, enableUndoRedoTwiceState } from './cmdk-diff-state';
-import { undo } from '@codemirror/commands';
 
 /**
  * show the input widget
@@ -120,34 +127,31 @@ export function replaceSelectedLines(
     selection: {
       anchor: lineStart.from,
     },
+    effects: [setIsDocUpdatedBeforeShowDiff.of(true)],
     // userEvent: 'ai.replace',
     // annotations: cmdkReplaceAnno.of('cmdkReplaceAnno'),
   });
 
-  view.dispatch(
-    // { changes: { from: lineStart.from, to: lineEnd.to, insert: content } },
-
-    {
-      effects: [
-        showCmdkDiffView.of({
-          showCmdkDiff: true,
-          prompt: 'showCmdk',
-          originalContent: oriDoc,
-          showTypewriterAnimation: true,
-        }),
-        // cmdkDiffViewCompartment.reconfigure(
-        //   animatableDiffView({
-        //     original: oriDoc,
-        //     showTypewriterAnimation: true,
-        //     gutter: false,
-        //     highlightChanges: false,
-        //     syntaxHighlightDeletions: true,
-        //     mergeControls: false,
-        //   }),
-        // ),
-      ],
-    },
-  );
+  view.dispatch({
+    effects: [
+      showCmdkDiffView.of({
+        showCmdkDiff: true,
+        prompt: 'showCmdk',
+        originalContent: oriDoc,
+        showTypewriterAnimation: true,
+      }),
+      // cmdkDiffViewCompartment.reconfigure(
+      //   animatableDiffView({
+      //     original: oriDoc,
+      //     showTypewriterAnimation: true,
+      //     gutter: false,
+      //     highlightChanges: false,
+      //     syntaxHighlightDeletions: true,
+      //     mergeControls: false,
+      //   }),
+      // ),
+    ],
+  });
 }
 
 function rejectChunks(view: EditorView) {
@@ -567,7 +571,23 @@ const cmdkDiffViewRender = () => {
     const cmdkDiffStateBefore = tr.startState.field(cmdkDiffState);
     const cmdkDiffStateAfter = tr.state.field(cmdkDiffState);
 
-    if (cmdkDiffStateBefore !== cmdkDiffStateAfter) {
+    if (
+      cmdkDiffStateBefore.isDocUpdatedBeforeShowDiff !==
+      cmdkDiffStateAfter.isDocUpdatedBeforeShowDiff
+    ) {
+      if (
+        tr.isUserEvent('redo') &&
+        cmdkDiffStateAfter.isDocUpdatedBeforeShowDiff
+      ) {
+        return {
+          effects: [
+            enableUndoCmdkTwice.of(true),
+          ],
+        };
+      }
+    }
+
+    if (cmdkDiffStateBefore.showCmdkDiff !== cmdkDiffStateAfter.showCmdkDiff) {
       console.log(
         ';; renderCmdkDiff ',
         cmdkDiffStateAfter.showCmdkDiff,
@@ -577,21 +597,23 @@ const cmdkDiffViewRender = () => {
       );
 
       if (cmdkDiffStateAfter.showCmdkDiff) {
+        const effectsWithShowDiff: Array<StateEffect<unknown>> = [
+          cmdkDiffViewCompartment.reconfigure(
+            animatableDiffView({
+              original: cmdkDiffStateAfter.originalContent,
+              showTypewriterAnimation: Boolean(
+                cmdkDiffStateAfter.showTypewriterAnimation,
+              ),
+              gutter: false,
+              highlightChanges: false,
+              syntaxHighlightDeletions: true,
+              mergeControls: false,
+            }),
+          ),
+        ];
+
         return {
-          effects: [
-            cmdkDiffViewCompartment.reconfigure(
-              animatableDiffView({
-                original: cmdkDiffStateAfter.originalContent,
-                showTypewriterAnimation: Boolean(
-                  cmdkDiffStateAfter.showTypewriterAnimation,
-                ),
-                gutter: false,
-                highlightChanges: false,
-                syntaxHighlightDeletions: true,
-                mergeControls: false,
-              }),
-            ),
-          ],
+          effects: effectsWithShowDiff,
         };
       }
 
@@ -611,26 +633,34 @@ const cmdkDiffViewRender = () => {
   });
 };
 
-export const cmdkUndo = (hotkey?: string) => {
-  return Prec.high(
-    keymap.of([
-      {
-        key: hotkey || 'Mod-z',
-        run: (view) => {
-          queueMicrotask(() => {
-            const undoTwiceState = view.state.field(enableUndoRedoTwiceState);
-            console.log(';; k-z-twice2 ', undoTwiceState);
-            if (undoTwiceState) {
-              undo(view);
-              view.dispatch({ effects: [enableUndoCmdkTwice.of(false)] });
-            }
-          });
-
-          return false;
+export const cmdkUndoRedoHotkeys = () => {
+  return [
+    Prec.high(
+      keymap.of([
+        {
+          key: 'Mod-z',
+          run: cmdkUndo,
         },
-      },
-    ]),
-  );
+      ]),
+    ),
+    Prec.high(
+      keymap.of([
+        {
+          key: 'Mod-y',
+          mac: 'Mod-Shift-z',
+          run: cmdkRedo,
+        },
+      ]),
+    ),
+    Prec.high(
+      keymap.of([
+        {
+          linux: 'Ctrl-Shift-z',
+          run: cmdkRedo,
+        },
+      ]),
+    ),
+  ];
 };
 
 /** update input box style when ai is coding */
@@ -661,9 +691,9 @@ export function aiPromptInput(options: InputWidgetOptions): Extension {
     promptInputTheme,
     inputWidgetPluginCompartment.of([]),
     cmdkDiffViewCompartment.of([]),
-    promptInputKeyMaps(options.hotkey),
     cmdkDiffViewRender(),
-    cmdkUndo(),
+    promptInputKeyMaps(options.hotkey),
+    cmdkUndoRedoHotkeys(),
     // inputListener,
   ];
 }

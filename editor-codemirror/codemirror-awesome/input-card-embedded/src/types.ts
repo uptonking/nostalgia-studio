@@ -3,6 +3,11 @@ import type { EditorView } from '@codemirror/view';
 export type CmdkDiffState = {
   /** whether cmdk diff view is visible, default is false */
   showCmdkDiff: boolean;
+  /** whether editor doc is updated before cmdk diff view shows, default is false
+   * - only used to implement cmdk redo
+   */
+  isDocUpdatedBeforeShowDiff: boolean;
+
   showTypewriterAnimation?: boolean;
   /** prompt text from cmdk input */
   prompt: string;
