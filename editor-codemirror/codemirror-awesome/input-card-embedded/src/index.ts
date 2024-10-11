@@ -8,6 +8,7 @@ import {
   enableUndoRedoTwiceState,
   invertCmdkDiff,
 } from './cmdk-diff-state';
+import { cmdkInputState, invertCmdkInput } from './cmdk-input-state';
 
 export * from './prompt-input';
 export * from './types';
@@ -21,6 +22,8 @@ export function inputCardEmbedded(options: InputWidgetOptions): Extension {
     enableUndoRedoTwiceState,
     cmdkDiffState,
     invertCmdkDiff,
+    cmdkInputState,
+    invertCmdkInput,
     aiPromptInput(options),
   ];
 }

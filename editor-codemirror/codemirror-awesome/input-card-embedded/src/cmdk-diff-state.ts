@@ -12,7 +12,6 @@ import {
 const initialCmdkDiffState: CmdkDiffState = {
   showCmdkDiff: false,
   isDocUpdatedBeforeShowDiff: false,
-  prompt: '',
   originalContent: '',
 };
 

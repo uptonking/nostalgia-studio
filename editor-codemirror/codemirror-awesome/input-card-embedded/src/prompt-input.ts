@@ -3,7 +3,7 @@ import {
   EditorState,
   type Extension,
   Prec,
-  StateEffect,
+  type StateEffect,
 } from '@codemirror/state';
 import {
   Decoration,
@@ -30,6 +30,7 @@ import {
   cmdkUndo,
   getRefContent,
   isCmdkDiffViewActive,
+  isPromptInputActive,
   PROMPT_PLACEHOLDER_ERROR,
   PROMPT_PLACEHOLDER_NORMAL,
   PROMPT_TIPS_NORMAL,
@@ -42,8 +43,11 @@ import {
   hideCmdkDiffView,
   enableUndoCmdkTwice,
   setIsDocUpdatedBeforeShowDiff,
+  hideCmdkInput,
+  showCmdkInput,
 } from './cmdk-actions';
 import { cmdkDiffState, enableUndoRedoTwiceState } from './cmdk-diff-state';
+import { cmdkInputState } from './cmdk-input-state';
 
 /**
  * show the input widget
@@ -51,7 +55,6 @@ import { cmdkDiffState, enableUndoRedoTwiceState } from './cmdk-diff-state';
 export function activePromptInput(
   view: EditorView,
   defPrompt = '',
-  immediate = false,
   /**  where is this method called from */
   source: 'hotkey' | 'toolbarButton' = 'hotkey',
   pos?: Pos,
@@ -88,13 +91,13 @@ export function activePromptInput(
     });
   }
 
+  if (isPromptInputActive(view.state)) {
+    view.dispatch({
+      effects: hideCmdkInput.of({ showCmdkInputCard: false }),
+    });
+  }
   view.dispatch({
-    effects: inputWidgetPluginCompartment.reconfigure([]),
-  });
-  view.dispatch({
-    effects: inputWidgetPluginCompartment.reconfigure(
-      inputPlugin(defPrompt, immediate),
-    ),
+    effects: showCmdkInput.of({ showCmdkInputCard: true }),
   });
 
   const { onEvent } = inputWidgetOptions;
@@ -108,7 +111,8 @@ function unloadPromptPlugins(view: EditorView) {
         showCmdkDiff: false,
       }),
       // cmdkDiffViewCompartment.reconfigure([]),
-      inputWidgetPluginCompartment.reconfigure([]),
+      // inputWidgetPluginCompartment.reconfigure([]),
+      hideCmdkInput.of({ showCmdkInputCard: false }),
     ],
   });
 }
@@ -136,7 +140,6 @@ export function replaceSelectedLines(
     effects: [
       showCmdkDiffView.of({
         showCmdkDiff: true,
-        prompt: 'showCmdk',
         originalContent: oriDoc,
         showTypewriterAnimation: true,
       }),
@@ -227,7 +230,7 @@ class PromptInputWidget extends WidgetType {
         <span class="cm-ai-prompt-input-icon cm-ai-prompt-input-icon-left">
           ${ICON_PROMPT}
         </span>
-        <input placeholder="${inputWidgetOptions.promptInputPlaceholderNormal ?? PROMPT_PLACEHOLDER_NORMAL}" value="${this.defPrompt}" />
+        <input class="prompt-input-box" placeholder="${inputWidgetOptions.promptInputPlaceholderNormal ?? PROMPT_PLACEHOLDER_NORMAL}" value="${this.defPrompt}" />
         <button class="cm-ai-prompt-input-icon cm-ai-prompt-input-icon-right">
           ${ICON_SEND}
         </button>
@@ -244,7 +247,7 @@ class PromptInputWidget extends WidgetType {
     `;
 
     const form = root.querySelector('form') as HTMLFormElement;
-    const input = form.querySelector('input') as HTMLInputElement;
+    const input = form.querySelector('.prompt-input-box') as HTMLInputElement;
     const leftIcon = form.querySelector(
       'span.cm-ai-prompt-input-icon-left',
     ) as HTMLSpanElement;
@@ -399,6 +402,19 @@ class PromptInputWidget extends WidgetType {
         return;
       }
       await handleRequest();
+    };
+    input.onkeydown = (e) => {
+      console.log(';; keydown in input ', this.oriSelPos);
+      if (
+        e.key === 'z' &&
+        (e.ctrlKey || e.metaKey) &&
+        input.value === ''
+      ) {
+        view.dispatch({
+          effects: hideCmdkInput.of({ showCmdkInputCard: false }),
+        });
+        queueMicrotask(() => recoverSelection(view, this.oriSelPos));
+      }
     };
     rightIcon.onclick = () => {
       // if (!getCurDatabase(view.state)) {
@@ -566,6 +582,37 @@ const promptInputKeyMaps = (hotkey?: string) =>
     ]),
   );
 
+const cmdkInputRender = () => {
+  return EditorState.transactionExtender.of((tr) => {
+    const cmdkInputStateBefore = tr.startState.field(cmdkInputState);
+    const cmdkInputStateAfter = tr.state.field(cmdkInputState);
+    console.log(
+      ';; renderCmdkInput ',
+      cmdkInputStateAfter.showCmdkInputCard,
+      cmdkInputStateBefore,
+      cmdkInputStateAfter,
+      tr,
+    );
+
+    if (
+      cmdkInputStateBefore.showCmdkInputCard !==
+      cmdkInputStateAfter.showCmdkInputCard
+    ) {
+      if (cmdkInputStateAfter.showCmdkInputCard) {
+        return {
+          effects: inputWidgetPluginCompartment.reconfigure(
+            inputPlugin('', false),
+          ),
+        };
+      }
+
+      return {
+        effects: [inputWidgetPluginCompartment.reconfigure([])],
+      };
+    }
+  });
+};
+
 const cmdkDiffViewRender = () => {
   return EditorState.transactionExtender.of((tr) => {
     const cmdkDiffStateBefore = tr.startState.field(cmdkDiffState);
@@ -580,9 +627,7 @@ const cmdkDiffViewRender = () => {
         cmdkDiffStateAfter.isDocUpdatedBeforeShowDiff
       ) {
         return {
-          effects: [
-            enableUndoCmdkTwice.of(true),
-          ],
+          effects: [enableUndoCmdkTwice.of(true)],
         };
       }
     }
@@ -691,6 +736,7 @@ export function aiPromptInput(options: InputWidgetOptions): Extension {
     promptInputTheme,
     inputWidgetPluginCompartment.of([]),
     cmdkDiffViewCompartment.of([]),
+    cmdkInputRender(),
     cmdkDiffViewRender(),
     promptInputKeyMaps(options.hotkey),
     cmdkUndoRedoHotkeys(),

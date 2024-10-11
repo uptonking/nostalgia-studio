@@ -1,5 +1,8 @@
 import { Compartment, StateEffect } from '@codemirror/state';
-import type { CmdkDiffState } from './types';
+import type { CmdkDiffState, CmdkInputState } from './types';
+
+export const showCmdkInput = StateEffect.define<Partial<CmdkInputState>>();
+export const hideCmdkInput = StateEffect.define<Partial<CmdkInputState>>();
 
 export const showCmdkDiffView = StateEffect.define<Partial<CmdkDiffState>>();
 export const hideCmdkDiffView = StateEffect.define<Partial<CmdkDiffState>>();

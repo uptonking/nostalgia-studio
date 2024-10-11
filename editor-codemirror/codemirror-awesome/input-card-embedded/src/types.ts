@@ -1,5 +1,15 @@
 import type { EditorView } from '@codemirror/view';
 
+export type CmdkInputState = {
+  /** whether cmdk input card is visible, default is false */
+  showCmdkInputCard: boolean;
+  /** prompt text from cmdk input */
+  prompt: string;
+  /** update previous prompt when clicking followup */
+  lastPrompt: string;
+  promptPos: Pos;
+};
+
 export type CmdkDiffState = {
   /** whether cmdk diff view is visible, default is false */
   showCmdkDiff: boolean;
@@ -9,8 +19,6 @@ export type CmdkDiffState = {
   isDocUpdatedBeforeShowDiff: boolean;
 
   showTypewriterAnimation?: boolean;
-  /** prompt text from cmdk input */
-  prompt: string;
   /** original content for cmdk diff view */
   originalContent: string;
 };
