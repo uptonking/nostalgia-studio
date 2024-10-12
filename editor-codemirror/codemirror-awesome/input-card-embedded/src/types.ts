@@ -3,6 +3,8 @@ import type { EditorView } from '@codemirror/view';
 export type CmdkInputState = {
   /** whether cmdk input card is visible, default is false */
   showCmdkInputCard: boolean;
+  /** whether to put cursor in the input box, default is false */
+  isPromptInputFocused: boolean;
   /** prompt text from cmdk input */
   prompt: string;
   /** update previous prompt when clicking followup */

@@ -4,10 +4,13 @@ import type { CmdkInputState } from './types';
 import {
   showCmdkInput,
   hideCmdkInput,
+  setIsPromptInputFocused,
+  setPromptText,
 } from './cmdk-actions';
 
 const initialCmdkInputState: CmdkInputState = {
   showCmdkInputCard: false,
+  isPromptInputFocused: false,
   prompt: '',
   lastPrompt: '',
   promptPos: { from: -1000, to: -1000 },
@@ -20,9 +23,12 @@ export const cmdkInputState = StateField.define<CmdkInputState>({
       if (ef.is(showCmdkInput) || ef.is(hideCmdkInput)) {
         val = { ...val, ...ef.value };
       }
-      // if (ef.is(setIsDocUpdatedBeforeShowDiff)) {
-      //   val = { ...val, isDocUpdatedBeforeShowDiff: Boolean(ef.value) };
-      // }
+      if (ef.is(setIsPromptInputFocused)) {
+        val = { ...val, isPromptInputFocused: Boolean(ef.value) };
+      }
+      if (ef.is(setPromptText)) {
+        val = { ...val, prompt: ef.value[0] };
+      }
     }
     return val;
   },
@@ -46,24 +52,14 @@ export const invertCmdkInput = invertedEffects.of((tr) => {
         }),
       ];
     }
-    // if (ef.is(setIsDocUpdatedBeforeShowDiff)) {
-    //   return [setIsDocUpdatedBeforeShowDiff.of(!Boolean(ef.value))];
-    // }
+    if (
+      ef.is(setPromptText) &&
+      Array.isArray(ef.value) &&
+      ef.value.length === 2
+    ) {
+      return [setPromptText.of([ef.value[1], ef.value[0]])];
+    }
   }
   return [];
 });
 
-/** a hack approach to trigger undo/redo twice for some transaction
- * - default value is false, usually value is false; useful for cmdk undo/redo
- */
-// export const enableUndoRedoTwiceState = StateField.define<boolean>({
-//   create: () => false,
-//   update(val, tr) {
-//     for (const ef of tr.effects) {
-//       if (ef.is(enableUndoCmdkTwice) || ef.is(enableRedoCmdkTwice)) {
-//         val = Boolean(ef.value);
-//       }
-//     }
-//     return val;
-//   },
-// });

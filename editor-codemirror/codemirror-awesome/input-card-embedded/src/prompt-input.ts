@@ -1,4 +1,5 @@
-import { getChunks, rejectChunk, animatableDiffView } from '@codemirror/merge';
+import { redo, undo } from '@codemirror/commands';
+import { animatableDiffView, getChunks, rejectChunk } from '@codemirror/merge';
 import {
   EditorState,
   type Extension,
@@ -9,12 +10,26 @@ import {
   Decoration,
   type DecorationSet,
   type EditorView,
+  keymap,
   ViewPlugin,
   type ViewUpdate,
   WidgetType,
-  keymap,
 } from '@codemirror/view';
 
+import {
+  cmdkDiffViewCompartment,
+  enableUndoCmdkTwice,
+  hideCmdkDiffView,
+  hideCmdkInput,
+  inputWidgetPluginCompartment,
+  setIsDocUpdatedBeforeShowDiff,
+  setIsPromptInputFocused,
+  setPromptText,
+  showCmdkDiffView,
+  showCmdkInput,
+} from './cmdk-actions';
+import { cmdkDiffState } from './cmdk-diff-state';
+import { cmdkInputState } from './cmdk-input-state';
 import {
   ICON_CLOSE,
   ICON_ERROR,
@@ -36,19 +51,6 @@ import {
   PROMPT_TIPS_NORMAL,
   PROMPT_TIPS_REQUESTING,
 } from './utils';
-import {
-  inputWidgetPluginCompartment,
-  cmdkDiffViewCompartment,
-  showCmdkDiffView,
-  hideCmdkDiffView,
-  enableUndoCmdkTwice,
-  setIsDocUpdatedBeforeShowDiff,
-  hideCmdkInput,
-  showCmdkInput,
-} from './cmdk-actions';
-import { cmdkDiffState, enableUndoRedoTwiceState } from './cmdk-diff-state';
-import { cmdkInputState } from './cmdk-input-state';
-import { undo } from '@codemirror/commands';
 
 /**
  * show the input widget
@@ -98,23 +100,24 @@ export function activePromptInput(
     });
   }
   view.dispatch({
-    effects: showCmdkInput.of({ showCmdkInputCard: true }),
+    effects: [
+      showCmdkInput.of({ showCmdkInputCard: true }),
+      setIsPromptInputFocused.of(true),
+    ],
   });
 
   const { onEvent } = inputWidgetOptions;
   onEvent?.(view, 'widget.open', { source });
 }
 
-function unloadPromptPlugins(view: EditorView) {
+function unloadPromptPlugins(view: EditorView, promptText?: [string, string]) {
   view.dispatch({
     effects: [
-      hideCmdkDiffView.of({
-        showCmdkDiff: false,
-      }),
-      // cmdkDiffViewCompartment.reconfigure([]),
-      // inputWidgetPluginCompartment.reconfigure([]),
+      // todo check order: save prompt first
+      promptText ? setPromptText.of(promptText) : undefined,
+      hideCmdkDiffView.of({ showCmdkDiff: false }),
       hideCmdkInput.of({ showCmdkInputCard: false }),
-    ],
+    ].filter(Boolean),
   });
 }
 
@@ -133,8 +136,6 @@ export function replaceSelectedLines(
       anchor: lineStart.from,
     },
     effects: [setIsDocUpdatedBeforeShowDiff.of(true)],
-    // userEvent: 'ai.replace',
-    // annotations: cmdkReplaceAnno.of('cmdkReplaceAnno'),
   });
 
   view.dispatch({
@@ -144,16 +145,6 @@ export function replaceSelectedLines(
         originalContent: oriDoc,
         showTypewriterAnimation: true,
       }),
-      // cmdkDiffViewCompartment.reconfigure(
-      //   animatableDiffView({
-      //     original: oriDoc,
-      //     showTypewriterAnimation: true,
-      //     gutter: false,
-      //     highlightChanges: false,
-      //     syntaxHighlightDeletions: true,
-      //     mergeControls: false,
-      //   }),
-      // ),
     ],
   });
 }
@@ -162,7 +153,6 @@ function rejectChunks(view: EditorView) {
   const chunks = getChunks(view.state)?.chunks || [];
   // must traverse from the last to the first
   for (let i = chunks.length - 1; i >= 0; i--) {
-    // rejectChunk(view, chunks[i].fromB, false)
     rejectChunk(view, chunks[i].fromB);
   }
 }
@@ -188,9 +178,9 @@ type PromptInputStatus = 'normal' | 'requesting' | 'req_success' | 'req_error';
 
 class PromptInputWidget extends WidgetType {
   private status: PromptInputStatus = 'normal';
-  private inputPrompt: string = '';
+  private inputPrompt = '';
 
-  private chatId: string = '';
+  private chatId = '';
   private chatReq: ChatReq | null = null;
   private chatRes: ChatRes | null = null;
 
@@ -198,7 +188,8 @@ class PromptInputWidget extends WidgetType {
     /** pos is the selection when the widget is created */
     public oriSelPos: Pos,
     public defPrompt: string,
-    public immediate: boolean,
+    public shouldFocusInput = false,
+    public immediate = false,
   ) {
     super();
   }
@@ -219,11 +210,20 @@ class PromptInputWidget extends WidgetType {
       recoverSelection(view, this.oriSelPos);
     }
 
-    unloadPromptPlugins(view);
+    const cmdkInputStates = view.state.field(cmdkInputState);
+    // unloadPromptPlugins(view, [this.inputPrompt, cmdkInputStates.prompt]);
+    unloadPromptPlugins(view, [
+      (document.querySelector('.prompt-input-box') as HTMLInputElement)
+        ?.value || '',
+      cmdkInputStates.prompt,
+    ]);
     view.focus();
   }
 
   toDOM(view: EditorView) {
+    const cmdkInputStates = view.state.field(cmdkInputState);
+    console.log(';; lastPrompt ', cmdkInputStates.prompt, cmdkInputStates);
+
     const root = document.createElement('div');
     root.className = 'cm-ai-prompt-input-root';
     root.innerHTML = `
@@ -231,7 +231,7 @@ class PromptInputWidget extends WidgetType {
         <span class="cm-ai-prompt-input-icon cm-ai-prompt-input-icon-left">
           ${ICON_PROMPT}
         </span>
-        <input class="prompt-input-box" placeholder="${inputWidgetOptions.promptInputPlaceholderNormal ?? PROMPT_PLACEHOLDER_NORMAL}" value="${this.defPrompt}" />
+        <input class="prompt-input-box" placeholder="${inputWidgetOptions.promptInputPlaceholderNormal ?? PROMPT_PLACEHOLDER_NORMAL}" value="${this.defPrompt || cmdkInputStates.prompt}" />
         <button class="cm-ai-prompt-input-icon cm-ai-prompt-input-icon-right">
           ${ICON_SEND}
         </button>
@@ -405,18 +405,24 @@ class PromptInputWidget extends WidgetType {
       await handleRequest();
     };
     input.onkeydown = (e) => {
-      if (e.key === 'z' && (e.ctrlKey || e.metaKey) && input.value === '') {
-        undo(view);
-        view.focus();
-        recoverSelection(view, this.oriSelPos);
+      if (e.key === 'z') {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
+          console.log(';; redo-in-input');
+          redo(view);
+          // view.focus();
+          // recoverSelection(view, this.oriSelPos);
+          return;
+        }
+
+        if ((e.ctrlKey || e.metaKey) && input.value === '') {
+          console.log(';; undo-in-input');
+          undo(view);
+          view.focus();
+          recoverSelection(view, this.oriSelPos);
+        }
       }
     };
     rightIcon.onclick = () => {
-      // if (!getCurDatabase(view.state)) {
-      //   noUseStatus();
-      //   return;
-      // }
-
       if (this.status === 'requesting') {
         onEvent?.(view, 'req.cancel', { chatReq: this.chatReq });
         rejectChunks(view);
@@ -439,9 +445,10 @@ class PromptInputWidget extends WidgetType {
         chatReq: this.chatReq,
         chatRes: this.chatRes,
       });
-      unloadPromptPlugins(view);
 
+      unloadPromptPlugins(view, [input.value, cmdkInputStates.prompt]);
       moveCursorAfterAccept(view);
+
       view.focus();
     };
     discardBtn.onclick = () => {
@@ -451,7 +458,7 @@ class PromptInputWidget extends WidgetType {
       });
       rejectChunks(view);
       recoverSelection(view, this.oriSelPos);
-      unloadPromptPlugins(view);
+      unloadPromptPlugins(view, [input.value, cmdkInputStates.prompt]);
       view.focus();
     };
     // regenBtn.onclick = async () => {
@@ -462,17 +469,18 @@ class PromptInputWidget extends WidgetType {
     //   await handleRequest();
     // };
 
-    // todo fix hack
     setTimeout(() => {
-      const end = input.value.length;
-      input.setSelectionRange(end, end);
-      input.focus();
-
-      // if (!getCurDatabase(view.state)) {
-      //   onEvent?.(view, 'no_ai.error');
-      //   noUseAiStatus();
-      //   return;
-      // }
+      console.log(';; focus-input ', cmdkInputStates.isPromptInputFocused);
+      if (this.shouldFocusInput || cmdkInputStates.isPromptInputFocused) {
+        const end = input.value.length;
+        input.setSelectionRange(end, end);
+        input.focus();
+        queueMicrotask(() =>
+          view.dispatch({
+            effects: [setIsPromptInputFocused.of(false)],
+          }),
+        );
+      }
 
       if (this.immediate && !this.chatReq) {
         form.requestSubmit();
@@ -506,7 +514,13 @@ class PromptInputWidget extends WidgetType {
 }
 
 // todo rewrite with state field
-const inputPlugin = (defPrompt: string, immediate: boolean) =>
+/**
+ * the input box for cmdk
+ * @param defPrompt initial prompt
+ * @param shouldFocusInput focus the cursor in the input when the input box show
+ * @returns
+ */
+const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
   ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
@@ -524,7 +538,7 @@ const inputPlugin = (defPrompt: string, immediate: boolean) =>
         this.promptInputWidget = new PromptInputWidget(
           { from, to },
           defPrompt,
-          immediate,
+          shouldFocusInput,
         );
         this.decorations = Decoration.set([
           Decoration.widget({

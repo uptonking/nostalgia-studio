@@ -3,6 +3,8 @@ import type { CmdkDiffState, CmdkInputState } from './types';
 
 export const showCmdkInput = StateEffect.define<Partial<CmdkInputState>>();
 export const hideCmdkInput = StateEffect.define<Partial<CmdkInputState>>();
+export const setIsPromptInputFocused = StateEffect.define<boolean>();
+export const setPromptText = StateEffect.define<[string, string]>();
 
 export const showCmdkDiffView = StateEffect.define<Partial<CmdkDiffState>>();
 export const hideCmdkDiffView = StateEffect.define<Partial<CmdkDiffState>>();

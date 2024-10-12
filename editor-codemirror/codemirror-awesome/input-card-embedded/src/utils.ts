@@ -35,8 +35,8 @@ export function isCmdkDiffViewActive(state: EditorState) {
 export function cmdkUndo(view: EditorView) {
   queueMicrotask(() => {
     const undoTwiceState = view.state.field(enableUndoRedoTwiceState);
-    console.log(';; k-undo-twice ', undoTwiceState);
     if (undoTwiceState) {
+      console.log(';; k-undo-twice ', undoTwiceState);
       undo(view);
       view.dispatch({ effects: [enableUndoCmdkTwice.of(false)] });
     }
@@ -48,8 +48,8 @@ export function cmdkUndo(view: EditorView) {
 export function cmdkRedo(view: EditorView) {
   queueMicrotask(() => {
     const redoTwiceState = view.state.field(enableUndoRedoTwiceState);
-    console.log(';; k-redo-twice ', redoTwiceState);
     if (redoTwiceState) {
+      console.log(';; k-redo-twice ', redoTwiceState);
       redo(view);
       view.dispatch({ effects: [enableRedoCmdkTwice.of(false)] });
     }
