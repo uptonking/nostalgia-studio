@@ -48,6 +48,7 @@ import {
 } from './cmdk-actions';
 import { cmdkDiffState, enableUndoRedoTwiceState } from './cmdk-diff-state';
 import { cmdkInputState } from './cmdk-input-state';
+import { undo } from '@codemirror/commands';
 
 /**
  * show the input widget
@@ -404,16 +405,10 @@ class PromptInputWidget extends WidgetType {
       await handleRequest();
     };
     input.onkeydown = (e) => {
-      console.log(';; keydown in input ', this.oriSelPos);
-      if (
-        e.key === 'z' &&
-        (e.ctrlKey || e.metaKey) &&
-        input.value === ''
-      ) {
-        view.dispatch({
-          effects: hideCmdkInput.of({ showCmdkInputCard: false }),
-        });
-        queueMicrotask(() => recoverSelection(view, this.oriSelPos));
+      if (e.key === 'z' && (e.ctrlKey || e.metaKey) && input.value === '') {
+        undo(view);
+        view.focus();
+        recoverSelection(view, this.oriSelPos);
       }
     };
     rightIcon.onclick = () => {
@@ -575,7 +570,6 @@ const promptInputKeyMaps = (hotkey?: string) =>
         key: hotkey || 'Mod-k',
         run: (view) => {
           activePromptInput(view);
-          // return true to prevent propagation
           return true;
         },
       },
@@ -586,18 +580,22 @@ const cmdkInputRender = () => {
   return EditorState.transactionExtender.of((tr) => {
     const cmdkInputStateBefore = tr.startState.field(cmdkInputState);
     const cmdkInputStateAfter = tr.state.field(cmdkInputState);
-    console.log(
-      ';; renderCmdkInput ',
-      cmdkInputStateAfter.showCmdkInputCard,
-      cmdkInputStateBefore,
-      cmdkInputStateAfter,
-      tr,
-    );
+
+    // console.log(';; renderCmdkInput1 ', tr.state.selection.main, tr);
 
     if (
       cmdkInputStateBefore.showCmdkInputCard !==
       cmdkInputStateAfter.showCmdkInputCard
     ) {
+      console.log(
+        ';; renderCmdkInput ',
+        cmdkInputStateAfter.showCmdkInputCard,
+        tr.state.selection.main,
+        cmdkInputStateBefore,
+        cmdkInputStateAfter,
+        tr,
+      );
+
       if (cmdkInputStateAfter.showCmdkInputCard) {
         return {
           effects: inputWidgetPluginCompartment.reconfigure(
