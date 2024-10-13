@@ -113,7 +113,6 @@ export function activePromptInput(
 function unloadPromptPlugins(view: EditorView, promptText?: [string, string]) {
   view.dispatch({
     effects: [
-      // todo check order: save prompt first
       promptText ? setPromptText.of(promptText) : undefined,
       hideCmdkDiffView.of({ showCmdkDiff: false }),
       hideCmdkInput.of({ showCmdkInputCard: false }),
@@ -210,19 +209,31 @@ class PromptInputWidget extends WidgetType {
       recoverSelection(view, this.oriSelPos);
     }
 
-    const cmdkInputStates = view.state.field(cmdkInputState);
+    // const cmdkInputStates = view.state.field(cmdkInputState);
     // unloadPromptPlugins(view, [this.inputPrompt, cmdkInputStates.prompt]);
     unloadPromptPlugins(view, [
+      '',
       (document.querySelector('.prompt-input-box') as HTMLInputElement)
         ?.value || '',
-      cmdkInputStates.prompt,
     ]);
     view.focus();
   }
 
+  // updateDOM(dom: HTMLElement, view: EditorView) {
+  //   return true;
+  // }
+
   toDOM(view: EditorView) {
     const cmdkInputStates = view.state.field(cmdkInputState);
-    console.log(';; lastPrompt ', cmdkInputStates.prompt, cmdkInputStates);
+    const cmdkDiffStates = view.state.field(cmdkDiffState);
+    const initialPrompt = cmdkInputStates.prompt;
+    console.log(
+      ';; initialPrompt ',
+      isCmdkDiffViewActive(view.state),
+      cmdkDiffStates.showCmdkDiff,
+      initialPrompt,
+      cmdkInputStates,
+    );
 
     const root = document.createElement('div');
     root.className = 'cm-ai-prompt-input-root';
@@ -231,7 +242,7 @@ class PromptInputWidget extends WidgetType {
         <span class="cm-ai-prompt-input-icon cm-ai-prompt-input-icon-left">
           ${ICON_PROMPT}
         </span>
-        <input class="prompt-input-box" placeholder="${inputWidgetOptions.promptInputPlaceholderNormal ?? PROMPT_PLACEHOLDER_NORMAL}" value="${this.defPrompt || cmdkInputStates.prompt}" />
+        <input class="prompt-input-box" placeholder="${inputWidgetOptions.promptInputPlaceholderNormal ?? PROMPT_PLACEHOLDER_NORMAL}" value="${this.defPrompt || initialPrompt}" />
         <button class="cm-ai-prompt-input-icon cm-ai-prompt-input-icon-right">
           ${ICON_SEND}
         </button>
@@ -281,17 +292,21 @@ class PromptInputWidget extends WidgetType {
 
       rightIcon.innerHTML = ICON_SEND;
 
-      input.value = this.defPrompt;
+      input.value = this.defPrompt || initialPrompt;
       input.placeholder =
         inputWidgetOptions.promptInputPlaceholderNormal ??
         PROMPT_PLACEHOLDER_NORMAL;
 
-      tips.style.display = 'flex';
-      tips.innerText =
-        inputWidgetOptions.promptInputTipsNormal ?? PROMPT_TIPS_NORMAL;
-
-      actionBtns.style.display = 'none';
-
+      if (isCmdkDiffViewActive(view.state)) {
+        // /show accept/reject buttons
+        tips.style.display = 'none';
+        actionBtns.style.display = 'flex';
+      } else {
+        tips.style.display = 'flex';
+        tips.innerText =
+          inputWidgetOptions.promptInputTipsNormal ?? PROMPT_TIPS_NORMAL;
+        actionBtns.style.display = 'none';
+      }
       this.status = 'normal';
     };
     const requestingStatus = () => {
@@ -446,7 +461,7 @@ class PromptInputWidget extends WidgetType {
         chatRes: this.chatRes,
       });
 
-      unloadPromptPlugins(view, [input.value, cmdkInputStates.prompt]);
+      unloadPromptPlugins(view, ['', input.value]);
       moveCursorAfterAccept(view);
 
       view.focus();
@@ -458,7 +473,7 @@ class PromptInputWidget extends WidgetType {
       });
       rejectChunks(view);
       recoverSelection(view, this.oriSelPos);
-      unloadPromptPlugins(view, [input.value, cmdkInputStates.prompt]);
+      unloadPromptPlugins(view, ['', input.value]);
       view.focus();
     };
     // regenBtn.onclick = async () => {
@@ -595,7 +610,12 @@ const cmdkInputRender = () => {
     const cmdkInputStateBefore = tr.startState.field(cmdkInputState);
     const cmdkInputStateAfter = tr.state.field(cmdkInputState);
 
-    // console.log(';; renderCmdkInput1 ', tr.state.selection.main, tr);
+    console.log(
+      ';; renderCmdkInput1 ',
+      cmdkInputStateAfter.showCmdkInputCard,
+      cmdkInputStateAfter,
+      tr,
+    );
 
     if (
       cmdkInputStateBefore.showCmdkInputCard !==
@@ -604,7 +624,6 @@ const cmdkInputRender = () => {
       console.log(
         ';; renderCmdkInput ',
         cmdkInputStateAfter.showCmdkInputCard,
-        tr.state.selection.main,
         cmdkInputStateBefore,
         cmdkInputStateAfter,
         tr,

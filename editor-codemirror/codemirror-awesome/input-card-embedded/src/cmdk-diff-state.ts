@@ -1,5 +1,5 @@
 import { invertedEffects } from '@codemirror/commands';
-import { StateField } from '@codemirror/state';
+import { type StateEffect, StateField } from '@codemirror/state';
 import type { CmdkDiffState } from './types';
 import {
   showCmdkDiffView,
@@ -31,29 +31,30 @@ export const cmdkDiffState = StateField.define<CmdkDiffState>({
 });
 
 export const invertCmdkDiff = invertedEffects.of((tr) => {
+  const effects: StateEffect<unknown>[] = [];
   for (const ef of tr.effects) {
     if (ef.is(showCmdkDiffView)) {
-      return [
+      effects.push(
         hideCmdkDiffView.of({
           ...ef.value,
           showCmdkDiff: false,
         }),
-      ];
+      );
     }
     if (ef.is(hideCmdkDiffView)) {
-      return [
+      effects.push(
         showCmdkDiffView.of({
           ...ef.value,
           showCmdkDiff: true,
           showTypewriterAnimation: false,
         }),
-      ];
+      );
     }
     if (ef.is(setIsDocUpdatedBeforeShowDiff)) {
-      return [setIsDocUpdatedBeforeShowDiff.of(!Boolean(ef.value))];
+      effects.push(setIsDocUpdatedBeforeShowDiff.of(!Boolean(ef.value)));
     }
   }
-  return [];
+  return effects;
 });
 
 /** a hack approach to trigger undo/redo twice for some transaction

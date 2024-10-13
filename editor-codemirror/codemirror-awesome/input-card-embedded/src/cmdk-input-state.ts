@@ -1,5 +1,5 @@
 import { invertedEffects } from '@codemirror/commands';
-import { StateField } from '@codemirror/state';
+import { type StateEffect, StateField } from '@codemirror/state';
 import type { CmdkInputState } from './types';
 import {
   showCmdkInput,
@@ -35,31 +35,31 @@ export const cmdkInputState = StateField.define<CmdkInputState>({
 });
 
 export const invertCmdkInput = invertedEffects.of((tr) => {
+  const effects: StateEffect<unknown>[] = [];
   for (const ef of tr.effects) {
     if (ef.is(showCmdkInput)) {
-      return [
+      effects.push(
         hideCmdkInput.of({
           ...ef.value,
           showCmdkInputCard: false,
         }),
-      ];
+      );
     }
     if (ef.is(hideCmdkInput)) {
-      return [
+      effects.push(
         showCmdkInput.of({
           ...ef.value,
           showCmdkInputCard: true,
         }),
-      ];
+      );
     }
     if (
       ef.is(setPromptText) &&
       Array.isArray(ef.value) &&
       ef.value.length === 2
     ) {
-      return [setPromptText.of([ef.value[1], ef.value[0]])];
+      effects.push(setPromptText.of([ef.value[1], ef.value[0]]));
     }
   }
-  return [];
+  return effects;
 });
-
