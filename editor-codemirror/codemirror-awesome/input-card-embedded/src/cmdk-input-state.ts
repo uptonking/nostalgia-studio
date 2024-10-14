@@ -13,7 +13,7 @@ const initialCmdkInputState: CmdkInputState = {
   isPromptInputFocused: false,
   prompt: '',
   lastPrompt: '',
-  promptPos: { from: -1000, to: -1000 },
+  promptPos: { from: -1e9, to: -1e9 },
 };
 
 export const cmdkInputState = StateField.define<CmdkInputState>({

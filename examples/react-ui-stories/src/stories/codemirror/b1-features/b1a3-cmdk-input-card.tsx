@@ -4,6 +4,7 @@ import { basicSetup, EditorView } from 'codemirror';
 
 import { Compartment } from '@codemirror/state';
 import { inputCardEmbedded } from '@datalking/cm-input-card-embedded';
+import { aiCursorTooltip } from '@datalking/cm-floating-toolbar';
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -45,6 +46,7 @@ Cmd+K is the shortcut for ai-assisted single file editing
       extensions: [
         basicSetup,
         cmdkInputCard,
+        aiCursorTooltip(),
         // language.of(markdown())
       ],
       doc: content,

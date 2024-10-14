@@ -1,5 +1,5 @@
 import { invertedEffects } from '@codemirror/commands';
-import { type StateEffect, StateField } from '@codemirror/state';
+import { type EditorState, type StateEffect, StateField } from '@codemirror/state';
 import type { CmdkDiffState } from './types';
 import {
   showCmdkDiffView,
@@ -71,3 +71,13 @@ export const enableUndoRedoTwiceState = StateField.define<boolean>({
     return val;
   },
 });
+
+export function checkIsCmdkDiffVisibilityChanged(
+  s1: EditorState,
+  s2: EditorState,
+) {
+  return (
+    s1.field(cmdkDiffState, false).showCmdkDiff !==
+    s2.field(cmdkDiffState, false).showCmdkDiff
+  );
+}

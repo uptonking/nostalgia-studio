@@ -28,7 +28,10 @@ import {
   showCmdkDiffView,
   showCmdkInput,
 } from './cmdk-actions';
-import { cmdkDiffState } from './cmdk-diff-state';
+import {
+  checkIsCmdkDiffVisibilityChanged,
+  cmdkDiffState,
+} from './cmdk-diff-state';
 import { cmdkInputState } from './cmdk-input-state';
 import {
   ICON_CLOSE,
@@ -50,6 +53,7 @@ import {
   PROMPT_PLACEHOLDER_NORMAL,
   PROMPT_TIPS_NORMAL,
   PROMPT_TIPS_REQUESTING,
+  queryMainElements,
 } from './utils';
 
 /**
@@ -103,6 +107,7 @@ export function activePromptInput(
     effects: [
       showCmdkInput.of({ showCmdkInputCard: true }),
       setIsPromptInputFocused.of(true),
+      // setPromptText.of(['', view.state.field(cmdkInputState).prompt]),
     ],
   });
 
@@ -191,6 +196,7 @@ class PromptInputWidget extends WidgetType {
     public immediate = false,
   ) {
     super();
+    console.log(';; wid-input-ctor ', oriSelPos);
   }
 
   /** dismiss the prompt input widget by click `close` icon, or press `ESC` */
@@ -219,16 +225,34 @@ class PromptInputWidget extends WidgetType {
     view.focus();
   }
 
-  // updateDOM(dom: HTMLElement, view: EditorView) {
-  //   return true;
-  // }
+  updateDOM(dom: HTMLElement, view: EditorView) {
+    return false;
+  }
+
+  updateTipsActionsBelowInput(state: EditorState) {
+    const { tips, actionBtns, promptInputBox } = queryMainElements();
+    if (promptInputBox instanceof HTMLInputElement) {
+      const cmdkDiffStates = state.field(cmdkDiffState,false);
+      if (cmdkDiffStates.showCmdkDiff) {
+        if (actionBtns.style.display !== 'flex') {
+          tips.style.display = 'none';
+          actionBtns.style.display = 'flex';
+        }
+      } else {
+        if (actionBtns.style.display !== 'none') {
+          tips.style.display = 'flex';
+          actionBtns.style.display = 'none';
+        }
+      }
+    }
+  }
 
   toDOM(view: EditorView) {
-    const cmdkInputStates = view.state.field(cmdkInputState);
-    const cmdkDiffStates = view.state.field(cmdkDiffState);
+    const cmdkInputStates = view.state.field(cmdkInputState,false);
+    const cmdkDiffStates = view.state.field(cmdkDiffState,false);
     const initialPrompt = cmdkInputStates.prompt;
     console.log(
-      ';; initialPrompt ',
+      ';; wid-input-toDOM ',
       isCmdkDiffViewActive(view.state),
       cmdkDiffStates.showCmdkDiff,
       initialPrompt,
@@ -533,7 +557,6 @@ class PromptInputWidget extends WidgetType {
  * the input box for cmdk
  * @param defPrompt initial prompt
  * @param shouldFocusInput focus the cursor in the input when the input box show
- * @returns
  */
 const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
   ViewPlugin.fromClass(
@@ -572,7 +595,16 @@ const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
       update(v: ViewUpdate) {
         // update the decoration pos if content changes
         // for example: after clicking button to insert new content before the widget
+        console.log(';; cmdk-viewPlugin-up ');
         this.decorations = this.decorations.map(v.changes);
+
+        if (
+          checkIsCmdkDiffVisibilityChanged(v.startState, v.state) &&
+          document.querySelector('.prompt-input-box') instanceof
+            HTMLInputElement
+        ) {
+          this.promptInputWidget.updateTipsActionsBelowInput(v.state);
+        }
       }
 
       dismissEventListener = (e: Event) => {
@@ -607,15 +639,15 @@ const promptInputKeyMaps = (hotkey?: string) =>
 
 const cmdkInputRender = () => {
   return EditorState.transactionExtender.of((tr) => {
-    const cmdkInputStateBefore = tr.startState.field(cmdkInputState);
-    const cmdkInputStateAfter = tr.state.field(cmdkInputState);
+    const cmdkInputStateBefore = tr.startState.field(cmdkInputState,false);
+    const cmdkInputStateAfter = tr.state.field(cmdkInputState,false);
 
-    console.log(
-      ';; renderCmdkInput1 ',
-      cmdkInputStateAfter.showCmdkInputCard,
-      cmdkInputStateAfter,
-      tr,
-    );
+    // console.log(
+    //   ';; renderCmdkInput1 ',
+    //   cmdkInputStateAfter.showCmdkInputCard,
+    //   cmdkInputStateAfter,
+    //   tr,
+    // );
 
     if (
       cmdkInputStateBefore.showCmdkInputCard !==
@@ -646,8 +678,8 @@ const cmdkInputRender = () => {
 
 const cmdkDiffViewRender = () => {
   return EditorState.transactionExtender.of((tr) => {
-    const cmdkDiffStateBefore = tr.startState.field(cmdkDiffState);
-    const cmdkDiffStateAfter = tr.state.field(cmdkDiffState);
+    const cmdkDiffStateBefore = tr.startState.field(cmdkDiffState,false);
+    const cmdkDiffStateAfter = tr.state.field(cmdkDiffState,false);
 
     if (
       cmdkDiffStateBefore.isDocUpdatedBeforeShowDiff !==

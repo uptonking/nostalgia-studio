@@ -34,7 +34,7 @@ export function isCmdkDiffViewActive(state: EditorState) {
 
 export function cmdkUndo(view: EditorView) {
   queueMicrotask(() => {
-    const undoTwiceState = view.state.field(enableUndoRedoTwiceState);
+    const undoTwiceState = view.state.field(enableUndoRedoTwiceState, false);
     if (undoTwiceState) {
       console.log(';; k-undo-twice ', undoTwiceState);
       undo(view);
@@ -47,7 +47,7 @@ export function cmdkUndo(view: EditorView) {
 
 export function cmdkRedo(view: EditorView) {
   queueMicrotask(() => {
-    const redoTwiceState = view.state.field(enableUndoRedoTwiceState);
+    const redoTwiceState = view.state.field(enableUndoRedoTwiceState, false);
     if (redoTwiceState) {
       console.log(';; k-redo-twice ', redoTwiceState);
       redo(view);
@@ -56,4 +56,26 @@ export function cmdkRedo(view: EditorView) {
   });
 
   return false;
+}
+
+export function queryMainElements() {
+  const root = document.querySelector(
+    '.cm-ai-prompt-input-root',
+  ) as HTMLDivElement;
+  const promptInputBox = root.querySelector(
+    '.prompt-input-box',
+  ) as HTMLInputElement;
+  const tips = root.querySelector(
+    '.cm-ai-prompt-input-tips',
+  ) as HTMLSpanElement;
+  const actionBtns = root.querySelector(
+    '.cm-ai-prompt-input-actions',
+  ) as HTMLDivElement;
+
+  return {
+    root,
+    tips,
+    actionBtns,
+    promptInputBox,
+  };
 }

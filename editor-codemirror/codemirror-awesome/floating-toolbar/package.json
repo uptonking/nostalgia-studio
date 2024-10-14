@@ -1,0 +1,30 @@
+{
+  "name": "@datalking/cm-floating-toolbar",
+  "version": "0.0.1111",
+  "description": "coding toolbar and diff toolbar for codemirror",
+  "keywords": [
+    "editor",
+    "code"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codemirror/search.git"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "prepare1": "cm-buildhelper src/search.ts",
+    "test": "cm-runtests"
+  },
+  "dependencies": {
+    "@codemirror/state": "6.4.1111",
+    "@codemirror/view": "6.26.3111"
+  },
+  "devDependencies": {
+    "@codemirror/buildhelper": "^1.0.0"
+  }
+}

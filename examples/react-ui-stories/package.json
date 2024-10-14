@@ -31,6 +31,7 @@
     "@codemirror/state": "6.4.1111",
     "@codemirror/view": "6.26.3111",
     "@datalking/cm-input-card-embedded": "0.0.1111",
+    "@datalking/cm-floating-toolbar": "0.0.1111",
     "@datalking/codemirror-react": "0.0.1111",
     "@datalking/nosontable-react": "0.0.1111",
     "@dnd-kit/accessibility": "3.0.1111",
