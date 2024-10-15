@@ -1,3 +1,3 @@
 import { Compartment, StateEffect } from '@codemirror/state';
 
-export const enableTooltipEffect = StateEffect.define<boolean>();
+export const setShowFloatingToolbar = StateEffect.define<boolean>();

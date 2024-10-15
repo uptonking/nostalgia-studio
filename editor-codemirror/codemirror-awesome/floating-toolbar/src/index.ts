@@ -1,20 +1,21 @@
-import { inputWidgetPluginCompartment } from './../../input-card-embedded/src/cmdk-actions';
 import { Prec, type Extension } from '@codemirror/state';
-import { keymap, EditorView, ViewPlugin } from '@codemirror/view';
-import { cursorTooltipBaseTheme } from './styling-theme';
-import { enableTooltipEffect } from './toolbar-actions';
-import { cursorTooltipField } from './toolbar-state';
-import { hideTooltip } from './utils';
+import { EditorView, keymap, ViewPlugin } from '@codemirror/view';
+import { cmdkInputState } from '../../input-card-embedded/src/cmdk-input-state';
+import { inputWidgetPluginCompartment } from './../../input-card-embedded/src/cmdk-actions';
+import { floatingToolbarTheme } from './styling-theme';
+import { setShowFloatingToolbar } from './toolbar-actions';
+import { floatingToolbarState } from './toolbar-state';
+import { hideToolbar } from './utils';
 
-// dismiss tooltip when press ai-widget hotkey (default is 'Mod-i')
-const hideTooltipKeymap = (hotkey?: string) =>
+/** dismiss toolbar when press ai input hotkey (default is 'Mod-k') */
+const hideToolbarHotkeys = (hotkey?: string) =>
   Prec.highest(
     keymap.of([
       {
         key: hotkey || 'Mod-k',
         run: (view) => {
-          if (view.state.field(cursorTooltipField).length !== 0) {
-            hideTooltip(view);
+          if (view.state.field(floatingToolbarState).length !== 0) {
+            hideToolbar(view);
           }
           return false;
         },
@@ -22,48 +23,51 @@ const hideTooltipKeymap = (hotkey?: string) =>
     ]),
   );
 
-const selectionChangeListener = () => {
+/** show or hide floating toolbar */
+const floatingToolbarTrigger = () => {
   let timer: number | undefined;
-  let preFrom = -1;
-  let preTo = -1;
+  let prevFrom = -1;
+  let prevTo = -1;
 
   return EditorView.updateListener.of((update) => {
     if (!update.selectionSet) return;
 
     const { from, to } = update.view.state.selection.main;
-    if (from === preFrom && to === preTo) return;
-    preFrom = from;
-    preTo = to;
+    const isSelectionUnchanged = from === prevFrom && to === prevTo;
+    if (isSelectionUnchanged) return;
+    prevFrom = from;
+    prevTo = to;
 
-    // dismiss the previous tooltip immediately
-    if (from === to) {
-      hideTooltip(update.view);
+    if (
+      from === to ||
+      update.state.field(cmdkInputState, false).showCmdkInputCard
+    ) {
+      hideToolbar(update.view);
       return;
     }
 
-    // debounce
-    timer && clearTimeout(timer);
-    // delay to show the tooltip
+    if (timer) clearTimeout(timer);
+    // delay to show the toolbar
     timer = window.setTimeout(() => {
       if (
         inputWidgetPluginCompartment.get(update.view.state) instanceof
         ViewPlugin
-      )
+      ) {
         return;
-      // if (!getFirstNonUseTypeStatement(update.view.state)) return
+      }
 
       update.view.dispatch({
-        effects: enableTooltipEffect.of(true),
+        effects: setShowFloatingToolbar.of(true),
       });
     }, 500);
   });
 };
 
-export function aiCursorTooltip(hotkey?: string): Extension {
+export function floatingToolbar(hotkey?: string): Extension {
   return [
-    cursorTooltipBaseTheme,
-    hideTooltipKeymap(hotkey),
-    cursorTooltipField,
-    selectionChangeListener(),
+    floatingToolbarTheme,
+    floatingToolbarState,
+    hideToolbarHotkeys(hotkey),
+    floatingToolbarTrigger(),
   ];
 }

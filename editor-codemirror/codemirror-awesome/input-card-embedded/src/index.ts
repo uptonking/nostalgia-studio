@@ -20,10 +20,10 @@ export function inputCardEmbedded(options: InputWidgetOptions): Extension {
   return [
     escapeListener,
     enableUndoRedoTwiceState,
-    cmdkDiffState,
-    invertCmdkDiff,
     cmdkInputState,
     invertCmdkInput,
+    cmdkDiffState,
+    invertCmdkDiff,
     aiPromptInput(options),
   ];
 }

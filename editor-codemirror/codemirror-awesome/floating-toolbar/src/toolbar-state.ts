@@ -1,60 +1,86 @@
-import { invertedEffects } from '@codemirror/commands';
-import {
-  type EditorState,
-  type StateEffect,
-  StateField,
-} from '@codemirror/state';
+import { type EditorState, StateField } from '@codemirror/state';
 
 import {
-  EditorView,
+  type EditorView,
   type Tooltip,
-  keymap,
+  type TooltipView,
   showTooltip,
 } from '@codemirror/view';
-import { isAppleOs } from './utils';
-import { enableTooltipEffect } from './toolbar-actions';
+import { activePromptInput } from '../../input-card-embedded/src/prompt-input';
+import { setShowFloatingToolbar } from './toolbar-actions';
+import { hideToolbar, isAppleOs } from './utils';
 
-function getCursorTooltips(state: EditorState): readonly Tooltip[] {
-  const cmd = isAppleOs() ? 'Command' : 'Ctrl';
+function getToolbarItems(state: EditorState): readonly Tooltip[] {
+  const cmd = isAppleOs() ? '⌘' : 'Ctrl';
 
   return state.selection.ranges
     .filter((range) => !range.empty)
     .map((range) => {
       const pos = range.head;
       const line = state.doc.lineAt(pos);
-      let delta = pos - line.from;
-      if (delta > 5) {
-        delta = 5;
+      let offset = pos - line.from;
+      if (offset > 7) {
+        offset = 7;
       }
       return {
         pos: range.head,
         above: true,
-        create: () => {
-          const dom = document.createElement('div');
-          dom.className = 'cm-ai-tooltip-cursor';
-          dom.innerHTML =
-            // getAiWidgetOptions().tooltipHintElement ||
-            `Press <code><b>${cmd}</b> + <b>k</b></code> to Edit`;
-          return { dom, offset: { x: -16 * delta, y: 4 } };
+        arrow: false,
+        create: (view: EditorView): TooltipView => {
+          const root = document.createElement('div');
+          root.className = 'cm-floating-toolbar-container';
+          root.innerHTML = `
+          <div class="cm-floating-toolbar">
+            <div class="action-cmdk-edit cm-toolbar-item">
+              <div class="action-text">Edit</div>
+              <div class="action-text-secondary">${cmd}K</div>
+            </div>
+            <div class="cm-toolbar-item" style="display:none">
+              <div class="action-text">Add to Chat</div>
+              <div class="action-text-secondary">${cmd}⇧L</div>
+            </div>
+          </div>
+            `;
+
+          root.onclick = (e) => {
+            e.preventDefault();
+          };
+
+          const cmdkEditElem = root.querySelector(
+            '.cm-floating-toolbar .action-cmdk-edit',
+          ) as HTMLButtonElement;
+          cmdkEditElem.onclick = (e) => {
+            // console.log(';; cmdk2-bar ', state.selection.main);
+            hideToolbar(view);
+            activePromptInput(view, 'toolbar');
+          };
+
+          return {
+            dom: root,
+            offset: {
+              x: -10 * offset,
+              y: 4,
+            },
+          };
         },
       };
     });
 }
 
-export const cursorTooltipField = StateField.define<readonly Tooltip[]>({
-  create: getCursorTooltips,
+export const floatingToolbarState = StateField.define<readonly Tooltip[]>({
+  create: getToolbarItems,
 
-  update(tooltips, tr) {
+  update(toolbar, tr) {
     for (const effect of tr.effects) {
-      if (effect.is(enableTooltipEffect)) {
+      if (effect.is(setShowFloatingToolbar)) {
         if (effect.value) {
-          return getCursorTooltips(tr.state);
+          return getToolbarItems(tr.state);
         } else {
           return [];
         }
       }
     }
-    return tooltips;
+    return toolbar;
   },
 
   provide: (f) => showTooltip.computeN([f], (state) => state.field(f)),

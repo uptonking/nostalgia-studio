@@ -1,18 +1,16 @@
-import { ViewPlugin, type EditorView } from '@codemirror/view';
-import type { Pos } from './types';
-import type { EditorState, Extension, Transaction } from '@codemirror/state';
-import { enableTooltipEffect } from './toolbar-actions';
+import type { EditorView } from '@codemirror/view';
+import { setShowFloatingToolbar } from './toolbar-actions';
 
-export function hideTooltip(view: EditorView) {
+export function hideToolbar(view: EditorView) {
   view.dispatch({
-    effects: enableTooltipEffect.of(false),
+    effects: setShowFloatingToolbar.of(false),
   });
 }
 
 function getOS() {
   // ref: https://dev.to/vvo/how-to-solve-window-is-not-defined-errors-in-react-and-next-js-5f97
   if (typeof window !== 'undefined') {
-    let userAgent = navigator.userAgent
+    const userAgent = navigator.userAgent
     if (/windows phone/i.test(userAgent)) {
       return 'Windows Phone'
     } else if (/android/i.test(userAgent)) {

@@ -21,6 +21,10 @@ const cursorTooltipBaseTheme = EditorView.baseTheme({
   },
 });
 
+/**
+ * crudely determines the word boundaries around the given position and, 
+ * - if the pointer is inside that word, returns a tooltip with the word
+ */
 export const wordHover = hoverTooltip((view, pos, side) => {
   const { from, to, text } = view.state.doc.lineAt(pos);
   let start = pos;
@@ -48,6 +52,8 @@ const cursorTooltipState = StateField.define<readonly Tooltip[]>({
     return getCursorTooltips(tr.state);
   },
 
+  // Dynamic facet values, there can be multiple cursors, so the tooltips are kept in an array
+  // provide used with computeN, is the way to provide multiple facet inputs from a state field
   provide: (f) => showTooltip.computeN([f], (state) => state.field(f)),
 });
 
@@ -72,6 +78,11 @@ function getCursorTooltips(state: EditorState): readonly Tooltip[] {
     });
 }
 
+/**
+ * tooltips are widgets floating over the editor content, aligned to some position in that content
+ * - Active tooltips are displayed as fixed-position elements
+ * - https://codemirror.net/examples/tooltip/
+ */
 export const CursorTooltip = () => {
   const editorRef = useRef<HTMLDivElement>(null);
   const hoverEditorRef = useRef<HTMLDivElement>(null);
@@ -79,8 +90,9 @@ export const CursorTooltip = () => {
   useEffect(() => {
     const language = new Compartment();
 
+    // displays a row:column position above the cursor
     const editor = new EditorView({
-      doc: 'Move through this text to\nsee your tooltip\n',
+      doc: 'Move cursor through this text to\nsee your tooltip\n',
       extensions: [basicSetup, cursorTooltipState, cursorTooltipBaseTheme],
       parent: editorRef.current,
     });
@@ -101,8 +113,10 @@ export const CursorTooltip = () => {
   return (
     <div className='idCMEditor'>
       <h2>cursor tooltip</h2>
+      <h4>show a row:column position above the cursor</h4>
       <div ref={editorRef} />
       <h2>hover tooltip</h2>
+      <h4>cursor tooltip</h4>
       <div ref={hoverEditorRef} />
     </div>
   );

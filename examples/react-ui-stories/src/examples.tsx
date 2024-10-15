@@ -1,3 +1,5 @@
+import './index.css';
+
 import React, { useState } from 'react';
 
 import * as stories from './stories/codemirror';
@@ -19,7 +21,7 @@ const storiesNames = Object.keys(stories);
 export function ExamplesApp() {
   // const [currentStory, setCurrentStory] = useState(storiesNames[0]);
   const [currentStory, setCurrentStory] = useState('B1a3CmdkInputCard');
-  // const [currentStory, setCurrentStory] = useState('B1f3UndoableEffectsUndo');
+  // const [currentStory, setCurrentStory] = useState('B1d3CursorTooltip');
 
   const CurrentExampleComponent = currentStory
     ? stories[currentStory]

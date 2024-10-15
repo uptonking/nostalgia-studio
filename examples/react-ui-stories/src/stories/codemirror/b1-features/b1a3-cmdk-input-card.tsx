@@ -4,7 +4,8 @@ import { basicSetup, EditorView } from 'codemirror';
 
 import { Compartment } from '@codemirror/state';
 import { inputCardEmbedded } from '@datalking/cm-input-card-embedded';
-import { aiCursorTooltip } from '@datalking/cm-floating-toolbar';
+import { floatingToolbar } from '@datalking/cm-floating-toolbar';
+import { diffToolbar } from '../../../../../../editor-codemirror/src-pkgs/merge/src/diff-toolbar';
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -34,9 +35,18 @@ Cmd+K is the shortcut for ai-assisted single file editing
 - banana
 - another fruit
 
+
+another fruit export const floatingToolbarState = StateField.define<readonly Tooltip[]>({
+
+
 ## Links
 
-[Some Link](https://example.org)
+export const floatingToolbarState = StateField.define<readonly Tooltip[]>({
+
+      (document.querySelector('.prompt-input-box') as HTMLInputElement)
+
+
+[Some Link](https://example.org) 
 `;
 
   const editorRef = useRef<HTMLDivElement>(null);
@@ -46,7 +56,8 @@ Cmd+K is the shortcut for ai-assisted single file editing
       extensions: [
         basicSetup,
         cmdkInputCard,
-        aiCursorTooltip(),
+        floatingToolbar(),
+        diffToolbar(),
         // language.of(markdown())
       ],
       doc: content,

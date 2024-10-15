@@ -24,6 +24,7 @@ import {
   inputWidgetPluginCompartment,
   setIsDocUpdatedBeforeShowDiff,
   setIsPromptInputFocused,
+  setPromptInputPos,
   setPromptText,
   showCmdkDiffView,
   showCmdkInput,
@@ -61,9 +62,8 @@ import {
  */
 export function activePromptInput(
   view: EditorView,
-  defPrompt = '',
   /**  where is this method called from */
-  source: 'hotkey' | 'toolbarButton' = 'hotkey',
+  source: 'hotkey' | 'toolbar' = 'hotkey',
   pos?: Pos,
 ) {
   if (isCmdkDiffViewActive(view.state)) {
@@ -98,13 +98,18 @@ export function activePromptInput(
     });
   }
 
+  console.log(';; cmdk-sel ', view.state.selection.main);
   if (isPromptInputActive(view.state)) {
     view.dispatch({
-      effects: hideCmdkInput.of({ showCmdkInputCard: false }),
+      effects: [hideCmdkInput.of({ showCmdkInputCard: false }) ],
     });
   }
   view.dispatch({
     effects: [
+      setPromptInputPos.of([
+        [-1e9, -1e9],
+        [view.state.selection.main.from, view.state.selection.main.to],
+      ]),
       showCmdkInput.of({ showCmdkInputCard: true }),
       setIsPromptInputFocused.of(true),
       // setPromptText.of(['', view.state.field(cmdkInputState).prompt]),
@@ -232,7 +237,7 @@ class PromptInputWidget extends WidgetType {
   updateTipsActionsBelowInput(state: EditorState) {
     const { tips, actionBtns, promptInputBox } = queryMainElements();
     if (promptInputBox instanceof HTMLInputElement) {
-      const cmdkDiffStates = state.field(cmdkDiffState,false);
+      const cmdkDiffStates = state.field(cmdkDiffState, false);
       if (cmdkDiffStates.showCmdkDiff) {
         if (actionBtns.style.display !== 'flex') {
           tips.style.display = 'none';
@@ -248,8 +253,8 @@ class PromptInputWidget extends WidgetType {
   }
 
   toDOM(view: EditorView) {
-    const cmdkInputStates = view.state.field(cmdkInputState,false);
-    const cmdkDiffStates = view.state.field(cmdkDiffState,false);
+    const cmdkInputStates = view.state.field(cmdkInputState, false);
+    const cmdkDiffStates = view.state.field(cmdkDiffState, false);
     const initialPrompt = cmdkInputStates.prompt;
     console.log(
       ';; wid-input-toDOM ',
@@ -573,6 +578,11 @@ const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
           throw new Error('pos < 0');
         }
 
+        console.log(
+          ';; cmdk-sel-input ',
+          view.state.selection.main,
+          view.state.field(cmdkInputState),
+        );
         this.promptInputWidget = new PromptInputWidget(
           { from, to },
           defPrompt,
@@ -624,12 +634,13 @@ const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
     },
   );
 
-const promptInputKeyMaps = (hotkey?: string) =>
+const promptInputHotkeys = (hotkey?: string) =>
   Prec.high(
     keymap.of([
       {
         key: hotkey || 'Mod-k',
         run: (view) => {
+          console.log(';; cmdk1-hot ', view.state.selection.main);
           activePromptInput(view);
           return true;
         },
@@ -639,8 +650,8 @@ const promptInputKeyMaps = (hotkey?: string) =>
 
 const cmdkInputRender = () => {
   return EditorState.transactionExtender.of((tr) => {
-    const cmdkInputStateBefore = tr.startState.field(cmdkInputState,false);
-    const cmdkInputStateAfter = tr.state.field(cmdkInputState,false);
+    const cmdkInputStateBefore = tr.startState.field(cmdkInputState, false);
+    const cmdkInputStateAfter = tr.state.field(cmdkInputState, false);
 
     // console.log(
     //   ';; renderCmdkInput1 ',
@@ -678,8 +689,8 @@ const cmdkInputRender = () => {
 
 const cmdkDiffViewRender = () => {
   return EditorState.transactionExtender.of((tr) => {
-    const cmdkDiffStateBefore = tr.startState.field(cmdkDiffState,false);
-    const cmdkDiffStateAfter = tr.state.field(cmdkDiffState,false);
+    const cmdkDiffStateBefore = tr.startState.field(cmdkDiffState, false);
+    const cmdkDiffStateAfter = tr.state.field(cmdkDiffState, false);
 
     if (
       cmdkDiffStateBefore.isDocUpdatedBeforeShowDiff !==
@@ -801,7 +812,7 @@ export function aiPromptInput(options: InputWidgetOptions): Extension {
     cmdkDiffViewCompartment.of([]),
     cmdkInputRender(),
     cmdkDiffViewRender(),
-    promptInputKeyMaps(options.hotkey),
+    promptInputHotkeys(options.hotkey),
     cmdkUndoRedoHotkeys(),
     // inputListener,
   ];
