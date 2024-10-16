@@ -61,6 +61,9 @@ class CellWidget extends View.WidgetType {
   }
 }
 
+/**
+ * 💡 provide decorations using facet
+ */
 const cellsWidgets = EditorView.decorations.compute([cellsState], (state) => {
   const cells = state.field(cellsState);
   if (cells.length === 0) return View.Decoration.none;

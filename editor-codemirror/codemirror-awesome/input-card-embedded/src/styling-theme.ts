@@ -1,6 +1,10 @@
 import { EditorView } from '@codemirror/view';
 
 export const promptInputTheme = EditorView.baseTheme({
+  '.cmdk-trigger-range': {
+    // #BFDBFE
+    backgroundColor: 'rgba(191, 219, 254, 0.8)',
+  },
   '.cm-ai-prompt-input-root': {
     display: 'flex',
     flexDirection: 'column',

@@ -24,7 +24,7 @@ import {
   inputWidgetPluginCompartment,
   setIsDocUpdatedBeforeShowDiff,
   setIsPromptInputFocused,
-  setPromptInputPos,
+  setInputTriggerRange,
   setPromptText,
   showCmdkDiffView,
   showCmdkInput,
@@ -98,25 +98,34 @@ export function activePromptInput(
     });
   }
 
-  // todo
-  const prevSelectionAnchor = 10;
-  if (
-    view.state.doc.lineAt(view.state.selection.main.anchor) ===
-    view.state.doc.lineAt(prevSelectionAnchor)
-  ) {
-    // /if selection start position is unchanged, it's unnecessary to rerender input
-    return;
-  }
-
-  console.log(';; cmdk-sel ', view.state.selection.main);
+  const prevRangeStart = view.state.field(
+    cmdkInputState,
+    false,
+  ).inputTriggerRange;
+  console.log(
+    ';; cmdk-sel ',
+    view.state.doc.lineAt(view.state.selection.main.anchor).number,
+    view.state.selection.main,
+    prevRangeStart,
+  );
   if (isPromptInputActive(view.state)) {
+    if (
+      view.state.doc.lineAt(view.state.selection.main.anchor).number ===
+      view.state.doc.lineAt(prevRangeStart[0]).number
+    ) {
+      // /if selection start position is unchanged, it's unnecessary to rerender input
+      return;
+    }
+
     view.dispatch({
       effects: [hideCmdkInput.of({ showCmdkInputCard: false })],
     });
   }
+  console.log(';; cmdk-start-ing ');
+
   view.dispatch({
     effects: [
-      setPromptInputPos.of([
+      setInputTriggerRange.of([
         [view.state.selection.main.from, view.state.selection.main.to],
         [-1e9, -1e9],
       ]),
@@ -131,11 +140,24 @@ export function activePromptInput(
 }
 
 function unloadPromptPlugins(view: EditorView, promptText?: [string, string]) {
+  const triggerRange = view.state.field(
+    cmdkInputState,
+    false,
+  ).inputTriggerRange;
+  // const showDiffView = view.state.field(cmdkDiffState, false).showCmdkDiff;
+
   view.dispatch({
     effects: [
       promptText ? setPromptText.of(promptText) : undefined,
-      hideCmdkDiffView.of({ showCmdkDiff: false }),
-      hideCmdkInput.of({ showCmdkInputCard: false }),
+      isCmdkDiffViewActive(view.state)
+        ? hideCmdkDiffView.of({ showCmdkDiff: false })
+        : undefined,
+      isPromptInputActive(view.state)
+        ? hideCmdkInput.of({ showCmdkInputCard: false })
+        : undefined,
+      isPromptInputActive(view.state)
+        ? setInputTriggerRange.of([[-1e9, -1e9], triggerRange])
+        : undefined,
     ].filter(Boolean),
   });
 }
@@ -266,13 +288,13 @@ class PromptInputWidget extends WidgetType {
     const cmdkInputStates = view.state.field(cmdkInputState, false);
     const cmdkDiffStates = view.state.field(cmdkDiffState, false);
     const initialPrompt = cmdkInputStates.prompt;
-    console.log(
-      ';; wid-input-toDOM ',
-      isCmdkDiffViewActive(view.state),
-      cmdkDiffStates.showCmdkDiff,
-      initialPrompt,
-      cmdkInputStates,
-    );
+    // console.log(
+    //   ';; wid-input-toDOM ',
+    //   isCmdkDiffViewActive(view.state),
+    //   cmdkDiffStates.showCmdkDiff,
+    //   initialPrompt,
+    //   cmdkInputStates,
+    // );
 
     const root = document.createElement('div');
     root.className = 'cm-ai-prompt-input-root';
@@ -580,7 +602,14 @@ const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
       promptInputWidget: PromptInputWidget;
 
       constructor(public view: EditorView) {
-        const { from, to } = view.state.selection.main;
+        let { from, to } = view.state.selection.main;
+        const triggerRange = view.state.field(
+          cmdkInputState,
+          false,
+        ).inputTriggerRange;
+        if (triggerRange[0] >= 0) {
+          [from, to] = triggerRange;
+        }
         const line = view.state.doc.lineAt(from);
         // show the widget before the selection head
         const pos = line.from - 1;
@@ -590,9 +619,14 @@ const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
 
         console.log(
           ';; cmdk-view-ctor ',
+          view.state.doc.lineAt(view.state.selection.main.anchor).number,
+          triggerRange[0] >= 0
+            ? view.state.doc.lineAt(triggerRange[0]).number
+            : triggerRange,
           view.state.selection.main,
-          view.state.field(cmdkInputState),
+          view.state.field(cmdkInputState, false)?.inputTriggerRange,
         );
+
         this.promptInputWidget = new PromptInputWidget(
           { from, to },
           defPrompt,
@@ -615,7 +649,7 @@ const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
       update(v: ViewUpdate) {
         // update the decoration pos if content changes
         // for example: after clicking button to insert new content before the widget
-        console.log(';; cmdk-viewPlugin-up ');
+        // console.log(';; cmdk-viewPlugin-up ');
         this.decorations = this.decorations.map(v.changes);
 
         if (

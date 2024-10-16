@@ -9,6 +9,7 @@ import {
   invertCmdkDiff,
 } from './cmdk-diff-state';
 import { cmdkInputState, invertCmdkInput } from './cmdk-input-state';
+import { cmdkTriggerRange } from './cmdk-trigger-range';
 
 export * from './prompt-input';
 export * from './types';
@@ -25,5 +26,6 @@ export function inputCardEmbedded(options: InputWidgetOptions): Extension {
     cmdkDiffState,
     invertCmdkDiff,
     aiPromptInput(options),
+    cmdkTriggerRange(),
   ];
 }

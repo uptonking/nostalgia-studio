@@ -73,6 +73,7 @@ export const underlineKeymap = keymap.of([
  * - 下划线文字会渲染成span并添加css属性text-decoration(line style color thickness), u标签不适合
  * - ✨ support multi lines
  * - 🔲 code is simplified, the field stores only the decoration range set. It doesn't do things like joining overlapping underlines
+ * - https://codemirror.net/examples/decoration/
  */
 export const DecoMarkUnderline = () => {
   const content = `

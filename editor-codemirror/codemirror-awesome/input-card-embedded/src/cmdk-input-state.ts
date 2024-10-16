@@ -6,15 +6,15 @@ import {
   hideCmdkInput,
   setIsPromptInputFocused,
   setPromptText,
-  setPromptInputPos,
+  setInputTriggerRange,
 } from './cmdk-actions';
 
 const initialCmdkInputState: CmdkInputState = {
   showCmdkInputCard: false,
+  inputTriggerRange: [-1e9, -1e9],
   isPromptInputFocused: false,
   prompt: '',
   lastPrompt: '',
-  promptInputPos: [-1e9, -1e9],
 };
 
 export const cmdkInputState = StateField.define<CmdkInputState>({
@@ -30,8 +30,8 @@ export const cmdkInputState = StateField.define<CmdkInputState>({
       if (ef.is(setPromptText)) {
         val = { ...val, prompt: ef.value[0] };
       }
-      if (ef.is(setPromptInputPos)) {
-        val = { ...val, promptInputPos: ef.value[0] };
+      if (ef.is(setInputTriggerRange)) {
+        val = { ...val, inputTriggerRange: ef.value[0] };
       }
     }
     return val;
@@ -65,12 +65,13 @@ export const invertCmdkInput = invertedEffects.of((tr) => {
       effects.push(setPromptText.of([ef.value[1], ef.value[0]]));
     }
     if (
-      ef.is(setPromptInputPos) &&
+      ef.is(setInputTriggerRange) &&
       Array.isArray(ef.value) &&
       ef.value.length === 2
     ) {
-      effects.push(setPromptInputPos.of([ef.value[1], ef.value[0]]));
+      effects.push(setInputTriggerRange.of([ef.value[1], ef.value[0]]));
     }
   }
   return effects;
 });
+

@@ -37,15 +37,15 @@ export const diffPlayControllerState = StateField.define<DiffPlayState>({
   },
 
   update(value, tr) {
-    let currentLineNumber = { ...value };
+    let playState = { ...value };
     for (const effect of tr.effects) {
       if (effect.is(autoPlayDiffEffect)) {
-        currentLineNumber = {
-          ...currentLineNumber,
+        playState = {
+          ...playState,
           playLineNumber:
-            currentLineNumber.playLineNumber < 0
+            playState.playLineNumber < 0
               ? 0
-              : ++currentLineNumber.playLineNumber,
+              : ++playState.playLineNumber,
         };
       }
       // if (effect.is(setDiffPlayLineNumber)) {
@@ -55,13 +55,13 @@ export const diffPlayControllerState = StateField.define<DiffPlayState>({
       //   };
       // }
       if (effect.is(setIsDiffCompleted)) {
-        currentLineNumber = {
-          ...currentLineNumber,
+        playState = {
+          ...playState,
           isDiffCompleted: Boolean(effect.value),
         };
       }
       if (effect.is(resetDiffPlayState)) {
-        currentLineNumber = initialDiffPlayState;
+        playState = initialDiffPlayState;
       }
     }
     // console.log(
@@ -69,7 +69,7 @@ export const diffPlayControllerState = StateField.define<DiffPlayState>({
     //   currentLineNumber.playLineNumber,
     //   currentLineNumber.isDiffCompleted,
     // );
-    return currentLineNumber;
+    return playState;
   },
 });
 

@@ -1,7 +1,7 @@
 import { type EditorState, StateField } from '@codemirror/state';
 
 import {
-  type EditorView,
+  EditorView,
   type Tooltip,
   type TooltipView,
   showTooltip,
@@ -9,8 +9,19 @@ import {
 import { activePromptInput } from '../../input-card-embedded/src/prompt-input';
 import { setShowFloatingToolbar } from './toolbar-actions';
 import { hideToolbar, isAppleOs } from './utils';
+import { isPromptInputActive } from '../../input-card-embedded/src/utils';
+import { isAnimatableDiffViewActive } from '../../../src-pkgs/merge/src/utils';
 
 function getToolbarItems(state: EditorState): readonly Tooltip[] {
+  if (
+    state.readOnly ||
+    !state.facet(EditorView.editable) ||
+    isPromptInputActive(state) ||
+    isAnimatableDiffViewActive(state)
+  ) {
+    return [];
+  }
+
   const cmd = isAppleOs() ? '⌘' : 'Ctrl';
 
   return state.selection.ranges
@@ -41,6 +52,8 @@ function getToolbarItems(state: EditorState): readonly Tooltip[] {
             </div>
           </div>
             `;
+
+          // console.log(';; bar ');
 
           root.onclick = (e) => {
             e.preventDefault();

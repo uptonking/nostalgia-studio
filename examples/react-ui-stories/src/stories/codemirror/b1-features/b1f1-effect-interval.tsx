@@ -20,7 +20,7 @@ const numberField = StateField.define({
   },
 });
 
-// 👇 computes a value for the facet
+// 💡 computes a value for the facet
 const editorStyle = EditorView.contentAttributes.compute(
   [numberField],
   (state) => {

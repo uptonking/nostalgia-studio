@@ -18,6 +18,14 @@ import { ChunkField } from './merge';
 import { ICON_UNDO } from './icons-svg';
 
 function getToolbarItems(state: EditorState): readonly Tooltip[] {
+  if (
+    state.readOnly ||
+    !state.facet(EditorView.editable) ||
+    !isAnimatableDiffViewActive(state)
+  ) {
+    return [];
+  }
+
   // const changedChunks = state.field(ChunkField, false);
   const changedChunks = [11];
 
