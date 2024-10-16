@@ -98,17 +98,27 @@ export function activePromptInput(
     });
   }
 
+  // todo
+  const prevSelectionAnchor = 10;
+  if (
+    view.state.doc.lineAt(view.state.selection.main.anchor) ===
+    view.state.doc.lineAt(prevSelectionAnchor)
+  ) {
+    // /if selection start position is unchanged, it's unnecessary to rerender input
+    return;
+  }
+
   console.log(';; cmdk-sel ', view.state.selection.main);
   if (isPromptInputActive(view.state)) {
     view.dispatch({
-      effects: [hideCmdkInput.of({ showCmdkInputCard: false }) ],
+      effects: [hideCmdkInput.of({ showCmdkInputCard: false })],
     });
   }
   view.dispatch({
     effects: [
       setPromptInputPos.of([
-        [-1e9, -1e9],
         [view.state.selection.main.from, view.state.selection.main.to],
+        [-1e9, -1e9],
       ]),
       showCmdkInput.of({ showCmdkInputCard: true }),
       setIsPromptInputFocused.of(true),
@@ -579,7 +589,7 @@ const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
         }
 
         console.log(
-          ';; cmdk-sel-input ',
+          ';; cmdk-view-ctor ',
           view.state.selection.main,
           view.state.field(cmdkInputState),
         );

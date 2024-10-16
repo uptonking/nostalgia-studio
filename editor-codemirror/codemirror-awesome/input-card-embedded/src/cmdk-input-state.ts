@@ -6,6 +6,7 @@ import {
   hideCmdkInput,
   setIsPromptInputFocused,
   setPromptText,
+  setPromptInputPos,
 } from './cmdk-actions';
 
 const initialCmdkInputState: CmdkInputState = {
@@ -13,7 +14,7 @@ const initialCmdkInputState: CmdkInputState = {
   isPromptInputFocused: false,
   prompt: '',
   lastPrompt: '',
-  promptInputPos: { from: -1e9, to: -1e9 },
+  promptInputPos: [-1e9, -1e9],
 };
 
 export const cmdkInputState = StateField.define<CmdkInputState>({
@@ -28,6 +29,9 @@ export const cmdkInputState = StateField.define<CmdkInputState>({
       }
       if (ef.is(setPromptText)) {
         val = { ...val, prompt: ef.value[0] };
+      }
+      if (ef.is(setPromptInputPos)) {
+        val = { ...val, promptInputPos: ef.value[0] };
       }
     }
     return val;
@@ -59,6 +63,13 @@ export const invertCmdkInput = invertedEffects.of((tr) => {
       ef.value.length === 2
     ) {
       effects.push(setPromptText.of([ef.value[1], ef.value[0]]));
+    }
+    if (
+      ef.is(setPromptInputPos) &&
+      Array.isArray(ef.value) &&
+      ef.value.length === 2
+    ) {
+      effects.push(setPromptInputPos.of([ef.value[1], ef.value[0]]));
     }
   }
   return effects;

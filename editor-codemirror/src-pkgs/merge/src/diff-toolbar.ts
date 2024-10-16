@@ -76,12 +76,13 @@ function getToolbarItems(state: EditorState): readonly Tooltip[] {
 }
 
 const diffToolbarState = StateField.define<readonly Tooltip[]>({
-  create: getToolbarItems,
+  // create: getToolbarItems,
+  create: () => [],
 
   update(tooltips, tr) {
-    for (const effect of tr.effects) {
-      if (effect.is(showDiffToolbar)) {
-        if (effect.value) {
+    for (const ef of tr.effects) {
+      if (ef.is(showDiffToolbar)) {
+        if (ef.value) {
           return getToolbarItems(tr.state);
         } else {
           return [];
@@ -103,21 +104,16 @@ export function hideToolbar(view: EditorView) {
 }
 
 const diffToolbarTrigger = () => {
-  let preFrom = -1;
-  let preTo = -1;
-
   return EditorView.updateListener.of((update) => {
-    if (!update.selectionSet) return;
+    // if (!update.selectionSet) return;
 
-    const { from, to } = update.view.state.selection.main;
     if (!isAnimatableDiffViewActive(update.view.state)) return;
-    preFrom = from;
-    preTo = to;
 
-    if (from === to) {
-      hideToolbar(update.view);
-      return;
-    }
+    // const { from, to } = update.view.state.selection.main;
+    // if (from === to) {
+    //   hideToolbar(update.view);
+    //   return;
+    // }
 
     update.view.dispatch({
       effects: showDiffToolbar.of(true),
