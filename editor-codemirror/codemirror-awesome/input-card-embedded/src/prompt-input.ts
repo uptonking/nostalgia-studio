@@ -28,6 +28,7 @@ import {
   setPromptText,
   showCmdkDiffView,
   showCmdkInput,
+  setIsCmdkDiffRejected,
 } from './cmdk-actions';
 import {
   checkIsCmdkDiffVisibilityChanged,
@@ -534,7 +535,22 @@ class PromptInputWidget extends WidgetType {
       });
       rejectChunks(view);
       recoverSelection(view, this.oriSelPos);
-      unloadPromptPlugins(view, ['', input.value]);
+
+      const triggerRange = view.state.field(
+        cmdkInputState,
+        false,
+      ).inputTriggerRange;
+      // unloadPromptPlugins(view, ['', input.value]);
+      view.dispatch({
+        effects: [
+          setPromptText.of(['', input.value]),
+          hideCmdkDiffView.of({ showCmdkDiff: false }),
+          hideCmdkInput.of({ showCmdkInputCard: false }),
+          setInputTriggerRange.of([[-1e9, -1e9], triggerRange]),
+          setIsCmdkDiffRejected.of(1),
+        ],
+      });
+
       view.focus();
     };
     // regenBtn.onclick = async () => {
@@ -608,7 +624,7 @@ const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
           false,
         ).inputTriggerRange;
         if (triggerRange[0] >= 0) {
-          [from, to] = triggerRange;
+          // [from, to] = triggerRange;
         }
         const line = view.state.doc.lineAt(from);
         // show the widget before the selection head

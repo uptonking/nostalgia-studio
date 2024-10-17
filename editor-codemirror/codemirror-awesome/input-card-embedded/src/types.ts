@@ -16,6 +16,8 @@ export type CmdkInputState = {
 export type CmdkDiffState = {
   /** whether cmdk diff view is visible, default is false */
   showCmdkDiff: boolean;
+  /** whether cmdk diff view is rejected, 0/false, 1/true, other number is not used */
+  isCmdkDiffRejected: number;
   /** whether editor doc is updated before cmdk diff view shows, default is false
    * - only used to implement cmdk redo
    */

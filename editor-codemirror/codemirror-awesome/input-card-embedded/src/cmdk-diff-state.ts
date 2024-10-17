@@ -1,5 +1,9 @@
 import { invertedEffects } from '@codemirror/commands';
-import { type EditorState, type StateEffect, StateField } from '@codemirror/state';
+import {
+  type EditorState,
+  type StateEffect,
+  StateField,
+} from '@codemirror/state';
 import type { CmdkDiffState } from './types';
 import {
   showCmdkDiffView,
@@ -7,10 +11,12 @@ import {
   enableUndoCmdkTwice,
   enableRedoCmdkTwice,
   setIsDocUpdatedBeforeShowDiff,
+  setIsCmdkDiffRejected,
 } from './cmdk-actions';
 
 const initialCmdkDiffState: CmdkDiffState = {
   showCmdkDiff: false,
+  isCmdkDiffRejected: -1,
   isDocUpdatedBeforeShowDiff: false,
   originalContent: '',
 };
@@ -24,6 +30,9 @@ export const cmdkDiffState = StateField.define<CmdkDiffState>({
       }
       if (ef.is(setIsDocUpdatedBeforeShowDiff)) {
         val = { ...val, isDocUpdatedBeforeShowDiff: Boolean(ef.value) };
+      }
+      if (ef.is(setIsCmdkDiffRejected)) {
+        val = { ...val, isCmdkDiffRejected: ef.value === 1 ? 1 : 0 };
       }
     }
     return val;
@@ -52,6 +61,9 @@ export const invertCmdkDiff = invertedEffects.of((tr) => {
     }
     if (ef.is(setIsDocUpdatedBeforeShowDiff)) {
       effects.push(setIsDocUpdatedBeforeShowDiff.of(!Boolean(ef.value)));
+    }
+    if (ef.is(setIsCmdkDiffRejected)) {
+      effects.push(setIsCmdkDiffRejected.of(ef.value === 1 ? 0 : 1));
     }
   }
   return effects;
