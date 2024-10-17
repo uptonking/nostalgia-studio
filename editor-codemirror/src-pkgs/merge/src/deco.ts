@@ -70,18 +70,21 @@ export const decorateChunks = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      const diffPlayState = this.editView.state.field(diffPlayControllerState);
+      const diffPlayState = this.editView.state.field(
+        diffPlayControllerState,
+        false,
+      );
       const { showTypewriterAnimation } =
         this.editView.state.facet(mergeConfig);
 
       let chunks = this.editView.state.field(ChunkField) as Chunk[];
-      if (showTypewriterAnimation && !diffPlayState.isDiffCompleted) {
+      if (showTypewriterAnimation && !diffPlayState?.isDiffCompleted) {
         // if (showTypewriterAnimation) {
         chunks = this.chunksByLine;
       }
 
       if (!showTypewriterAnimation) {
-        if (diffPlayState.isDiffCompleted) {
+        if (diffPlayState?.isDiffCompleted) {
           queueMicrotask(() => {
             console.log(';; clean completed ');
             this.cleanAutoPlayDiffTimer();
@@ -108,7 +111,7 @@ export const decorateChunks = ViewPlugin.fromClass(
         showTypewriterAnimation &&
         this.autoPlayIntervalId === 0 &&
         this.chunksByLine.length > 0 &&
-        !diffPlayState.isDiffCompleted
+        !diffPlayState?.isDiffCompleted
       ) {
         console.log(';; startDiffTimer 2');
         this.autoPlayDiffAnimation();
@@ -323,9 +326,9 @@ function buildChunkDeco({
 function getChunkDeco(view: EditorView, chunksByLine?: Chunk[]) {
   const { side, highlightChanges, markGutter, showTypewriterAnimation } =
     view.state.facet(mergeConfig);
-  const diffPlayState = view.state.field(diffPlayControllerState);
-  const currentDiffPlayLineNumber = diffPlayState.playLineNumber;
-  const isDiffCompleted = diffPlayState.isDiffCompleted;
+  const diffPlayState = view.state.field(diffPlayControllerState, false);
+  const currentDiffPlayLineNumber = diffPlayState?.playLineNumber || -1e9;
+  const isDiffCompleted = diffPlayState?.isDiffCompleted;
   let chunks = view.state.field(ChunkField);
   if (showTypewriterAnimation && chunksByLine && !isDiffCompleted) {
     chunks = chunksByLine;

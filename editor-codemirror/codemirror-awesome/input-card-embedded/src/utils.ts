@@ -1,13 +1,18 @@
 import { ViewPlugin, type EditorView } from '@codemirror/view';
 import type { Pos } from './types';
-import type { EditorState, Extension, Transaction } from '@codemirror/state';
+import type { EditorState } from '@codemirror/state';
 import {
   inputWidgetPluginCompartment,
   cmdkDiffViewCompartment,
   enableUndoCmdkTwice,
   enableRedoCmdkTwice,
+  enableRedoCmdkThrice,
+  enableUndoCmdkThrice,
 } from './cmdk-actions';
-import { enableUndoRedoTwiceState } from './cmdk-diff-state';
+import {
+  enableUndoRedoThriceState,
+  enableUndoRedoTwiceState,
+} from './cmdk-diff-state';
 import { undo, redo } from '@codemirror/commands';
 
 export const PROMPT_TIPS_NORMAL = 'Esc to close, Enter to submit';
@@ -15,10 +20,6 @@ export const PROMPT_TIPS_REQUESTING = 'AI coding...';
 export const PROMPT_PLACEHOLDER_NORMAL = 'Enter a prompt to modify code...';
 export const PROMPT_PLACEHOLDER_ERROR =
   'Error occurred. Please try to regenerate or input another instruction.';
-
-export function getRefContent(view: EditorView, pos: Pos) {
-  return view.state.doc.sliceString(pos.from, pos.to);
-}
 
 export function isPromptInputActive(state: EditorState) {
   return inputWidgetPluginCompartment.get(state) instanceof ViewPlugin;
@@ -32,13 +33,51 @@ export function isCmdkDiffViewActive(state: EditorState) {
   return false;
 }
 
+export function getRefContent(view: EditorView, pos: Pos) {
+  return view.state.doc.sliceString(pos.from, pos.to);
+}
+
+export function acceptCmdkCode(view: EditorView) {
+  if (isCmdkDiffViewActive(view.state)) {
+    const acceptBtn = document.querySelector(
+      'button#cm-ai-prompt-btn-accept',
+    ) as HTMLButtonElement;
+    if (acceptBtn) {
+      acceptBtn.click();
+      return true;
+    }
+  }
+  return false;
+}
+
+export function rejectCmdkCode(view: EditorView) {
+  if (isCmdkDiffViewActive(view.state)) {
+    const rejectBtn = document.querySelector(
+      'button#cm-ai-prompt-btn-discard',
+    ) as HTMLButtonElement;
+    if (rejectBtn) {
+      rejectBtn.click();
+      return true;
+    }
+  }
+  return false;
+}
+
 export function cmdkUndo(view: EditorView) {
   queueMicrotask(() => {
     const undoTwiceState = view.state.field(enableUndoRedoTwiceState, false);
     if (undoTwiceState) {
-      console.log(';; k-undo-twice ', undoTwiceState);
+      console.log(';; k-undo2 ', undoTwiceState);
       undo(view);
       view.dispatch({ effects: [enableUndoCmdkTwice.of(false)] });
+    }
+    const undoThriceState = view.state.field(enableUndoRedoThriceState, false);
+    if (undoThriceState) {
+      console.log(';; k-redo3 ', undoThriceState);
+      undo(view);
+      undo(view);
+      undo(view);
+      view.dispatch({ effects: [enableUndoCmdkThrice.of(false)] });
     }
   });
 
@@ -49,9 +88,17 @@ export function cmdkRedo(view: EditorView) {
   queueMicrotask(() => {
     const redoTwiceState = view.state.field(enableUndoRedoTwiceState, false);
     if (redoTwiceState) {
-      console.log(';; k-redo-twice ', redoTwiceState);
+      console.log(';; k-redo2 ', redoTwiceState);
       redo(view);
       view.dispatch({ effects: [enableRedoCmdkTwice.of(false)] });
+    }
+    const redoThriceState = view.state.field(enableUndoRedoThriceState, false);
+    if (redoThriceState) {
+      console.log(';; k-redo3 ', redoThriceState);
+      redo(view);
+      redo(view);
+      redo(view);
+      view.dispatch({ effects: [enableRedoCmdkThrice.of(false)] });
     }
   });
 

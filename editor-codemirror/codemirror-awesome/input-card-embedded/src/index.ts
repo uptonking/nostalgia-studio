@@ -5,6 +5,7 @@ import { escapeListener } from './esc-listener';
 import { aiPromptInput } from './prompt-input';
 import {
   cmdkDiffState,
+  enableUndoRedoThriceState,
   enableUndoRedoTwiceState,
   invertCmdkDiff,
 } from './cmdk-diff-state';
@@ -21,6 +22,7 @@ export function inputCardEmbedded(options: InputWidgetOptions): Extension {
   return [
     escapeListener,
     enableUndoRedoTwiceState,
+    enableUndoRedoThriceState,
     cmdkInputState,
     invertCmdkInput,
     cmdkDiffState,

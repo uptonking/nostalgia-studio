@@ -15,7 +15,12 @@ export const cmdkTriggerRange = () =>
   EditorView.decorations.compute([cmdkInputState, cmdkDiffState], (state) => {
     const inputState = state.field(cmdkInputState, false);
     const diffState = state.field(cmdkDiffState, false);
-    if (!inputState.showCmdkInputCard || diffState.showCmdkDiff) {
+    if (
+      state.readOnly ||
+      !inputState.showCmdkInputCard ||
+      diffState.showCmdkDiff||
+      isCmdkDiffViewActive(state)
+    ) {
       return Decoration.none;
     }
     // console.log(';; range-highlight ', isCmdkDiffViewActive(state), inputState);

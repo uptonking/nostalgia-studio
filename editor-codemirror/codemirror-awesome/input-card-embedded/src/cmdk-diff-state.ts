@@ -12,6 +12,9 @@ import {
   enableRedoCmdkTwice,
   setIsDocUpdatedBeforeShowDiff,
   setIsCmdkDiffRejected,
+  enableRedoCmdkThrice,
+  enableUndoCmdkThrice,
+  resetIsCmdkDiffRejected,
 } from './cmdk-actions';
 
 const initialCmdkDiffState: CmdkDiffState = {
@@ -32,7 +35,10 @@ export const cmdkDiffState = StateField.define<CmdkDiffState>({
         val = { ...val, isDocUpdatedBeforeShowDiff: Boolean(ef.value) };
       }
       if (ef.is(setIsCmdkDiffRejected)) {
-        val = { ...val, isCmdkDiffRejected: ef.value === 1 ? 1 : 0 };
+        val = { ...val, isCmdkDiffRejected: ef.value[0] };
+      }
+      if (ef.is(resetIsCmdkDiffRejected)) {
+        val = { ...val, isCmdkDiffRejected: -1 };
       }
     }
     return val;
@@ -63,7 +69,7 @@ export const invertCmdkDiff = invertedEffects.of((tr) => {
       effects.push(setIsDocUpdatedBeforeShowDiff.of(!Boolean(ef.value)));
     }
     if (ef.is(setIsCmdkDiffRejected)) {
-      effects.push(setIsCmdkDiffRejected.of(ef.value === 1 ? 0 : 1));
+      effects.push(setIsCmdkDiffRejected.of([ef.value[1], ef.value[0]]));
     }
   }
   return effects;
@@ -84,12 +90,47 @@ export const enableUndoRedoTwiceState = StateField.define<boolean>({
   },
 });
 
+/** a hack approach to trigger undo/redo three times for some transaction */
+export const enableUndoRedoThriceState = StateField.define<boolean>({
+  create: () => false,
+  update(val, tr) {
+    for (const ef of tr.effects) {
+      if (ef.is(enableUndoCmdkThrice) || ef.is(enableRedoCmdkThrice)) {
+        val = Boolean(ef.value);
+      }
+    }
+    return val;
+  },
+});
+
 export function checkIsCmdkDiffVisibilityChanged(
   s1: EditorState,
   s2: EditorState,
 ) {
   return (
-    s1.field(cmdkDiffState, false).showCmdkDiff !==
-    s2.field(cmdkDiffState, false).showCmdkDiff
+    s1.field(cmdkDiffState, false)?.showCmdkDiff !==
+    s2.field(cmdkDiffState, false)?.showCmdkDiff
   );
 }
+
+export function checkIsDocUpdatedBeforeShowDiffChanged(
+  s1: EditorState,
+  s2: EditorState,
+) {
+  return (
+    s1.field(cmdkDiffState, false)?.isDocUpdatedBeforeShowDiff !==
+    s2.field(cmdkDiffState, false)?.isDocUpdatedBeforeShowDiff
+  );
+}
+
+export function checkIsCmdkDiffRejectedChanged(
+  s1: EditorState,
+  s2: EditorState,
+) {
+  return (
+    s1.field(cmdkDiffState, false)?.isCmdkDiffRejected !==
+    s2.field(cmdkDiffState, false)?.isCmdkDiffRejected
+  );
+}
+
+// window.diffst = (editView)=> editView.state.field(cmdkDiffState)

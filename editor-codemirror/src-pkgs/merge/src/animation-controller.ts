@@ -75,9 +75,9 @@ export const diffPlayControllerState = StateField.define<DiffPlayState>({
 
 export function diffPlayStateChanged(s1: EditorState, s2: EditorState) {
   return (
-    s1.field(diffPlayControllerState, false).playLineNumber !==
-      s2.field(diffPlayControllerState, false).playLineNumber ||
-    s1.field(diffPlayControllerState, false).isDiffCompleted !==
-      s2.field(diffPlayControllerState, false).isDiffCompleted
+    s1.field(diffPlayControllerState, false)?.playLineNumber !==
+      s2.field(diffPlayControllerState, false)?.playLineNumber ||
+    s1.field(diffPlayControllerState, false)?.isDiffCompleted !==
+      s2.field(diffPlayControllerState, false)?.isDiffCompleted
   );
 }

@@ -29,12 +29,21 @@ import {
   showCmdkDiffView,
   showCmdkInput,
   setIsCmdkDiffRejected,
+  enableRedoCmdkTwice,
+  enableUndoCmdkThrice,
+  enableRedoCmdkThrice,
+  resetIsCmdkDiffRejected,
 } from './cmdk-actions';
 import {
   checkIsCmdkDiffVisibilityChanged,
+  checkIsDocUpdatedBeforeShowDiffChanged,
+  checkIsCmdkDiffRejectedChanged,
   cmdkDiffState,
 } from './cmdk-diff-state';
-import { cmdkInputState } from './cmdk-input-state';
+import {
+  checkIsCmdkInputVisibilityChanged,
+  cmdkInputState,
+} from './cmdk-input-state';
 import {
   ICON_CLOSE,
   ICON_ERROR,
@@ -46,6 +55,7 @@ import {
 import { promptInputTheme } from './styling-theme';
 import type { ChatReq, ChatRes, InputWidgetOptions, Pos } from './types';
 import {
+  acceptCmdkCode,
   cmdkRedo,
   cmdkUndo,
   getRefContent,
@@ -56,6 +66,7 @@ import {
   PROMPT_TIPS_NORMAL,
   PROMPT_TIPS_REQUESTING,
   queryMainElements,
+  rejectCmdkCode,
 } from './utils';
 
 /**
@@ -122,7 +133,7 @@ export function activePromptInput(
       effects: [hideCmdkInput.of({ showCmdkInputCard: false })],
     });
   }
-  console.log(';; cmdk-start-ing ');
+  // console.log(';; cmdk-start-ing ');
 
   view.dispatch({
     effects: [
@@ -140,7 +151,11 @@ export function activePromptInput(
   onEvent?.(view, 'widget.open', { source });
 }
 
-function unloadPromptPlugins(view: EditorView, promptText?: [string, string]) {
+function unloadPromptPlugins(
+  view: EditorView,
+  promptText?: [string, string],
+  inputPos = -1e9,
+) {
   const triggerRange = view.state.field(
     cmdkInputState,
     false,
@@ -157,7 +172,7 @@ function unloadPromptPlugins(view: EditorView, promptText?: [string, string]) {
         ? hideCmdkInput.of({ showCmdkInputCard: false })
         : undefined,
       isPromptInputActive(view.state)
-        ? setInputTriggerRange.of([[-1e9, -1e9], triggerRange])
+        ? setInputTriggerRange.of([[inputPos, inputPos], triggerRange])
         : undefined,
     ].filter(Boolean),
   });
@@ -187,6 +202,7 @@ export function replaceSelectedLines(
         originalContent: oriDoc,
         showTypewriterAnimation: true,
       }),
+      resetIsCmdkDiffRejected.of(-1),
     ],
   });
 }
@@ -198,6 +214,7 @@ function rejectChunks(view: EditorView) {
     rejectChunk(view, chunks[i].fromB);
   }
 }
+window['rejectChunks']=rejectChunks
 
 // recover the previous selection when widget dismiss or regenerate
 function recoverSelection(view: EditorView, pos: Pos) {
@@ -219,6 +236,9 @@ function moveCursorAfterAccept(view: EditorView) {
 type PromptInputStatus = 'normal' | 'requesting' | 'req_success' | 'req_error';
 
 class PromptInputWidget extends WidgetType {
+  /** decoration pos  */
+  inputPos = -1e9;
+
   private status: PromptInputStatus = 'normal';
   private inputPrompt = '';
 
@@ -234,7 +254,7 @@ class PromptInputWidget extends WidgetType {
     public immediate = false,
   ) {
     super();
-    console.log(';; wid-input-ctor ', oriSelPos);
+    // console.log(';; wid-input-ctor ', oriSelPos);
   }
 
   /** dismiss the prompt input widget by click `close` icon, or press `ESC` */
@@ -255,11 +275,16 @@ class PromptInputWidget extends WidgetType {
 
     // const cmdkInputStates = view.state.field(cmdkInputState);
     // unloadPromptPlugins(view, [this.inputPrompt, cmdkInputStates.prompt]);
-    unloadPromptPlugins(view, [
-      '',
-      (document.querySelector('.prompt-input-box') as HTMLInputElement)
-        ?.value || '',
-    ]);
+    unloadPromptPlugins(
+      view,
+      [
+        '',
+        (document.querySelector('.prompt-input-box') as HTMLInputElement)
+          ?.value || '',
+      ],
+      this.inputPos,
+    );
+
     view.focus();
   }
 
@@ -287,7 +312,6 @@ class PromptInputWidget extends WidgetType {
 
   toDOM(view: EditorView) {
     const cmdkInputStates = view.state.field(cmdkInputState, false);
-    const cmdkDiffStates = view.state.field(cmdkDiffState, false);
     const initialPrompt = cmdkInputStates.prompt;
     // console.log(
     //   ';; wid-input-toDOM ',
@@ -482,10 +506,12 @@ class PromptInputWidget extends WidgetType {
       await handleRequest();
     };
     input.onkeydown = (e) => {
+      // console.log(';; input-down ', e.key, e);
       if (e.key === 'z') {
+        // /cmd-z for und
         if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
           console.log(';; redo-in-input');
-          redo(view);
+          // redo(view);
           // view.focus();
           // recoverSelection(view, this.oriSelPos);
           return;
@@ -496,9 +522,21 @@ class PromptInputWidget extends WidgetType {
           undo(view);
           view.focus();
           recoverSelection(view, this.oriSelPos);
+          return;
         }
       }
+
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        return acceptCmdkCode(view);
+      }
+      if (
+        (e.key === 'Delete' || e.key === 'Backspace') &&
+        (e.ctrlKey || e.metaKey)
+      ) {
+        return rejectCmdkCode(view);
+      }
     };
+
     rightIcon.onclick = () => {
       if (this.status === 'requesting') {
         onEvent?.(view, 'req.cancel', { chatReq: this.chatReq });
@@ -522,8 +560,9 @@ class PromptInputWidget extends WidgetType {
         chatReq: this.chatReq,
         chatRes: this.chatRes,
       });
+      console.log(';; accept-ing ', this.inputPos);
 
-      unloadPromptPlugins(view, ['', input.value]);
+      unloadPromptPlugins(view, ['', input.value], this.inputPos);
       moveCursorAfterAccept(view);
 
       view.focus();
@@ -533,26 +572,43 @@ class PromptInputWidget extends WidgetType {
         chatReq: this.chatReq,
         chatRes: this.chatRes,
       });
+
+      // beforeReject
+      view.dispatch({
+        effects: [setIsCmdkDiffRejected.of([0, -1])],
+      });
+
       rejectChunks(view);
-      recoverSelection(view, this.oriSelPos);
+      // recoverSelection(view, this.oriSelPos);
+
+      // afterReject
+      view.dispatch({
+        effects: [setIsCmdkDiffRejected.of([1, 0])],
+      });
 
       const triggerRange = view.state.field(
         cmdkInputState,
         false,
       ).inputTriggerRange;
+      console.log(';; reject-ing ', this.inputPos, triggerRange);
+
       // unloadPromptPlugins(view, ['', input.value]);
       view.dispatch({
         effects: [
           setPromptText.of(['', input.value]),
           hideCmdkDiffView.of({ showCmdkDiff: false }),
+          setIsCmdkDiffRejected.of([-1, 1]),
           hideCmdkInput.of({ showCmdkInputCard: false }),
-          setInputTriggerRange.of([[-1e9, -1e9], triggerRange]),
-          setIsCmdkDiffRejected.of(1),
+          setInputTriggerRange.of([
+            [this.inputPos, this.inputPos],
+            triggerRange,
+          ]),
         ],
       });
 
       view.focus();
     };
+
     // regenBtn.onclick = async () => {
     //   onEvent?.(view, 'gen.click', {
     //     chatReq: this.chatReq,
@@ -609,9 +665,14 @@ class PromptInputWidget extends WidgetType {
 /**
  * the input box for cmdk
  * @param defPrompt initial prompt
+ * @param initialPos initial position for input
  * @param shouldFocusInput focus the cursor in the input when the input box show
  */
-const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
+const inputPlugin = (
+  defPrompt = '',
+  initialPos: number[] = [],
+  shouldFocusInput = false,
+) =>
   ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
@@ -619,12 +680,18 @@ const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
 
       constructor(public view: EditorView) {
         let { from, to } = view.state.selection.main;
-        const triggerRange = view.state.field(
-          cmdkInputState,
-          false,
-        ).inputTriggerRange;
-        if (triggerRange[0] >= 0) {
-          // [from, to] = triggerRange;
+        // const triggerRange = view.state.field(
+        //   cmdkInputState,
+        //   false,
+        // ).inputTriggerRange;
+        if (
+          Array.isArray(initialPos) &&
+          initialPos.length > 0 &&
+          initialPos[0] >= 0
+        ) {
+          // start position should be relative to old doc
+          [from, to] = initialPos;
+          from = from + 1;
         }
         const line = view.state.doc.lineAt(from);
         // show the widget before the selection head
@@ -635,10 +702,12 @@ const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
 
         console.log(
           ';; cmdk-view-ctor ',
+          pos,
+          line,
           view.state.doc.lineAt(view.state.selection.main.anchor).number,
-          triggerRange[0] >= 0
-            ? view.state.doc.lineAt(triggerRange[0]).number
-            : triggerRange,
+          initialPos[0] >= 0
+            ? view.state.doc.lineAt(initialPos[0]).number
+            : initialPos,
           view.state.selection.main,
           view.state.field(cmdkInputState, false)?.inputTriggerRange,
         );
@@ -667,6 +736,7 @@ const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
         // for example: after clicking button to insert new content before the widget
         // console.log(';; cmdk-viewPlugin-up ');
         this.decorations = this.decorations.map(v.changes);
+        this.promptInputWidget.inputPos = this.decorations.chunkPos[0];
 
         if (
           checkIsCmdkDiffVisibilityChanged(v.startState, v.state) &&
@@ -694,7 +764,7 @@ const inputPlugin = (defPrompt: string, shouldFocusInput = false) =>
     },
   );
 
-const promptInputHotkeys = (hotkey?: string) =>
+const promptInputHotkeys = (hotkey?: string) => [
   Prec.high(
     keymap.of([
       {
@@ -706,7 +776,41 @@ const promptInputHotkeys = (hotkey?: string) =>
         },
       },
     ]),
-  );
+  ),
+  Prec.high(
+    keymap.of([
+      {
+        key: 'Mod-Enter',
+        run: (view) => {
+          console.log(';; cmdk1-ac ', view.state.selection.main);
+          return acceptCmdkCode(view);
+        },
+      },
+    ]),
+  ),
+  Prec.high(
+    keymap.of([
+      {
+        key: 'Mod-Delete',
+        run: (view) => {
+          console.log(';; cmdk1-rj ', view.state.selection.main);
+          return rejectCmdkCode(view);
+        },
+      },
+    ]),
+  ),
+  Prec.high(
+    keymap.of([
+      {
+        key: 'Mod-Backspace',
+        run: (view) => {
+          console.log(';; cmdk1-rj ', view.state.selection.main);
+          return rejectCmdkCode(view);
+        },
+      },
+    ]),
+  ),
+];
 
 const cmdkInputRender = () => {
   return EditorState.transactionExtender.of((tr) => {
@@ -714,29 +818,34 @@ const cmdkInputRender = () => {
     const cmdkInputStateAfter = tr.state.field(cmdkInputState, false);
 
     // console.log(
-    //   ';; renderCmdkInput1 ',
+    //   ';; renderCmdkInput ',
     //   cmdkInputStateAfter.showCmdkInputCard,
     //   cmdkInputStateAfter,
     //   tr,
     // );
 
-    if (
-      cmdkInputStateBefore.showCmdkInputCard !==
-      cmdkInputStateAfter.showCmdkInputCard
-    ) {
+    if (checkIsCmdkInputVisibilityChanged(tr.startState, tr.state)) {
       console.log(
         ';; renderCmdkInput ',
         cmdkInputStateAfter.showCmdkInputCard,
         cmdkInputStateBefore,
         cmdkInputStateAfter,
-        tr,
       );
 
       if (cmdkInputStateAfter.showCmdkInputCard) {
+        if (tr.isUserEvent('undo') && cmdkInputStateBefore) {
+          const prevTriggerRange = cmdkInputStateBefore.inputTriggerRange;
+          if (prevTriggerRange[0] >= 0) {
+            return {
+              effects: inputWidgetPluginCompartment.reconfigure(
+                inputPlugin('', prevTriggerRange),
+              ),
+            };
+          }
+        }
+
         return {
-          effects: inputWidgetPluginCompartment.reconfigure(
-            inputPlugin('', false),
-          ),
+          effects: inputWidgetPluginCompartment.reconfigure(inputPlugin('')),
         };
       }
 
@@ -752,61 +861,93 @@ const cmdkDiffViewRender = () => {
     const cmdkDiffStateBefore = tr.startState.field(cmdkDiffState, false);
     const cmdkDiffStateAfter = tr.state.field(cmdkDiffState, false);
 
-    if (
-      cmdkDiffStateBefore.isDocUpdatedBeforeShowDiff !==
-      cmdkDiffStateAfter.isDocUpdatedBeforeShowDiff
-    ) {
+    if (checkIsDocUpdatedBeforeShowDiffChanged(tr.startState, tr.state)) {
       if (
         tr.isUserEvent('redo') &&
-        cmdkDiffStateAfter.isDocUpdatedBeforeShowDiff
+        cmdkDiffStateAfter?.isDocUpdatedBeforeShowDiff
       ) {
         return {
-          effects: [enableUndoCmdkTwice.of(true)],
+          effects: [enableRedoCmdkTwice.of(true)],
         };
       }
     }
 
-    if (cmdkDiffStateBefore.showCmdkDiff !== cmdkDiffStateAfter.showCmdkDiff) {
+    if (checkIsCmdkDiffRejectedChanged(tr.startState, tr.state)) {
+      if (
+        tr.isUserEvent('redo') &&
+        cmdkDiffStateAfter?.isCmdkDiffRejected === 0
+      ) {
+        return {
+          effects: [enableRedoCmdkThrice.of(true)],
+        };
+      }
+    }
+
+    const effectsWithHideDiff: Array<StateEffect<unknown>> = [
+      cmdkDiffViewCompartment.reconfigure([]),
+    ];
+    const effectsWithShowDiff: Array<StateEffect<unknown>> = [
+      cmdkDiffViewCompartment.reconfigure(
+        animatableDiffView({
+          original: cmdkDiffStateAfter.originalContent,
+          showTypewriterAnimation: Boolean(
+            cmdkDiffStateAfter.showTypewriterAnimation,
+          ),
+          gutter: false,
+          highlightChanges: false,
+          syntaxHighlightDeletions: true,
+          mergeControls: false,
+        }),
+      ),
+    ];
+
+    if (
+      cmdkDiffStateAfter &&
+      checkIsCmdkDiffVisibilityChanged(tr.startState, tr.state)
+    ) {
       console.log(
         ';; renderCmdkDiff ',
         cmdkDiffStateAfter.showCmdkDiff,
+        cmdkDiffStateAfter.isCmdkDiffRejected,
         cmdkDiffStateBefore,
         cmdkDiffStateAfter,
         tr,
       );
 
       if (cmdkDiffStateAfter.showCmdkDiff) {
-        const effectsWithShowDiff: Array<StateEffect<unknown>> = [
-          cmdkDiffViewCompartment.reconfigure(
-            animatableDiffView({
-              original: cmdkDiffStateAfter.originalContent,
-              showTypewriterAnimation: Boolean(
-                cmdkDiffStateAfter.showTypewriterAnimation,
-              ),
-              gutter: false,
-              highlightChanges: false,
-              syntaxHighlightDeletions: true,
-              mergeControls: false,
-            }),
-          ),
-        ];
+        if (tr.isUserEvent('undo')) {
+          if (cmdkDiffStateAfter.isCmdkDiffRejected === 1) {
+            return {
+              effects: [...effectsWithShowDiff, enableUndoCmdkThrice.of(true)],
+            };
+          }
+        }
 
         return {
-          effects: effectsWithShowDiff,
+          effects: [...effectsWithShowDiff],
         };
       }
 
-      if (tr.isUserEvent('undo') && !cmdkDiffStateAfter.showCmdkDiff) {
+      if (
+        !tr.isUserEvent('undo')
+        // cmdkDiffStateAfter.isCmdkDiffRejected === 1
+      ) {
+        // works for normal case and redo
+        // effectsWithHideDiff.push(resetIsCmdkDiffRejected.of(-1));
+        // return {
+        //   // effects: [resetIsCmdkDiffRejected.of(-1), ...effectsWithHideDiff],
+        //   effects: [...effectsWithHideDiff, resetIsCmdkDiffRejected.of(-1)],
+        // };
+      }
+
+      if (tr.isUserEvent('undo')) {
         return {
-          effects: [
-            cmdkDiffViewCompartment.reconfigure([]),
-            enableUndoCmdkTwice.of(true),
-          ],
+          effects: [...effectsWithHideDiff, enableUndoCmdkTwice.of(true)],
         };
       }
 
       return {
-        effects: [cmdkDiffViewCompartment.reconfigure([])],
+        effects: effectsWithHideDiff,
       };
     }
   });

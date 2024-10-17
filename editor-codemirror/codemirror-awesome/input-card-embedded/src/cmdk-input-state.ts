@@ -1,5 +1,5 @@
 import { invertedEffects } from '@codemirror/commands';
-import { type StateEffect, StateField } from '@codemirror/state';
+import { type EditorState, type StateEffect, StateField } from '@codemirror/state';
 import type { CmdkInputState } from './types';
 import {
   showCmdkInput,
@@ -75,3 +75,14 @@ export const invertCmdkInput = invertedEffects.of((tr) => {
   return effects;
 });
 
+export function checkIsCmdkInputVisibilityChanged(
+  s1: EditorState,
+  s2: EditorState,
+) {
+  return (
+    s1.field(cmdkInputState, false)?.showCmdkInputCard !==
+    s2.field(cmdkInputState, false)?.showCmdkInputCard
+  );
+}
+
+// window.inpst = (editView) => editView.state.field(cmdkInputState);
