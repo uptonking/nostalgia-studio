@@ -22,7 +22,7 @@ const cursorTooltipBaseTheme = EditorView.baseTheme({
 });
 
 /**
- * crudely determines the word boundaries around the given position and, 
+ * crudely determines the word boundaries around the given position and,
  * - if the pointer is inside that word, returns a tooltip with the word
  */
 export const wordHover = hoverTooltip((view, pos, side) => {

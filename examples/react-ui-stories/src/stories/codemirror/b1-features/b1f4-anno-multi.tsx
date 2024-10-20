@@ -46,7 +46,7 @@ const annotator2 = EditorState.transactionExtender.of((tr) => {
  * - 打印顺序是 anno2、anno1、2个true
  * - 🤔 为什么鼠标在编辑器内连续点击时(改变光标位置)，第一次会打印两遍后续只打印一次
  *   - 第一打印两遍可能是失焦后再次获得焦点导致的
- * 
+ *
  */
 export const AnnoMulti = () => {
   const content = `# CodeMirror v6

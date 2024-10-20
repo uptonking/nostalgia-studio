@@ -151,7 +151,7 @@ export const baseTheme = buildTheme(
       display: 'none',
     },
     '&dark .cm-cursor': {
-      borderLeftColor: '#444',
+      borderLeftColor: '#ddd',
     },
     '.cm-dropCursor': {
       position: 'absolute',
@@ -268,11 +268,10 @@ export const baseTheme = buildTheme(
       verticalAlign: 'top',
     },
 
-    '.cm-highlightSpace:before': {
-      content: 'attr(data-display)',
-      position: 'absolute',
-      pointerEvents: 'none',
-      color: '#888',
+    '.cm-highlightSpace': {
+      backgroundImage:
+        'radial-gradient(circle at 50% 55%, #aaa 20%, transparent 5%)',
+      backgroundPosition: 'center',
     },
 
     '.cm-highlightTab': {

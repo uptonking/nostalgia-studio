@@ -5,18 +5,25 @@ import type { EditorView } from './editorview';
 import { clientRectsFor, flattenRect } from './dom';
 
 class Placeholder extends WidgetType {
-  constructor(readonly content: string | HTMLElement) {
+  constructor(
+    readonly content:
+      | string
+      | HTMLElement
+      | ((view: EditorView) => HTMLElement),
+  ) {
     super();
   }
 
-  toDOM() {
+  toDOM(view: EditorView) {
     const wrap = document.createElement('span');
     wrap.className = 'cm-placeholder';
     wrap.style.pointerEvents = 'none';
     wrap.appendChild(
       typeof this.content === 'string'
         ? document.createTextNode(this.content)
-        : this.content,
+        : typeof this.content === 'function'
+          ? this.content(view)
+          : this.content.cloneNode(true),
     );
     if (typeof this.content === 'string')
       wrap.setAttribute('aria-label', 'placeholder ' + this.content);
@@ -47,7 +54,9 @@ class Placeholder extends WidgetType {
 
 /// Extension that enables a placeholder—a piece of example content
 /// to show when the editor is empty.
-export function placeholder(content: string | HTMLElement): Extension {
+export function placeholder(
+  content: string | HTMLElement | ((view: EditorView) => HTMLElement),
+): Extension {
   return ViewPlugin.fromClass(
     class {
       placeholder: DecorationSet;

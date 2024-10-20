@@ -18,7 +18,7 @@ export const cmdkTriggerRange = () =>
     if (
       state.readOnly ||
       !inputState.showCmdkInputCard ||
-      diffState.showCmdkDiff||
+      diffState.showCmdkDiff ||
       isCmdkDiffViewActive(state)
     ) {
       return Decoration.none;

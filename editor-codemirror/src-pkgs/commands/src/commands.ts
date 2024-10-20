@@ -30,7 +30,6 @@ import { type SyntaxNode, NodeProp } from '@lezer/common';
 import { toggleComment, toggleBlockComment } from './comment';
 
 export {
-  type CommentTokens,
   toggleComment,
   toggleLineComment,
   lineComment,
@@ -40,6 +39,7 @@ export {
   blockUncomment,
   toggleBlockCommentByLine,
 } from './comment';
+export type { CommentTokens } from './comment';
 export {
   history,
   historyKeymap,
@@ -109,6 +109,39 @@ export const cursorCharRight: Command = (view) =>
 export const cursorCharForward: Command = (view) => cursorByChar(view, true);
 /// Move the selection one character backward.
 export const cursorCharBackward: Command = (view) => cursorByChar(view, false);
+
+function byCharLogical(
+  state: EditorState,
+  range: SelectionRange,
+  forward: boolean,
+) {
+  let pos = range.head;
+  const line = state.doc.lineAt(pos);
+  if (pos == (forward ? line.to : line.from))
+    pos = forward
+      ? Math.min(state.doc.length, line.to + 1)
+      : Math.max(0, line.from - 1);
+  else pos = line.from + findClusterBreak(line.text, pos - line.from, forward);
+  return EditorSelection.cursor(pos, forward ? -1 : 1);
+}
+
+function moveByCharLogical(target: CommandTarget, forward: boolean) {
+  return moveSel(target, (range) =>
+    range.empty
+      ? byCharLogical(target.state, range, forward)
+      : rangeEnd(range, forward),
+  );
+}
+
+/// Move the selection one character forward, in logical
+/// (non-text-direction-aware) string index order.
+export const cursorCharForwardLogical: StateCommand = (target) =>
+  moveByCharLogical(target, true);
+
+/// Move the selection one character backward, in logical string index
+/// order.
+export const cursorCharBackwardLogical: StateCommand = (target) =>
+  moveByCharLogical(target, false);
 
 function cursorByGroup(view: EditorView, forward: boolean) {
   return moveSel(view, (range) =>
@@ -432,10 +465,10 @@ export const selectMatchingBracket: StateCommand = ({ state, dispatch }) =>
   toMatchingBracket(state, dispatch, true);
 
 function extendSel(
-  view: EditorView,
+  target: CommandTarget,
   how: (range: SelectionRange) => SelectionRange,
 ): boolean {
-  const selection = updateSel(view.state.selection, (range) => {
+  const selection = updateSel(target.state.selection, (range) => {
     const head = how(range);
     return EditorSelection.range(
       range.anchor,
@@ -444,8 +477,8 @@ function extendSel(
       head.bidiLevel || undefined,
     );
   });
-  if (selection.eq(view.state.selection)) return false;
-  view.dispatch(setSel(view.state, selection));
+  if (selection.eq(target.state.selection)) return false;
+  target.dispatch(setSel(target.state, selection));
   return true;
 }
 
@@ -465,6 +498,15 @@ export const selectCharRight: Command = (view) =>
 export const selectCharForward: Command = (view) => selectByChar(view, true);
 /// Move the selection head one character backward.
 export const selectCharBackward: Command = (view) => selectByChar(view, false);
+
+/// Move the selection head one character forward by logical
+/// (non-direction aware) string index order.
+export const selectCharForwardLogical: StateCommand = (target) =>
+  extendSel(target, (range) => byCharLogical(target.state, range, true));
+/// Move the selection head one character backward by logical string
+/// index order.
+export const selectCharBackwardLogical: StateCommand = (target) =>
+  extendSel(target, (range) => byCharLogical(target.state, range, false));
 
 function selectByGroup(view: EditorView, forward: boolean) {
   return extendSel(view, (range) => view.moveByGroup(range, forward));
@@ -1369,7 +1411,7 @@ export const emacsStyleKeymap: readonly KeyBinding[] = [
 ///  - End: [`cursorLineBoundaryForward`](#commands.cursorLineBoundaryForward) ([`selectLineBoundaryForward`](#commands.selectLineBoundaryForward) with Shift)
 ///  - Ctrl-Home (Cmd-Home on macOS): [`cursorDocStart`](#commands.cursorDocStart) ([`selectDocStart`](#commands.selectDocStart) with Shift)
 ///  - Ctrl-End (Cmd-Home on macOS): [`cursorDocEnd`](#commands.cursorDocEnd) ([`selectDocEnd`](#commands.selectDocEnd) with Shift)
-///  - Enter: [`insertNewlineAndIndent`](#commands.insertNewlineAndIndent)
+///  - Enter and Shift-Enter: [`insertNewlineAndIndent`](#commands.insertNewlineAndIndent)
 ///  - Ctrl-a (Cmd-a on macOS): [`selectAll`](#commands.selectAll)
 ///  - Backspace: [`deleteCharBackward`](#commands.deleteCharBackward)
 ///  - Delete: [`deleteCharForward`](#commands.deleteCharForward)
@@ -1456,7 +1498,11 @@ export const standardKeymap: readonly KeyBinding[] = (
     },
     { key: 'Mod-End', run: cursorDocEnd, shift: selectDocEnd },
 
-    { key: 'Enter', run: insertNewlineAndIndent },
+    {
+      key: 'Enter',
+      run: insertNewlineAndIndent,
+      shift: insertNewlineAndIndent,
+    },
 
     { key: 'Mod-a', run: selectAll },
 

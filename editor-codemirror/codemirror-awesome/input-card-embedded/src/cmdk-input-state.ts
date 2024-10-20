@@ -1,5 +1,9 @@
 import { invertedEffects } from '@codemirror/commands';
-import { type EditorState, type StateEffect, StateField } from '@codemirror/state';
+import {
+  type EditorState,
+  type StateEffect,
+  StateField,
+} from '@codemirror/state';
 import type { CmdkInputState } from './types';
 import {
   showCmdkInput,

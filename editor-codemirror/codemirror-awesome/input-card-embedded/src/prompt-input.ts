@@ -214,7 +214,7 @@ function rejectChunks(view: EditorView) {
     rejectChunk(view, chunks[i].fromB);
   }
 }
-window['rejectChunks']=rejectChunks
+window['rejectChunks'] = rejectChunks;
 
 // recover the previous selection when widget dismiss or regenerate
 function recoverSelection(view: EditorView, pos: Pos) {

@@ -43,9 +43,7 @@ export const diffPlayControllerState = StateField.define<DiffPlayState>({
         playState = {
           ...playState,
           playLineNumber:
-            playState.playLineNumber < 0
-              ? 0
-              : ++playState.playLineNumber,
+            playState.playLineNumber < 0 ? 0 : ++playState.playLineNumber,
         };
       }
       // if (effect.is(setDiffPlayLineNumber)) {

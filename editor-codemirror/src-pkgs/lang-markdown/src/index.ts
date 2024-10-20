@@ -67,6 +67,11 @@ export function markdown(
     /// completes HTML tags when a `<` is typed. Set this to false to
     /// disable this.
     completeHTMLTags?: boolean;
+    /// By default, HTML tags in the document are handled by the [HTML
+    /// language](https://github.com/codemirror/lang-html) package with
+    /// tag matching turned off. You can pass in an alternative language
+    /// configuration here if you want.
+    htmlTagLanguage?: LanguageSupport;
   } = {},
 ) {
   const {
@@ -75,13 +80,14 @@ export function markdown(
     addKeymap = true,
     base: { parser } = commonmarkLanguage,
     completeHTMLTags = true,
+    htmlTagLanguage = htmlNoMatch,
   } = config;
   if (!(parser instanceof MarkdownParser))
     throw new RangeError(
       'Base parser provided to `markdown` should be a Markdown parser',
     );
   const extensions = config.extensions ? [config.extensions] : [];
-  const support = [htmlNoMatch.support];
+  const support = [htmlTagLanguage.support];
   let defaultCode;
   if (defaultCodeLanguage instanceof LanguageSupport) {
     support.push(defaultCodeLanguage.support);
@@ -94,7 +100,7 @@ export function markdown(
       ? getCodeParser(codeLanguages, defaultCode)
       : undefined;
   extensions.push(
-    parseCode({ codeParser, htmlParser: htmlNoMatch.language.parser }),
+    parseCode({ codeParser, htmlParser: htmlTagLanguage.language.parser }),
   );
   if (addKeymap) support.push(Prec.high(keymap.of(markdownKeymap)));
   const lang = mkLang(parser.configure(extensions));

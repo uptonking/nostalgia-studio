@@ -104,6 +104,7 @@ const enum VP {
   // Beyond this size, DOM layout starts to break down in browsers
   // because they use fixed-precision numbers to store dimensions.
   MaxDOMHeight = 7e6,
+  MaxHorizGap = 2e6,
 }
 
 // Line gaps are placeholder widgets used to hide pieces of overlong
@@ -114,6 +115,7 @@ export class LineGap {
     readonly from: number,
     readonly to: number,
     readonly size: number,
+    readonly displaySize: number,
   ) {}
 
   static same(a: readonly LineGap[], b: readonly LineGap[]) {
@@ -130,7 +132,7 @@ export class LineGap {
   draw(viewState: ViewState, wrapping: boolean) {
     return Decoration.replace({
       widget: new LineGapWidget(
-        this.size * (wrapping ? viewState.scaleY : viewState.scaleX),
+        this.displaySize * (wrapping ? viewState.scaleY : viewState.scaleX),
         wrapping,
       ),
     }).range(this.from, this.to);
@@ -675,6 +677,7 @@ export class ViewState {
             changes.mapPos(gap.from),
             changes.mapPos(gap.to),
             gap.size,
+            gap.displaySize,
           ),
         );
     return mapped;
@@ -736,7 +739,10 @@ export class ViewState {
           ).head;
           if (lineStart > from) to = lineStart;
         }
-        gap = new LineGap(from, to, this.gapSize(line, from, to, structure));
+        const size = this.gapSize(line, from, to, structure);
+        const displaySize =
+          wrapping || size < VP.MaxHorizGap ? size : VP.MaxHorizGap;
+        gap = new LineGap(from, to, size, displaySize);
       }
       gaps.push(gap);
     };
@@ -770,19 +776,30 @@ export class ViewState {
       } else {
         const totalWidth = structure.total * this.heightOracle.charWidth;
         const marginWidth = margin * this.heightOracle.charWidth;
+        let horizOffset = 0;
+        if (totalWidth > VP.MaxHorizGap)
+          for (const old of current) {
+            if (
+              old.from >= line.from &&
+              old.from < line.to &&
+              old.size != old.displaySize &&
+              old.from * this.heightOracle.charWidth + horizOffset <
+                this.pixelViewport.left
+            )
+              horizOffset = old.size - old.displaySize;
+          }
+        const pxLeft = this.pixelViewport.left + horizOffset;
+        const pxRight = this.pixelViewport.right + horizOffset;
         let left;
         let right;
         if (target != null) {
           const targetFrac = findFraction(structure, target);
-          const spaceFrac =
-            ((this.pixelViewport.right - this.pixelViewport.left) / 2 +
-              marginWidth) /
-            totalWidth;
+          const spaceFrac = ((pxRight - pxLeft) / 2 + marginWidth) / totalWidth;
           left = targetFrac - spaceFrac;
           right = targetFrac + spaceFrac;
         } else {
-          left = (this.pixelViewport.left - marginWidth) / totalWidth;
-          right = (this.pixelViewport.right + marginWidth) / totalWidth;
+          left = (pxLeft - marginWidth) / totalWidth;
+          right = (pxRight + marginWidth) / totalWidth;
         }
         viewFrom = findPosition(structure, left);
         viewTo = findPosition(structure, right);

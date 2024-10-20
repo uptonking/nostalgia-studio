@@ -18,7 +18,7 @@ const cmdkInputCard = inputCardEmbedded({
       status: 'success',
       message:
         '// ;;; AI CODED ' +
-        (+new Date()).toString(36).slice(-5) +
+        Number(new Date()).toString(36).slice(-5) +
         '\n// replace mock data with your own api\n// ;;;',
     };
   },

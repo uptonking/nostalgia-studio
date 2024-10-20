@@ -584,7 +584,7 @@ function makePresentable(changes: Change[], a: string, b: string) {
         else if (
           last > -1 &&
           (len = change.toA - last) >= maxScanBefore &&
-          b.slice(change.fromA - len, change.fromA) == b.slice(last, change.toA)
+          a.slice(change.fromA - len, change.fromA) == a.slice(last, change.toA)
         )
           change = changes[i] = change.offset(-len);
       }

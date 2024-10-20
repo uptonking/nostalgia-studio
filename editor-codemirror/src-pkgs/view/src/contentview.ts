@@ -246,7 +246,14 @@ export abstract class ContentView {
       const child = this.children[i];
       if (child.parent == this && children.indexOf(child) < 0) child.destroy();
     }
-    this.children.splice(from, to - from, ...children);
+    if (children.length < 250)
+      this.children.splice(from, to - from, ...children);
+    else
+      this.children = ([] as ContentView[]).concat(
+        this.children.slice(0, from),
+        children,
+        this.children.slice(to),
+      );
     for (let i = 0; i < children.length; i++) children[i].setParent(this);
   }
 

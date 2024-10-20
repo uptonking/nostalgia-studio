@@ -25,6 +25,9 @@
     "prepare1": "cm-buildhelper src/index.ts",
     "test": "cm-runtests"
   },
+  "dependencies": {
+    "@marijn/find-cluster-break": "^1.0.0"
+  },
   "devDependencies": {
     "@codemirror/buildhelper": "^1.0.0"
   }

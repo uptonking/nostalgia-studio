@@ -429,13 +429,16 @@ const lintPlugin = ViewPlugin.fromClass(
         const { state } = this.view;
         const { sources } = state.facet(lintConfig);
         if (sources.length)
-          Promise.all(
-            sources.map((source) => Promise.resolve(source(this.view))),
-          ).then(
+          batchResults(
+            sources.map((s) => Promise.resolve(s(this.view))),
             (annotations) => {
-              const all = annotations.reduce((a, b) => a.concat(b));
               if (this.view.state.doc == state.doc)
-                this.view.dispatch(setDiagnostics(this.view.state, all));
+                this.view.dispatch(
+                  setDiagnostics(
+                    this.view.state,
+                    annotations.reduce((a, b) => a.concat(b)),
+                  ),
+                );
             },
             (error) => {
               logException(this.view.state, error);
@@ -471,6 +474,22 @@ const lintPlugin = ViewPlugin.fromClass(
     }
   },
 );
+
+function batchResults<T>(
+  promises: readonly Promise<T>[],
+  sink: (values: T[]) => void,
+  error: (reason: any) => void,
+) {
+  const collected: T[] = [];
+  const timeout = -1;
+  for (const p of promises)
+    p.then((value) => {
+      collected.push(value);
+      clearTimeout(timeout);
+      if (collected.length == promises.length) sink(collected);
+      else setTimeout(() => sink(collected), 200);
+    }, error);
+}
 
 const lintConfig = Facet.define<
   { source: LintSource | null; config: LintConfig },
