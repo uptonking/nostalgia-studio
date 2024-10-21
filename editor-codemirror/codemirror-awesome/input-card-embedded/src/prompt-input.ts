@@ -214,7 +214,6 @@ function rejectChunks(view: EditorView) {
     rejectChunk(view, chunks[i].fromB);
   }
 }
-window['rejectChunks'] = rejectChunks;
 
 // recover the previous selection when widget dismiss or regenerate
 function recoverSelection(view: EditorView, pos: Pos) {
@@ -506,7 +505,7 @@ class PromptInputWidget extends WidgetType {
       await handleRequest();
     };
     input.onkeydown = (e) => {
-      // console.log(';; input-down ', e.key, e);
+      console.log(';; input-down ', e.key, e);
       if (e.key === 'z') {
         // /cmd-z for und
         if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
@@ -514,7 +513,7 @@ class PromptInputWidget extends WidgetType {
           // redo(view);
           // view.focus();
           // recoverSelection(view, this.oriSelPos);
-          return;
+          return false;
         }
 
         if ((e.ctrlKey || e.metaKey) && input.value === '') {
@@ -522,18 +521,20 @@ class PromptInputWidget extends WidgetType {
           undo(view);
           view.focus();
           recoverSelection(view, this.oriSelPos);
-          return;
+          return false;
         }
       }
 
       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-        return acceptCmdkCode(view);
+        acceptCmdkCode(view);
+        return false;
       }
       if (
         (e.key === 'Delete' || e.key === 'Backspace') &&
         (e.ctrlKey || e.metaKey)
       ) {
-        return rejectCmdkCode(view);
+        rejectCmdkCode(view);
+        return false;
       }
     };
 
@@ -761,6 +762,14 @@ const inputPlugin = (
     },
     {
       decorations: (v) => v.decorations,
+      // eventHandlers: {
+      //   mousedown: (e, view) => {
+      //     let target = e.target as HTMLElement
+      //     if (target.nodeName == "INPUT" &&
+      //         target.parentElement!.classList.contains("cm-boolean-toggle"))
+      //       return toggleBoolean(view, view.posAtDOM(target))
+      //   }
+      // }
     },
   );
 
@@ -793,7 +802,7 @@ const promptInputHotkeys = (hotkey?: string) => [
       {
         key: 'Mod-Delete',
         run: (view) => {
-          console.log(';; cmdk1-rj ', view.state.selection.main);
+          console.log(';; cmdk1-rj-del ', view.state.selection.main);
           return rejectCmdkCode(view);
         },
       },
@@ -804,13 +813,43 @@ const promptInputHotkeys = (hotkey?: string) => [
       {
         key: 'Mod-Backspace',
         run: (view) => {
-          console.log(';; cmdk1-rj ', view.state.selection.main);
+          console.log(';; cmdk1-rj-back ', view.state.selection.main);
           return rejectCmdkCode(view);
         },
       },
     ]),
   ),
 ];
+
+export const cmdkUndoRedoHotkeys = () => {
+  return [
+    Prec.high(
+      keymap.of([
+        {
+          key: 'Mod-z',
+          run: cmdkUndo,
+        },
+      ]),
+    ),
+    Prec.high(
+      keymap.of([
+        {
+          key: 'Mod-y',
+          mac: 'Mod-Shift-z',
+          run: cmdkRedo,
+        },
+      ]),
+    ),
+    Prec.high(
+      keymap.of([
+        {
+          linux: 'Ctrl-Shift-z',
+          run: cmdkRedo,
+        },
+      ]),
+    ),
+  ];
+};
 
 const cmdkInputRender = () => {
   return EditorState.transactionExtender.of((tr) => {
@@ -951,36 +990,6 @@ const cmdkDiffViewRender = () => {
       };
     }
   });
-};
-
-export const cmdkUndoRedoHotkeys = () => {
-  return [
-    Prec.high(
-      keymap.of([
-        {
-          key: 'Mod-z',
-          run: cmdkUndo,
-        },
-      ]),
-    ),
-    Prec.high(
-      keymap.of([
-        {
-          key: 'Mod-y',
-          mac: 'Mod-Shift-z',
-          run: cmdkRedo,
-        },
-      ]),
-    ),
-    Prec.high(
-      keymap.of([
-        {
-          linux: 'Ctrl-Shift-z',
-          run: cmdkRedo,
-        },
-      ]),
-    ),
-  ];
 };
 
 /** update input box style when ai is coding */

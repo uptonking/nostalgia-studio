@@ -44,9 +44,11 @@ export function acceptCmdkCode(view: EditorView) {
     ) as HTMLButtonElement;
     if (acceptBtn) {
       acceptBtn.click();
+      // console.log(';; ac-true ');
       return true;
     }
   }
+  // console.log(';; ac-false ');
   return false;
 }
 
@@ -57,9 +59,11 @@ export function rejectCmdkCode(view: EditorView) {
     ) as HTMLButtonElement;
     if (rejectBtn) {
       rejectBtn.click();
+      // console.log(';; rj-true ');
       return true;
     }
   }
+  // console.log(';; rj-false ');
   return false;
 }
 
@@ -73,7 +77,7 @@ export function cmdkUndo(view: EditorView) {
     }
     const undoThriceState = view.state.field(enableUndoRedoThriceState, false);
     if (undoThriceState) {
-      console.log(';; k-redo3 ', undoThriceState);
+      console.log(';; k-undo3 ', undoThriceState);
       undo(view);
       undo(view);
       undo(view);
