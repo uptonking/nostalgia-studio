@@ -23,14 +23,21 @@ export const cmdkTriggerRange = () =>
     ) {
       return Decoration.none;
     }
-    // console.log(';; range-highlight ', isCmdkDiffViewActive(state), inputState);
 
     const triggerRange = inputState.inputTriggerRange;
     if (triggerRange[0] < 0) return Decoration.none;
 
     let [highlightFrom, highlightTo] = triggerRange;
+
+    console.log(
+      ';; range-highlight ',
+      inputState,
+      state.doc.lineAt(highlightFrom),
+    );
+
     if (highlightFrom === highlightTo) {
       const lineRange = state.doc.lineAt(highlightFrom);
+      if (lineRange.from === lineRange.to) return Decoration.none;
       highlightFrom = lineRange.from;
       highlightTo = lineRange.to;
     }
