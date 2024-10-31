@@ -22,6 +22,7 @@
     "@codemirror/lang-markdown": "6.2.5111", 
     "@codemirror/lang-xml": "6.1.1111", 
     "@codemirror/lang-sql": "6.7.1111", 
+    "@codemirror/lang-go": "6.0.1111", 
     "y-quill": "0.1.5111", 
     "@datalking/cm-input-card-embedded": "0.0.1111",
     "@datalking/cm-floating-toolbar": "0.0.1111",

@@ -862,15 +862,10 @@ const cmdkInputRender = () => {
     //   cmdkInputStateAfter,
     //   tr,
     // );
-
-    if (checkIsCmdkInputVisibilityChanged(tr.startState, tr.state)) {
-      console.log(
-        ';; renderCmdkInput ',
-        cmdkInputStateAfter.showCmdkInputCard,
-        cmdkInputStateBefore,
-        cmdkInputStateAfter,
-      );
-
+    if (
+      checkIsCmdkInputVisibilityChanged(tr.startState, tr.state) &&
+      cmdkInputStateAfter
+    ) {
       if (cmdkInputStateAfter.showCmdkInputCard) {
         if (tr.isUserEvent('undo') && cmdkInputStateBefore) {
           const prevTriggerRange = cmdkInputStateBefore.inputTriggerRange;
@@ -892,6 +887,8 @@ const cmdkInputRender = () => {
         effects: [inputWidgetPluginCompartment.reconfigure([])],
       };
     }
+
+    return null;
   });
 };
 
@@ -922,24 +919,6 @@ const cmdkDiffViewRender = () => {
       }
     }
 
-    const effectsWithHideDiff: Array<StateEffect<unknown>> = [
-      cmdkDiffViewCompartment.reconfigure([]),
-    ];
-    const effectsWithShowDiff: Array<StateEffect<unknown>> = [
-      cmdkDiffViewCompartment.reconfigure(
-        animatableDiffView({
-          original: cmdkDiffStateAfter.originalContent,
-          showTypewriterAnimation: Boolean(
-            cmdkDiffStateAfter.showTypewriterAnimation,
-          ),
-          gutter: false,
-          highlightChanges: false,
-          syntaxHighlightDeletions: true,
-          mergeControls: false,
-        }),
-      ),
-    ];
-
     if (
       cmdkDiffStateAfter &&
       checkIsCmdkDiffVisibilityChanged(tr.startState, tr.state)
@@ -952,6 +931,24 @@ const cmdkDiffViewRender = () => {
         cmdkDiffStateAfter,
         tr,
       );
+
+      const effectsWithHideDiff: Array<StateEffect<unknown>> = [
+        cmdkDiffViewCompartment.reconfigure([]),
+      ];
+      const effectsWithShowDiff: Array<StateEffect<unknown>> = [
+        cmdkDiffViewCompartment.reconfigure(
+          animatableDiffView({
+            original: cmdkDiffStateAfter.originalContent,
+            showTypewriterAnimation: Boolean(
+              cmdkDiffStateAfter.showTypewriterAnimation,
+            ),
+            gutter: false,
+            highlightChanges: false,
+            syntaxHighlightDeletions: true,
+            mergeControls: false,
+          }),
+        ),
+      ];
 
       if (cmdkDiffStateAfter.showCmdkDiff) {
         if (tr.isUserEvent('undo')) {
@@ -967,18 +964,6 @@ const cmdkDiffViewRender = () => {
         };
       }
 
-      if (
-        !tr.isUserEvent('undo')
-        // cmdkDiffStateAfter.isCmdkDiffRejected === 1
-      ) {
-        // works for normal case and redo
-        // effectsWithHideDiff.push(resetIsCmdkDiffRejected.of(-1));
-        // return {
-        //   // effects: [resetIsCmdkDiffRejected.of(-1), ...effectsWithHideDiff],
-        //   effects: [...effectsWithHideDiff, resetIsCmdkDiffRejected.of(-1)],
-        // };
-      }
-
       if (tr.isUserEvent('undo')) {
         return {
           effects: [...effectsWithHideDiff, enableUndoCmdkTwice.of(true)],
@@ -989,6 +974,8 @@ const cmdkDiffViewRender = () => {
         effects: effectsWithHideDiff,
       };
     }
+
+    return null;
   });
 };
 
