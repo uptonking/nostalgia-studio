@@ -54,17 +54,18 @@ export const decorateChunks = ViewPlugin.fromClass(
         view,
         this.chunksByLine,
       ));
-      // console.log(
-      //   ';; ins-deco-ctor ',
-      //   view.state.field(ChunkField),
-      //   this.chunksByLine,
-      // );
+      console.log(
+        ';; ins-deco-ctor ',
+        view.state.field(ChunkField),
+        this.chunksByLine,
+      );
+
       if (
         showTypewriterAnimation &&
         this.autoPlayIntervalId === 0 &&
         this.chunksByLine.length > 0
       ) {
-        console.log(';; startDiffTimer 1');
+        console.log(';; startDiffTimer-ctor');
         this.autoPlayDiffAnimation();
       }
     }
@@ -113,7 +114,7 @@ export const decorateChunks = ViewPlugin.fromClass(
         this.chunksByLine.length > 0 &&
         !diffPlayState?.isDiffCompleted
       ) {
-        console.log(';; startDiffTimer 2');
+        console.log(';; startDiffTimer-update');
         this.autoPlayDiffAnimation();
       }
     }
@@ -149,7 +150,7 @@ export const decorateChunks = ViewPlugin.fromClass(
                   nextChunk.fromB,
                   // EditorSelection.range(nextChunk.fromB, nextChunk.toB), // full
                 ),
-                autoPlayDiffEffect.of(undefined),
+                autoPlayDiffEffect.of(1),
               ],
             });
           }
@@ -163,7 +164,7 @@ export const decorateChunks = ViewPlugin.fromClass(
             ],
           });
         }
-      }, 1000);
+      }, 2000);
     }
 
     destroy() {
@@ -327,7 +328,7 @@ function getChunkDeco(view: EditorView, chunksByLine?: Chunk[]) {
   const { side, highlightChanges, markGutter, showTypewriterAnimation } =
     view.state.facet(mergeConfig);
   const diffPlayState = view.state.field(diffPlayControllerState, false);
-  const currentDiffPlayLineNumber = diffPlayState?.playLineNumber || -1e9;
+  const currentDiffPlayLineNumber = diffPlayState.playLineNumber ?? -1e9;
   const isDiffCompleted = diffPlayState?.isDiffCompleted;
   let chunks = view.state.field(ChunkField);
   if (showTypewriterAnimation && chunksByLine && !isDiffCompleted) {

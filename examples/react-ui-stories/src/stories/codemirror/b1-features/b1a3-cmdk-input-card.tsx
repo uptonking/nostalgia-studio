@@ -11,7 +11,7 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-const cmdkInputCard = inputCardEmbedded({
+const cmdkInputCardExt = inputCardEmbedded({
   chat: async () => {
     await sleep(1000);
     return {
@@ -55,7 +55,7 @@ export const floatingToolbarState = StateField.define<readonly Tooltip[]>({
     const editor = new EditorView({
       extensions: [
         basicSetup,
-        cmdkInputCard,
+        cmdkInputCardExt,
         floatingToolbar(),
         diffToolbar(),
         // language.of(markdown())

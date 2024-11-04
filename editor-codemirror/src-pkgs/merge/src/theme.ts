@@ -44,17 +44,21 @@ export const baseTheme = EditorView.baseTheme({
   '&light.cm-merge-a .cm-changedLine, .cm-deletedChunk': {
     // backgroundColor: 'rgba(160, 128, 100, .08)',
     // backgroundColor: '#ff0000',
-    backgroundColor: '#ffebe9',
+    // backgroundColor: '#ffebe9',
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
   },
   '&light.cm-merge-b .cm-changedLine': {
     // backgroundColor: 'rgba(100, 160, 128, .08)',
-    backgroundColor: '#dafbe1',
+    // backgroundColor: '#dafbe1',
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
   },
   '&dark.cm-merge-a .cm-changedLine, .cm-deletedChunk': {
-    backgroundColor: 'rgba(239, 68, 68, 0.3)',
+    // backgroundColor: 'rgba(239, 68, 68, 0.3)',
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
   },
   '&dark.cm-merge-b .cm-changedLine': {
-    backgroundColor: 'rgba(16, 185, 129, 0.3)',
+    // backgroundColor: 'rgba(16, 185, 129, 0.3)',
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
   },
   '&light.cm-merge-b .cm-line-hidden': {
     // backgroundColor: 'rgba(100, 160, 128, .08)',

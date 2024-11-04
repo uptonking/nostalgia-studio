@@ -22,7 +22,7 @@ import { highlightTree } from '@lezer/highlight';
 import { Chunk, defaultDiffConfig } from './chunk';
 import { decorateChunks } from './deco';
 import type { Change, DiffConfig } from './diff';
-import { ChunkField, mergeConfig, setChunks } from './merge';
+import { ChunkField, getChunks, mergeConfig, setChunks } from './merge';
 import { baseTheme } from './theme';
 import { diffPlayControllerState } from './animation-controller';
 
@@ -70,6 +70,7 @@ export function animatableDiffView(config: AnimatableDiffViewConfig) {
   // console.log(';; config ', config);
 
   return [
+    ChunkField,
     diffPlayControllerState,
     // decorate new lines in latest editor content, with green bg
     Prec.low(decorateChunks),
@@ -317,6 +318,14 @@ export function rejectChunk(view: EditorView, pos?: number) {
     userEvent: 'revert',
   });
   return true;
+}
+
+export function rejectChunks(view: EditorView) {
+  const chunks = getChunks(view.state)?.chunks || [];
+  // must traverse from the last to the first
+  for (let i = chunks.length - 1; i >= 0; i--) {
+    rejectChunk(view, chunks[i].fromB);
+  }
 }
 
 function buildDeletedChunks(state: EditorState) {

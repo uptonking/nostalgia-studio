@@ -23,7 +23,8 @@ const initialDiffPlayState: DiffPlayState = {
 };
 
 export const resetDiffPlayState = StateEffect.define<undefined>();
-export const autoPlayDiffEffect = StateEffect.define<number | undefined>();
+/** add 1 after scrolled to next line */
+export const autoPlayDiffEffect = StateEffect.define<number>();
 export const setIsDiffCompleted = StateEffect.define<boolean>();
 // export const setDiffPlayLineNumber = StateEffect.define<number | undefined>();
 export const pauseDiffEffect = StateEffect.define<boolean>();
@@ -64,8 +65,8 @@ export const diffPlayControllerState = StateField.define<DiffPlayState>({
     }
     // console.log(
     //   ';; no.-done ',
-    //   currentLineNumber.playLineNumber,
-    //   currentLineNumber.isDiffCompleted,
+    //   playState.playLineNumber,
+    //   playState.isDiffCompleted,
     // );
     return playState;
   },
