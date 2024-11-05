@@ -64,6 +64,9 @@ export const baseTheme = EditorView.baseTheme({
     // backgroundColor: 'rgba(100, 160, 128, .08)',
     display: 'none',
   },
+  '&.cm-merge-b .anime-diff-off': {
+    backgroundColor: 'transparent',
+  },
   '&.cm-merge-b .cm-line-typing': {
     animation: 'typing 1s steps(20), blink 0.025s step-end infinite alternate',
     borderRight: '1.5px solid',

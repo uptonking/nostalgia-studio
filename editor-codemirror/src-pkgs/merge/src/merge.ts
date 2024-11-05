@@ -13,6 +13,7 @@ type Config = {
   sibling?: () => EditorView;
   markGutter: boolean;
   showTypewriterAnimation?: boolean;
+  showAnimeWithDiffOff?: boolean;
   highlightChanges: boolean;
   syntaxHighlightDeletions?: boolean;
   mergeControls?: boolean;

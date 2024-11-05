@@ -22,7 +22,7 @@ const initialDiffPlayState: DiffPlayState = {
   isDiffCompleted: false,
 };
 
-export const resetDiffPlayState = StateEffect.define<undefined>();
+export const resetDiffPlayState = StateEffect.define<number>();
 /** add 1 after scrolled to next line */
 export const autoPlayDiffEffect = StateEffect.define<number>();
 export const setIsDiffCompleted = StateEffect.define<boolean>();

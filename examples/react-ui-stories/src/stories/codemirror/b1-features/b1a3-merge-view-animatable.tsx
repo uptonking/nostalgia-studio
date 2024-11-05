@@ -8,6 +8,7 @@ import {
   type StateEffect,
   type ChangeSpec,
 } from '@codemirror/state';
+import { makeTextByWords } from '../utils/lorem-ipsum';
 
 const doc1 = `one
 two
@@ -15,6 +16,8 @@ three
 four
 five`;
 const docSix1 = doc1.replace(/t/g, 'T') + '\nSix';
+
+const doc2 = makeTextByWords(2000);
 
 const doc = `one cat
 two books to read
@@ -51,19 +54,23 @@ const docSix =
     .replace('ful', '')
     .replace('live', '')
     .replace('tea', 'coffee')
+    // .replace('and', 'then')
     .replace(/b/g, 'B') + '\nSix';
 
 type DiffViewConfig = {
   enableDiff: boolean;
   showTypewriterAnimation: boolean;
+  showAnimeWithDiffOff: boolean;
   showGutter: boolean;
   enableHighlightChanges: boolean;
   showMergeControls: boolean;
 };
 
-const initialDiffViewConfig = {
+const initialDiffViewConfig: DiffViewConfig = {
   enableDiff: true,
   showTypewriterAnimation: true,
+  // showAnimeWithDiffOff: true,
+  showAnimeWithDiffOff: false,
   showGutter: true,
   enableHighlightChanges: false,
   showMergeControls: false,
@@ -98,6 +105,8 @@ export const MergeViewAnimatable = () => {
                 gutter: initialDiffViewConfig.showGutter,
                 showTypewriterAnimation:
                   initialDiffViewConfig.showTypewriterAnimation,
+                showAnimeWithDiffOff:
+                  initialDiffViewConfig.showAnimeWithDiffOff,
                 highlightChanges: initialDiffViewConfig.enableHighlightChanges,
                 syntaxHighlightDeletions: true,
                 mergeControls: initialDiffViewConfig.showMergeControls,
@@ -127,6 +136,7 @@ export const MergeViewAnimatable = () => {
               original: doc,
               gutter: diffViewConfig.showGutter,
               showTypewriterAnimation: diffViewConfig.showTypewriterAnimation,
+              showAnimeWithDiffOff: diffViewConfig.showAnimeWithDiffOff,
               highlightChanges: diffViewConfig.enableHighlightChanges,
               syntaxHighlightDeletions: true,
               mergeControls: diffViewConfig.showMergeControls,

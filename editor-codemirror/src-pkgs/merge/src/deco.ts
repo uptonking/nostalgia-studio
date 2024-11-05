@@ -120,6 +120,16 @@ export const decorateChunks = ViewPlugin.fromClass(
     }
 
     autoPlayDiffAnimation() {
+      let intervalDurationPerLine = Math.ceil(2000 / this.chunksByLine.length);
+      if (intervalDurationPerLine < 10) {
+        intervalDurationPerLine = 10;
+      }
+      console.log(
+        ';; typing-duration-per-line ',
+        this.chunksByLine.length,
+        intervalDurationPerLine,
+      );
+      
       this.autoPlayIntervalId = window.setInterval(() => {
         const { showTypewriterAnimation } =
           this.editView.state.facet(mergeConfig);
@@ -164,7 +174,7 @@ export const decorateChunks = ViewPlugin.fromClass(
             ],
           });
         }
-      }, 2000);
+      }, intervalDurationPerLine);
     }
 
     destroy() {
@@ -178,7 +188,7 @@ export const decorateChunks = ViewPlugin.fromClass(
       window.clearInterval(this.autoPlayIntervalId);
       this.autoPlayIntervalId = 0;
       this.editView.dispatch({
-        effects: [resetDiffPlayState.of(undefined)],
+        effects: [resetDiffPlayState.of(1)],
       });
     }
   },
@@ -235,11 +245,17 @@ function configChanged(s1: EditorState, s2: EditorState) {
 const changedLineDeco = Decoration.line({
   class: 'cm-changedLine',
 });
+const changedLineDiffOffDeco = Decoration.line({
+  class: 'cm-changedLine anime-diff-off',
+});
 const changedLineHiddenDeco = Decoration.line({
   class: 'cm-changedLine cm-line-hidden',
 });
 const changedLineTypewriterDeco = Decoration.line({
   class: 'cm-changedLine cm-line-typing',
+});
+const changedLineTypewriterDiffOffDeco = Decoration.line({
+  class: 'cm-changedLine anime-diff-off cm-line-typing',
 });
 const changedTextDeco = Decoration.mark({ class: 'cm-changedText' });
 const insertedDeco = Decoration.mark({
@@ -255,6 +271,19 @@ const changedLineGutterMarker = new (class extends GutterMarker {
   elementClass = 'cm-changedLineGutter';
 })();
 
+function getChangedLineDeco(
+  displayStatus: 'show' | 'typing' | 'hidden',
+  showAnimeWithDiffOff?: boolean,
+) {
+  if (displayStatus === 'hidden') return changedLineHiddenDeco;
+  if (displayStatus === 'typing') {
+    return showAnimeWithDiffOff
+      ? changedLineTypewriterDiffOffDeco
+      : changedLineTypewriterDeco;
+  }
+  return showAnimeWithDiffOff ? changedLineDiffOffDeco : changedLineDeco;
+}
+
 function buildChunkDeco({
   chunk,
   doc,
@@ -263,6 +292,7 @@ function buildChunkDeco({
   builder,
   gutterBuilder,
   displayStatus,
+  showAnimeWithDiffOff,
 }: {
   chunk: Chunk;
   doc: Text;
@@ -271,6 +301,7 @@ function buildChunkDeco({
   builder: RangeSetBuilder<Decoration>;
   gutterBuilder: RangeSetBuilder<GutterMarker> | null;
   displayStatus: 'show' | 'typing' | 'hidden';
+  showAnimeWithDiffOff?: boolean;
 }) {
   const from = isA ? chunk.fromA : chunk.fromB;
   const to = isA ? chunk.toA : chunk.toB;
@@ -279,11 +310,7 @@ function buildChunkDeco({
     builder.add(
       from,
       from,
-      displayStatus === 'typing'
-        ? changedLineTypewriterDeco
-        : displayStatus === 'hidden'
-          ? changedLineHiddenDeco
-          : changedLineDeco,
+      getChangedLineDeco(displayStatus, showAnimeWithDiffOff),
     );
     builder.add(from, to, isA ? deletedDeco : insertedDeco);
     if (gutterBuilder) gutterBuilder.add(from, from, changedLineGutterMarker);
@@ -298,11 +325,7 @@ function buildChunkDeco({
         builder.add(
           pos,
           pos,
-          displayStatus === 'typing'
-            ? changedLineTypewriterDeco
-            : displayStatus === 'hidden'
-              ? changedLineHiddenDeco
-              : changedLineDeco,
+          getChangedLineDeco(displayStatus, showAnimeWithDiffOff),
         );
         if (gutterBuilder) gutterBuilder.add(pos, pos, changedLineGutterMarker);
         continue;
@@ -325,8 +348,13 @@ function buildChunkDeco({
 }
 
 function getChunkDeco(view: EditorView, chunksByLine?: Chunk[]) {
-  const { side, highlightChanges, markGutter, showTypewriterAnimation } =
-    view.state.facet(mergeConfig);
+  const {
+    side,
+    highlightChanges,
+    markGutter,
+    showTypewriterAnimation,
+    showAnimeWithDiffOff,
+  } = view.state.facet(mergeConfig);
   const diffPlayState = view.state.field(diffPlayControllerState, false);
   const currentDiffPlayLineNumber = diffPlayState.playLineNumber ?? -1e9;
   const isDiffCompleted = diffPlayState?.isDiffCompleted;
@@ -369,6 +397,7 @@ function getChunkDeco(view: EditorView, chunksByLine?: Chunk[]) {
         builder,
         gutterBuilder,
         displayStatus,
+        showAnimeWithDiffOff,
       });
     }
   }

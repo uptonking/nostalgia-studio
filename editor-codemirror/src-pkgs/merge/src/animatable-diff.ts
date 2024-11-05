@@ -33,6 +33,16 @@ interface AnimatableDiffViewConfig {
   gutter?: boolean;
   /** whether to show typewriter animation for inserted lines. default is false. */
   showTypewriterAnimation?: boolean;
+  /** whether to show typewriter animation without deleted lines. default is false.
+   * - valid only when showTypewriterAnimation is true
+   */
+  showAnimeWithDiffOff?: boolean;
+  /** typewriter animation duration in milliseconds for one single line in editor
+   * - default is `2000/changedLines`, which means the animation for the whole editor is finished in 2s
+   * - for values less than 10, 10 will be used, for performance
+   * - valid only when showTypewriterAnimation is true
+   */
+  animeDuration?: number;
   /** whether to highlight the inserted/deleted characters. default is true. */
   highlightChanges?: boolean;
   /** whether to highlight deleted line using original lang syntax. */
@@ -75,7 +85,9 @@ export function animatableDiffView(config: AnimatableDiffViewConfig) {
     // decorate new lines in latest editor content, with green bg
     Prec.low(decorateChunks),
     // insert deleted lines as widget, with red bg
-    deletedChunks,
+    config.showTypewriterAnimation && !config.showAnimeWithDiffOff
+      ? deletedChunks
+      : [],
     baseTheme,
     EditorView.editorAttributes.of({ class: 'cm-merge-b' }),
     // update old or new doc by updateOriginalDoc effect
@@ -103,6 +115,7 @@ export function animatableDiffView(config: AnimatableDiffViewConfig) {
     mergeConfig.of({
       markGutter: config.gutter !== false,
       showTypewriterAnimation: config.showTypewriterAnimation === true,
+      showAnimeWithDiffOff: config.showAnimeWithDiffOff === true,
       highlightChanges: config.highlightChanges !== false,
       syntaxHighlightDeletions: config.syntaxHighlightDeletions !== false,
       mergeControls: config.mergeControls !== false,
