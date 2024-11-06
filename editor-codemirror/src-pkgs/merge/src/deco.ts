@@ -27,6 +27,7 @@ import {
   resetDiffPlayState,
   setIsDiffCompleted,
 } from './animation-controller';
+import { getChangedLineDeco, getIntervalDurationPerLine } from './utils';
 
 /**
  * decorate chunks with line/mark decorations
@@ -120,16 +121,14 @@ export const decorateChunks = ViewPlugin.fromClass(
     }
 
     autoPlayDiffAnimation() {
-      let intervalDurationPerLine = Math.ceil(2000 / this.chunksByLine.length);
-      if (intervalDurationPerLine < 10) {
-        intervalDurationPerLine = 10;
-      }
+      let lineDuration = getIntervalDurationPerLine(this.chunksByLine.length);
+      // lineDuration = 250;
       console.log(
         ';; typing-duration-per-line ',
         this.chunksByLine.length,
-        intervalDurationPerLine,
+        lineDuration,
       );
-      
+
       this.autoPlayIntervalId = window.setInterval(() => {
         const { showTypewriterAnimation } =
           this.editView.state.facet(mergeConfig);
@@ -174,7 +173,7 @@ export const decorateChunks = ViewPlugin.fromClass(
             ],
           });
         }
-      }, intervalDurationPerLine);
+      }, lineDuration);
     }
 
     destroy() {
@@ -242,21 +241,6 @@ function configChanged(s1: EditorState, s2: EditorState) {
   return s1.facet(mergeConfig) != s2.facet(mergeConfig);
 }
 
-const changedLineDeco = Decoration.line({
-  class: 'cm-changedLine',
-});
-const changedLineDiffOffDeco = Decoration.line({
-  class: 'cm-changedLine anime-diff-off',
-});
-const changedLineHiddenDeco = Decoration.line({
-  class: 'cm-changedLine cm-line-hidden',
-});
-const changedLineTypewriterDeco = Decoration.line({
-  class: 'cm-changedLine cm-line-typing',
-});
-const changedLineTypewriterDiffOffDeco = Decoration.line({
-  class: 'cm-changedLine anime-diff-off cm-line-typing',
-});
 const changedTextDeco = Decoration.mark({ class: 'cm-changedText' });
 const insertedDeco = Decoration.mark({
   tagName: 'ins',
@@ -271,19 +255,6 @@ const changedLineGutterMarker = new (class extends GutterMarker {
   elementClass = 'cm-changedLineGutter';
 })();
 
-function getChangedLineDeco(
-  displayStatus: 'show' | 'typing' | 'hidden',
-  showAnimeWithDiffOff?: boolean,
-) {
-  if (displayStatus === 'hidden') return changedLineHiddenDeco;
-  if (displayStatus === 'typing') {
-    return showAnimeWithDiffOff
-      ? changedLineTypewriterDiffOffDeco
-      : changedLineTypewriterDeco;
-  }
-  return showAnimeWithDiffOff ? changedLineDiffOffDeco : changedLineDeco;
-}
-
 function buildChunkDeco({
   chunk,
   doc,
@@ -293,6 +264,7 @@ function buildChunkDeco({
   gutterBuilder,
   displayStatus,
   showAnimeWithDiffOff,
+  lineDuration,
 }: {
   chunk: Chunk;
   doc: Text;
@@ -302,6 +274,7 @@ function buildChunkDeco({
   gutterBuilder: RangeSetBuilder<GutterMarker> | null;
   displayStatus: 'show' | 'typing' | 'hidden';
   showAnimeWithDiffOff?: boolean;
+  lineDuration?: number;
 }) {
   const from = isA ? chunk.fromA : chunk.fromB;
   const to = isA ? chunk.toA : chunk.toB;
@@ -310,7 +283,7 @@ function buildChunkDeco({
     builder.add(
       from,
       from,
-      getChangedLineDeco(displayStatus, showAnimeWithDiffOff),
+      getChangedLineDeco(displayStatus, lineDuration, showAnimeWithDiffOff),
     );
     builder.add(from, to, isA ? deletedDeco : insertedDeco);
     if (gutterBuilder) gutterBuilder.add(from, from, changedLineGutterMarker);
@@ -325,7 +298,7 @@ function buildChunkDeco({
         builder.add(
           pos,
           pos,
-          getChangedLineDeco(displayStatus, showAnimeWithDiffOff),
+          getChangedLineDeco(displayStatus, lineDuration, showAnimeWithDiffOff),
         );
         if (gutterBuilder) gutterBuilder.add(pos, pos, changedLineGutterMarker);
         continue;
@@ -359,9 +332,17 @@ function getChunkDeco(view: EditorView, chunksByLine?: Chunk[]) {
   const currentDiffPlayLineNumber = diffPlayState.playLineNumber ?? -1e9;
   const isDiffCompleted = diffPlayState?.isDiffCompleted;
   let chunks = view.state.field(ChunkField);
-  if (showTypewriterAnimation && chunksByLine && !isDiffCompleted) {
+  if (
+    showTypewriterAnimation &&
+    Array.isArray(chunksByLine) &&
+    !isDiffCompleted
+  ) {
     chunks = chunksByLine;
   }
+  let lineDuration = showTypewriterAnimation
+    ? getIntervalDurationPerLine(chunks.length)
+    : -1;
+
   // console.log(
   //   ';; chunks ',
   //   side,
@@ -398,6 +379,7 @@ function getChunkDeco(view: EditorView, chunksByLine?: Chunk[]) {
         gutterBuilder,
         displayStatus,
         showAnimeWithDiffOff,
+        lineDuration,
       });
     }
   }

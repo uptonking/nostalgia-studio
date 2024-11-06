@@ -17,7 +17,8 @@ four
 five`;
 const docSix1 = doc1.replace(/t/g, 'T') + '\nSix';
 
-const doc2 = makeTextByWords(2000);
+// const doc = makeTextByWords(1000);
+// const doc = makeTextByWords(2000);
 
 const doc = `one cat
 two books to read
@@ -77,6 +78,7 @@ const initialDiffViewConfig: DiffViewConfig = {
 };
 
 const animatableDiffViewCompartment = new Compartment();
+const lineWrappingCompartment = new Compartment();
 
 const maxHeightEditor = EditorView.theme({
   '&': {
@@ -92,12 +94,14 @@ export const MergeViewAnimatable = () => {
   const [diffViewConfig, setDiffViewConfig] = useState<DiffViewConfig>(
     initialDiffViewConfig,
   );
+  const [viewConfig, setViewConfig] = useState({ enableLineWrapping: true });
 
   useEffect(() => {
     const editor = new EditorView({
       extensions: [
         basicSetup,
         maxHeightEditor,
+        lineWrappingCompartment.of([]),
         animatableDiffViewCompartment.of(
           initialDiffViewConfig.enableDiff && docSix !== doc
             ? animatableDiffView({
@@ -150,6 +154,19 @@ export const MergeViewAnimatable = () => {
     });
   }, [diffViewConfig]);
 
+  useEffect(() => {
+    const effects: StateEffect<unknown>[] = [];
+    effects.push(
+      lineWrappingCompartment.reconfigure(
+        viewConfig?.enableLineWrapping ? EditorView.lineWrapping : [],
+      ),
+    );
+    console.log(';; lineWrapping ', viewConfig?.enableLineWrapping);
+    window['edd'].dispatch({
+      effects: effects,
+    });
+  }, [viewConfig?.enableLineWrapping]);
+
   // console.log(';; render-config ', diffViewConfig);
 
   return (
@@ -168,6 +185,34 @@ export const MergeViewAnimatable = () => {
             }
           />
           <label htmlFor='EnableDiff'>Enable Diff</label>
+        </div>
+        <div>
+          <input
+            id='typewriterAnimation'
+            type='checkbox'
+            checked={Boolean(diffViewConfig.showTypewriterAnimation)}
+            onChange={(evt) =>
+              setDiffViewConfig({
+                ...diffViewConfig,
+                showTypewriterAnimation: evt.target.checked,
+              })
+            }
+          />
+          <label htmlFor='typewriterAnimation'>Typewriter</label>
+        </div>
+        <div>
+          <input
+            id='EnableLineWrapping'
+            type='checkbox'
+            checked={Boolean(viewConfig.enableLineWrapping)}
+            onChange={(evt) =>
+              setViewConfig({
+                ...viewConfig,
+                enableLineWrapping: evt.target.checked,
+              })
+            }
+          />
+          <label htmlFor='EnableLineWrapping'>Enable LineWrapping</label>
         </div>
         <div>
           <input
@@ -199,20 +244,6 @@ export const MergeViewAnimatable = () => {
             <label htmlFor='MergeViewHighlightChanges'>Highlight Changes</label>
           </div>
         )}
-        <div>
-          <input
-            id='typewriterAnimation'
-            type='checkbox'
-            checked={Boolean(diffViewConfig.showTypewriterAnimation)}
-            onChange={(evt) =>
-              setDiffViewConfig({
-                ...diffViewConfig,
-                showTypewriterAnimation: evt.target.checked,
-              })
-            }
-          />
-          <label htmlFor='typewriterAnimation'>Typewriter</label>
-        </div>
       </div>
       <div ref={editorRef} />
     </div>

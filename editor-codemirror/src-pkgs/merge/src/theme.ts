@@ -68,11 +68,11 @@ export const baseTheme = EditorView.baseTheme({
     backgroundColor: 'transparent',
   },
   '&.cm-merge-b .cm-line-typing': {
-    animation: 'typing 1s steps(20), blink 0.025s step-end infinite alternate',
-    borderRight: '1.5px solid',
+    animation: 'typing 0.5s steps(20), blink 0.025s step-end infinite alternate',
     width: '100%',
     // 👇 make characters on the right of the line invisible
     overflow: 'hidden',
+    // borderRight: '1.5px solid',
   },
   '@keyframes typing': {
     from: { width: '0px' },

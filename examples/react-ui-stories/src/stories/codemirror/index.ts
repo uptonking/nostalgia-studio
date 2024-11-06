@@ -36,4 +36,5 @@ export { UndoableEffects as B1f2UndoableEffects } from './b1-features/b1f2-undoa
 export { UndoableEffectsUndo as B1f3UndoableEffectsUndo } from './b1-features/b1f3-undoable-effects-undo';
 export { AnnoMulti as B1f4AnnoMulti } from './b1-features/b1f4-anno-multi';
 export { Theming as C1a1Theming } from './c1-styling/c1a1-theming';
+export { LineWrapping as C1a2LineWrapping } from './c1-styling/c1a2-line-wrapping';
 export { MdCodeBlock as M1a1MdCodeBlock } from './m1-markdown/m1a1-code-block';

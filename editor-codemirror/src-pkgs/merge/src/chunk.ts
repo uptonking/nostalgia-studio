@@ -273,4 +273,4 @@ function updateChunks(
   return result;
 }
 
-export const defaultDiffConfig = { scanLimit: 500 };
+export const defaultDiffConfig = { scanLimit: 5000 };
