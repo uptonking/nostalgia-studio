@@ -68,7 +68,8 @@ export const baseTheme = EditorView.baseTheme({
     backgroundColor: 'transparent',
   },
   '&.cm-merge-b .cm-line-typing': {
-    animation: 'typing 0.5s steps(20), blink 0.025s step-end infinite alternate',
+    animation:
+      'typing 0.5s steps(20), blink 0.025s step-end infinite alternate',
     width: '100%',
     // 👇 make characters on the right of the line invisible
     overflow: 'hidden',
@@ -104,7 +105,18 @@ export const baseTheme = EditorView.baseTheme({
   '.cm-insertedLine, .cm-deletedLine': {
     textDecoration: 'none',
   },
-
+  '.cm-insertedLine-typing': {
+    color: 'transparent',
+    backgroundClip: 'text',
+    fontFamily: 'monospace',
+    backgroundImage: 'linear-gradient(#777 0, #777 0)',
+    backgroundSize: 'calc(var(--lineCharsCount) * 1ch) 200%',
+    backgroundRepeat: 'no-repeat',
+    animation: 'charsTyping calc(var(--lineCharsCount) * 0.004s) linear',
+  },
+  '@keyframes charsTyping': {
+    from: { backgroundSize: '0 200%' },
+  },
   '.cm-deletedChunk': {
     paddingLeft: '6px',
     '& .cm-chunkButtons': {

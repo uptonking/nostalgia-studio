@@ -14,6 +14,8 @@ type Config = {
   markGutter: boolean;
   showTypewriterAnimation?: boolean;
   showAnimeWithDiffOff?: boolean;
+  lineAnimeDuration: number;
+  totalAnimeDuration: number;
   highlightChanges: boolean;
   syntaxHighlightDeletions?: boolean;
   mergeControls?: boolean;

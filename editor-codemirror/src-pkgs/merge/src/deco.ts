@@ -27,7 +27,12 @@ import {
   resetDiffPlayState,
   setIsDiffCompleted,
 } from './animation-controller';
-import { getChangedLineDeco, getIntervalDurationPerLine } from './utils';
+import {
+  getChangedLineDeco,
+  getInsertedDeco,
+  getIntervalDurationPerLine,
+  MIN_TYPEWRITER_DURATION_PER_LINE,
+} from './utils';
 
 /**
  * decorate chunks with line/mark decorations
@@ -121,8 +126,22 @@ export const decorateChunks = ViewPlugin.fromClass(
     }
 
     autoPlayDiffAnimation() {
-      let lineDuration = getIntervalDurationPerLine(this.chunksByLine.length);
-      // lineDuration = 250;
+      const { showTypewriterAnimation, lineAnimeDuration, totalAnimeDuration } =
+        this.editView.state.facet(mergeConfig);
+      let lineDuration = showTypewriterAnimation
+        ? getIntervalDurationPerLine(
+            this.chunksByLine.length,
+            totalAnimeDuration,
+          )
+        : 0;
+      if (lineDuration > 0) {
+        if (lineAnimeDuration > lineDuration) {
+          lineDuration = lineAnimeDuration;
+        }
+        if (this.chunksByLine.length === 1) {
+          lineDuration = MIN_TYPEWRITER_DURATION_PER_LINE * 2;
+        }
+      }
       console.log(
         ';; typing-duration-per-line ',
         this.chunksByLine.length,
@@ -283,11 +302,28 @@ function buildChunkDeco({
     builder.add(
       from,
       from,
-      getChangedLineDeco(displayStatus, lineDuration, showAnimeWithDiffOff),
+      getChangedLineDeco(displayStatus, showAnimeWithDiffOff),
     );
-    builder.add(from, to, isA ? deletedDeco : insertedDeco);
-    if (gutterBuilder) gutterBuilder.add(from, from, changedLineGutterMarker);
-    // console.log(';; buildChunkDeco ', displayStatus);
+    // builder.add(from, to, isA ? deletedDeco : insertedDeco);
+    builder.add(
+      from,
+      to,
+      isA
+        ? deletedDeco
+        : getInsertedDeco(displayStatus, to - from + 1, lineDuration),
+    );
+    if (gutterBuilder) {
+      gutterBuilder.add(from, from, changedLineGutterMarker);
+    }
+    // console.log(
+    //   ';; buildChunkDeco ',
+    //   chunk.lineNumber,
+    //   displayStatus,
+    //   to - from + 1,
+    //   from,
+    //   to,
+    //   chunk,
+    // );
     for (
       let iter = doc.iterRange(from, to - 1), pos = from;
       !iter.next().done;
@@ -298,7 +334,7 @@ function buildChunkDeco({
         builder.add(
           pos,
           pos,
-          getChangedLineDeco(displayStatus, lineDuration, showAnimeWithDiffOff),
+          getChangedLineDeco(displayStatus, showAnimeWithDiffOff),
         );
         if (gutterBuilder) gutterBuilder.add(pos, pos, changedLineGutterMarker);
         continue;
@@ -327,6 +363,8 @@ function getChunkDeco(view: EditorView, chunksByLine?: Chunk[]) {
     markGutter,
     showTypewriterAnimation,
     showAnimeWithDiffOff,
+    totalAnimeDuration,
+    lineAnimeDuration,
   } = view.state.facet(mergeConfig);
   const diffPlayState = view.state.field(diffPlayControllerState, false);
   const currentDiffPlayLineNumber = diffPlayState.playLineNumber ?? -1e9;
@@ -340,9 +378,11 @@ function getChunkDeco(view: EditorView, chunksByLine?: Chunk[]) {
     chunks = chunksByLine;
   }
   let lineDuration = showTypewriterAnimation
-    ? getIntervalDurationPerLine(chunks.length)
-    : -1;
-
+    ? getIntervalDurationPerLine(chunks.length, totalAnimeDuration)
+    : 0;
+  if (lineDuration > 0 && lineAnimeDuration > lineDuration) {
+    lineDuration = lineAnimeDuration;
+  }
   // console.log(
   //   ';; chunks ',
   //   side,

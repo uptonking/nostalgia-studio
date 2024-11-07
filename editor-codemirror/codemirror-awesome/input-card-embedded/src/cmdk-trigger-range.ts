@@ -29,11 +29,11 @@ export const cmdkTriggerRange = () =>
 
     let [highlightFrom, highlightTo] = triggerRange;
 
-    console.log(
-      ';; range-highlight ',
-      inputState,
-      state.doc.lineAt(highlightFrom),
-    );
+    // console.log(
+    //   ';; range-highlight ',
+    //   inputState,
+    //   state.doc.lineAt(highlightFrom),
+    // );
 
     if (highlightFrom === highlightTo) {
       const lineRange = state.doc.lineAt(highlightFrom);

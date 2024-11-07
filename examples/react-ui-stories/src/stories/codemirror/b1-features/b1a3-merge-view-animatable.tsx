@@ -17,11 +17,14 @@ four
 five`;
 const docSix1 = doc1.replace(/t/g, 'T') + '\nSix';
 
-// const doc = makeTextByWords(1000);
+// const doc = makeTextByWords(800);
 // const doc = makeTextByWords(2000);
 
+/** 🧐 用来测试单行修改，注意不能追加换行符 */
+// const doc = `what a wonderful world to live`;
+
 const doc = `one cat
-two books to read
+two books to read. linear-gradient function can also take additional arguments, such as repeating-linear-gradient or linear-gradient with multiple color stops
 three meals
 four cups of tea
 what a wonderful world to live 
@@ -61,7 +64,8 @@ const docSix =
 type DiffViewConfig = {
   enableDiff: boolean;
   showTypewriterAnimation: boolean;
-  showAnimeWithDiffOff: boolean;
+  showAnimeWithDiffOff?: boolean;
+  totalAnimeDuration?: number;
   showGutter: boolean;
   enableHighlightChanges: boolean;
   showMergeControls: boolean;
@@ -70,9 +74,10 @@ type DiffViewConfig = {
 const initialDiffViewConfig: DiffViewConfig = {
   enableDiff: true,
   showTypewriterAnimation: true,
-  // showAnimeWithDiffOff: true,
-  showAnimeWithDiffOff: false,
-  showGutter: true,
+  // totalAnimeDuration: 4000,
+  showAnimeWithDiffOff: true,
+  // showAnimeWithDiffOff: false,
+  showGutter: false,
   enableHighlightChanges: false,
   showMergeControls: false,
 };
@@ -111,6 +116,7 @@ export const MergeViewAnimatable = () => {
                   initialDiffViewConfig.showTypewriterAnimation,
                 showAnimeWithDiffOff:
                   initialDiffViewConfig.showAnimeWithDiffOff,
+                totalAnimeDuration: initialDiffViewConfig.totalAnimeDuration,
                 highlightChanges: initialDiffViewConfig.enableHighlightChanges,
                 syntaxHighlightDeletions: true,
                 mergeControls: initialDiffViewConfig.showMergeControls,
@@ -141,6 +147,7 @@ export const MergeViewAnimatable = () => {
               gutter: diffViewConfig.showGutter,
               showTypewriterAnimation: diffViewConfig.showTypewriterAnimation,
               showAnimeWithDiffOff: diffViewConfig.showAnimeWithDiffOff,
+              totalAnimeDuration: diffViewConfig.totalAnimeDuration,
               highlightChanges: diffViewConfig.enableHighlightChanges,
               syntaxHighlightDeletions: true,
               mergeControls: diffViewConfig.showMergeControls,
@@ -161,7 +168,7 @@ export const MergeViewAnimatable = () => {
         viewConfig?.enableLineWrapping ? EditorView.lineWrapping : [],
       ),
     );
-    console.log(';; lineWrapping ', viewConfig?.enableLineWrapping);
+    // console.log(';; lineWrapping ', viewConfig?.enableLineWrapping);
     window['edd'].dispatch({
       effects: effects,
     });

@@ -19,12 +19,13 @@ import {
 } from '@codemirror/view';
 import { highlightTree } from '@lezer/highlight';
 
+import { diffPlayControllerState } from './animation-controller';
 import { Chunk, defaultDiffConfig } from './chunk';
 import { decorateChunks } from './deco';
 import type { Change, DiffConfig } from './diff';
 import { ChunkField, getChunks, mergeConfig, setChunks } from './merge';
 import { baseTheme } from './theme';
-import { diffPlayControllerState } from './animation-controller';
+import { TOTAL_TYPEWRITER_DURATION_PER_DIFF_VIEW } from './utils';
 
 interface AnimatableDiffViewConfig {
   /** original document to compare with */
@@ -37,12 +38,19 @@ interface AnimatableDiffViewConfig {
    * - valid only when showTypewriterAnimation is true
    */
   showAnimeWithDiffOff?: boolean;
+  /** typewriter animation duration in milliseconds for all diff lines in editor
+   * - default is `2000`ms, which means the animation for the whole editor is finished in 2s
+   * - for values less than 100, 100 will be used, for performance
+   * - valid only when showTypewriterAnimation is true
+   */
+  totalAnimeDuration?: number;
   /** typewriter animation duration in milliseconds for one single line in editor
    * - default is `2000/changedLines`, which means the animation for the whole editor is finished in 2s
    * - for values less than 10, 10 will be used, for performance
    * - valid only when showTypewriterAnimation is true
+   * - this value will override `totalAnimeDuration` if this duration is longer, allowing finer-grained control
    */
-  animeDuration?: number;
+  lineAnimeDuration?: number;
   /** whether to highlight the inserted/deleted characters. default is true. */
   highlightChanges?: boolean;
   /** whether to highlight deleted line using original lang syntax. */
@@ -116,6 +124,18 @@ export function animatableDiffView(config: AnimatableDiffViewConfig) {
       markGutter: config.gutter !== false,
       showTypewriterAnimation: config.showTypewriterAnimation === true,
       showAnimeWithDiffOff: config.showAnimeWithDiffOff === true,
+      totalAnimeDuration:
+        typeof config.totalAnimeDuration === 'number'
+          ? config.totalAnimeDuration < 100
+            ? 100
+            : config.totalAnimeDuration
+          : TOTAL_TYPEWRITER_DURATION_PER_DIFF_VIEW,
+      lineAnimeDuration:
+        typeof config.lineAnimeDuration === 'number'
+          ? config.lineAnimeDuration < 10
+            ? 10
+            : config.lineAnimeDuration
+          : -1,
       highlightChanges: config.highlightChanges !== false,
       syntaxHighlightDeletions: config.syntaxHighlightDeletions !== false,
       mergeControls: config.mergeControls !== false,
