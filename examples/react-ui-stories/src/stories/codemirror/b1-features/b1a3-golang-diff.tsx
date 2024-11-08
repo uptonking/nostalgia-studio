@@ -2,13 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { basicSetup, EditorView } from 'codemirror';
 
+import { go } from '@codemirror/lang-go';
 import { animatableDiffView } from '@codemirror/merge';
+import { animatableDiffViewCompartment } from '@codemirror/merge/src/diff-actions';
 import {
   Compartment,
-  type StateEffect,
   type ChangeSpec,
+  type StateEffect,
 } from '@codemirror/state';
-import { go } from '@codemirror/lang-go';
 
 const docGo = `func binarySearch(arr []int, target int) int {
   left, right := 0, len(arr)-1
@@ -77,7 +78,7 @@ const initialDiffViewConfig = {
   showMergeControls: false,
 };
 
-const animatableDiffViewCompartment = new Compartment();
+// const animatableDiffViewCompartment = new Compartment();
 const golangHighlightCompartment = new Compartment();
 
 const maxHeightEditor = EditorView.theme({

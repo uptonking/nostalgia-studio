@@ -47,7 +47,8 @@ export function getInsertedDeco(
   lineDuration = MIN_TYPEWRITER_DURATION_PER_LINE,
 ) {
   return Decoration.mark(
-    displayStatus === 'typing' && lineDuration >= MIN_TYPEWRITER_DURATION_PER_LINE * 2
+    displayStatus === 'typing' &&
+      lineDuration >= MIN_TYPEWRITER_DURATION_PER_LINE * 2
       ? {
           tagName: 'ins',
           class: 'cm-insertedLine-typing',
@@ -67,6 +68,7 @@ export function isAnimatableDiffViewActive(state: EditorState) {
   }
   return false;
 }
+(globalThis as any)['isDiffOn'] = isAnimatableDiffViewActive;
 
 /**
  * get typewriter animation duration for one single line

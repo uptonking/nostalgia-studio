@@ -93,9 +93,7 @@ export function animatableDiffView(config: AnimatableDiffViewConfig) {
     // decorate new lines in latest editor content, with green bg
     Prec.low(decorateChunks),
     // insert deleted lines as widget, with red bg
-    config.showTypewriterAnimation && !config.showAnimeWithDiffOff
-      ? deletedChunks
-      : [],
+    config.showAnimeWithDiffOff ? [] : deletedChunks,
     baseTheme,
     EditorView.editorAttributes.of({ class: 'cm-merge-b' }),
     // update old or new doc by updateOriginalDoc effect

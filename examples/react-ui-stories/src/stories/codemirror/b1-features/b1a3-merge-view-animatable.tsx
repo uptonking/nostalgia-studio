@@ -3,10 +3,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { basicSetup, EditorView } from 'codemirror';
 
 import { animatableDiffView } from '@codemirror/merge';
+import { animatableDiffViewCompartment } from '@codemirror/merge/src/diff-actions';
 import {
   Compartment,
-  type StateEffect,
   type ChangeSpec,
+  type StateEffect,
 } from '@codemirror/state';
 import { makeTextByWords } from '../utils/lorem-ipsum';
 
@@ -82,7 +83,7 @@ const initialDiffViewConfig: DiffViewConfig = {
   showMergeControls: false,
 };
 
-const animatableDiffViewCompartment = new Compartment();
+// const animatableDiffViewCompartment = new Compartment();
 const lineWrappingCompartment = new Compartment();
 
 const maxHeightEditor = EditorView.theme({

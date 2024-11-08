@@ -33,6 +33,7 @@ import {
   getIntervalDurationPerLine,
   MIN_TYPEWRITER_DURATION_PER_LINE,
 } from './utils';
+import { animatableDiffViewCompartment } from './diff-actions';
 
 /**
  * decorate chunks with line/mark decorations
@@ -126,8 +127,12 @@ export const decorateChunks = ViewPlugin.fromClass(
     }
 
     autoPlayDiffAnimation() {
-      const { showTypewriterAnimation, lineAnimeDuration, totalAnimeDuration } =
-        this.editView.state.facet(mergeConfig);
+      const {
+        showTypewriterAnimation,
+        showAnimeWithDiffOff,
+        lineAnimeDuration,
+        totalAnimeDuration,
+      } = this.editView.state.facet(mergeConfig);
       let lineDuration = showTypewriterAnimation
         ? getIntervalDurationPerLine(
             this.chunksByLine.length,
@@ -143,14 +148,12 @@ export const decorateChunks = ViewPlugin.fromClass(
         }
       }
       console.log(
-        ';; typing-duration-per-line ',
+        ';; typing-lines-interval ',
         this.chunksByLine.length,
         lineDuration,
       );
 
       this.autoPlayIntervalId = window.setInterval(() => {
-        const { showTypewriterAnimation } =
-          this.editView.state.facet(mergeConfig);
         if (!showTypewriterAnimation) {
           this.cleanAutoPlayDiffTimer();
           return;
@@ -161,11 +164,11 @@ export const decorateChunks = ViewPlugin.fromClass(
         );
         const currentDiffPlayLineNumber = diffPlayState.playLineNumber;
 
-        // console.log(
-        //   ';; autoPlay ',
-        //   currentDiffPlayLineNumber,
-        //   this.chunksByLine.length,
-        // );
+        console.log(
+          ';; autoPlay ',
+          currentDiffPlayLineNumber,
+          this.chunksByLine.length,
+        );
         if (currentDiffPlayLineNumber < this.chunksByLine.length - 1) {
           const nextChunk =
             this.chunksByLine[
@@ -185,12 +188,20 @@ export const decorateChunks = ViewPlugin.fromClass(
         } else {
           window.clearInterval(this.autoPlayIntervalId);
           this.autoPlayIntervalId = 0;
+          const animeEndEffects: StateEffect<unknown>[] = [
+            setIsDiffCompleted.of(true),
+          ];
+          if (showAnimeWithDiffOff) {
+            animeEndEffects.push(animatableDiffViewCompartment.reconfigure([]));
+          }
           this.editView.dispatch({
-            effects: [
-              setIsDiffCompleted.of(true),
-              // setDiffPlayLineNumber.of(-10),
-            ],
+            effects: animeEndEffects,
+            // [
+            //   setIsDiffCompleted.of(true),
+            //   // setDiffPlayLineNumber.of(-10),
+            // ],
           });
+          console.log(';; autoPlay completed ');
         }
       }, lineDuration);
     }
