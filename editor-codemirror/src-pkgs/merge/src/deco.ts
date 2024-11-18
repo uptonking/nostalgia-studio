@@ -164,11 +164,11 @@ export const decorateChunks = ViewPlugin.fromClass(
         );
         const currentDiffPlayLineNumber = diffPlayState.playLineNumber;
 
-        console.log(
-          ';; autoPlay ',
-          currentDiffPlayLineNumber,
-          this.chunksByLine.length,
-        );
+        // console.log(
+        //   ';; autoPlay ',
+        //   currentDiffPlayLineNumber,
+        //   this.chunksByLine.length,
+        // );
         if (currentDiffPlayLineNumber < this.chunksByLine.length - 1) {
           const nextChunk =
             this.chunksByLine[
@@ -201,7 +201,7 @@ export const decorateChunks = ViewPlugin.fromClass(
             //   // setDiffPlayLineNumber.of(-10),
             // ],
           });
-          console.log(';; autoPlay completed ');
+          // console.log(';; autoPlay completed ');
         }
       }, lineDuration);
     }

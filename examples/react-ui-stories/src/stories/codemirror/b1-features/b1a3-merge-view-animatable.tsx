@@ -10,6 +10,7 @@ import {
   type StateEffect,
 } from '@codemirror/state';
 import { makeTextByWords } from '../utils/lorem-ipsum';
+import { checkIsCursorCollapsed } from '../utils/selection-cursor';
 
 const doc1 = `one
 two
@@ -107,6 +108,12 @@ export const MergeViewAnimatable = () => {
       extensions: [
         basicSetup,
         maxHeightEditor,
+        EditorView.updateListener.of((v) => {
+          // console.log(';; isSelEmpty ', checkIsCursorCollapsed(v.view));
+          if (v.docChanged) {
+            console.log(';; docChanged ');
+          }
+        }),
         lineWrappingCompartment.of([]),
         animatableDiffViewCompartment.of(
           initialDiffViewConfig.enableDiff && docSix !== doc
