@@ -77,7 +77,7 @@ const initialDiffViewConfig: DiffViewConfig = {
   enableDiff: true,
   showTypewriterAnimation: true,
   // totalAnimeDuration: 4000,
-  showAnimeWithDiffOff: true,
+  showAnimeWithDiffOff: false,
   // showAnimeWithDiffOff: false,
   showGutter: false,
   enableHighlightChanges: false,

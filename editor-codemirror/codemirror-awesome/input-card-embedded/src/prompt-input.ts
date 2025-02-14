@@ -1012,5 +1012,6 @@ export function aiPromptInput(options: InputWidgetOptions): Extension {
     promptInputHotkeys(options.hotkey),
     cmdkUndoRedoHotkeys(),
     // inputListener,
+    // inputWidgetPluginCompartment.of(inputPlugin('')),
   ];
 }
