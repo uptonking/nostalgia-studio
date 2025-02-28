@@ -34,6 +34,7 @@ export { LintCm as B1e2LintCm } from './b1-features/b1e2-lint';
 export { EffectInterval as B1f1EffectInterval } from './b1-features/b1f1-effect-interval';
 export { UndoableEffects as B1f2UndoableEffects } from './b1-features/b1f2-undoable-effects';
 export { UndoableEffectsUndo as B1f3UndoableEffectsUndo } from './b1-features/b1f3-undoable-effects-undo';
+export { PlaceholderMultiLines as B1g1PlaceholderMultiLines } from './b1-features/b1g1-placeholder-multi-lines';
 export { AnnoMulti as B1f4AnnoMulti } from './b1-features/b1f4-anno-multi';
 export { Theming as C1a1Theming } from './c1-styling/c1a1-theming';
 export { LineWrapping as C1a2LineWrapping } from './c1-styling/c1a2-line-wrapping';
