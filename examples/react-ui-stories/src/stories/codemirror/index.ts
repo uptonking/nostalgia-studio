@@ -25,6 +25,7 @@ export { DecoLineZebra as B1b6DecoLineZebra } from './b1-features/b1b6-deco-line
 export { DecoLineHighlight as B1b7DecoLineHighlight } from './b1-features/b1b7-deco-line-highlight';
 export { GutterForBlockWidget as B1b8GutterForBlock } from './b1-features/b1b8-gutter-for-block';
 export { GutterTextNode as B1b8GutterTextNode } from './b1-features/b1b8-gutter-marker';
+export { EditableFalse as B1c1EditableFalse } from './b1-features/b1c1-editable-false';
 export { SplitEditors as B1c2SplitEditors } from './b1-features/b1c2-split-editors';
 export { SingleLineEditor as B1c3SingleLineEditor } from './b1-features/b1c3-single-line-editor';
 export { AutocompleteCm as B1d1AutocompleteCm } from './b1-features/b1d1-autocomplete';
