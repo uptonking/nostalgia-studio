@@ -28,6 +28,7 @@ export { GutterTextNode as B1b8GutterTextNode } from './b1-features/b1b8-gutter-
 export { EditableFalse as B1c1EditableFalse } from './b1-features/b1c1-editable-false';
 export { SplitEditors as B1c2SplitEditors } from './b1-features/b1c2-split-editors';
 export { SingleLineEditor as B1c3SingleLineEditor } from './b1-features/b1c3-single-line-editor';
+export { ScrollToFixedPos as B1c4ScrollToFixedPos } from './b1-features/b1c4-scroll-to-fixed-pos';
 export { AutocompleteCm as B1d1AutocompleteCm } from './b1-features/b1d1-autocomplete';
 export { CustomCompletion as B1d2CustomCompletion } from './b1-features/b1d2-custom-completion';
 export { CursorTooltip as B1d3CursorTooltip } from './b1-features/b1d3-cursor-tooltip';
