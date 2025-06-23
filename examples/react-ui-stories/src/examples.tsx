@@ -22,7 +22,7 @@ export function ExamplesApp() {
   // const [currentStory, setCurrentStory] = useState(storiesNames[0]);
   // const [currentStory, setCurrentStory] = useState('B1a3CmdkInputCard');
   // const [currentStory, setCurrentStory] = useState('B1a3MergeViewAnimatable');
-  const [currentStory, setCurrentStory] = useState('B1c4ScrollToFixedPos');
+  const [currentStory, setCurrentStory] = useState('B1d3CursorTooltip');
 
   const CurrentExampleComponent = currentStory
     ? stories[currentStory]

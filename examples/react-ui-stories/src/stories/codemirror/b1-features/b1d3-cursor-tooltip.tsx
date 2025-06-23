@@ -10,13 +10,18 @@ const cursorTooltipBaseTheme = EditorView.baseTheme({
     backgroundColor: '#66b',
     color: 'white',
     border: 'none',
-    padding: '2px 7px',
+    padding: '16px 32px',
     borderRadius: '4px',
-    '& .cm-tooltip-arrow:before': {
-      borderTopColor: '#66b',
+    '& .cm-tooltip-arrow::before': {
+      // 一个箭头通过::before伪元素实现， 通过border-width css trick渲染箭头
+      // borderTopColor: '#66b',
+      borderTopColor: '#ff0000',
     },
-    '& .cm-tooltip-arrow:after': {
-      borderTopColor: 'transparent',
+    '& .cm-tooltip-arrow::after': {
+      // 另一个箭头也通过::before伪元素实现， 当值为transparent时无视觉效果, 
+      // bottom-1px让它稍微上移，有点作为填充色的感觉
+      // borderTopColor: 'transparent',
+      borderTopColor: '#00ff00',
     },
   },
 });
@@ -81,6 +86,7 @@ function getCursorTooltips(state: EditorState): readonly Tooltip[] {
 /**
  * tooltips are widgets floating over the editor content, aligned to some position in that content
  * - Active tooltips are displayed as fixed-position elements
+ * - 按住cmd/ctrl可以显示多个光标和多个tooltip
  * - https://codemirror.net/examples/tooltip/
  */
 export const CursorTooltip = () => {
