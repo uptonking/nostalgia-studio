@@ -38,6 +38,7 @@ export { UndoableEffects as B1f2UndoableEffects } from './b1-features/b1f2-undoa
 export { UndoableEffectsUndo as B1f3UndoableEffectsUndo } from './b1-features/b1f3-undoable-effects-undo';
 export { PlaceholderMultiLines as B1g1PlaceholderMultiLines } from './b1-features/b1g1-placeholder-multi-lines';
 export { AnnoMulti as B1f4AnnoMulti } from './b1-features/b1f4-anno-multi';
+export { ChangesetLength as B1t1ChangesetLength } from './b1-features/b1t1-changeset-length';
 export { Theming as C1a1Theming } from './c1-styling/c1a1-theming';
 export { LineWrapping as C1a2LineWrapping } from './c1-styling/c1a2-line-wrapping';
 export { LangHtml as D1a1LangHtml } from './d1-lang/d1a1-html';

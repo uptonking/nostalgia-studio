@@ -18,7 +18,7 @@ const cursorTooltipBaseTheme = EditorView.baseTheme({
       borderTopColor: '#ff0000',
     },
     '& .cm-tooltip-arrow::after': {
-      // 另一个箭头也通过::before伪元素实现， 当值为transparent时无视觉效果, 
+      // 另一个箭头也通过::before伪元素实现， 当值为transparent时无视觉效果,
       // bottom-1px让它稍微上移，有点作为填充色的感觉
       // borderTopColor: 'transparent',
       borderTopColor: '#00ff00',
@@ -30,24 +30,35 @@ const cursorTooltipBaseTheme = EditorView.baseTheme({
  * crudely determines the word boundaries around the given position and,
  * - if the pointer is inside that word, returns a tooltip with the word
  */
-export const wordHover = hoverTooltip((view, pos, side) => {
-  const { from, to, text } = view.state.doc.lineAt(pos);
-  let start = pos;
-  let end = pos;
-  while (start > from && /\w/.test(text[start - from - 1])) start--;
-  while (end < to && /\w/.test(text[end - from])) end++;
-  if ((start == pos && side < 0) || (end == pos && side > 0)) return null;
-  return {
-    pos: start,
-    end,
-    above: true,
-    create(view) {
-      const dom = document.createElement('div');
-      dom.textContent = text.slice(start - from, end - from);
-      return { dom };
-    },
-  };
-});
+export const wordHover = ({ fixedPos }: { fixedPos?: number } = {}) =>
+  hoverTooltip((view, pos, side) => {
+    const { from, to, text } = view.state.doc.lineAt(pos);
+    let start = pos;
+    let end = pos;
+    while (start > from && /\w/.test(text[start - from - 1])) start--;
+    while (end < to && /\w/.test(text[end - from])) end++;
+    if ((start == pos && side < 0) || (end == pos && side > 0)) return null;
+    return {
+      pos: fixedPos === undefined ? start : fixedPos,
+      // end field is used to determine the range that the pointer can move over without closing the tooltip.
+      end,
+      above: true,
+      create(view) {
+        const dom = document.createElement('div');
+        dom.textContent =
+          fixedPos === undefined
+            ? 'tip with fixedPos'
+            : text.slice(start - from, end - from);
+        if (fixedPos !== undefined) {
+          dom.style.padding = '4px 8px';
+          dom.style.backgroundColor = 'beige';
+          dom.style.color = 'coral';
+          dom.style.borderRadius = '6px';
+        }
+        return { dom };
+      },
+    };
+  });
 
 const cursorTooltipState = StateField.define<readonly Tooltip[]>({
   create: getCursorTooltips,
@@ -103,9 +114,16 @@ export const CursorTooltip = () => {
       parent: editorRef.current,
     });
 
+    // 当鼠标在编辑器右边缘时，tooltip浮窗会自动向右移动
     const hoverEditor = new EditorView({
-      doc: 'Hover over words to get tooltips\n',
-      extensions: [basicSetup, wordHover],
+      doc: 'Hover over words to get tooltips\n. end field is used to determine the range that the pointer can move over without closing the tooltip. ',
+      extensions: [
+        basicSetup,
+        wordHover(),
+        // 多个tooltip会纵向一起显示，下面这个tooltip会显示在上面
+        // 💡 交换顺序时，2个tooltip位置交换
+        wordHover({ fixedPos: 95 }),
+      ],
       parent: hoverEditorRef.current,
     });
     window['edd'] = hoverEditor;
