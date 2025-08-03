@@ -10,7 +10,6 @@ const keywords = {
   if: true,
   default: true,
 };
-
 const start_blocks = {
   var_input: true,
   var_output: true,
@@ -19,7 +18,6 @@ const start_blocks = {
   function_block: true,
   ruleblock: true,
 };
-
 const end_blocks = {
   end_ruleblock: true,
   end_defuzzify: true,
@@ -27,7 +25,6 @@ const end_blocks = {
   end_fuzzify: true,
   end_var: true,
 };
-
 const atoms = {
   true: true,
   false: true,
@@ -38,7 +35,6 @@ const atoms = {
   cog: true,
   cogs: true,
 };
-
 const isOperatorChar = /[+\-*&^%:=<>!|\/]/;
 
 function tokenBase(stream, state) {
@@ -160,7 +156,6 @@ export const fcl = {
   indent: function (state, textAfter, cx) {
     if (state.tokenize != tokenBase && state.tokenize != null) return 0;
     const ctx = state.context;
-
     const closing = end_blocks.propertyIsEnumerable(textAfter);
     if (ctx.align) return ctx.column + (closing ? 0 : 1);
     else return ctx.indented + (closing ? 0 : cx.unit);

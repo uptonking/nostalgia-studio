@@ -75,9 +75,7 @@ const collabConfig = Facet.define<
     return combined;
   },
 });
-
 const collabReceive = Annotation.define<CollabState>();
-
 const collabField = StateField.define({
   create(state) {
     return new CollabState(state.facet(collabConfig).startVersion, []);
@@ -120,7 +118,6 @@ export function receiveUpdates(state: EditorState, updates: readonly Update[]) {
   version += updates.length;
   let effects: readonly StateEffect<any>[] = [];
   let changes = null;
-
   let own = 0;
   for (const update of updates) {
     const ours = own < unconfirmed.length ? unconfirmed[own] : null;

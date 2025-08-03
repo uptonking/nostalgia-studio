@@ -128,7 +128,7 @@ export class Facet<Input, Output = readonly Input[]>
     return this.compute([field], (state) => get!(state.field(field)));
   }
 
-  tag!: Output;
+  declare tag: Output;
 }
 
 /// A facet reader can be used to fetch the value of a facet, through
@@ -160,7 +160,7 @@ const enum Provider {
 
 class FacetProvider<Input> {
   readonly id = nextID++;
-  extension!: Extension; // Kludge to convince the type system these count as extensions
+  declare extension: Extension; // Kludge to convince the type system these count as extensions
 
   constructor(
     readonly dependencies: readonly Slot<any>[],
@@ -398,6 +398,16 @@ export class StateField<Value> {
         return SlotStatus.Changed;
       },
       reconfigure: (state, oldState) => {
+        const init = state.facet(initField);
+        const oldInit = oldState.facet(initField);
+        let reInit;
+        if (
+          (reInit = init.find((i) => i.field == this)) &&
+          reInit != oldInit.find((i) => i.field == this)
+        ) {
+          state.values[idx] = reInit.create(state);
+          return SlotStatus.Changed;
+        }
         if (oldState.config.address[this.id] != null) {
           state.values[idx] = oldState.field(this);
           return 0;
@@ -469,7 +479,7 @@ class PrecExtension {
     readonly inner: Extension,
     readonly prec: number,
   ) {}
-  extension!: Extension;
+  declare extension: Extension;
 }
 
 /// Extension compartments can be used to make a configuration
@@ -512,7 +522,7 @@ export class CompartmentInstance {
     readonly compartment: Compartment,
     readonly inner: Extension,
   ) {}
-  extension!: Extension;
+  declare extension: Extension;
 }
 
 export interface DynamicSlot {

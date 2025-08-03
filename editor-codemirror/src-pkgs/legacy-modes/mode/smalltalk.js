@@ -1,17 +1,14 @@
 const specialChars = /[+\-\/\\*~<>=@%|&?!.,:;^]/;
 const keywords = /true|false|nil|self|super|thisContext/;
-
 const Context = function (tokenizer, parent) {
   this.next = tokenizer;
   this.parent = parent;
 };
-
 const Token = function (name, context, eos) {
   this.name = name;
   this.context = context;
   this.eos = eos;
 };
-
 const State = function () {
   this.context = new Context(next, null);
   this.expectVariable = true;
@@ -77,17 +74,14 @@ var next = function (stream, context, state) {
 
   return token;
 };
-
 var nextComment = function (stream, context) {
   stream.eatWhile(/[^"]/);
   return new Token('comment', stream.eat('"') ? context.parent : context, true);
 };
-
 var nextString = function (stream, context) {
   stream.eatWhile(/[^']/);
   return new Token('string', stream.eat("'") ? context.parent : context, false);
 };
-
 var nextSymbol = function (stream, context) {
   stream.eatWhile(/[^']/);
   return new Token(
@@ -96,7 +90,6 @@ var nextSymbol = function (stream, context) {
     false,
   );
 };
-
 var nextTemporaries = function (stream, context) {
   const token = new Token(null, context, false);
   const aChar = stream.next();

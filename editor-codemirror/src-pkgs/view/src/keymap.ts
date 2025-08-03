@@ -189,7 +189,6 @@ function buildKeymap(
 ) {
   const bound: Keymap = Object.create(null);
   const isPrefix: { [prefix: string]: boolean } = Object.create(null);
-
   const checkPrefix = (name: string, is: boolean) => {
     const current = isPrefix[name];
     if (current == null) isPrefix[name] = is;
@@ -200,7 +199,6 @@ function buildKeymap(
           ' is used both as a regular binding and as a multi-stroke prefix',
       );
   };
-
   const add = (
     scope: string,
     key: string,
@@ -333,6 +331,8 @@ function runHandlers(
       (event.altKey || event.metaKey || event.ctrlKey) &&
       // Ctrl-Alt may be used for AltGr on Windows
       !(browser.windows && event.ctrlKey && event.altKey) &&
+      // Alt-combinations on macOS tend to be typed characters
+      !(browser.mac && event.altKey && !(event.ctrlKey || event.metaKey)) &&
       (baseName = base[event.keyCode]) &&
       baseName != name
     ) {

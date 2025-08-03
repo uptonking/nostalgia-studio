@@ -14,7 +14,6 @@ const changedLineDiffOffDeco = Decoration.line({
 const changedLineHiddenDeco = Decoration.line({
   class: 'cm-changedLine cm-line-hidden',
 });
-
 const changedLineTypewriterDeco = Decoration.line({
   // class: 'cm-changedLine cm-line-typing',
   class: 'cm-changedLine',

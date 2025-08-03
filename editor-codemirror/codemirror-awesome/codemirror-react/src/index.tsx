@@ -43,14 +43,11 @@ export const CodeMirrorReact = forwardRef<HTMLDivElement, CodeMirrorProps>(
   ) => {
     const innerRef = useRef<HTMLDivElement>(null);
     const mergedRef = useMergeRefs(ref, innerRef);
-
     const [editorView, setEditorView] = useState<EditorView | null>(null);
-
     const updateExtension = useMemo<Extension | undefined>(
       () => (onUpdate ? EditorView.updateListener.of(onUpdate) : undefined),
       [],
     );
-
     const extensions = useMemo<Extension>(
       () =>
         updateExtension
@@ -58,7 +55,6 @@ export const CodeMirrorReact = forwardRef<HTMLDivElement, CodeMirrorProps>(
           : passedExtensions,
       [updateExtension, passedExtensions],
     );
-
     const isFirstRender = useFirstRender();
 
     useEffect(() => {

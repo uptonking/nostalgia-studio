@@ -492,7 +492,6 @@ const PERL = {
   write: 1, // - print a picture record
   y: null,
 }; // - transliterate a string
-
 const RXstyle = 'string.special';
 const RXmodifiers = /[goseximacplud]/; // NOTE: "m", "s", "y" and "tr" need to correct real modifiers for each regexp type
 

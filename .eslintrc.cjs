@@ -62,7 +62,13 @@ module.exports = {
     'guard-for-in': 1,
     'getter-return': 1,
     complexity: 0,
-    'prefer-const': 1,
+    'prefer-const': [
+      'warn',
+      {
+        destructuring: 'all',
+        ignoreReadBeforeAssign: false,
+      },
+    ],
     'prefer-spread': 1,
     'prefer-rest-params': 1,
     'prefer-object-spread': 0,
@@ -118,6 +124,7 @@ module.exports = {
     '@typescript-eslint/class-literal-property-style': 0,
     '@typescript-eslint/explicit-module-boundary-types': 0,
     '@typescript-eslint/triple-slash-reference': 1,
+    '@typescript-eslint/no-duplicate-enum-values': 1,
     'react/no-find-dom-node': 1,
     'react/no-deprecated': 1,
     'react/no-did-update-set-state': 1,

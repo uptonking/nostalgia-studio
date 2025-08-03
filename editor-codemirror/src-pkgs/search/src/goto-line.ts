@@ -1,56 +1,30 @@
-import { EditorSelection, StateField, StateEffect } from '@codemirror/state';
-import {
-  EditorView,
-  type Command,
-  type Panel,
-  getPanel,
-  showPanel,
-} from '@codemirror/view';
-import elt from 'crelt';
+import { EditorSelection } from '@codemirror/state';
+import { EditorView, type Command, showDialog } from '@codemirror/view';
 
-function createLineDialog(view: EditorView): Panel {
-  const line = String(
-    view.state.doc.lineAt(view.state.selection.main.head).number,
-  );
-  const input = elt('input', {
-    class: 'cm-textfield',
-    name: 'line',
-    value: line,
-  }) as HTMLInputElement;
-  const dom = elt(
-    'form',
-    {
-      class: 'cm-gotoLine',
-      onkeydown: (event: KeyboardEvent) => {
-        if (event.keyCode == 27) {
-          // Escape
-          event.preventDefault();
-          view.dispatch({ effects: dialogEffect.of(false) });
-          view.focus();
-        } else if (event.keyCode == 13) {
-          // Enter
-          event.preventDefault();
-          go();
-        }
-      },
-      onsubmit: (event: Event) => {
-        event.preventDefault();
-        go();
-      },
-    },
-    elt('label', view.state.phrase('Go to line'), ': ', input),
-    ' ',
-    elt(
-      'button',
-      { class: 'cm-button', type: 'submit' },
-      view.state.phrase('go'),
-    ),
-  );
-
-  function go() {
-    const match = /^([+-])?(\d+)?(:\d+)?(%)?$/.exec(input.value);
-    if (!match) return;
-    const { state } = view;
+/// Command that shows a dialog asking the user for a line number, and
+/// when a valid position is provided, moves the cursor to that line.
+///
+/// Supports line numbers, relative line offsets prefixed with `+` or
+/// `-`, document percentages suffixed with `%`, and an optional
+/// column position by adding `:` and a second number after the line
+/// number.
+export const gotoLine: Command = (view) => {
+  const { state } = view;
+  const line = String(state.doc.lineAt(view.state.selection.main.head).number);
+  const { close, result } = showDialog(view, {
+    label: state.phrase('Go to line'),
+    input: { type: 'text', name: 'line', value: line },
+    focus: true,
+    submitLabel: state.phrase('go'),
+  });
+  result.then((form) => {
+    const match =
+      form &&
+      /^([+-])?(\d+)?(:\d+)?(%)?$/.exec((form.elements as any)['line'].value);
+    if (!match) {
+      view.dispatch({ effects: close });
+      return;
+    }
     const startLine = state.doc.lineAt(state.selection.main.head);
     const [, sign, ln, cl, percent] = match;
     const col = cl ? Number(cl.slice(1)) : 0;
@@ -71,52 +45,11 @@ function createLineDialog(view: EditorView): Panel {
     );
     view.dispatch({
       effects: [
-        dialogEffect.of(false),
+        close,
         EditorView.scrollIntoView(selection.from, { y: 'center' }),
       ],
       selection,
     });
-    view.focus();
-  }
-  return { dom };
-}
-
-const dialogEffect = StateEffect.define<boolean>();
-
-const dialogField = StateField.define<boolean>({
-  create() {
-    return true;
-  },
-  update(value, tr) {
-    for (const e of tr.effects) if (e.is(dialogEffect)) value = e.value;
-    return value;
-  },
-  provide: (f) => showPanel.from(f, (val) => (val ? createLineDialog : null)),
-});
-
-/// Command that shows a dialog asking the user for a line number, and
-/// when a valid position is provided, moves the cursor to that line.
-///
-/// Supports line numbers, relative line offsets prefixed with `+` or
-/// `-`, document percentages suffixed with `%`, and an optional
-/// column position by adding `:` and a second number after the line
-/// number.
-export const gotoLine: Command = (view) => {
-  let panel = getPanel(view, createLineDialog);
-  if (!panel) {
-    const effects: StateEffect<unknown>[] = [dialogEffect.of(true)];
-    if (view.state.field(dialogField, false) == null)
-      effects.push(StateEffect.appendConfig.of([dialogField, baseTheme]));
-    view.dispatch({ effects });
-    panel = getPanel(view, createLineDialog);
-  }
-  if (panel) panel.dom.querySelector('input')!.select();
+  });
   return true;
 };
-
-const baseTheme = EditorView.baseTheme({
-  '.cm-panel.cm-gotoLine': {
-    padding: '2px 6px 4px',
-    '& label': { fontSize: '80%' },
-  },
-});

@@ -70,7 +70,6 @@ const historyConfig = Facet.define<HistoryConfig, Required<HistoryConfig>>({
     );
   },
 });
-
 const historyField_ = StateField.define({
   create() {
     return HistoryState.empty;
@@ -78,7 +77,6 @@ const historyField_ = StateField.define({
 
   update(state: HistoryState, tr: Transaction): HistoryState {
     const config = tr.state.facet(historyConfig);
-
     const fromHist = tr.annotation(fromHistory);
     if (fromHist) {
       const item = HistEvent.fromTransaction(tr, fromHist.selection);
@@ -318,7 +316,6 @@ function conc<T>(a: readonly T[], b: readonly T[]) {
 }
 
 const none: readonly any[] = [];
-
 const MaxSelectionsPerEvent = 200;
 
 function addSelection(branch: Branch, selection: EditorSelection) {

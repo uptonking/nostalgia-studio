@@ -1,7 +1,6 @@
 import type { Text, TextIterator } from '@codemirror/state';
 
 const empty = { from: -1, to: -1, match: /.*/.exec('')! };
-
 const baseFlags = 'gm' + (/x/.unicode == null ? '' : 'u');
 
 export interface RegExpCursorOptions {
@@ -15,12 +14,12 @@ export interface RegExpCursorOptions {
 export class RegExpCursor
   implements Iterator<{ from: number; to: number; match: RegExpExecArray }>
 {
-  private iter!: TextIterator;
-  private re!: RegExp;
+  declare private iter: TextIterator;
+  declare private re: RegExp;
   private test?: (from: number, to: number, match: RegExpExecArray) => boolean;
   private curLine = '';
-  private curLineStart!: number;
-  private matchPos!: number;
+  declare private curLineStart: number;
+  declare private matchPos: number;
 
   /// Set to `true` when the cursor has reached the end of the search
   /// range.
@@ -98,7 +97,7 @@ export class RegExpCursor
     }
   }
 
-  [Symbol.iterator]!: () => Iterator<{
+  declare [Symbol.iterator]: () => Iterator<{
     from: number;
     to: number;
     match: RegExpExecArray;
@@ -208,7 +207,7 @@ class MultilineRegExpCursor
     }
   }
 
-  [Symbol.iterator]!: () => Iterator<{
+  declare [Symbol.iterator]: () => Iterator<{
     from: number;
     to: number;
     match: RegExpExecArray;

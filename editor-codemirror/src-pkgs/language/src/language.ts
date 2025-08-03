@@ -365,7 +365,6 @@ const enum Work {
   // Amount of work time to perform in pseudo-thread when idle callbacks aren't supported
   Slice = 100,
   // Minimum pause between pseudo-thread slices
-  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   MinPause = 100,
   // Maximum pause (timeout) for the pseudo-thread
   MaxPause = 500,
@@ -383,7 +382,6 @@ const enum Work {
   MaxParseAhead = 1e5,
   // When initializing the state field (before viewport info is
   // available), pretend the viewport goes from 0 to here.
-  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   InitViewport = 3000,
 }
 
@@ -728,7 +726,6 @@ const isInputPending =
   (navigator as any).scheduling?.isInputPending
     ? () => (navigator as any).scheduling.isInputPending()
     : null;
-
 const parseWorker = ViewPlugin.fromClass(
   class ParseWorker {
     working: (() => void) | null = null;

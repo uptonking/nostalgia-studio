@@ -1,6 +1,5 @@
 // Tokenizer
 const textwords = {};
-
 const keywords = {
   allTags: true,
   closeAll: true,
@@ -23,7 +22,6 @@ const keywords = {
   with: true,
   filter: true,
 };
-
 const isSpaceName = /[\w_\-]/i;
 const reHR = /^\-\-\-\-+$/; // <hr>
 const reWikiCommentStart = /^\/\*\*\*$/; // /***

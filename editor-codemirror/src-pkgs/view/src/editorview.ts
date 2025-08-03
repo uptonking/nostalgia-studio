@@ -60,6 +60,7 @@ import {
   editable,
   inputHandler,
   focusChangeEffect,
+  perLineTextDirection,
   scrollIntoView,
   UpdateFlag,
   ScrollTarget,
@@ -68,7 +69,6 @@ import {
   scrollHandler,
   clipboardInputFilter,
   clipboardOutputFilter,
-  perLineTextDirection,
 } from './extension';
 import {
   theme,
@@ -189,7 +189,7 @@ export class EditorView {
   /// [IME](https://en.wikipedia.org/wiki/Input_method), and at least
   /// one change has been made in the current composition.
   get composing() {
-    return this.inputState.composing > 0;
+    return Boolean(this.inputState) && this.inputState.composing > 0;
   }
 
   /// Indicates whether the user is currently in composing state. Note
@@ -197,7 +197,7 @@ export class EditorView {
   /// lot, since just putting the cursor on a word starts a
   /// composition there.
   get compositionStarted() {
-    return this.inputState.composing >= 0;
+    return Boolean(this.inputState) && this.inputState.composing >= 0;
   }
 
   private dispatchTransactions: (
@@ -235,7 +235,7 @@ export class EditorView {
   private announceDOM: HTMLElement;
 
   /// @internal
-  inputState!: InputState;
+  inputState: InputState;
 
   /// @internal
   public viewState: ViewState;
@@ -243,10 +243,11 @@ export class EditorView {
   public docView: DocView;
 
   private plugins: PluginInstance[] = [];
-  private pluginMap: Map<ViewPlugin<any>, PluginInstance | null> = new Map();
+  private pluginMap: Map<ViewPlugin<any, any>, PluginInstance | null> =
+    new Map();
   private editorAttrs: Attrs = {};
   private contentAttrs: Attrs = {};
-  private styleModules!: readonly StyleModule[];
+  private styleModules: readonly StyleModule[];
   private bidiCache: CachedOrder[] = [];
 
   private destroyed = false;
@@ -699,6 +700,7 @@ export class EditorView {
       spellcheck: 'false',
       autocorrect: 'off',
       autocapitalize: 'off',
+      writingsuggestions: 'false',
       translate: 'no',
       contenteditable: !this.state.facet(editable) ? 'false' : 'true',
       class: 'cm-content',
@@ -788,12 +790,12 @@ export class EditorView {
   /// plugins that crash can be dropped from a view, so even when you
   /// know you registered a given plugin, it is recommended to check
   /// the return value of this method.
-  plugin<T extends PluginValue>(plugin: ViewPlugin<T>): T | null {
+  plugin<T extends PluginValue>(plugin: ViewPlugin<T, any>): T | null {
     let known = this.pluginMap.get(plugin);
-    if (known === undefined || (known && known.spec != plugin))
+    if (known === undefined || (known && known.plugin != plugin))
       this.pluginMap.set(
         plugin,
-        (known = this.plugins.find((p) => p.spec == plugin) || null),
+        (known = this.plugins.find((p) => p.plugin == plugin) || null),
       );
     return known && (known.update(this).value as T);
   }
@@ -1468,7 +1470,6 @@ export type DOMEventHandlers<This> = {
 
 // Maximum line length for which we compute accurate bidi info
 const MaxBidiLine = 4096;
-
 const BadMeasure = {};
 
 class CachedOrder {

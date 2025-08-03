@@ -22,7 +22,6 @@ const hideToolbarHotkeys = (hotkey?: string) =>
       },
     ]),
   );
-
 /** show or hide floating toolbar */
 const floatingToolbarTrigger = () => {
   let timer: number | undefined;

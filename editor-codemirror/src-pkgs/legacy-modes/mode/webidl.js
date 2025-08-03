@@ -27,7 +27,6 @@ const builtinArray = [
   'Unscopeable',
 ];
 const builtins = wordRegexp(builtinArray);
-
 const typeArray = [
   'unsigned',
   'short',
@@ -63,7 +62,6 @@ const typeArray = [
   'void', // Rest of ReturnType
 ];
 const types = wordRegexp(typeArray);
-
 const keywordArray = [
   'attribute',
   'callback',
@@ -92,7 +90,6 @@ const keywordArray = [
   'or',
 ];
 const keywords = wordRegexp(keywordArray);
-
 const atomArray = [
   'true',
   'false', // BooleanLiteral
@@ -101,13 +98,10 @@ const atomArray = [
   'null', // Rest of ConstValue
 ];
 const atoms = wordRegexp(atomArray);
-
 const startDefArray = ['callback', 'dictionary', 'enum', 'interface'];
 const startDefs = wordRegexp(startDefArray);
-
 const endDefArray = ['typedef'];
 const endDefs = wordRegexp(endDefArray);
-
 const singleOperators = /^[:<=>?]/;
 const integers = /^-?([1-9][0-9]*|0[Xx][0-9A-Fa-f]+|0[0-7]*)/;
 const floats =

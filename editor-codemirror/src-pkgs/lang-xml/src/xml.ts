@@ -10,13 +10,8 @@ import {
 } from '@codemirror/language';
 import { EditorSelection, type Text } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
-import {
-  type ElementSpec,
-  type AttrSpec,
-  completeFromSchema,
-} from './complete';
-export { completeFromSchema };
-export type { ElementSpec, AttrSpec };
+import { ElementSpec, AttrSpec, completeFromSchema } from './complete';
+export { ElementSpec, AttrSpec, completeFromSchema };
 
 /// A language provider based on the [Lezer XML
 /// parser](https://github.com/lezer-parser/xml), extended with

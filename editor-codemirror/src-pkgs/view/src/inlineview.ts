@@ -1,28 +1,27 @@
 import { Text as DocText } from '@codemirror/state';
-
-import browser from './browser';
 import {
   ContentView,
   DOMPos,
+  ViewFlag,
   mergeChildrenInto,
   noChildren,
-  ViewFlag,
 } from './contentview';
-import type { MarkDecoration, WidgetType } from './decoration';
-import type { DocView } from './docview';
+import type { WidgetType, MarkDecoration } from './decoration';
 import {
-  clearAttributes,
-  clientRectsFor,
-  flattenRect,
   type Rect,
+  flattenRect,
   textRange,
+  clientRectsFor,
+  clearAttributes,
 } from './dom';
+import type { DocView } from './docview';
+import browser from './browser';
 import type { EditorView } from './editorview';
 
 const MaxJoinLen = 256;
 
 export class TextView extends ContentView {
-  children: ContentView[] = noChildren;
+  declare children: ContentView[];
   declare dom: Text | null;
 
   constructor(public text: string) {
@@ -227,7 +226,7 @@ function textCoords(text: Text, pos: number, side: number): Rect | null {
 
 // Also used for collapsed ranges that don't have a placeholder widget!
 export class WidgetView extends ContentView {
-  children: ContentView[] = noChildren;
+  declare children: ContentView[];
   declare dom: HTMLElement | null;
   prevWidget: WidgetType | null = null;
 
@@ -365,7 +364,7 @@ export class WidgetView extends ContentView {
 // browser bugs that show up when the cursor is directly next to
 // uneditable inline content.
 export class WidgetBufferView extends ContentView {
-  children: ContentView[] = noChildren;
+  declare children: ContentView[];
   declare dom: HTMLElement | null;
 
   constructor(readonly side: number) {
@@ -495,7 +494,8 @@ export function coordsInChildren(
         if (child.children.length) {
           scan(child, pos - off);
         } else if (
-          (!after || (after.isHidden && side > 0)) &&
+          (!after ||
+            (after.isHidden && (side > 0 || onSameLine(after, child)))) &&
           (end > pos || (off == end && child.getSide() > 0))
         ) {
           after = child;
@@ -526,4 +526,10 @@ function fallbackRect(view: ContentView) {
   if (!last) return (view.dom as HTMLElement).getBoundingClientRect();
   const rects = clientRectsFor(last);
   return rects[rects.length - 1] || null;
+}
+
+function onSameLine(a: ContentView, b: ContentView) {
+  const posA = a.coordsAt(0, 1);
+  const posB = b.coordsAt(0, 1);
+  return posA && posB && posB.top < posA.bottom;
 }

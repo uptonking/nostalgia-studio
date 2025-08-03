@@ -19,12 +19,13 @@
   - npm v8.3+
 
 ```shell
+npm i --legacy-peer-deps
+
 # build all packages
 npm run build
 
 # start demo app
 cd boilerplate/app-react-rspack
-npm i
 npm start
 ```
 

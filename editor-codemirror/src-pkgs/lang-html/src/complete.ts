@@ -28,9 +28,7 @@ const Encs = [
   'text/plain',
 ];
 const Bool = ['true', 'false'];
-
 const S: TagSpec = {}; // Empty tag spec
-
 const Tags: Record<string, TagSpec> = {
   a: {
     attrs: {
@@ -443,7 +441,6 @@ const Tags: Record<string, TagSpec> = {
   },
   wbr: S,
 };
-
 const GlobalAttrs: Record<string, null | readonly string[]> = {
   accesskey: null,
   class: null,

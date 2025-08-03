@@ -12,13 +12,11 @@ const builtin = words(
   'abs acos actualStream asin atan atan2 cardinality ceil cos cosh delay div edge exp floor getInstanceName homotopy inStream integer log log10 mod pre reinit rem semiLinear sign sin sinh spatialDistribution sqrt tan tanh',
 );
 const atoms = words('Real Boolean Integer String');
-
 const completions = [].concat(
   Object.keys(keywords),
   Object.keys(builtin),
   Object.keys(atoms),
 );
-
 const isSingleOperatorChar = /[;=\(:\),{}.*<>+\-\/^\[\]]/;
 const isDoubleOperatorChar = /(:=|<=|>=|==|<>|\.\+|\.\-|\.\*|\.\/|\.\^)/;
 const isDigit = /[0-9]/;

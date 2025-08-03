@@ -7,7 +7,7 @@ import {
   type Text,
   type Facet,
 } from '@codemirror/state';
-import type { EditorView } from './editorview';
+import { type EditorView, UpdateState } from './editorview';
 import { ContentView } from './contentview';
 import { LineView } from './blockview';
 import {
@@ -116,7 +116,9 @@ export class InputState {
     )
       return;
     if (event.type == 'keydown' && this.keydown(event as KeyboardEvent)) return;
-    this.runHandlers(event.type, event);
+    if (this.view.updateState != UpdateState.Idle)
+      Promise.resolve().then(() => this.runHandlers(event.type, event));
+    else this.runHandlers(event.type, event);
   }
 
   runHandlers(type: string, event: Event) {
@@ -301,14 +303,16 @@ function computeHandlers(plugins: readonly PluginInstance[]) {
   }
   for (const plugin of plugins) {
     const spec = plugin.spec;
-    if (spec && spec.domEventHandlers)
-      for (const type in spec.domEventHandlers) {
-        const f = spec.domEventHandlers[type];
+    const handlers = spec && spec.plugin.domEventHandlers;
+    const observers = spec && spec.plugin.domEventObservers;
+    if (handlers)
+      for (const type in handlers) {
+        const f = handlers[type];
         if (f) record(type).handlers.push(bindHandler(plugin.value!, f));
       }
-    if (spec && spec.domEventObservers)
-      for (const type in spec.domEventObservers) {
-        const f = spec.domEventObservers[type];
+    if (observers)
+      for (const type in observers) {
+        const f = observers[type];
         if (f) record(type).observers.push(bindHandler(plugin.value!, f));
       }
   }
@@ -323,7 +327,6 @@ const PendingKeys = [
   { key: 'Enter', keyCode: 13, inputType: 'insertLineBreak' },
   { key: 'Delete', keyCode: 46, inputType: 'deleteContentForward' },
 ];
-
 const EmacsyPendingKeys = 'dthko';
 
 // Key codes for modifier keys
@@ -599,7 +602,6 @@ const handlers: { [key: string]: (view: EditorView, event: any) => boolean } =
 const observers: {
   [key: string]: (view: EditorView, event: any) => undefined;
 } = Object.create(null);
-
 // This is very crude, but unfortunately both these browsers _pretend_
 // that they have a clipboard API—all the objects and methods are
 // there, they just don't work, and they are hard to test.
@@ -901,7 +903,6 @@ function dropText(
     { x: event.clientX, y: event.clientY },
     false,
   );
-
   const { draggedContent } = view.inputState;
   const del =
     direct && draggedContent && dragMovesSelection(view, event)
@@ -1060,7 +1061,7 @@ export function focusChangeTransaction(state: EditorState, focus: boolean) {
     const effect = getEffect(state, focus);
     if (effect) effects.push(effect);
   }
-  return effects
+  return effects.length
     ? state.update({ effects, annotations: isFocusChange.of(true) })
     : null;
 }

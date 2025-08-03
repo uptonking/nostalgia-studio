@@ -6,7 +6,6 @@ const singleOperators = /[\^@!\|<>#~\.\*\-\+\\/,=]/;
 const doubleOperators =
   /(<-)|(:=)|(=<)|(>=)|(<=)|(<:)|(>:)|(=:)|(\\=)|(\\=:)|(!!)|(==)|(::)/;
 const tripleOperators = /(:::)|(\.\.\.)|(=<:)|(>=:)/;
-
 const middle = [
   'in',
   'then',
@@ -26,7 +25,6 @@ const middle = [
   'do',
 ];
 const end = ['end'];
-
 const atoms = wordRegexp(['true', 'false', 'nil', 'unit']);
 const commonKeywords = wordRegexp([
   'andthen',

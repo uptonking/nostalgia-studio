@@ -30,6 +30,7 @@ import {
   combineConfig,
   RangeSet,
   type Range,
+  RangeSetBuilder,
 } from '@codemirror/state';
 import elt from 'crelt';
 
@@ -135,33 +136,80 @@ class LintState {
     state: EditorState,
   ) {
     // Filter the list of diagnostics for which to create markers
-    let markedDiagnostics = diagnostics;
     const diagnosticFilter = state.facet(lintConfig).markerFilter;
-    if (diagnosticFilter)
-      markedDiagnostics = diagnosticFilter(markedDiagnostics, state);
+    if (diagnosticFilter) diagnostics = diagnosticFilter(diagnostics, state);
 
-    const ranges = Decoration.set(
-      markedDiagnostics.map((d: Diagnostic) => {
-        // For zero-length ranges or ranges covering only a line break, create a widget
-        return d.from == d.to ||
-          (d.from == d.to - 1 && state.doc.lineAt(d.from).to == d.from)
-          ? Decoration.widget({
-              widget: new DiagnosticWidget(d),
-              diagnostic: d,
-            }).range(d.from)
-          : Decoration.mark({
-              attributes: {
-                class:
-                  'cm-lintRange cm-lintRange-' +
-                  d.severity +
-                  (d.markClass ? ' ' + d.markClass : ''),
-              },
-              diagnostic: d,
-            }).range(d.from, d.to);
-      }),
-      true,
-    );
-    return new LintState(ranges, panel, findDiagnostic(ranges));
+    const sorted = diagnostics
+      .slice()
+      .sort((a, b) => a.from - b.from || a.to - b.to);
+    const deco = new RangeSetBuilder<Decoration>();
+    const active: Diagnostic[] = [];
+    let pos = 0;
+    for (let i = 0; ; ) {
+      const next = i == sorted.length ? null : sorted[i];
+      if (!next && !active.length) break;
+      let from: number;
+      let to: number;
+      if (active.length) {
+        from = pos;
+        to = active.reduce(
+          (p, d) => Math.min(p, d.to),
+          next && next.from > from ? next.from : 1e8,
+        );
+      } else {
+        from = next!.from;
+        to = next!.to;
+        active.push(next!);
+        i++;
+      }
+      while (i < sorted.length) {
+        const next = sorted[i];
+        if (next.from == from && (next.to > next.from || next.to == from)) {
+          active.push(next);
+          i++;
+          to = Math.min(next.to, to);
+        } else {
+          to = Math.min(next.from, to);
+          break;
+        }
+      }
+      const sev = maxSeverity(active);
+      if (
+        active.some(
+          (d) =>
+            d.from == d.to ||
+            (d.from == d.to - 1 && state.doc.lineAt(d.from).to == d.from),
+        )
+      ) {
+        deco.add(
+          from,
+          from,
+          Decoration.widget({
+            widget: new DiagnosticWidget(sev),
+            diagnostics: active.slice(),
+          }),
+        );
+      } else {
+        const markClass = active.reduce(
+          (c, d) => (d.markClass ? c + ' ' + d.markClass : c),
+          '',
+        );
+        deco.add(
+          from,
+          to,
+          Decoration.mark({
+            class: 'cm-lintRange cm-lintRange-' + sev + markClass,
+            diagnostics: active.slice(),
+            inclusiveEnd: active.some((a) => a.to > to),
+          }),
+        );
+      }
+      pos = to;
+      for (let i = 0; i < active.length; i++)
+        if (active[i].to <= pos) active.splice(i--, 1);
+    }
+    const set = deco.finish();
+    return new LintState(set, panel, findDiagnostic(set));
   }
 }
 
@@ -172,9 +220,15 @@ function findDiagnostic(
 ): SelectedDiagnostic | null {
   let found: SelectedDiagnostic | null = null;
   diagnostics.between(after, 1e9, (from, to, { spec }) => {
-    if (diagnostic && spec.diagnostic != diagnostic) return;
-    found = new SelectedDiagnostic(from, to, spec.diagnostic);
-    return false;
+    if (diagnostic && spec.diagnostics.indexOf(diagnostic) < 0) return;
+    if (!found)
+      found = new SelectedDiagnostic(
+        from,
+        to,
+        diagnostic || spec.diagnostics[0],
+      );
+    else if (spec.diagnostics.indexOf(found.diagnostic) < 0) return false;
+    else found = new SelectedDiagnostic(found.from, to, found.diagnostic);
   });
   return found;
 }
@@ -217,9 +271,7 @@ export function setDiagnostics(
 export const setDiagnosticsEffect = StateEffect.define<readonly Diagnostic[]>();
 
 const togglePanel = StateEffect.define<boolean>();
-
 const movePanelSelection = StateEffect.define<SelectedDiagnostic>();
-
 const lintState = StateField.define<LintState>({
   create() {
     return new LintState(Decoration.none, null, null);
@@ -279,9 +331,9 @@ const activeMark = Decoration.mark({
 
 function lintTooltip(view: EditorView, pos: number, side: -1 | 1) {
   const { diagnostics } = view.state.field(lintState);
-  let found: Diagnostic[] = [];
-  let stackStart = 2e8;
-  let stackEnd = 0;
+  let found: readonly Diagnostic[] | undefined;
+  let start = -1;
+  let end = -1;
   diagnostics.between(
     pos - (side < 0 ? 1 : 0),
     pos + (side > 0 ? 1 : 0),
@@ -291,24 +343,24 @@ function lintTooltip(view: EditorView, pos: number, side: -1 | 1) {
         pos <= to &&
         (from == to || ((pos > from || side > 0) && (pos < to || side < 0)))
       ) {
-        found.push(spec.diagnostic);
-        stackStart = Math.min(from, stackStart);
-        stackEnd = Math.max(to, stackEnd);
+        found = spec.diagnostics;
+        start = from;
+        end = to;
+        return false;
       }
     },
   );
 
   const diagnosticFilter = view.state.facet(lintConfig).tooltipFilter;
-  if (diagnosticFilter) found = diagnosticFilter(found, view.state);
-
-  if (!found.length) return null;
+  if (found && diagnosticFilter) found = diagnosticFilter(found, view.state);
+  if (!found) return null;
 
   return {
-    pos: stackStart,
-    end: stackEnd,
-    above: view.state.doc.lineAt(stackStart).to < stackEnd,
+    pos: start,
+    end: end,
+    above: view.state.doc.lineAt(start).to < end,
     create() {
-      return { dom: diagnosticsTooltip(view, found) };
+      return { dom: diagnosticsTooltip(view, found!) };
     },
   };
 }
@@ -481,13 +533,13 @@ function batchResults<T>(
   error: (reason: any) => void,
 ) {
   const collected: T[] = [];
-  const timeout = -1;
+  let timeout = -1;
   for (const p of promises)
     p.then((value) => {
       collected.push(value);
       clearTimeout(timeout);
       if (collected.length == promises.length) sink(collected);
-      else setTimeout(() => sink(collected), 200);
+      else timeout = setTimeout(() => sink(collected), 200);
     }, error);
 }
 
@@ -610,18 +662,16 @@ function renderDiagnostic(
 }
 
 class DiagnosticWidget extends WidgetType {
-  constructor(readonly diagnostic: Diagnostic) {
+  constructor(readonly sev: Severity) {
     super();
   }
 
   eq(other: DiagnosticWidget) {
-    return other.diagnostic == this.diagnostic;
+    return other.sev == this.sev;
   }
 
   toDOM() {
-    return elt('span', {
-      class: 'cm-lintPoint cm-lintPoint-' + this.diagnostic.severity,
-    });
+    return elt('span', { class: 'cm-lintPoint cm-lintPoint-' + this.sev });
   }
 }
 
@@ -733,37 +783,42 @@ class LintPanel implements Panel {
     let i = 0;
     let needsSync = false;
     let newSelectedItem: PanelItem | null = null;
+    const seen = new Set<Diagnostic>();
     diagnostics.between(
       0,
       this.view.state.doc.length,
       (_start, _end, { spec }) => {
-        let found = -1;
-        let item;
-        for (let j = i; j < this.items.length; j++)
-          if (this.items[j].diagnostic == spec.diagnostic) {
-            found = j;
-            break;
-          }
-        if (found < 0) {
-          item = new PanelItem(this.view, spec.diagnostic);
-          this.items.splice(i, 0, item);
-          needsSync = true;
-        } else {
-          item = this.items[found];
-          if (found > i) {
-            this.items.splice(i, found - i);
+        for (const diagnostic of spec.diagnostics) {
+          if (seen.has(diagnostic)) continue;
+          seen.add(diagnostic);
+          let found = -1;
+          let item;
+          for (let j = i; j < this.items.length; j++)
+            if (this.items[j].diagnostic == diagnostic) {
+              found = j;
+              break;
+            }
+          if (found < 0) {
+            item = new PanelItem(this.view, diagnostic);
+            this.items.splice(i, 0, item);
             needsSync = true;
+          } else {
+            item = this.items[found];
+            if (found > i) {
+              this.items.splice(i, found - i);
+              needsSync = true;
+            }
           }
-        }
-        if (selected && item.diagnostic == selected.diagnostic) {
-          if (!item.dom.hasAttribute('aria-selected')) {
-            item.dom.setAttribute('aria-selected', 'true');
-            newSelectedItem = item;
+          if (selected && item.diagnostic == selected.diagnostic) {
+            if (!item.dom.hasAttribute('aria-selected')) {
+              item.dom.setAttribute('aria-selected', 'true');
+              newSelectedItem = item;
+            }
+          } else if (item.dom.hasAttribute('aria-selected')) {
+            item.dom.removeAttribute('aria-selected');
           }
-        } else if (item.dom.hasAttribute('aria-selected')) {
-          item.dom.removeAttribute('aria-selected');
+          i++;
         }
-        i++;
       },
     );
     while (
@@ -961,15 +1016,24 @@ function severityWeight(sev: Severity) {
   return sev == 'error' ? 4 : sev == 'warning' ? 3 : sev == 'info' ? 2 : 1;
 }
 
+function maxSeverity(diagnostics: readonly Diagnostic[]) {
+  let sev: Severity = 'hint';
+  let weight = 1;
+  for (const d of diagnostics) {
+    const w = severityWeight(d.severity);
+    if (w > weight) {
+      weight = w;
+      sev = d.severity;
+    }
+  }
+  return sev;
+}
+
 class LintGutterMarker extends GutterMarker {
   severity: Severity;
   constructor(readonly diagnostics: readonly Diagnostic[]) {
     super();
-    this.severity = diagnostics.reduce(
-      (max, d) =>
-        severityWeight(max) < severityWeight(d.severity) ? d.severity : max,
-      'hint' as Severity,
-    );
+    this.severity = maxSeverity(diagnostics);
   }
 
   toDOM(view: EditorView) {
@@ -1036,6 +1100,7 @@ function gutterMarkerMouseOver(
         effects: setLintGutterTooltip.of({
           pos: line.from,
           above: false,
+          clip: false,
           create() {
             return {
               dom: diagnosticsTooltip(view, diagnostics),
@@ -1083,12 +1148,12 @@ const lintGutterExtension = gutter({
     view.state
       .field(lintGutterMarkers)
       .between(block.from, block.to, (from, to, value) => {
-        diagnostics.push(...(value as LintGutterMarker).diagnostics);
+        if (from > block.from && from < block.to)
+          diagnostics.push(...(value as LintGutterMarker).diagnostics);
       });
     return diagnostics.length ? new LintGutterMarker(diagnostics) : null;
   },
 });
-
 const lintGutterMarkers = StateField.define<RangeSet<GutterMarker>>({
   create() {
     return RangeSet.empty;
@@ -1107,9 +1172,7 @@ const lintGutterMarkers = StateField.define<RangeSet<GutterMarker>>({
     return markers;
   },
 });
-
 const setLintGutterTooltip = StateEffect.define<Tooltip | null>();
-
 const lintGutterTooltip = StateField.define<Tooltip | null>({
   create() {
     return null;
@@ -1126,7 +1189,6 @@ const lintGutterTooltip = StateField.define<Tooltip | null>({
   },
   provide: (field) => showTooltip.from(field),
 });
-
 const lintGutterTheme = EditorView.baseTheme({
   '.cm-gutter-lint': {
     width: '1.4em',
@@ -1154,7 +1216,6 @@ const lintGutterTheme = EditorView.baseTheme({
     ),
   },
 });
-
 const lintExtensions = [
   lintState,
   EditorView.decorations.compute([lintState], (state) => {
@@ -1166,7 +1227,6 @@ const lintExtensions = [
   hoverTooltip(lintTooltip, { hideOn: hideTooltip }),
   baseTheme,
 ];
-
 const lintGutterConfig = Facet.define<
   LintGutterConfig,
   Required<LintGutterConfig>
@@ -1203,11 +1263,27 @@ export function forEachDiagnostic(
   f: (d: Diagnostic, from: number, to: number) => void,
 ) {
   const lState = state.field(lintState, false);
-  if (lState && lState.diagnostics.size)
-    for (
-      let iter = RangeSet.iter([lState.diagnostics]);
-      iter.value;
-      iter.next()
-    )
-      f(iter.value.spec.diagnostic, iter.from, iter.to);
+  if (lState && lState.diagnostics.size) {
+    const pending: Diagnostic[] = [];
+    const pendingStart: number[] = [];
+    let lastEnd = -1;
+    for (let iter = RangeSet.iter([lState.diagnostics]); ; iter.next()) {
+      for (let i = 0; i < pending.length; i++)
+        if (
+          !iter.value ||
+          iter.value.spec.diagnostics.indexOf(pending[i]) < 0
+        ) {
+          f(pending[i], pendingStart[i], lastEnd);
+          pending.splice(i, 1);
+          pendingStart.splice(i--, 1);
+        }
+      if (!iter.value) break;
+      for (const d of iter.value.spec.diagnostics)
+        if (pending.indexOf(d) < 0) {
+          pending.push(d);
+          pendingStart.push(iter.from);
+        }
+      lastEnd = iter.to;
+    }
+  }
 }

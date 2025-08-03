@@ -44,7 +44,6 @@ const commonBlockKeywords = [
   'function',
   'for',
 ];
-
 const atoms = wordObj(commonAtoms);
 const builtins = wordObj(commonBuiltins);
 const keywords = wordObj(commonKeywords);

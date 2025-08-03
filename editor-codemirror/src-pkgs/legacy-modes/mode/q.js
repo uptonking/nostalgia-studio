@@ -191,12 +191,12 @@ function tokenBase(stream, state) {
             : (state.tokenize = tokenBase),
           'comment'
         );
-      else return (state.tokenize = tokenBase), 'builtin';
+      else return ((state.tokenize = tokenBase), 'builtin');
     }
   if (/\s/.test(c))
     return stream.peek() == '/' ? (stream.skipToEnd(), 'comment') : 'null';
   if (c == '"') return (state.tokenize = tokenString)(stream, state);
-  if (c == '`') return stream.eatWhile(/[A-Za-z\d_:\/.]/), 'macroName';
+  if (c == '`') return (stream.eatWhile(/[A-Za-z\d_:\/.]/), 'macroName');
   if (('.' == c && /\d/.test(stream.peek())) || /\d/.test(c)) {
     let t = null;
     stream.backUp(1);
@@ -233,7 +233,7 @@ function tokenBase(stream, state) {
 function tokenLineComment(stream, state) {
   return (
     stream.skipToEnd(),
-    /\/\s*$/.test(stream.current())
+    /^\/\s*$/.test(stream.current())
       ? (state.tokenize = tokenBlockComment)(stream, state)
       : (state.tokenize = tokenBase),
     'comment'
@@ -246,7 +246,7 @@ function tokenBlockComment(stream, state) {
   return 'comment';
 }
 function tokenCommentToEOF(stream) {
-  return stream.skipToEnd(), 'comment';
+  return (stream.skipToEnd(), 'comment');
 }
 function tokenString(stream, state) {
   let escaped = false;
@@ -328,5 +328,8 @@ export const q = {
     else if (context.type == 'pattern') return context.col;
     else if (context.align) return context.col + (closing ? 0 : 1);
     else return context.indent + (closing ? 0 : cx.unit);
+  },
+  languageData: {
+    commentTokens: { line: '/' },
   },
 };

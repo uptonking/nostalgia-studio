@@ -122,16 +122,11 @@ function domPosAtCoords(
         closestRect = rect;
         closestX = dx;
         closestY = dy;
-        const side = dy
-          ? y < rect.top
-            ? -1
-            : 1
-          : dx
-            ? x < rect.left
-              ? -1
-              : 1
-            : 0;
-        closestOverlap = !side || (side > 0 ? i < rects.length - 1 : i > 0);
+        closestOverlap = !dx
+          ? true
+          : x < rect.left
+            ? i > 0
+            : i < rects.length - 1;
       }
       if (dx == 0) {
         if (y > rect.bottom && (!aboveRect || aboveRect.bottom < rect.bottom)) {
@@ -293,7 +288,6 @@ export function posAtCoords(
           node = undefined;
       }
     }
-
     // Chrome will return offsets into <input> elements without child
     // nodes, which will lead to a null deref below, so clip the
     // offset to the node size.
@@ -346,11 +340,24 @@ function posAtCoordsImprecise(
 // ignored (issue #401).
 function isSuspiciousSafariCaretResult(node: Node, offset: number, x: number) {
   let len;
+  let scan = node;
   if (node.nodeType != 3 || offset != (len = node.nodeValue!.length))
     return false;
-  for (let next = node.nextSibling; next; next = next.nextSibling)
-    if (next.nodeType != 1 || next.nodeName != 'BR') return false;
-  return textRange(node as Text, len - 1, len).getBoundingClientRect().left > x;
+  for (;;) {
+    // Check that there is no content after this node
+    const next = scan.nextSibling;
+    if (next) {
+      if (next.nodeName == 'BR') break;
+      return false;
+    } else {
+      const parent = scan.parentNode;
+      if (!parent || parent.nodeName == 'DIV') break;
+      scan = parent;
+    }
+  }
+  return (
+    textRange(node as Text, len - 1, len).getBoundingClientRect().right > x
+  );
 }
 
 // Chrome will move positions between lines to the start of the next line
@@ -374,16 +381,27 @@ function isSuspiciousChromeCaretResult(node: Node, offset: number, x: number) {
   return x - rect.left > 5;
 }
 
-export function blockAt(view: EditorView, pos: number): BlockInfo {
+export function blockAt(
+  view: EditorView,
+  pos: number,
+  side: -1 | 1,
+): BlockInfo {
   const line = view.lineBlockAt(pos);
-  if (Array.isArray(line.type))
+  if (Array.isArray(line.type)) {
+    let best: BlockInfo | undefined;
     for (const l of line.type) {
+      if (l.from > pos) break;
+      if (l.to < pos) continue;
+      if (l.from < pos && l.to > pos) return l;
       if (
-        l.to > pos ||
-        (l.to == pos && (l.to == line.to || l.type == BlockType.Text))
+        !best ||
+        (l.type == BlockType.Text &&
+          (best.type != l.type || (side < 0 ? l.from < pos : l.to > pos)))
       )
-        return l;
+        best = l;
     }
+    return best || line;
+  }
   return line;
 }
 
@@ -393,7 +411,7 @@ export function moveToLineBoundary(
   forward: boolean,
   includeWrap: boolean,
 ) {
-  const line = blockAt(view, start.head);
+  const line = blockAt(view, start.head, start.assoc || -1);
   const coords =
     !includeWrap ||
     line.type != BlockType.Text ||

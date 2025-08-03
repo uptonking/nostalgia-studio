@@ -21,7 +21,6 @@ const keywords = words(
     'stdcall stored strict unaligned unimplemented varargs virtual write',
 );
 const atoms = { null: true };
-
 const isOperatorChar = /[+\-*&%=<>!?|\/]/;
 
 function tokenBase(stream, state) {
@@ -60,7 +59,7 @@ function tokenBase(stream, state) {
     return 'operator';
   }
   stream.eatWhile(/[\w\$_]/);
-  const cur = stream.current();
+  const cur = stream.current().toLowerCase();
   if (keywords.propertyIsEnumerable(cur)) return 'keyword';
   if (atoms.propertyIsEnumerable(cur)) return 'atom';
   return 'variable';

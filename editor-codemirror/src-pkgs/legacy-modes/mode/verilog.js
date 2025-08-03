@@ -35,7 +35,6 @@ function mkVerilog(parserConfig) {
       'trireg type typedef union unique unique0 unsigned until until_with untyped use uwire var vectored virtual void ' +
       'wait wait_order wand weak weak0 weak1 while wildcard wire with within wor xnor xor',
   );
-
   /** Operators from IEEE 1800-2012
       unary_operator ::=
       + | - | ! | ~ | & | ~& | | | ~| | ^ | ~^ | ^~
@@ -51,27 +50,22 @@ function mkVerilog(parserConfig) {
   */
   const isOperatorChar = /[\+\-\*\/!~&|^%=?:]/;
   const isBracketChar = /[\[\]{}()]/;
-
   const unsignedNumber = /\d[0-9_]*/;
   const decimalLiteral = /\d*\s*'s?d\s*\d[0-9_]*/i;
   const binaryLiteral = /\d*\s*'s?b\s*[xz01][xz01_]*/i;
   const octLiteral = /\d*\s*'s?o\s*[xz0-7][xz0-7_]*/i;
   const hexLiteral = /\d*\s*'s?h\s*[0-9a-fxz?][0-9a-fxz?_]*/i;
   const realLiteral = /(\d[\d_]*(\.\d[\d_]*)?E-?[\d_]+)|(\d[\d_]*\.\d[\d_]*)/i;
-
   const closingBracketOrWord = /^((\w+)|[)}\]])/;
   const closingBracket = /[)}\]]/;
-
   let curPunc;
   let curKeyword;
-
   // Block openings which are closed by a matching keyword in the form of ("end" + keyword)
   // E.g. "task" => "endtask"
   const blockKeywords = words(
     'case checker class clocking config function generate interface module package ' +
       'primitive program property specify sequence table task',
   );
-
   // Opening/closing pairs
   const openClose = {};
   for (var keyword in blockKeywords) {
@@ -423,7 +417,6 @@ const tlvIdentifierStyle = {
   '\\': 'keyword',
   '"': 'comment',
 };
-
 // Lines starting with these characters define scope (result in indentation).
 const tlvScopePrefixChars = {
   '/': 'beh-hier',
@@ -453,7 +446,7 @@ export const tlv = mkVerilog({
     //   - Statement delimitation (enabled by tlvTrackStatements)
     token: function (stream, state) {
       let style = undefined;
-      var match; // Return value of pattern matches.
+      let match; // Return value of pattern matches.
 
       // Set highlighting mode based on code region (TLV or SV).
       if (stream.sol() && !state.tlvInBlockComment) {

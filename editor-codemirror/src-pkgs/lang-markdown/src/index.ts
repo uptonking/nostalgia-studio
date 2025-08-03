@@ -18,6 +18,7 @@ import {
   markdownLanguage,
   mkLang,
   getCodeParser,
+  headerIndent,
 } from './markdown';
 import { insertNewlineContinueMarkup, deleteMarkupBackward } from './commands';
 export {
@@ -87,7 +88,7 @@ export function markdown(
       'Base parser provided to `markdown` should be a Markdown parser',
     );
   const extensions = config.extensions ? [config.extensions] : [];
-  const support = [htmlTagLanguage.support];
+  const support = [htmlTagLanguage.support, headerIndent];
   let defaultCode;
   if (defaultCodeLanguage instanceof LanguageSupport) {
     support.push(defaultCodeLanguage.support);

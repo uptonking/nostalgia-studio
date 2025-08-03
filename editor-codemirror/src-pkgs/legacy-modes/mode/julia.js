@@ -11,7 +11,6 @@ const hexChar = '\\\\x[A-Fa-f0-9]{1,2}';
 const sChar = '\\\\[abefnrtv0%?\'"\\\\]';
 const uChar =
   '([^\\u0027\\u005C\\uD800-\\uDFFF]|[\\uD800-\\uDFFF][\\uDC00-\\uDFFF])';
-
 const asciiOperatorsList = [
   '[<>]:',
   '[<>=]=',
@@ -61,16 +60,14 @@ const operators = wordRegexp(
     '\\u2288',
     '\\u228A',
     '\\u22C5',
-    '\\b(in|isa)\\b(?!.?\\()',
+    '\\b(in|isa)\\b(?!\.?\\()',
   ],
   '',
 );
 const delimiters = /^[;,()[\]{}]/;
 const identifiers =
   /^[_A-Za-z\u00A1-\u2217\u2219-\uFFFF][\w\u00A1-\u2217\u2219-\uFFFF]*!*/;
-
 const chars = wordRegexp([octChar, hexChar, sChar, uChar], "'");
-
 const openersList = [
   'begin',
   'function',
@@ -90,9 +87,7 @@ const openersList = [
   'catch',
   'do',
 ];
-
 const closersList = ['end', 'else', 'elseif', 'catch', 'finally'];
-
 const keywordsList = [
   'if',
   'else',
@@ -131,18 +126,14 @@ const keywordsList = [
   'primitive',
   'bitstype',
 ];
-
 const builtinsList = ['true', 'false', 'nothing', 'NaN', 'Inf'];
-
 const openers = wordRegexp(openersList);
 const closers = wordRegexp(closersList);
 const keywords = wordRegexp(keywordsList);
 const builtins = wordRegexp(builtinsList);
-
 const macro = /^@[_A-Za-z\u00A1-\uFFFF][\w\u00A1-\uFFFF]*!*/;
 const symbol = /^:[_A-Za-z\u00A1-\uFFFF][\w\u00A1-\uFFFF]*!*/;
 const stringPrefixes = /^(`|([_A-Za-z\u00A1-\uFFFF]*"("")?))/;
-
 const macroOperators = wordRegexp(asciiOperatorsList, '', '@');
 const symbolOperators = wordRegexp(asciiOperatorsList, '', ':');
 

@@ -24,8 +24,11 @@ import {
   type TagSpec,
   eventAttributes,
 } from './complete';
-export { htmlCompletionSource, htmlCompletionSourceWith } from './complete';
-export type { TagSpec } from './complete';
+export {
+  htmlCompletionSource,
+  TagSpec,
+  htmlCompletionSourceWith,
+} from './complete';
 
 type NestedLang = {
   tag: string;
@@ -36,7 +39,6 @@ type NestedLang = {
 const jsonParser = javascriptLanguage.parser.configure({
   top: 'SingleExpression',
 });
-
 const defaultNesting: NestedLang[] = [
   {
     tag: 'script',
@@ -95,9 +97,11 @@ type NestedAttr = {
 const defaultAttrs: NestedAttr[] = [
   { name: 'style', parser: cssLanguage.parser.configure({ top: 'Styles' }) },
 ].concat(
-  eventAttributes.map((name) => ({ name, parser: javascriptLanguage.parser })),
+  eventAttributes.map((name) => ({
+    name,
+    parser: javascriptLanguage.parser,
+  })),
 );
-
 const htmlPlain = LRLanguage.define({
   name: 'html',
   parser: parser.configure({

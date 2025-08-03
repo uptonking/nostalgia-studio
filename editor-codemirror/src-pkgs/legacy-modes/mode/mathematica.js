@@ -4,7 +4,6 @@ const pBase = '(?:\\d+)';
 const pFloat = '(?:\\.\\d+|\\d+\\.\\d*|\\d+)';
 const pFloatBase = '(?:\\.\\w+|\\w+\\.\\w*|\\w+)';
 const pPrecision = '(?:`(?:`?' + pFloat + ')?)';
-
 // regular expressions
 const reBaseForm = new RegExp(
   '(?:' +

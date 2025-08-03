@@ -16,245 +16,33 @@ import {
   StateEffect,
   RangeSet,
   Prec,
-  EditorSelection,
 } from '@codemirror/state';
 import type { Chunk } from './chunk';
 import { ChunkField, mergeConfig } from './merge';
-import {
-  autoPlayDiffEffect,
-  diffPlayControllerState,
-  diffPlayStateChanged,
-  resetDiffPlayState,
-  setIsDiffCompleted,
-} from './animation-controller';
-import {
-  getChangedLineDeco,
-  getInsertedDeco,
-  getIntervalDurationPerLine,
-  MIN_TYPEWRITER_DURATION_PER_LINE,
-} from './utils';
-import { animatableDiffViewCompartment } from './diff-actions';
 
-/**
- * decorate chunks with line/mark decorations
- */
 export const decorateChunks = ViewPlugin.fromClass(
   class {
-    editView: EditorView;
-
     deco: DecorationSet;
     gutter: RangeSet<GutterMarker> | null;
 
-    autoPlayIntervalId = 0;
-
-    chunksByLine: Chunk[] = [];
-
     constructor(view: EditorView) {
-      this.editView = view;
-      const { showTypewriterAnimation } =
-        this.editView.state.facet(mergeConfig);
-      // 🧐 only computed on constructor, not on update; not work for diff-off2on
-      this.chunksByLine = showTypewriterAnimation
-        ? splitChunksByLine(view)
-        : [];
-      ({ deco: this.deco, gutter: this.gutter } = getChunkDeco(
-        view,
-        this.chunksByLine,
-      ));
-      console.log(
-        ';; ins-deco-ctor ',
-        view.state.field(ChunkField),
-        this.chunksByLine,
-      );
-
-      if (
-        showTypewriterAnimation &&
-        this.autoPlayIntervalId === 0 &&
-        this.chunksByLine.length > 0
-      ) {
-        console.log(';; startDiffTimer-ctor');
-        this.autoPlayDiffAnimation();
-      }
+      ({ deco: this.deco, gutter: this.gutter } = getChunkDeco(view));
     }
 
     update(update: ViewUpdate) {
-      const diffPlayState = this.editView.state.field(
-        diffPlayControllerState,
-        false,
-      );
-      const { showTypewriterAnimation } =
-        this.editView.state.facet(mergeConfig);
-
-      let chunks = this.editView.state.field(ChunkField) as Chunk[];
-      if (showTypewriterAnimation && !diffPlayState?.isDiffCompleted) {
-        // if (showTypewriterAnimation) {
-        chunks = this.chunksByLine;
-      }
-
-      if (!showTypewriterAnimation) {
-        if (diffPlayState?.isDiffCompleted) {
-          queueMicrotask(() => {
-            console.log(';; clean completed ');
-            this.cleanAutoPlayDiffTimer();
-          });
-        }
-      }
-
-      const shouldUpdate =
+      if (
         update.docChanged ||
         update.viewportChanged ||
         chunksChanged(update.startState, update.state) ||
-        configChanged(update.startState, update.state) ||
-        diffPlayStateChanged(update.startState, update.state);
-
-      // console.log(';; ins-deco-up ', shouldUpdate, diffPlayState);
-      if (shouldUpdate) {
-        ({ deco: this.deco, gutter: this.gutter } = getChunkDeco(
-          update.view,
-          chunks,
-        ));
-      }
-
-      if (
-        showTypewriterAnimation &&
-        this.autoPlayIntervalId === 0 &&
-        this.chunksByLine.length > 0 &&
-        !diffPlayState?.isDiffCompleted
-      ) {
-        console.log(';; startDiffTimer-update');
-        this.autoPlayDiffAnimation();
-      }
-    }
-
-    autoPlayDiffAnimation() {
-      const {
-        showTypewriterAnimation,
-        showAnimeWithDiffOff,
-        lineAnimeDuration,
-        totalAnimeDuration,
-      } = this.editView.state.facet(mergeConfig);
-      let lineDuration = showTypewriterAnimation
-        ? getIntervalDurationPerLine(
-            this.chunksByLine.length,
-            totalAnimeDuration,
-          )
-        : 0;
-      if (lineDuration > 0) {
-        if (lineAnimeDuration > lineDuration) {
-          lineDuration = lineAnimeDuration;
-        }
-        if (this.chunksByLine.length === 1) {
-          lineDuration = MIN_TYPEWRITER_DURATION_PER_LINE * 2;
-        }
-      }
-      console.log(
-        ';; typing-lines-interval ',
-        this.chunksByLine.length,
-        lineDuration,
-      );
-
-      this.autoPlayIntervalId = window.setInterval(() => {
-        if (!showTypewriterAnimation) {
-          this.cleanAutoPlayDiffTimer();
-          return;
-        }
-
-        const diffPlayState = this.editView.state.field(
-          diffPlayControllerState,
-        );
-        const currentDiffPlayLineNumber = diffPlayState.playLineNumber;
-
-        // console.log(
-        //   ';; autoPlay ',
-        //   currentDiffPlayLineNumber,
-        //   this.chunksByLine.length,
-        // );
-        if (currentDiffPlayLineNumber < this.chunksByLine.length - 1) {
-          const nextChunk =
-            this.chunksByLine[
-              currentDiffPlayLineNumber < 0 ? 0 : currentDiffPlayLineNumber + 1
-            ];
-          if (nextChunk) {
-            this.editView.dispatch({
-              effects: [
-                EditorView.scrollIntoView(
-                  nextChunk.fromB,
-                  // EditorSelection.range(nextChunk.fromB, nextChunk.toB), // full
-                ),
-                autoPlayDiffEffect.of(1),
-              ],
-            });
-          }
-        } else {
-          window.clearInterval(this.autoPlayIntervalId);
-          this.autoPlayIntervalId = 0;
-          const animeEndEffects: StateEffect<unknown>[] = [
-            setIsDiffCompleted.of(true),
-          ];
-          if (showAnimeWithDiffOff) {
-            animeEndEffects.push(animatableDiffViewCompartment.reconfigure([]));
-          }
-          this.editView.dispatch({
-            effects: animeEndEffects,
-            // [
-            //   setIsDiffCompleted.of(true),
-            //   // setDiffPlayLineNumber.of(-10),
-            // ],
-          });
-          // console.log(';; autoPlay completed ');
-        }
-      }, lineDuration);
-    }
-
-    destroy() {
-      // this.cleanAutoPlayDiffTimer(); // not work
-      queueMicrotask(() => {
-        this.cleanAutoPlayDiffTimer();
-      });
-    }
-
-    cleanAutoPlayDiffTimer() {
-      window.clearInterval(this.autoPlayIntervalId);
-      this.autoPlayIntervalId = 0;
-      this.editView.dispatch({
-        effects: [resetDiffPlayState.of(1)],
-      });
+        configChanged(update.startState, update.state)
+      )
+        ({ deco: this.deco, gutter: this.gutter } = getChunkDeco(update.view));
     }
   },
   {
     decorations: (d) => d.deco,
   },
 );
-
-function splitChunksByLine(view: EditorView) {
-  const chunks = view.state.field(ChunkField);
-  const chunksByLine: Chunk[] = [];
-  chunks.forEach((chunk) => {
-    const chunkStartLineNumber = view.state.doc.lineAt(chunk.fromB).number;
-    const chunkEndLineNumber = view.state.doc.lineAt(chunk.endB).number;
-    // console.log(';; chk ', chunkStartLineNumber, chunkEndLineNumber, chunk);
-    if (chunkStartLineNumber === chunkEndLineNumber) {
-      // @ts-expect-error fix-types
-      chunk.lineNumber = chunkStartLineNumber;
-      chunksByLine.push(chunk);
-    } else {
-      for (
-        let index = chunkStartLineNumber;
-        index < chunkEndLineNumber + 1;
-        index++
-      ) {
-        const currentLine = view.state.doc.line(index);
-        const lineChunk: Chunk = JSON.parse(JSON.stringify(chunk));
-        // @ts-expect-error fix-types
-        lineChunk.lineNumber = index;
-        lineChunk.fromB = currentLine.from;
-        lineChunk.toB = currentLine.to;
-        chunksByLine.push(lineChunk);
-      }
-    }
-  });
-  return chunksByLine;
-}
 
 export const changeGutter = Prec.low(
   gutter({
@@ -271,70 +59,29 @@ function configChanged(s1: EditorState, s2: EditorState) {
   return s1.facet(mergeConfig) != s2.facet(mergeConfig);
 }
 
-const changedTextDeco = Decoration.mark({ class: 'cm-changedText' });
-const insertedDeco = Decoration.mark({
-  tagName: 'ins',
-  class: 'cm-insertedLine',
-});
-const deletedDeco = Decoration.mark({
-  tagName: 'del',
-  class: 'cm-deletedLine',
-});
-
+const changedLine = Decoration.line({ class: 'cm-changedLine' });
+export const changedText = Decoration.mark({ class: 'cm-changedText' });
+const inserted = Decoration.mark({ tagName: 'ins', class: 'cm-insertedLine' });
+const deleted = Decoration.mark({ tagName: 'del', class: 'cm-deletedLine' });
 const changedLineGutterMarker = new (class extends GutterMarker {
   elementClass = 'cm-changedLineGutter';
 })();
 
-function buildChunkDeco({
-  chunk,
-  doc,
-  isA,
-  highlight,
-  builder,
-  gutterBuilder,
-  displayStatus,
-  showAnimeWithDiffOff,
-  lineDuration,
-}: {
-  chunk: Chunk;
-  doc: Text;
-  isA: boolean;
-  highlight: boolean;
-  builder: RangeSetBuilder<Decoration>;
-  gutterBuilder: RangeSetBuilder<GutterMarker> | null;
-  displayStatus: 'show' | 'typing' | 'hidden';
-  showAnimeWithDiffOff?: boolean;
-  lineDuration?: number;
-}) {
+function buildChunkDeco(
+  chunk: Chunk,
+  doc: Text,
+  isA: boolean,
+  highlight: boolean,
+  builder: RangeSetBuilder<Decoration>,
+  gutterBuilder: RangeSetBuilder<GutterMarker> | null,
+) {
   const from = isA ? chunk.fromA : chunk.fromB;
   const to = isA ? chunk.toA : chunk.toB;
   let changeI = 0;
-  if (from !== to) {
-    builder.add(
-      from,
-      from,
-      getChangedLineDeco(displayStatus, showAnimeWithDiffOff),
-    );
-    // builder.add(from, to, isA ? deletedDeco : insertedDeco);
-    builder.add(
-      from,
-      to,
-      isA
-        ? deletedDeco
-        : getInsertedDeco(displayStatus, to - from + 1, lineDuration),
-    );
-    if (gutterBuilder) {
-      gutterBuilder.add(from, from, changedLineGutterMarker);
-    }
-    // console.log(
-    //   ';; buildChunkDeco ',
-    //   chunk.lineNumber,
-    //   displayStatus,
-    //   to - from + 1,
-    //   from,
-    //   to,
-    //   chunk,
-    // );
+  if (from != to) {
+    builder.add(from, from, changedLine);
+    builder.add(from, to, isA ? deleted : inserted);
+    if (gutterBuilder) gutterBuilder.add(from, from, changedLineGutterMarker);
     for (
       let iter = doc.iterRange(from, to - 1), pos = from;
       !iter.next().done;
@@ -342,11 +89,7 @@ function buildChunkDeco({
     ) {
       if (iter.lineBreak) {
         pos++;
-        builder.add(
-          pos,
-          pos,
-          getChangedLineDeco(displayStatus, showAnimeWithDiffOff),
-        );
+        builder.add(pos, pos, changedLine);
         if (gutterBuilder) gutterBuilder.add(pos, pos, changedLineGutterMarker);
         continue;
       }
@@ -358,7 +101,7 @@ function buildChunkDeco({
           const nextTo = from + (isA ? nextChange.toA : nextChange.toB);
           const chFrom = Math.max(pos, nextFrom);
           const chTo = Math.min(lineEnd, nextTo);
-          if (chFrom < chTo) builder.add(chFrom, chTo, changedTextDeco);
+          if (chFrom < chTo) builder.add(chFrom, chTo, changedText);
           if (nextTo < lineEnd) changeI++;
           else break;
         }
@@ -367,71 +110,29 @@ function buildChunkDeco({
   }
 }
 
-function getChunkDeco(view: EditorView, chunksByLine?: Chunk[]) {
-  const {
-    side,
-    highlightChanges,
-    markGutter,
-    showTypewriterAnimation,
-    showAnimeWithDiffOff,
-    totalAnimeDuration,
-    lineAnimeDuration,
-  } = view.state.facet(mergeConfig);
-  const diffPlayState = view.state.field(diffPlayControllerState, false);
-  const currentDiffPlayLineNumber = diffPlayState.playLineNumber ?? -1e9;
-  const isDiffCompleted = diffPlayState?.isDiffCompleted;
-  let chunks = view.state.field(ChunkField);
-  if (
-    showTypewriterAnimation &&
-    Array.isArray(chunksByLine) &&
-    !isDiffCompleted
-  ) {
-    chunks = chunksByLine;
-  }
-  let lineDuration = showTypewriterAnimation
-    ? getIntervalDurationPerLine(chunks.length, totalAnimeDuration)
-    : 0;
-  if (lineDuration > 0 && lineAnimeDuration > lineDuration) {
-    lineDuration = lineAnimeDuration;
-  }
-  // console.log(
-  //   ';; chunks ',
-  //   side,
-  //   isDiffCompleted,
-  //   currentDiffPlayLineNumber,
-  //   // chunks,
-  // );
-
-  const isA = side === 'a';
+function getChunkDeco(view: EditorView) {
+  const chunks = view.state.field(ChunkField);
+  const { side, highlightChanges, markGutter, overrideChunk } =
+    view.state.facet(mergeConfig);
+  const isA = side == 'a';
   const builder = new RangeSetBuilder<Decoration>();
   const gutterBuilder = markGutter ? new RangeSetBuilder<GutterMarker>() : null;
   const { from, to } = view.viewport;
-  for (let i = 0; i < chunks.length; i++) {
-    const chunk = chunks[i];
+  for (const chunk of chunks) {
     if ((isA ? chunk.fromA : chunk.fromB) >= to) break;
     if ((isA ? chunk.toA : chunk.toB) > from) {
-      let displayStatus: 'show' | 'hidden' | 'typing' = 'show';
-      if (showTypewriterAnimation && !isDiffCompleted) {
-        if (i === currentDiffPlayLineNumber) {
-          displayStatus = 'typing';
-        } else if (
-          i > currentDiffPlayLineNumber ||
-          currentDiffPlayLineNumber < 0
-        ) {
-          displayStatus = 'hidden';
-        }
-      }
-      buildChunkDeco({
-        chunk: chunk,
-        doc: view.state.doc,
-        isA,
-        highlight: highlightChanges,
-        builder,
-        gutterBuilder,
-        displayStatus,
-        showAnimeWithDiffOff,
-        lineDuration,
-      });
+      if (
+        !overrideChunk ||
+        !overrideChunk(view.state, chunk, builder, gutterBuilder)
+      )
+        buildChunkDeco(
+          chunk,
+          view.state.doc,
+          isA,
+          highlightChanges,
+          builder,
+          gutterBuilder,
+        );
     }
   }
   return {
@@ -621,7 +322,9 @@ export function updateSpacers(
     b.dispatch({ effects: adjustSpacers.of(decoB) });
 }
 
-const uncollapse = StateEffect.define<number>({
+/// A state effect that expands the section of collapsed unchanged
+/// code starting at the given position.
+export const uncollapseUnchanged = StateEffect.define<number>({
   map: (value, change) => change.mapPos(value),
 });
 
@@ -637,15 +340,14 @@ class CollapseWidget extends WidgetType {
   toDOM(view: EditorView) {
     const outer = document.createElement('div');
     outer.className = 'cm-collapsedLines';
-    outer.textContent =
-      '⦚ ' + view.state.phrase('$ unchanged lines', this.lines) + ' ⦚';
+    outer.textContent = view.state.phrase('$ unchanged lines', this.lines);
     outer.addEventListener('click', (e) => {
       const pos = view.posAtDOM(e.target as HTMLElement);
-      view.dispatch({ effects: uncollapse.of(pos) });
+      view.dispatch({ effects: uncollapseUnchanged.of(pos) });
       const { side, sibling } = view.state.facet(mergeConfig);
       if (sibling)
         sibling().dispatch({
-          effects: uncollapse.of(
+          effects: uncollapseUnchanged.of(
             mapPos(pos, view.state.field(ChunkField), side == 'a'),
           ),
         });
@@ -659,6 +361,10 @@ class CollapseWidget extends WidgetType {
 
   get estimatedHeight() {
     return 27;
+  }
+
+  get type() {
+    return 'collapsed-unchanged-code';
   }
 }
 
@@ -680,7 +386,7 @@ const CollapsedRanges = StateField.define<DecorationSet>({
   update(deco, tr) {
     deco = deco.map(tr.changes);
     for (const e of tr.effects)
-      if (e.is(uncollapse))
+      if (e.is(uncollapseUnchanged))
         deco = deco.update({ filter: (from) => from != e.value });
     return deco;
   },
@@ -705,7 +411,7 @@ function buildCollapsedRanges(
   minLines: number,
 ) {
   const builder = new RangeSetBuilder<Decoration>();
-  const isA = state.facet(mergeConfig).side === 'a';
+  const isA = state.facet(mergeConfig).side == 'a';
   const chunks = state.field(ChunkField);
   let prevLine = 1;
   for (let i = 0; ; i++) {

@@ -50,13 +50,11 @@ const builtInFuncs = {
   '⊣': ['stop', 'left'],
   '⊢': ['pass', 'right'],
 };
-
 const isOperator = /[\.\/⌿⍀¨⍣]/;
 const isNiladic = /⍬/;
 const isFunction = /[\+−×÷⌈⌊∣⍳\?⋆⍟○!⌹<≤=>≥≠≡≢∈⍷∪∩∼∨∧⍱⍲⍴,⍪⌽⊖⍉↑↓⊂⊃⌷⍋⍒⊤⊥⍕⍎⊣⊢]/;
 const isArrow = /←/;
 const isComment = /[⍝#].*$/;
-
 const stringEater = function (type) {
   let prev;
   prev = false;

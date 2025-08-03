@@ -8,7 +8,7 @@ export function countColumn(
   to = string.length,
 ): number {
   let n = 0;
-  for (let i = 0; i < to; ) {
+  for (let i = 0; i < to && i < string.length; ) {
     if (string.charCodeAt(i) == 9) {
       n += tabSize - (n % tabSize);
       i++;

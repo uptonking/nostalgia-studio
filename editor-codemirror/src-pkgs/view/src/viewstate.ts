@@ -85,6 +85,17 @@ function visiblePixelRange(dom: HTMLElement, paddingTop: number): Rect {
   };
 }
 
+function inWindow(elt: HTMLElement) {
+  const rect = elt.getBoundingClientRect();
+  const win = elt.ownerDocument.defaultView || window;
+  return (
+    rect.left < win.innerWidth &&
+    rect.right > 0 &&
+    rect.top < win.innerHeight &&
+    rect.bottom > 0
+  );
+}
+
 function fullPixelRange(dom: HTMLElement, paddingTop: number): Rect {
   const rect = dom.getBoundingClientRect();
   return {
@@ -216,15 +227,15 @@ export class ViewState {
   mustMeasureContent = true;
 
   stateDeco: readonly DecorationSet[];
-  viewportLines!: BlockInfo[];
+  declare viewportLines: BlockInfo[];
   defaultTextDirection: Direction = Direction.LTR;
 
   // The main viewport for the visible part of the document
-  viewport!: Viewport;
+  declare viewport: Viewport;
   // If the main selection starts or ends outside of the main
   // viewport, extra single-line viewports are created for these
   // points, so that the DOM selection doesn't fall in a gap.
-  viewports!: readonly Viewport[];
+  declare viewports: readonly Viewport[];
   visibleRanges: readonly { from: number; to: number }[] = [];
   lineGaps: readonly LineGap[];
   lineGapDeco: DecorationSet;
@@ -309,7 +320,6 @@ export class ViewState {
       .facet(decorations)
       .filter((d) => typeof d !== 'function') as readonly DecorationSet[];
     const contentChanges = update.changedRanges;
-
     const heightChanges = ChangedRange.extendWithRanges(
       contentChanges,
       heightRelevantDecoChanges(
@@ -336,7 +346,7 @@ export class ViewState {
       this.scrollAnchorHeight = scrollAnchor.top;
     } else {
       this.scrollAnchorPos = -1;
-      this.scrollAnchorHeight = this.heightMap.height;
+      this.scrollAnchorHeight = prevHeight;
     }
 
     let viewport = heightChanges.length
@@ -349,6 +359,7 @@ export class ViewState {
       !this.viewportIsAppropriate(viewport)
     )
       viewport = this.getViewport(0, scrollTarget);
+
     const viewportChange =
       viewport.from != this.viewport.from || viewport.to != this.viewport.to;
     this.viewport = viewport;
@@ -367,7 +378,7 @@ export class ViewState {
       this.updateLineGaps(
         this.ensureLineGaps(this.mapLineGaps(this.lineGaps, update.changes)),
       );
-    update.flags |= this.computeVisibleRanges();
+    update.flags |= this.computeVisibleRanges(update.changes);
 
     if (scrollTarget) this.scrollTarget = scrollTarget;
 
@@ -449,7 +460,7 @@ export class ViewState {
       this.inView = inView;
       if (inView) measureContent = true;
     }
-    if (!this.inView && !this.scrollTarget) return 0;
+    if (!this.inView && !this.scrollTarget && !inWindow(view.dom)) return 0;
 
     const contentWidth = domRect.width;
     if (
@@ -478,7 +489,7 @@ export class ViewState {
             lineHeight,
             charWidth,
             textHeight,
-            contentWidth / charWidth,
+            Math.max(5, contentWidth / charWidth),
             lineHeights,
           );
         if (refresh) {
@@ -746,7 +757,6 @@ export class ViewState {
       }
       gaps.push(gap);
     };
-
     const checkLine = (line: BlockInfo) => {
       if (line.length < doubleMargin || line.type != BlockType.Text) return;
       const structure = lineStructure(line.from, line.to, this.stateDeco);
@@ -835,7 +845,7 @@ export class ViewState {
     }
   }
 
-  computeVisibleRanges() {
+  computeVisibleRanges(changes?: ChangeDesc) {
     let deco = this.stateDeco;
     if (this.lineGaps.length) deco = deco.concat(this.lineGapDeco);
     const ranges: { from: number; to: number }[] = [];
@@ -851,13 +861,32 @@ export class ViewState {
       },
       20,
     );
-    const changed =
-      ranges.length != this.visibleRanges.length ||
-      this.visibleRanges.some(
-        (r, i) => r.from != ranges[i].from || r.to != ranges[i].to,
-      );
+    let changed = 0;
+    if (ranges.length != this.visibleRanges.length) {
+      changed = UpdateFlag.ViewportMoved | UpdateFlag.Viewport;
+    } else {
+      for (
+        let i = 0;
+        i < ranges.length && !(changed & UpdateFlag.ViewportMoved);
+        i++
+      ) {
+        const old = this.visibleRanges[i];
+        const nw = ranges[i];
+        if (old.from != nw.from || old.to != nw.to) {
+          changed |= UpdateFlag.Viewport;
+          if (
+            !(
+              changes &&
+              changes.mapPos(old.from, -1) == nw.from &&
+              changes.mapPos(old.to, 1) == nw.to
+            )
+          )
+            changed |= UpdateFlag.ViewportMoved;
+        }
+      }
+    }
     this.visibleRanges = ranges;
-    return changed ? UpdateFlag.Viewport : 0;
+    return changed;
   }
 
   lineBlockAt(pos: number): BlockInfo {

@@ -3,13 +3,14 @@ import {
   type StateCommand,
   EditorSelection,
   type SelectionRange,
+  type StateEffect,
   type ChangeSpec,
   type Transaction,
-  CharCategory,
   findClusterBreak,
   Text,
   type Line,
   countColumn,
+  CharCategory,
 } from '@codemirror/state';
 import {
   EditorView,
@@ -30,6 +31,7 @@ import { type SyntaxNode, NodeProp } from '@lezer/common';
 import { toggleComment, toggleBlockComment } from './comment';
 
 export {
+  CommentTokens,
   toggleComment,
   toggleLineComment,
   lineComment,
@@ -39,7 +41,6 @@ export {
   blockUncomment,
   toggleBlockCommentByLine,
 } from './comment';
-export type { CommentTokens } from './comment';
 export {
   history,
   historyKeymap,
@@ -163,6 +164,30 @@ export const cursorGroupForward: Command = (view) => cursorByGroup(view, true);
 export const cursorGroupBackward: Command = (view) =>
   cursorByGroup(view, false);
 
+function toGroupStart(view: EditorView, pos: number, start: string) {
+  const categorize = view.state.charCategorizer(pos);
+  const cat = categorize(start);
+  let initial = cat != CharCategory.Space;
+  return (next: string) => {
+    const nextCat = categorize(next);
+    if (nextCat != CharCategory.Space) return initial && nextCat == cat;
+    initial = false;
+    return true;
+  };
+}
+
+/// Move the cursor one group forward in the default Windows style,
+/// where it moves to the start of the next group.
+export const cursorGroupForwardWin: Command = (view) => {
+  return moveSel(view, (range) =>
+    range.empty
+      ? view.moveByChar(range, true, (start) =>
+          toGroupStart(view, range.head, start),
+        )
+      : rangeEnd(range, true),
+  );
+};
+
 const segmenter =
   typeof Intl !== 'undefined' && (Intl as any).Segmenter
     ? new (Intl as any).Segmenter(undefined, { granularity: 'word' })
@@ -215,7 +240,6 @@ function moveBySubword(
     steps++;
     return true;
   };
-
   const end = view.moveByChar(range, forward, (start) => {
     step(start);
     return step;
@@ -361,7 +385,7 @@ function cursorByPage(view: EditorView, forward: boolean) {
       : rangeEnd(range, forward);
   });
   if (selection.eq(state.selection)) return false;
-  let effect;
+  let effect: StateEffect<any> | undefined;
   if (page.selfScroll) {
     const startPos = view.coordsAtPos(state.selection.main.head);
     const scrollRect = view.scrollDOM.getBoundingClientRect();
@@ -525,6 +549,16 @@ export const selectGroupForward: Command = (view) => selectByGroup(view, true);
 /// Move the selection head one group backward.
 export const selectGroupBackward: Command = (view) =>
   selectByGroup(view, false);
+
+/// Move the selection head one group forward in the default Windows
+/// style, skipping to the start of the next group.
+export const selectGroupForwardWin: Command = (view) => {
+  return extendSel(view, (range) =>
+    view.moveByChar(range, true, (start) =>
+      toGroupStart(view, range.head, start),
+    ),
+  );
+};
 
 function selectBySubword(view: EditorView, forward: boolean) {
   return extendSel(view, (range) => moveBySubword(view, range, forward));

@@ -1,5 +1,10 @@
 import type { Text, ChangeDesc } from '@codemirror/state';
-import { type Change, presentableDiff, type DiffConfig } from './diff';
+import {
+  type Change,
+  presentableDiff,
+  type DiffConfig,
+  diffIsPrecise,
+} from './diff';
 
 /// A chunk describes a range of lines which have changed content in
 /// them. Either side (a/b) may either be empty (when its `to` is
@@ -21,9 +26,12 @@ export class Chunk {
     /// past the end of the last line in the chunk if it does.
     readonly toA: number,
     /// The start of the chunk in document B.
-    public fromB: number,
+    readonly fromB: number,
     /// The end of the chunk in document A.
-    public toB: number,
+    readonly toB: number,
+    /// This is set to false when the diff used to compute this chunk
+    /// fell back to fast, imprecise diffing.
+    readonly precise = true,
   ) {}
 
   /// @internal
@@ -35,6 +43,7 @@ export class Chunk {
           this.toA + offA,
           this.fromB + offB,
           this.toB + offB,
+          this.precise,
         )
       : this;
   }
@@ -52,13 +61,8 @@ export class Chunk {
 
   /// Build a set of changed chunks for the given documents.
   static build(a: Text, b: Text, conf?: DiffConfig): readonly Chunk[] {
-    return toChunks(
-      presentableDiff(a.toString(), b.toString(), conf),
-      a,
-      b,
-      0,
-      0,
-    );
+    const diff = presentableDiff(a.toString(), b.toString(), conf);
+    return toChunks(diff, a, b, 0, 0, diffIsPrecise());
   }
 
   /// Update a set of chunks for changes in document A. `a` should
@@ -122,6 +126,7 @@ function toChunks(
   b: Text,
   offA: number,
   offB: number,
+  precise: boolean,
 ) {
   const chunks = [];
   for (let i = 0; i < changes.length; i++) {
@@ -154,6 +159,7 @@ function toChunks(
         Math.max(fromA, toA),
         fromB,
         Math.max(fromB, toB),
+        precise,
       ),
     );
   }
@@ -261,7 +267,8 @@ function updateChunks(
       b.sliceString(fromB, toB),
       conf,
     );
-    for (const chunk of toChunks(diff, a, b, fromA, fromB)) result.push(chunk);
+    for (const chunk of toChunks(diff, a, b, fromA, fromB, diffIsPrecise()))
+      result.push(chunk);
     offA += range.diffA;
     offB += range.diffB;
     while (chunkI < chunks.length) {
@@ -273,4 +280,4 @@ function updateChunks(
   return result;
 }
 
-export const defaultDiffConfig = { scanLimit: 5000 };
+export const defaultDiffConfig = { scanLimit: 500 };

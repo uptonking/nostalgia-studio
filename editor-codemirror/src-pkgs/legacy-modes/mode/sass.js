@@ -10,7 +10,6 @@ function tokenRegexp(words) {
 
 const keywords = ['true', 'false', 'null', 'auto'];
 const keywordsRegexp = new RegExp('^' + keywords.join('|'));
-
 const operators = [
   '\\(',
   '\\)',
@@ -35,7 +34,6 @@ const operators = [
   ':',
 ];
 const opRegexp = tokenRegexp(operators);
-
 const pseudoElementsRegexp = /^::?[a-zA-Z_][\w\-]*/;
 
 let word;
@@ -92,7 +90,6 @@ function buildStringTokenizer(quote, greedy) {
     const nextChar = stream.next();
     const peekChar = stream.peek();
     const previousChar = stream.string.charAt(stream.pos - 2);
-
     const endingString =
       (nextChar !== '\\' && peekChar === quote) ||
       (nextChar === quote && previousChar !== '\\');
@@ -403,10 +400,8 @@ function tokenLexer(stream, state) {
 
   if (style !== null) {
     const startOfToken = stream.pos - current.length;
-
     const withCurrentIndent =
       startOfToken + stream.indentUnit * state.indentCount;
-
     const newScopes = [];
 
     for (let i = 0; i < state.scopes.length; i++) {

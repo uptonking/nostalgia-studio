@@ -9,7 +9,6 @@ const operators =
 const delimiters = /^(?:[()\[\]{},:`=;]|\.\.?\.?)/;
 const identifiers = /^[_A-Za-z$][_A-Za-z$0-9]*/;
 const atProp = /^@[_A-Za-z$][_A-Za-z$0-9]*/;
-
 const wordOperators = wordRegexp([
   'and',
   'or',
@@ -52,7 +51,6 @@ const commonKeywords = [
   'until',
   'extends',
 ];
-
 const keywords = wordRegexp(indentKeywords.concat(commonKeywords));
 
 indentKeywords = wordRegexp(indentKeywords);

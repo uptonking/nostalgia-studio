@@ -21,7 +21,6 @@ function mlLike(parserConfig) {
     while: 'keyword',
     with: 'keyword',
   };
-
   const extraWords = parserConfig.extraWords || {};
   for (const prop in extraWords) {
     if (extraWords.hasOwnProperty(prop)) {

@@ -49,7 +49,6 @@ function sortOptions(active: readonly ActiveSource[], state: EditorState) {
         sections.push(typeof section === 'string' ? { name } : section);
     }
   };
-
   const conf = state.facet(completionConfig);
   for (const a of active)
     if (a.hasResult()) {
@@ -159,20 +158,15 @@ class CompletionDialog {
     id: string,
     prev: CompletionDialog | null,
     conf: Required<CompletionConfig>,
+    didSetActive: boolean,
   ): CompletionDialog | null {
+    if (prev && !didSetActive && active.some((s) => s.isPending))
+      return prev.setDisabled();
     const options = sortOptions(active, state);
-    if (!options.length) {
-      return prev && active.some((a) => a.state == State.Pending)
-        ? new CompletionDialog(
-            prev.options,
-            prev.attrs,
-            prev.tooltip,
-            prev.timestamp,
-            prev.selected,
-            true,
-          )
+    if (!options.length)
+      return prev && active.some((a) => a.isPending)
+        ? prev.setDisabled()
         : null;
-    }
     let selected = state.facet(completionConfig).selectOnOpen ? 0 : -1;
     if (prev && prev.selected != selected && prev.selected != -1) {
       const selectedValue = prev.options[prev.selected].completion;
@@ -207,6 +201,17 @@ class CompletionDialog {
       this.timestamp,
       this.selected,
       this.disabled,
+    );
+  }
+
+  setDisabled() {
+    return new CompletionDialog(
+      this.options,
+      this.attrs,
+      this.tooltip,
+      this.timestamp,
+      this.selected,
+      true,
     );
   }
 }
@@ -254,25 +259,23 @@ export class CompletionState {
       active = this.active;
 
     let open = this.open;
+    const didSet = tr.effects.some((e) => e.is(setActiveEffect));
     if (open && tr.docChanged) open = open.map(tr.changes);
     if (
       tr.selection ||
       active.some(
         (a) => a.hasResult() && tr.changes.touchesRange(a.from, a.to),
       ) ||
-      !sameResults(active, this.active)
+      !sameResults(active, this.active) ||
+      didSet
     )
-      open = CompletionDialog.build(active, state, this.id, open, conf);
-    else if (
-      open &&
-      open.disabled &&
-      !active.some((a) => a.state == State.Pending)
-    )
+      open = CompletionDialog.build(active, state, this.id, open, conf, didSet);
+    else if (open && open.disabled && !active.some((a) => a.isPending))
       open = null;
 
     if (
       !open &&
-      active.every((a) => a.state != State.Pending) &&
+      active.every((a) => !a.isPending) &&
       active.some((a) => a.hasResult())
     )
       active = active.map((a) =>
@@ -303,8 +306,8 @@ export class CompletionState {
 function sameResults(a: readonly ActiveSource[], b: readonly ActiveSource[]) {
   if (a == b) return true;
   for (let iA = 0, iB = 0; ; ) {
-    while (iA < a.length && !a[iA].hasResult) iA++;
-    while (iB < b.length && !b[iB].hasResult) iB++;
+    while (iA < a.length && !a[iA].hasResult()) iA++;
+    while (iB < b.length && !b[iB].hasResult()) iB++;
     const endA = iA == a.length;
     const endB = iB == b.length;
     if (endA || endB) return endA == endB;
@@ -316,7 +319,6 @@ function sameResults(a: readonly ActiveSource[], b: readonly ActiveSource[]) {
 const baseAttrs = {
   'aria-autocomplete': 'list',
 };
-
 const noAttrs = {};
 
 function makeAttrs(id: string, selected: number) {
@@ -334,7 +336,7 @@ const none: readonly any[] = [];
 export const enum State {
   Inactive = 0,
   Pending = 1,
-  Result = 2,
+  Result = 3,
 }
 
 export const enum UpdateType {
@@ -374,11 +376,15 @@ export class ActiveSource {
   constructor(
     readonly source: CompletionSource,
     readonly state: State,
-    readonly explicitPos: number = -1,
+    readonly explicit: boolean = false,
   ) {}
 
   hasResult(): this is ActiveResult {
     return false;
+  }
+
+  get isPending() {
+    return this.state == State.Pending;
   }
 
   update(tr: Transaction, conf: Required<CompletionConfig>): ActiveSource {
@@ -395,11 +401,7 @@ export class ActiveSource {
 
     for (const effect of tr.effects) {
       if (effect.is(startCompletionEffect))
-        value = new ActiveSource(
-          value.source,
-          State.Pending,
-          effect.value ? cur(tr.state) : -1,
-        );
+        value = new ActiveSource(value.source, State.Pending, effect.value);
       else if (effect.is(closeCompletionEffect))
         value = new ActiveSource(value.source, State.Inactive);
       else if (effect.is(setActiveEffect))
@@ -413,14 +415,8 @@ export class ActiveSource {
     return this.map(tr.changes);
   }
 
-  map(changes: ChangeDesc) {
-    return changes.empty || this.explicitPos < 0
-      ? this
-      : new ActiveSource(
-          this.source,
-          this.state,
-          changes.mapPos(this.explicitPos),
-        );
+  map(changes: ChangeDesc): ActiveSource {
+    return this;
   }
 
   touches(tr: Transaction) {
@@ -431,12 +427,13 @@ export class ActiveSource {
 export class ActiveResult extends ActiveSource {
   constructor(
     source: CompletionSource,
-    explicitPos: number,
+    explicit: boolean,
+    readonly limit: number,
     readonly result: CompletionResult,
     readonly from: number,
     readonly to: number,
   ) {
-    super(source, State.Result, explicitPos);
+    super(source, State.Result, explicit);
   }
 
   hasResult(): this is ActiveResult {
@@ -452,36 +449,43 @@ export class ActiveResult extends ActiveSource {
     const to = tr.changes.mapPos(this.to, 1);
     const pos = cur(tr.state);
     if (
-      (this.explicitPos < 0 ? pos <= from : pos < this.from) ||
       pos > to ||
       !result ||
-      (type & UpdateType.Backspacing && cur(tr.startState) == this.from)
+      (type & UpdateType.Backspacing &&
+        (cur(tr.startState) == this.from || pos < this.limit))
     )
       return new ActiveSource(
         this.source,
         type & UpdateType.Activate ? State.Pending : State.Inactive,
       );
-    const explicitPos =
-      this.explicitPos < 0 ? -1 : tr.changes.mapPos(this.explicitPos);
+    const limit = tr.changes.mapPos(this.limit);
     if (checkValid(result.validFor, tr.state, from, to))
-      return new ActiveResult(this.source, explicitPos, result, from, to);
+      return new ActiveResult(
+        this.source,
+        this.explicit,
+        limit,
+        result,
+        from,
+        to,
+      );
     if (
       result.update &&
       (result = result.update(
         result,
         from,
         to,
-        new CompletionContext(tr.state, pos, explicitPos >= 0),
+        new CompletionContext(tr.state, pos, false),
       ))
     )
       return new ActiveResult(
         this.source,
-        explicitPos,
+        this.explicit,
+        limit,
         result,
         result.from,
         result.to ?? cur(tr.state),
       );
-    return new ActiveSource(this.source, State.Pending, explicitPos);
+    return new ActiveSource(this.source, State.Pending, this.explicit);
   }
 
   map(mapping: ChangeDesc) {
@@ -492,7 +496,8 @@ export class ActiveResult extends ActiveSource {
     if (!result) return new ActiveSource(this.source, State.Inactive);
     return new ActiveResult(
       this.source,
-      this.explicitPos < 0 ? -1 : mapping.mapPos(this.explicitPos),
+      this.explicit,
+      mapping.mapPos(this.limit),
       this.result,
       mapping.mapPos(this.from),
       mapping.mapPos(this.to, 1),

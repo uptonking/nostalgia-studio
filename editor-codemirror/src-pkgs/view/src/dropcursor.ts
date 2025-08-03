@@ -7,7 +7,6 @@ const setDropCursorPos = StateEffect.define<number | null>({
     return pos == null ? null : mapping.mapPos(pos);
   },
 });
-
 const dropCursorPos = StateField.define<number | null>({
   create() {
     return null;
@@ -20,7 +19,6 @@ const dropCursorPos = StateField.define<number | null>({
     );
   },
 });
-
 const drawDropCursor = ViewPlugin.fromClass(
   class {
     cursor: HTMLElement | null = null;

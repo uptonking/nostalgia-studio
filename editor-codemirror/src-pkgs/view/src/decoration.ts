@@ -235,7 +235,7 @@ export abstract class Decoration extends RangeValue {
   }
 
   /// @internal
-  point!: boolean;
+  declare point: boolean;
 
   /// @internal
   get heightRelevant() {
@@ -341,7 +341,6 @@ export class MarkDecoration extends Decoration {
   tagName: string;
   class: string;
   attrs: Attrs | null;
-  point = false;
 
   constructor(spec: MarkDecorationSpec) {
     const { start, end } = getInclusive(spec);
@@ -376,9 +375,6 @@ export class MarkDecoration extends Decoration {
 MarkDecoration.prototype.point = false;
 
 export class LineDecoration extends Decoration {
-  point: boolean = true;
-  mapMode = MapMode.TrackBefore;
-
   constructor(spec: LineDecorationSpec) {
     super(Side.Line, Side.Line, null, spec);
   }
@@ -402,8 +398,6 @@ LineDecoration.prototype.mapMode = MapMode.TrackBefore;
 LineDecoration.prototype.point = true;
 
 export class PointDecoration extends Decoration {
-  point = true;
-
   constructor(
     spec: any,
     startSide: number,

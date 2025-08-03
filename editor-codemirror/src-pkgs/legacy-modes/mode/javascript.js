@@ -4,7 +4,6 @@ function mkJavaScript(parserConfig) {
   const jsonMode = parserConfig.json || jsonldMode;
   const isTS = parserConfig.typescript;
   const wordRE = parserConfig.wordCharacters || /[\w$\xa1-\uffff]/;
-
   // Tokenizer
 
   const keywords = (function () {
@@ -62,7 +61,6 @@ function mkJavaScript(parserConfig) {
       await: C,
     };
   })();
-
   const isOperatorChar = /[+\-*&%=<>!?|~^@]/;
   const isJsonldKeyword =
     /^@(context|id|value|language|type|container|list|set|reverse|index|base|vocab|graph)"/;

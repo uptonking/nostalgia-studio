@@ -2,7 +2,6 @@
 // constants
 
 const typeWords = ['-type', '-spec', '-export_type', '-opaque'];
-
 const keywordWords = [
   'after',
   'begin',
@@ -19,10 +18,8 @@ const keywordWords = [
   'try',
   'when',
 ];
-
 const separatorRE = /[\->,;]/;
 const separatorWords = ['->', ';', ','];
-
 const operatorAtomWords = [
   'and',
   'andalso',
@@ -39,7 +36,6 @@ const operatorAtomWords = [
   'rem',
   'xor',
 ];
-
 const operatorSymbolRE = /[\+\-\*\/<>=\|:!]/;
 const operatorSymbolWords = [
   '=',
@@ -59,13 +55,10 @@ const operatorSymbolWords = [
   '<-',
   '!',
 ];
-
 const openParenRE = /[<\(\[\{]/;
 const openParenWords = ['<<', '(', '[', '{'];
-
 const closeParenRE = /[>\)\]\}]/;
 const closeParenWords = ['}', ']', ')', '>>'];
-
 const guardWords = [
   'is_atom',
   'is_binary',
@@ -95,7 +88,6 @@ const guardWords = [
   'reference',
   'tuple',
 ];
-
 const bifWords = [
   'abs',
   'adler32',
@@ -205,7 +197,6 @@ const bifWords = [
   'unregister',
   'whereis',
 ];
-
 // upper case: [A-Z] [Ø-Þ] [À-Ö]
 // lower case: [a-z] [ß-ö] [ø-ÿ]
 const anumRE = /[\w@Ø-ÞÀ-Öß-öø-ÿ]/;

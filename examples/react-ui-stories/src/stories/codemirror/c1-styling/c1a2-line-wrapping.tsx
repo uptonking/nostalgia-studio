@@ -60,9 +60,7 @@ const maxHeightEditor = EditorView.theme({
 export const LineWrapping = () => {
   const editorRef = useRef<HTMLDivElement>(null);
 
-  const [viewConfig, setViewConfig] = useState<ViewConfig>(
-    initialViewConfig,
-  );
+  const [viewConfig, setViewConfig] = useState<ViewConfig>(initialViewConfig);
 
   useEffect(() => {
     const editor = new EditorView({

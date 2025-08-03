@@ -177,7 +177,6 @@ const keywords = wordRE([
   'in',
   'local',
 ]);
-
 const indentTokens = wordRE(['function', 'if', 'repeat', 'do', '\\(', '{']);
 const dedentTokens = wordRE(['end', 'until', '\\)', '}']);
 const dedentPartial = prefixRE(['end', 'until', '\\)', '}', 'else', 'elseif']);

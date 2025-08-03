@@ -113,7 +113,6 @@ const tagKeywords_ = [
   'var',
   'video',
 ];
-
 // github.com/codemirror/CodeMirror/blob/master/mode/css/css.js
 // Note, "url-prefix" should precede "url" in order to match correctly in documentTypesRegexp
 const documentTypes_ = ['domain', 'regexp', 'url-prefix', 'url'];
@@ -1183,7 +1182,6 @@ const valueKeywords_ = [
   'space-around',
   'unset',
 ];
-
 const wordOperatorKeywords_ = [
   'in',
   'and',
@@ -1219,7 +1217,6 @@ const commonDef_ = [
   '@block',
   '@css',
 ];
-
 const hintWords = tagKeywords_.concat(
   documentTypes_,
   mediaTypes_,
@@ -1952,7 +1949,7 @@ export const stylus = {
     const ch = textAfter && textAfter.charAt(0);
     let indent = cx.indent;
     const lineFirstWord = firstWordOfLine(textAfter);
-    const lineIndent = iCx.lineIndent(iCx.pos);
+    const lineIndent = cx.line.indent;
     const prevLineFirstWord = state.context.prev
       ? state.context.prev.line.firstWord
       : '';
@@ -1989,9 +1986,8 @@ export const stylus = {
         if (/\,\s*$/.test(prevLineFirstWord)) {
           indent = prevLineIndent;
         } else if (
-          !state.sol() &&
-          (/(\.|#|:|\[|\*|&|>|~|\+|\/)/.test(prevLineFirstWord) ||
-            wordIsTag(prevLineFirstWord))
+          /(\.|#|:|\[|\*|&|>|~|\+|\/)/.test(prevLineFirstWord) ||
+          wordIsTag(prevLineFirstWord)
         ) {
           indent =
             lineIndent <= prevLineIndent

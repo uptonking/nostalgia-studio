@@ -14,7 +14,6 @@ import { syntaxTree } from '@codemirror/language';
 import type { Text } from '@codemirror/state';
 
 const cache = new NodeWeakMap<readonly Completion[]>();
-
 const ScopeNodes = new Set([
   'Script',
   'Block',
@@ -37,7 +36,6 @@ function defID(type: string) {
 }
 
 const functionContext = ['FunctionDeclaration'];
-
 const gatherCompletions: {
   [node: string]: (
     node: SyntaxNodeRef,
@@ -101,6 +99,11 @@ export const dontComplete = [
   'PropertyName',
   'PrivatePropertyDefinition',
   'PrivatePropertyName',
+  'JSXText',
+  'JSXAttributeValue',
+  'JSXOpenTag',
+  'JSXCloseTag',
+  'JSXSelfClosingTag',
   '.',
   '?.',
 ];

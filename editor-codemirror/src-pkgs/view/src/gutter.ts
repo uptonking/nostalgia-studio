@@ -35,7 +35,7 @@ export abstract class GutterMarker extends RangeValue {
 
   /// This property can be used to add CSS classes to the gutter
   /// element that contains this marker.
-  elementClass!: string;
+  declare elementClass: string;
 
   /// Called if the marker has a `toDOM` method and its representation
   /// was removed from a gutter.
@@ -106,6 +106,10 @@ interface GutterConfig {
     | ((spacer: GutterMarker, update: ViewUpdate) => GutterMarker);
   /// Supply event handlers for DOM events on this gutter.
   domEventHandlers?: Handlers;
+  /// By default, gutters are shown horizontally before the editor
+  /// content (to the left in a left-to-right layout). Set this to
+  /// `"after"` to show a gutter on the other side of the content.
+  side?: 'before' | 'after';
 }
 
 const defaults = {
@@ -119,8 +123,8 @@ const defaults = {
   initialSpacer: null,
   updateSpacer: null,
   domEventHandlers: {},
+  side: 'before' as const,
 };
-
 const activeGutters = Facet.define<Required<GutterConfig>>();
 
 /// Define an editor gutter. The order in which the gutters appear is
@@ -151,21 +155,26 @@ const gutterView = ViewPlugin.fromClass(
   class {
     gutters: SingleGutterView[];
     dom: HTMLElement;
+    domAfter: HTMLElement | null = null;
     fixed: boolean;
     prevViewport: { from: number; to: number };
 
     constructor(readonly view: EditorView) {
       this.prevViewport = view.viewport;
       this.dom = document.createElement('div');
-      this.dom.className = 'cm-gutters';
+      this.dom.className = 'cm-gutters cm-gutters-before';
       this.dom.setAttribute('aria-hidden', 'true');
       this.dom.style.minHeight =
         this.view.contentHeight / this.view.scaleY + 'px';
       this.gutters = view.state
         .facet(activeGutters)
         .map((conf) => new SingleGutterView(view, conf));
-      for (const gutter of this.gutters) this.dom.appendChild(gutter.dom);
       this.fixed = !view.state.facet(unfixGutters);
+      for (const gutter of this.gutters) {
+        if (gutter.config.side == 'after')
+          this.getDOMAfter().appendChild(gutter.dom);
+        else this.dom.appendChild(gutter.dom);
+      }
       if (this.fixed) {
         // FIXME IE11 fallback, which doesn't support position: sticky,
         // by using position: relative + event handlers that realign the
@@ -174,6 +183,19 @@ const gutterView = ViewPlugin.fromClass(
       }
       this.syncGutters(false);
       view.scrollDOM.insertBefore(this.dom, view.contentDOM);
+    }
+
+    getDOMAfter() {
+      if (!this.domAfter) {
+        this.domAfter = document.createElement('div');
+        this.domAfter.className = 'cm-gutters cm-gutters-after';
+        this.domAfter.setAttribute('aria-hidden', 'true');
+        this.domAfter.style.minHeight =
+          this.view.contentHeight / this.view.scaleY + 'px';
+        this.domAfter.style.position = this.fixed ? 'sticky' : '';
+        this.view.scrollDOM.appendChild(this.domAfter);
+      }
+      return this.domAfter;
     }
 
     update(update: ViewUpdate) {
@@ -188,19 +210,25 @@ const gutterView = ViewPlugin.fromClass(
         this.syncGutters(vpOverlap < (vpB.to - vpB.from) * 0.8);
       }
       if (update.geometryChanged) {
-        this.dom.style.minHeight =
-          this.view.contentHeight / this.view.scaleY + 'px';
+        const min = this.view.contentHeight / this.view.scaleY + 'px';
+        this.dom.style.minHeight = min;
+        if (this.domAfter) this.domAfter.style.minHeight = min;
       }
       if (this.view.state.facet(unfixGutters) != !this.fixed) {
         this.fixed = !this.fixed;
         this.dom.style.position = this.fixed ? 'sticky' : '';
+        if (this.domAfter)
+          this.domAfter.style.position = this.fixed ? 'sticky' : '';
       }
       this.prevViewport = update.view.viewport;
     }
 
     syncGutters(detach: boolean) {
       const after = this.dom.nextSibling;
-      if (detach) this.dom.remove();
+      if (detach) {
+        this.dom.remove();
+        if (this.domAfter) this.domAfter.remove();
+      }
       const lineClasses = RangeSet.iter(
         this.view.state.facet(gutterLineClass),
         this.view.viewport.from,
@@ -235,7 +263,10 @@ const gutterView = ViewPlugin.fromClass(
         }
       }
       for (const cx of contexts) cx.finish();
-      if (detach) this.view.scrollDOM.insertBefore(this.dom, after);
+      if (detach) {
+        this.view.scrollDOM.insertBefore(this.dom, after);
+        if (this.domAfter) this.view.scrollDOM.appendChild(this.domAfter);
+      }
     }
 
     updateGutters(update: ViewUpdate) {
@@ -270,7 +301,10 @@ const gutterView = ViewPlugin.fromClass(
           g.dom.remove();
           if (gutters.indexOf(g) < 0) g.destroy();
         }
-        for (const g of gutters) this.dom.appendChild(g.dom);
+        for (const g of gutters) {
+          if (g.config.side == 'after') this.getDOMAfter().appendChild(g.dom);
+          else this.dom.appendChild(g.dom);
+        }
         this.gutters = gutters;
       }
       return change;
@@ -279,6 +313,7 @@ const gutterView = ViewPlugin.fromClass(
     destroy() {
       for (const view of this.gutters) view.destroy();
       this.dom.remove();
+      if (this.domAfter) this.domAfter.remove();
     }
   },
   {
@@ -286,9 +321,13 @@ const gutterView = ViewPlugin.fromClass(
       EditorView.scrollMargins.of((view) => {
         const value = view.plugin(plugin);
         if (!value || value.gutters.length == 0 || !value.fixed) return null;
+        const before = value.dom.offsetWidth * view.scaleX;
+        const after = value.domAfter
+          ? value.domAfter.offsetWidth * view.scaleX
+          : 0;
         return view.textDirection == Direction.LTR
-          ? { left: value.dom.offsetWidth * view.scaleX }
-          : { right: value.dom.offsetWidth * view.scaleX };
+          ? { left: before, right: after }
+          : { right: before, left: after };
       }),
   },
 );
@@ -623,6 +662,7 @@ const lineNumberGutter = activeGutters.compute([lineNumberConfig], (state) => ({
       : new NumberMarker(max);
   },
   domEventHandlers: state.facet(lineNumberConfig).domEventHandlers,
+  side: 'before',
 }));
 
 /// Create a line number gutter extension.
@@ -639,7 +679,6 @@ function maxLineNumber(lines: number) {
 const activeLineGutterMarker = new (class extends GutterMarker {
   elementClass = 'cm-activeLineGutter';
 })();
-
 const activeLineGutterHighlighter = gutterLineClass.compute(
   ['selection'],
   (state) => {

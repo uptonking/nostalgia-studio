@@ -48,28 +48,18 @@ class Context {
 }
 
 function getContext(node: SyntaxNode, doc: Text) {
-  const nodes = [];
-  for (
-    let cur: SyntaxNode | null = node;
-    cur && cur.name != 'Document';
-    cur = cur.parent
-  ) {
-    if (
-      cur.name == 'ListItem' ||
-      cur.name == 'Blockquote' ||
-      cur.name == 'FencedCode'
-    )
-      nodes.push(cur);
+  const nodes: SyntaxNode[] = [];
+  const context: Context[] = [];
+  for (let cur: SyntaxNode | null = node; cur; cur = cur.parent) {
+    if (cur.name == 'FencedCode') return context;
+    if (cur.name == 'ListItem' || cur.name == 'Blockquote') nodes.push(cur);
   }
-  const context = [];
   for (let i = nodes.length - 1; i >= 0; i--) {
     const node = nodes[i];
     let match;
     const line = doc.lineAt(node.from);
     const startPos = node.from - line.from;
-    if (node.name == 'FencedCode') {
-      context.push(new Context(node, startPos, startPos, '', '', '', null));
-    } else if (
+    if (
       node.name == 'Blockquote' &&
       (match = /^ *>( ?)/.exec(line.text.slice(startPos)))
     ) {
@@ -203,7 +193,11 @@ export const insertNewlineContinueMarkup: StateCommand = ({
   const { doc } = state;
   let dont = null;
   const changes = state.changeByRange((range) => {
-    if (!range.empty || !markdownLanguage.isActiveAt(state, range.from))
+    if (
+      !range.empty ||
+      (!markdownLanguage.isActiveAt(state, range.from, -1) &&
+        !markdownLanguage.isActiveAt(state, range.from, 1))
+    )
       return (dont = { range });
     const pos = range.from;
     const line = doc.lineAt(pos);

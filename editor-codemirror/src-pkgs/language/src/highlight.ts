@@ -61,7 +61,6 @@ export class HighlightStyle implements Highlighter {
         : options.all
           ? def(options.all)
           : undefined;
-
     const scopeOpt = options.scope;
     this.scope =
       scopeOpt instanceof Language
@@ -120,7 +119,6 @@ export class HighlightStyle implements Highlighter {
 }
 
 const highlighterFacet = Facet.define<Highlighter>();
-
 const fallbackHighlighter = Facet.define<
   Highlighter,
   readonly Highlighter[] | null

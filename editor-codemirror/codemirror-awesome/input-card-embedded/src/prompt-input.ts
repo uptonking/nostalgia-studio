@@ -184,7 +184,6 @@ export function replaceSelectedLines(
   content: string,
 ) {
   const oriDoc = view.state.doc.toString();
-
   const lineStart = view.state.doc.lineAt(pos.from);
   const lineEnd = view.state.doc.lineAt(pos.to);
   view.dispatch({
@@ -449,7 +448,6 @@ class PromptInputWidget extends WidgetType {
     // };
 
     const { chat, cancelChat, onEvent } = inputWidgetOptions;
-
     const handleRequest = async () => {
       if (this.status === 'requesting') {
         return;
@@ -772,7 +770,6 @@ const inputPlugin = (
       // }
     },
   );
-
 const promptInputHotkeys = (hotkey?: string) => [
   Prec.high(
     keymap.of([
@@ -891,7 +888,6 @@ const cmdkInputRender = () => {
     return null;
   });
 };
-
 const cmdkDiffViewRender = () => {
   return EditorState.transactionExtender.of((tr) => {
     const cmdkDiffStateBefore = tr.startState.field(cmdkDiffState, false);

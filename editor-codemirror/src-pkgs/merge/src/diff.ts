@@ -87,6 +87,8 @@ function findDiff(
 }
 
 let scanLimit = 1e9;
+let timeout = 0;
+let crude = false;
 
 // Implementation of Myers 1986 "An O(ND) Difference Algorithm and Its Variations"
 function findSnake(
@@ -99,7 +101,10 @@ function findSnake(
 ): Change[] {
   const lenA = toA - fromA;
   const lenB = toB - fromB;
-  if (scanLimit < 1e9 && Math.min(lenA, lenB) > scanLimit * 16) {
+  if (
+    (scanLimit < 1e9 && Math.min(lenA, lenB) > scanLimit * 16) ||
+    (timeout > 0 && Date.now() > timeout)
+  ) {
     if (Math.min(lenA, lenB) > scanLimit * 64)
       return [new Change(fromA, toA, fromB, toB)];
     return crudeMatch(a, fromA, toA, b, fromB, toB);
@@ -114,7 +119,11 @@ function findSnake(
   const test1 = (lenA - lenB) % 2 != 0 ? frontier2 : null;
   const test2 = test1 ? null : frontier1;
   for (let depth = 0; depth < off; depth++) {
-    if (depth > scanLimit) return crudeMatch(a, fromA, toA, b, fromB, toB);
+    if (
+      depth > scanLimit ||
+      (timeout > 0 && !(depth & 63) && Date.now() > timeout)
+    )
+      return crudeMatch(a, fromA, toA, b, fromB, toB);
     const done =
       frontier1.advance(depth, lenA, lenB, off, test1, false, match1) ||
       frontier2.advance(depth, lenA, lenB, off, test2, true, match2);
@@ -136,9 +145,9 @@ function findSnake(
 
 class Frontier {
   vec: number[] = [];
-  len!: number;
-  start!: number;
-  end!: number;
+  declare len: number;
+  declare start: number;
+  declare end: number;
 
   reset(off: number) {
     this.len = off << 1;
@@ -369,6 +378,7 @@ function crudeMatch(
   fromB: number,
   toB: number,
 ): Change[] {
+  crude = true;
   const lenA = toA - fromA;
   const lenB = toB - fromB;
   let result;
@@ -485,66 +495,57 @@ function makePresentable(changes: Change[], a: string, b: string) {
         i == changes.length - 1 ? a.length : changes[i + 1].fromA;
       const maxScanBefore = change.fromA - posA;
       const maxScanAfter = nextChangeA - change.toA;
-      let boundBefore = findWordBoundaryBefore(
-        a,
-        change.fromA,
-        Math.min(maxScanBefore, 5),
-      );
-      let boundAfter = findWordBoundaryAfter(
-        a,
-        change.toA,
-        Math.min(maxScanAfter, 5),
-      );
+      let boundBefore = findWordBoundaryBefore(a, change.fromA, maxScanBefore);
+      let boundAfter = findWordBoundaryAfter(a, change.toA, maxScanAfter);
       let lenBefore = change.fromA - boundBefore;
       let lenAfter = boundAfter - change.toA;
-      if (!lenA || !lenB) {
+      // An insertion or deletion that falls inside words on both
+      // sides can maybe be moved to align with word boundaries.
+      if ((!lenA || !lenB) && lenBefore && lenAfter) {
         const changeLen = Math.max(lenA, lenB);
         const [changeText, changeFrom, changeTo] = lenA
           ? [a, change.fromA, change.toA]
           : [b, change.fromB, change.toB];
-        // An insertion or deletion that falls inside words on both
-        // sides can maybe be moved to align with word boundaries.
-        if (lenBefore && lenAfter) {
-          if (
-            changeLen > lenBefore &&
-            a.slice(boundBefore, change.fromA) ==
-              changeText.slice(changeTo - lenBefore, changeTo)
-          ) {
-            change = changes[i] = new Change(
-              boundBefore,
-              boundBefore + lenA,
-              change.fromB - lenBefore,
-              change.toB - lenBefore,
-            );
-            boundBefore = change.fromA;
-            boundAfter = findWordBoundaryAfter(
-              a,
-              change.toA,
-              Math.min(nextChangeA - change.toA, 5),
-            );
-          } else if (
-            changeLen > lenAfter &&
-            a.slice(change.toA, boundAfter) ==
-              changeText.slice(changeFrom, changeFrom + lenAfter)
-          ) {
-            change = changes[i] = new Change(
-              boundAfter - lenA,
-              boundAfter,
-              change.fromB + lenAfter,
-              change.toB + lenAfter,
-            );
-            boundAfter = change.toA;
-            boundBefore = findWordBoundaryBefore(
-              a,
-              change.fromA,
-              Math.min(change.fromA - posA, 5),
-            );
-          }
-          lenBefore = change.fromA - boundBefore;
-          lenAfter = boundAfter - change.toA;
+        if (
+          changeLen > lenBefore &&
+          a.slice(boundBefore, change.fromA) ==
+            changeText.slice(changeTo - lenBefore, changeTo)
+        ) {
+          change = changes[i] = new Change(
+            boundBefore,
+            boundBefore + lenA,
+            change.fromB - lenBefore,
+            change.toB - lenBefore,
+          );
+          boundBefore = change.fromA;
+          boundAfter = findWordBoundaryAfter(
+            a,
+            change.toA,
+            nextChangeA - change.toA,
+          );
+        } else if (
+          changeLen > lenAfter &&
+          a.slice(change.toA, boundAfter) ==
+            changeText.slice(changeFrom, changeFrom + lenAfter)
+        ) {
+          change = changes[i] = new Change(
+            boundAfter - lenA,
+            boundAfter,
+            change.fromB + lenAfter,
+            change.toB + lenAfter,
+          );
+          boundAfter = change.toA;
+          boundBefore = findWordBoundaryBefore(
+            a,
+            change.fromA,
+            change.fromA - posA,
+          );
         }
+        lenBefore = change.fromA - boundBefore;
+        lenAfter = boundAfter - change.toA;
       }
       if (lenBefore || lenAfter) {
+        // Expand the change to cover the entire word
         change = changes[i] = new Change(
           change.fromA - lenBefore,
           change.toA + lenAfter,
@@ -565,7 +566,7 @@ function makePresentable(changes: Change[], a: string, b: string) {
           change = changes[i] = change.offset(len);
         else if (
           last > -1 &&
-          (len = change.toB - last) >= maxScanBefore &&
+          (len = change.toB - last) <= maxScanBefore &&
           b.slice(change.fromB - len, change.fromB) == b.slice(last, change.toB)
         )
           change = changes[i] = change.offset(-len);
@@ -583,14 +584,13 @@ function makePresentable(changes: Change[], a: string, b: string) {
           change = changes[i] = change.offset(len);
         else if (
           last > -1 &&
-          (len = change.toA - last) >= maxScanBefore &&
+          (len = change.toA - last) <= maxScanBefore &&
           a.slice(change.fromA - len, change.fromA) == a.slice(last, change.toA)
         )
           change = changes[i] = change.offset(-len);
       }
-      // Grow the change to the word boundaries.
-      posA = change.toA;
     }
+    posA = change.toA;
   }
 
   mergeAdjacent(changes, 3);
@@ -630,24 +630,26 @@ function wordCharBefore(s: string, pos: number) {
   return wordChar.test(s.slice(pos - 2, pos)) ? 2 : 0;
 }
 
+const MAX_SCAN = 8;
+
 function findWordBoundaryAfter(s: string, pos: number, max: number) {
   if (pos == s.length || !wordCharBefore(s, pos)) return pos;
-  for (let cur = pos, end = pos + max; ; ) {
+  for (let cur = pos, end = pos + max, i = 0; i < MAX_SCAN; i++) {
     const size = wordCharAfter(s, cur);
-    if (!size) return cur;
+    if (!size || cur + size > end) return cur;
     cur += size;
-    if (cur > end) return pos;
   }
+  return pos;
 }
 
 function findWordBoundaryBefore(s: string, pos: number, max: number) {
   if (!pos || !wordCharAfter(s, pos)) return pos;
-  for (let cur = pos, end = pos - max; ; ) {
+  for (let cur = pos, end = pos - max, i = 0; i < MAX_SCAN; i++) {
     const size = wordCharBefore(s, cur);
-    if (!size) return cur;
+    if (!size || cur - size < end) return cur;
     cur -= size;
-    if (cur < end) return pos;
   }
+  return pos;
 }
 
 function findLineBreakBefore(s: string, pos: number, stop: number) {
@@ -682,6 +684,11 @@ export interface DiffConfig {
   /// changed characters in a scanned range. This should help avoid
   /// quadratic running time on large, very different inputs.
   scanLimit?: number;
+  /// When set, this makes the algorithm periodically check how long
+  /// it has been running, and if it has taken more than the given
+  /// number of milliseconds, it aborts detailed diffing in falls back
+  /// to the imprecise algorithm.
+  timeout?: number;
 }
 
 /// Compute the difference between two strings.
@@ -691,7 +698,14 @@ export function diff(
   config?: DiffConfig,
 ): readonly Change[] {
   scanLimit = (config?.scanLimit ?? 1e9) >> 1;
+  timeout = config?.timeout ? Date.now() + config.timeout : 0;
+  crude = false;
   return normalize(a, b, findDiff(a, 0, a.length, b, 0, b.length));
+}
+
+// Return whether the last diff fell back to the imprecise algorithm.
+export function diffIsPrecise() {
+  return !crude;
 }
 
 /// Compute the difference between the given strings, and clean up the

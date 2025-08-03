@@ -44,7 +44,6 @@ const Specials = new RegExp(
   '[\u0000-\u0008\u000a-\u001f\u007f-\u009f\u00ad\u061c\u200b\u200e\u200f\u2028\u2029\u202d\u202e\u2066\u2067\u2069\ufeff\ufff9-\ufffc]',
   UnicodeRegexpSupport,
 );
-
 const Names: { [key: number]: string } = {
   0: 'null',
   7: 'bell',

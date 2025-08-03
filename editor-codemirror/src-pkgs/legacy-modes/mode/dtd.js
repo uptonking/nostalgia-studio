@@ -86,7 +86,6 @@ export const dtd = {
   token: function (stream, state) {
     if (stream.eatSpace()) return null;
     const style = state.tokenize(stream, state);
-
     const context = state.stack[state.stack.length - 1];
     if (stream.current() == '[' || type === 'doindent' || type == '[')
       state.stack.push('rule');

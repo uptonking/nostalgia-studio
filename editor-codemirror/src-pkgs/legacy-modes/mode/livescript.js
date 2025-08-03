@@ -27,7 +27,6 @@ const tokenBase = function (stream, state) {
   stream.next();
   return 'error';
 };
-
 const identifier =
   '(?![\\d\\s])[$\\w\\xAA-\\uFFDC](?:(?!\\s)[$\\w\\xAA-\\uFFDC]|-[A-Za-z])*';
 const indenter = RegExp(
@@ -40,7 +39,7 @@ const stringfill = {
   token: 'string',
   regex: '.+',
 };
-var Rules = {
+const Rules = {
   start: [
     {
       token: 'docComment',

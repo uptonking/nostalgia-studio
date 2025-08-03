@@ -135,7 +135,7 @@ export const completionPlugin = ViewPlugin.fromClass(
 
     constructor(readonly view: EditorView) {
       for (const active of view.state.field(completionState).active)
-        if (active.state == State.Pending) this.startQuery(active);
+        if (active.isPending) this.startQuery(active);
     }
 
     update(update: ViewUpdate) {
@@ -188,8 +188,7 @@ export const completionPlugin = ViewPlugin.fromClass(
       const delay = this.pendingStart ? 50 : conf.activateOnTypingDelay;
       this.debounceUpdate = cState.active.some(
         (a) =>
-          a.state == State.Pending &&
-          !this.running.some((q) => q.active.source == a.source),
+          a.isPending && !this.running.some((q) => q.active.source == a.source),
       )
         ? setTimeout(() => this.startUpdate(), delay)
         : -1;
@@ -210,11 +209,16 @@ export const completionPlugin = ViewPlugin.fromClass(
       const cState = state.field(completionState);
       for (const active of cState.active) {
         if (
-          active.state == State.Pending &&
+          active.isPending &&
           !this.running.some((r) => r.active.source == active.source)
         )
           this.startQuery(active);
       }
+      if (this.running.length && cState.open && cState.open.disabled)
+        this.debounceAccept = setTimeout(
+          () => this.accept(),
+          this.view.state.facet(completionConfig).updateSyncTime,
+        );
     }
 
     startQuery(active: ActiveSource) {
@@ -223,7 +227,7 @@ export const completionPlugin = ViewPlugin.fromClass(
       const context = new CompletionContext(
         state,
         pos,
-        active.explicitPos == pos,
+        active.explicit,
         this.view,
       );
       const pending = new RunningQuery(active, context);
@@ -259,23 +263,29 @@ export const completionPlugin = ViewPlugin.fromClass(
 
       const updated: ActiveSource[] = [];
       const conf = this.view.state.facet(completionConfig);
+      const cState = this.view.state.field(completionState);
       for (let i = 0; i < this.running.length; i++) {
         const query = this.running[i];
         if (query.done === undefined) continue;
         this.running.splice(i--, 1);
 
         if (query.done) {
+          const pos = cur(
+            query.updates.length
+              ? query.updates[0].startState
+              : this.view.state,
+          );
+          const limit = Math.min(
+            pos,
+            query.done.from + (query.active.explicit ? 0 : 1),
+          );
           let active: ActiveSource = new ActiveResult(
             query.active.source,
-            query.active.explicitPos,
+            query.active.explicit,
+            limit,
             query.done,
             query.done.from,
-            query.done.to ??
-              cur(
-                query.updates.length
-                  ? query.updates[0].startState
-                  : this.view.state,
-              ),
+            query.done.to ?? pos,
           );
           // Replay the transactions that happened since the start of
           // the request and see if that preserves the result
@@ -286,16 +296,16 @@ export const completionPlugin = ViewPlugin.fromClass(
           }
         }
 
-        const current = this.view.state
-          .field(completionState)
-          .active.find((a) => a.source == query.active.source);
-        if (current && current.state == State.Pending) {
+        const current = cState.active.find(
+          (a) => a.source == query.active.source,
+        );
+        if (current && current.isPending) {
           if (query.done == null) {
             // Explicitly failed. Should clear the pending status if it
             // hasn't been re-set in the meantime.
             let active = new ActiveSource(query.active.source, State.Inactive);
             for (const tr of query.updates) active = active.update(tr, conf);
-            if (active.state != State.Pending) updated.push(active);
+            if (!active.isPending) updated.push(active);
           } else {
             // Cleared by subsequent transactions. Restart.
             this.startQuery(current);
@@ -303,7 +313,7 @@ export const completionPlugin = ViewPlugin.fromClass(
         }
       }
 
-      if (updated.length)
+      if (updated.length || (cState.open && cState.open.disabled))
         this.view.dispatch({ effects: setActiveEffect.of(updated) });
     }
   },

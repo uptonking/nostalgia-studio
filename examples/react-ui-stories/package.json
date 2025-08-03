@@ -7,6 +7,7 @@
   "scripts": {
     "build": "rimraf dist && npm run build:prod",
     "build:babel": "rimraf dist && BABEL_ENV=build babel src --out-dir dist --root-mode upward --ignore 'src/**/*.test.js','src/**/*.stories.js' --source-maps --verbose",
+    "build:dev": "cross-env REACT_APP_ENV=react rspack build -c ./webpacker/rspack.config.dev.mjs",
     "build:prod": "rimraf dist && cross-env NODE_ENV=production webpack --config webpack/webpack.config.prod.js",
     "build:types": "",
     "demo": "cross-env REACT_APP_ENV=reacthot rspack serve -c ./webpacker/rspack.config.demo.mjs",

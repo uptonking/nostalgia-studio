@@ -9,7 +9,7 @@ const C = kw('keyword c');
 const operator = kw('operator');
 const atom = { type: 'atom', style: 'atom' };
 const attribute = { type: 'attribute', style: 'attribute' };
-var type = kw('typedef');
+let type = kw('typedef');
 const keywords = {
   if: A,
   while: A,
@@ -53,7 +53,6 @@ const keywords = {
   false: atom,
   null: atom,
 };
-
 const isOperatorChar = /[+\-*&%=<>!?|]/;
 
 function chain(stream, state, f) {
@@ -73,7 +72,7 @@ function toUnescaped(stream, end) {
 // Used as scratch variables to communicate multiple values without
 // consing up tons of objects.
 var type;
-let content;
+var content;
 function ret(tp, style, cont) {
   type = tp;
   content = cont;
@@ -125,7 +124,7 @@ function haxeTokenBase(stream, state) {
     } else {
       stream.eatWhile(/[\w_]/);
       var word = stream.current();
-      const known = keywords.propertyIsEnumerable(word) && keywords[word];
+      var known = keywords.propertyIsEnumerable(word) && keywords[word];
       return known && state.kwAllowed
         ? ret(known.type, known.style, word)
         : ret('variable', 'variable', word);
@@ -183,7 +182,7 @@ function parseHaxe(state, style, type, content, stream) {
   // (Less wasteful than consing up a hundred closures on every call.)
   cx.state = state;
   cx.stream = stream;
-  (cx.marked = null), (cx.cc = cc);
+  ((cx.marked = null), (cx.cc = cc));
 
   if (!state.lexical.hasOwnProperty('align')) state.lexical.align = true;
 
@@ -580,7 +579,7 @@ export const hxml = {
   },
   token: function (stream, state) {
     var ch = stream.peek();
-    const sol = stream.sol();
+    var sol = stream.sol();
 
     ///* comments */
     if (ch == '#') {

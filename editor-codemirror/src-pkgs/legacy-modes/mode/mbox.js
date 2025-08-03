@@ -24,7 +24,6 @@ const rfc2822NoEmail = [
   'Keywords',
   'Resent-Date',
 ];
-
 const whitespace = /^[ \t]/;
 const separator = /^From /; // See RFC 4155
 const rfc2822Header = new RegExp('^(' + rfc2822.join('|') + '): ');

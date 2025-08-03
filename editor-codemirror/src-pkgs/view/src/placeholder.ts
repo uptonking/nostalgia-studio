@@ -1,7 +1,7 @@
 import type { Extension } from '@codemirror/state';
 import { ViewPlugin } from './extension';
 import { Decoration, type DecorationSet, WidgetType } from './decoration';
-import type { EditorView } from './editorview';
+import { EditorView } from './editorview';
 import { clientRectsFor, flattenRect } from './dom';
 
 class Placeholder extends WidgetType {
@@ -25,9 +25,7 @@ class Placeholder extends WidgetType {
           ? this.content(view)
           : this.content.cloneNode(true),
     );
-    if (typeof this.content === 'string')
-      wrap.setAttribute('aria-label', 'placeholder ' + this.content);
-    else wrap.setAttribute('aria-hidden', 'true');
+    wrap.setAttribute('aria-hidden', 'true');
     return wrap;
   }
 
@@ -57,7 +55,7 @@ class Placeholder extends WidgetType {
 export function placeholder(
   content: string | HTMLElement | ((view: EditorView) => HTMLElement),
 ): Extension {
-  return ViewPlugin.fromClass(
+  const plugin = ViewPlugin.fromClass(
     class {
       placeholder: DecorationSet;
 
@@ -72,7 +70,7 @@ export function placeholder(
           : Decoration.none;
       }
 
-      update!: () => void; // Kludge to convince TypeScript that this is a plugin value
+      declare update: () => void; // Kludge to convince TypeScript that this is a plugin value
 
       get decorations() {
         return this.view.state.doc.length ? Decoration.none : this.placeholder;
@@ -80,4 +78,7 @@ export function placeholder(
     },
     { decorations: (v) => v.decorations },
   );
+  return typeof content === 'string'
+    ? [plugin, EditorView.contentAttributes.of({ 'aria-placeholder': content })]
+    : plugin;
 }

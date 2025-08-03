@@ -7,21 +7,22 @@ import {
   GutterMarker,
 } from '@codemirror/view';
 import {
-  EditorState,
+  type EditorState,
   Text,
   Prec,
   RangeSetBuilder,
   StateField,
   StateEffect,
+  type Range,
   RangeSet,
   ChangeSet,
 } from '@codemirror/state';
 import { language, highlightingFor } from '@codemirror/language';
 import { highlightTree } from '@lezer/highlight';
 import { Chunk, defaultDiffConfig } from './chunk';
-import { setChunks, ChunkField, mergeConfig } from './merge';
+import { computeChunks, ChunkField, mergeConfig } from './merge';
 import type { Change, DiffConfig } from './diff';
-import { decorateChunks, collapseUnchanged } from './deco';
+import { decorateChunks, collapseUnchanged, changedText } from './deco';
 import { baseTheme } from './theme';
 
 interface UnifiedMergeConfig {
@@ -37,10 +38,24 @@ interface UnifiedMergeConfig {
   /// documents, this doesn't always work well. Set this option to
   /// false to disable syntax highlighting for deleted lines.
   syntaxHighlightDeletions?: boolean;
+  /// When enabled (off by default), chunks that look like they
+  /// contain only inline changes will have the changes displayed
+  /// inline, rather than as separate deleted/inserted lines.
+  allowInlineDiffs?: boolean;
+  /// Deleted blocks larger than this size do not get
+  /// syntax-highlighted. Defaults to 3000.
+  syntaxHighlightDeletionsMaxLength?: number;
   /// Controls whether accept/reject buttons are displayed for each
-  /// changed chunk. Defaults to true.
-  mergeControls?: boolean;
-  /// Pass options to the diff algorithm.
+  /// changed chunk. Defaults to true. When set to a function, that
+  /// function is used to render the buttons.
+  mergeControls?:
+    | boolean
+    | ((
+        type: 'reject' | 'accept',
+        action: (e: MouseEvent) => void,
+      ) => HTMLElement);
+  /// Pass options to the diff algorithm. By default, the merge view
+  /// sets [`scanLimit`](#merge.DiffConfig.scanLimit) to 500.
   diffConfig?: DiffConfig;
   /// When given, long stretches of unchanged text are collapsed.
   /// `margin` gives the number of lines to leave visible after/before
@@ -52,7 +67,6 @@ interface UnifiedMergeConfig {
 const deletedChunkGutterMarker = new (class extends GutterMarker {
   elementClass = 'cm-deletedLineGutter';
 })();
-
 const unifiedChangeGutter = Prec.low(
   gutter({
     class: 'cm-changeGutter',
@@ -77,32 +91,33 @@ export function unifiedMergeView(config: UnifiedMergeConfig) {
     deletedChunks,
     baseTheme,
     EditorView.editorAttributes.of({ class: 'cm-merge-b' }),
-    EditorState.transactionExtender.of((tr) => {
+    computeChunks.of((chunks, tr) => {
       const updateDoc = tr.effects.find((e) => e.is(updateOriginalDoc));
-      if (!tr.docChanged && !updateDoc) return null;
-      const prev = tr.startState.field(ChunkField);
-      const chunks = updateDoc
-        ? Chunk.updateA(
-            prev,
-            updateDoc.value.doc,
-            tr.newDoc,
-            updateDoc.value.changes,
-            diffConf,
-          )
-        : Chunk.updateB(
-            prev,
-            tr.startState.field(originalDoc),
-            tr.newDoc,
-            tr.changes,
-            diffConf,
-          );
-      return { effects: setChunks.of(chunks) };
+      if (updateDoc)
+        chunks = Chunk.updateA(
+          chunks,
+          updateDoc.value.doc,
+          tr.startState.doc,
+          updateDoc.value.changes,
+          diffConf,
+        );
+      if (tr.docChanged)
+        chunks = Chunk.updateB(
+          chunks,
+          tr.state.field(originalDoc),
+          tr.newDoc,
+          tr.changes,
+          diffConf,
+        );
+      return chunks;
     }),
     mergeConfig.of({
       highlightChanges: config.highlightChanges !== false,
       markGutter: config.gutter !== false,
       syntaxHighlightDeletions: config.syntaxHighlightDeletions !== false,
-      mergeControls: config.mergeControls !== false,
+      syntaxHighlightDeletionsMaxLength: 3000,
+      mergeControls: config.mergeControls ?? true,
+      overrideChunk: config.allowInlineDiffs ? overrideChunkInline : undefined,
       side: 'b',
     }),
     originalDoc.init(() => orig),
@@ -159,47 +174,76 @@ class DeletionWidget extends WidgetType {
   }
 }
 
-function deletionWidget(state: EditorState, chunk: Chunk) {
+function deletionWidget(
+  state: EditorState,
+  chunk: Chunk,
+  hideContent: boolean,
+) {
   const known = DeletionWidgets.get(chunk.changes);
   if (known) return known;
 
   const buildDOM = (view: EditorView) => {
-    const { highlightChanges, syntaxHighlightDeletions, mergeControls } =
-      state.facet(mergeConfig);
-    const text = view.state
-      .field(originalDoc)
-      .sliceString(chunk.fromA, chunk.endA);
-    const lang = syntaxHighlightDeletions && state.facet(language);
+    const {
+      highlightChanges,
+      syntaxHighlightDeletions,
+      syntaxHighlightDeletionsMaxLength,
+      mergeControls,
+    } = state.facet(mergeConfig);
     const dom = document.createElement('div');
     dom.className = 'cm-deletedChunk';
     if (mergeControls) {
       const buttons = dom.appendChild(document.createElement('div'));
       buttons.className = 'cm-chunkButtons';
-      const accept = buttons.appendChild(document.createElement('button'));
-      accept.name = 'accept';
-      accept.textContent = state.phrase('Accept');
-      accept.onmousedown = (e) => {
+      const onAccept = (e: MouseEvent) => {
         e.preventDefault();
         acceptChunk(view, view.posAtDOM(dom));
       };
-      const reject = buttons.appendChild(document.createElement('button'));
-      reject.name = 'reject';
-      reject.textContent = state.phrase('Reject');
-      reject.onmousedown = (e) => {
+      const onReject = (e: MouseEvent) => {
         e.preventDefault();
         rejectChunk(view, view.posAtDOM(dom));
       };
+      if (typeof mergeControls === 'function') {
+        buttons.appendChild(mergeControls('accept', onAccept));
+        buttons.appendChild(mergeControls('reject', onReject));
+      } else {
+        const accept = buttons.appendChild(document.createElement('button'));
+        accept.name = 'accept';
+        accept.textContent = state.phrase('Accept');
+        accept.onmousedown = onAccept;
+        const reject = buttons.appendChild(document.createElement('button'));
+        reject.name = 'reject';
+        reject.textContent = state.phrase('Reject');
+        reject.onmousedown = onReject;
+      }
     }
+    if (hideContent || chunk.fromA >= chunk.toA) return dom;
 
-    const content = dom.appendChild(document.createElement('del'));
+    const text = view.state
+      .field(originalDoc)
+      .sliceString(chunk.fromA, chunk.endA);
+    const lang = syntaxHighlightDeletions && state.facet(language);
+    let line: HTMLElement = makeLine();
     const changes = chunk.changes;
     let changeI = 0;
     let inside = false;
+    function makeLine() {
+      const div = dom.appendChild(document.createElement('div'));
+      div.className = 'cm-deletedLine';
+      return div.appendChild(document.createElement('del'));
+    }
     function add(from: number, to: number, cls: string) {
       for (let at = from; at < to; ) {
+        if (text.charAt(at) == '\n') {
+          if (!line.firstChild) line.appendChild(document.createElement('br'));
+          line = makeLine();
+          at++;
+          continue;
+        }
         let nextStop = to;
         const nodeCls = cls + (inside ? ' cm-deletedText' : '');
         let flip = false;
+        const newline = text.indexOf('\n', at);
+        if (newline > -1 && newline < to) nextStop = newline;
         if (highlightChanges && changeI < changes.length) {
           const nextBound = Math.max(
             0,
@@ -214,19 +258,19 @@ function deletionWidget(state: EditorState, chunk: Chunk) {
         if (nextStop > at) {
           const node = document.createTextNode(text.slice(at, nextStop));
           if (nodeCls) {
-            const span = content.appendChild(document.createElement('span'));
+            const span = line.appendChild(document.createElement('span'));
             span.className = nodeCls;
             span.appendChild(node);
           } else {
-            content.appendChild(node);
+            line.appendChild(node);
           }
+          at = nextStop;
         }
-        at = nextStop;
         if (flip) inside = !inside;
       }
     }
 
-    if (lang) {
+    if (lang && chunk.toA - chunk.fromA <= syntaxHighlightDeletionsMaxLength!) {
       const tree = lang.parser.parse(text);
       let pos = 0;
       highlightTree(
@@ -242,6 +286,7 @@ function deletionWidget(state: EditorState, chunk: Chunk) {
     } else {
       add(0, text.length, '');
     }
+    if (!line.firstChild) line.appendChild(document.createElement('br'));
     return dom;
   };
   const deco = Decoration.widget({
@@ -311,8 +356,12 @@ export function rejectChunk(view: EditorView, pos?: number) {
 
 function buildDeletedChunks(state: EditorState) {
   const builder = new RangeSetBuilder<Decoration>();
-  for (const ch of state.field(ChunkField))
-    builder.add(ch.fromB, ch.fromB, deletionWidget(state, ch));
+  for (const ch of state.field(ChunkField)) {
+    const hide =
+      state.facet(mergeConfig).overrideChunk &&
+      chunkCanDisplayInline(state, ch);
+    builder.add(ch.fromB, ch.fromB, deletionWidget(state, ch, Boolean(hide)));
+  }
   return builder.finish();
 }
 
@@ -326,3 +375,92 @@ const deletedChunks = StateField.define<DecorationSet>({
   },
   provide: (f) => EditorView.decorations.from(f),
 });
+const InlineChunkCache = new WeakMap<
+  Chunk,
+  readonly Range<Decoration>[] | null
+>();
+
+function chunkCanDisplayInline(
+  state: EditorState,
+  chunk: Chunk,
+): readonly Range<Decoration>[] | null {
+  let result = InlineChunkCache.get(chunk);
+  if (result !== undefined) return result;
+
+  result = null;
+  const a = state.field(originalDoc);
+  const b = state.doc;
+  const linesA = a.lineAt(chunk.endA).number - a.lineAt(chunk.fromA).number + 1;
+  const linesB = b.lineAt(chunk.endB).number - b.lineAt(chunk.fromB).number + 1;
+  abort: if (linesA == linesB && linesA < 10) {
+    const deco: Range<Decoration>[] = [];
+    let deleteCount = 0;
+    const bA = chunk.fromA;
+    const bB = chunk.fromB;
+    for (const ch of chunk.changes) {
+      if (ch.fromA < ch.toA) {
+        deleteCount += ch.toA - ch.fromA;
+        const deleted = a.sliceString(bA + ch.fromA, bA + ch.toA);
+        if (/\n/.test(deleted)) break abort;
+        deco.push(
+          Decoration.widget({
+            widget: new InlineDeletion(deleted),
+            side: -1,
+          }).range(bB + ch.fromB),
+        );
+      }
+      if (ch.fromB < ch.toB) {
+        deco.push(changedText.range(bB + ch.fromB, bB + ch.toB));
+      }
+    }
+    if (deleteCount < chunk.endA - chunk.fromA - linesA * 2) result = deco;
+  }
+
+  InlineChunkCache.set(chunk, result);
+  return result;
+}
+
+class InlineDeletion extends WidgetType {
+  constructor(readonly text: string) {
+    super();
+  }
+
+  eq(other: InlineDeletion) {
+    return this.text == other.text;
+  }
+
+  toDOM(view: EditorView) {
+    const elt = document.createElement('del');
+    elt.className = 'cm-deletedText';
+    elt.textContent = this.text;
+    return elt;
+  }
+}
+
+const inlineChangedLineGutterMarker = new (class extends GutterMarker {
+  elementClass = 'cm-inlineChangedLineGutter';
+})();
+const inlineChangedLine = Decoration.line({ class: 'cm-inlineChangedLine' });
+
+function overrideChunkInline(
+  state: EditorState,
+  chunk: Chunk,
+  builder: RangeSetBuilder<Decoration>,
+  gutterBuilder: RangeSetBuilder<GutterMarker> | null,
+) {
+  const inline = chunkCanDisplayInline(state, chunk);
+  let i = 0;
+  if (!inline) return false;
+  for (let line = state.doc.lineAt(chunk.fromB); ; ) {
+    if (gutterBuilder)
+      gutterBuilder.add(line.from, line.from, inlineChangedLineGutterMarker);
+    builder.add(line.from, line.from, inlineChangedLine);
+    while (i < inline.length && inline[i].to <= line.to) {
+      const r = inline[i++];
+      builder.add(r.from, r.to, r.value);
+    }
+    if (line.to >= chunk.endB) break;
+    line = state.doc.lineAt(line.to + 1);
+  }
+  return true;
+}

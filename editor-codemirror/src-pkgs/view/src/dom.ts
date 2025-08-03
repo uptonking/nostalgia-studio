@@ -196,13 +196,13 @@ export function scrollRectIntoView(
       let moveY = 0;
       if (y == 'nearest') {
         if (rect.top < bounding.top) {
-          moveY = -(bounding.top - rect.top + yMargin);
+          moveY = rect.top - (bounding.top + yMargin);
           if (side > 0 && rect.bottom > bounding.bottom + moveY)
-            moveY = rect.bottom - bounding.bottom + moveY + yMargin;
+            moveY = rect.bottom - bounding.bottom + yMargin;
         } else if (rect.bottom > bounding.bottom) {
           moveY = rect.bottom - bounding.bottom + yMargin;
           if (side < 0 && rect.top - moveY < bounding.top)
-            moveY = -(bounding.top + moveY - rect.top + yMargin);
+            moveY = rect.top - (bounding.top + yMargin);
         }
       } else {
         const rectHeight = rect.bottom - rect.top;
@@ -217,13 +217,13 @@ export function scrollRectIntoView(
       }
       if (x == 'nearest') {
         if (rect.left < bounding.left) {
-          moveX = -(bounding.left - rect.left + xMargin);
+          moveX = rect.left - (bounding.left + xMargin);
           if (side > 0 && rect.right > bounding.right + moveX)
-            moveX = rect.right - bounding.right + moveX + xMargin;
+            moveX = rect.right - bounding.right + xMargin;
         } else if (rect.right > bounding.right) {
           moveX = rect.right - bounding.right + xMargin;
           if (side < 0 && rect.left < bounding.left + moveX)
-            moveX = -(bounding.left + moveX - rect.left + xMargin);
+            moveX = rect.left - (bounding.left + xMargin);
         }
       } else {
         const targetLeft =
@@ -263,6 +263,18 @@ export function scrollRectIntoView(
         }
       }
       if (top) break;
+      if (
+        rect.top < bounding.top ||
+        rect.bottom > bounding.bottom ||
+        rect.left < bounding.left ||
+        rect.right > bounding.right
+      )
+        rect = {
+          left: Math.max(rect.left, bounding.left),
+          right: Math.min(rect.right, bounding.right),
+          top: Math.max(rect.top, bounding.top),
+          bottom: Math.min(rect.bottom, bounding.bottom),
+        };
       cur = cur.assignedSlot || cur.parentNode;
     } else if (cur.nodeType == 11) {
       // A shadow root

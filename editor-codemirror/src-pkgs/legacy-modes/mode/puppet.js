@@ -67,7 +67,6 @@ function tokenize(stream, state) {
   const resource = stream.match(/(\s+)?[\w:_]+(\s+)?{/, false);
   // Matches virtual and exported resources (i.e. @@user { ; and the like)
   const special_resource = stream.match(/(\s+)?[@]{1,2}[\w:_]+(\s+)?{/, false);
-
   // Finally advance the stream
   const ch = stream.next();
 

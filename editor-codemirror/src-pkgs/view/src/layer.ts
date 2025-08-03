@@ -136,12 +136,6 @@ function wrappedLine(
   };
 }
 
-// Added to range rectangle's vertical extent to prevent rounding
-// errors from introducing gaps in the rendered content.
-const enum C {
-  Epsilon = 0.01,
-}
-
 function rectanglesForRange(
   view: EditorView,
   className: string,
@@ -151,7 +145,6 @@ function rectanglesForRange(
     return [];
   const from = Math.max(range.from, view.viewport.from);
   const to = Math.min(range.to, view.viewport.to);
-
   const ltr = view.textDirection == Direction.LTR;
   const content = view.contentDOM;
   const contentRect = content.getBoundingClientRect();
@@ -166,9 +159,8 @@ function rectanglesForRange(
       : 0);
   const rightSide =
     contentRect.right - (lineStyle ? parseInt(lineStyle.paddingRight) : 0);
-
-  const startBlock = blockAt(view, from);
-  const endBlock = blockAt(view, to);
+  const startBlock = blockAt(view, from, 1);
+  const endBlock = blockAt(view, to, -1);
   let visualStart: { from: number; to: number } | null =
     startBlock.type == BlockType.Text ? startBlock : null;
   let visualEnd: { from: number; to: number } | null =
@@ -211,9 +203,9 @@ function rectanglesForRange(
     return new RectangleMarker(
       className,
       left - base.left,
-      top - base.top - C.Epsilon,
+      top - base.top,
       right - left,
-      bottom - top + C.Epsilon,
+      bottom - top,
     );
   }
   function pieces({

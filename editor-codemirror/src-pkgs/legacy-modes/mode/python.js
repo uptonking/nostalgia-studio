@@ -108,7 +108,6 @@ function top(state) {
 
 export function mkPython(parserConf) {
   const ERRORCLASS = 'error';
-
   const delimiters =
     parserConf.delimiters ||
     parserConf.singleDelimiters ||
@@ -126,7 +125,6 @@ export function mkPython(parserConf) {
     if (!operators[i]) operators.splice(i--, 1);
 
   const hangingIndent = parserConf.hangingIndent;
-
   let myKeywords = commonKeywords;
   let myBuiltins = commonBuiltins;
   if (parserConf.extra_keywords != undefined)

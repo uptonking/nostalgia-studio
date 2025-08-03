@@ -1,7 +1,6 @@
 export function mkCSS(parserConfig) {
   parserConfig = { ...defaults, ...parserConfig };
   const inline = parserConfig.inline;
-
   const tokenHooks = parserConfig.tokenHooks;
   const documentTypes = parserConfig.documentTypes || {};
   const mediaTypes = parserConfig.mediaTypes || {};
@@ -19,7 +18,6 @@ export function mkCSS(parserConfig) {
   const supportsAtComponent = parserConfig.supportsAtComponent === true;
   const highlightNonStandardPropertyKeywords =
     parserConfig.highlightNonStandardPropertyKeywords !== false;
-
   let type;
   let override;
   function ret(style, tp) {
@@ -445,7 +443,6 @@ function keySet(array) {
 
 const documentTypes_ = ['domain', 'regexp', 'url', 'url-prefix'];
 const documentTypes = keySet(documentTypes_);
-
 const mediaTypes_ = [
   'all',
   'aural',
@@ -459,7 +456,6 @@ const mediaTypes_ = [
   'embossed',
 ];
 const mediaTypes = keySet(mediaTypes_);
-
 const mediaFeatures_ = [
   'width',
   'min-width',
@@ -506,7 +502,6 @@ const mediaFeatures_ = [
   'video-dynamic-range',
 ];
 const mediaFeatures = keySet(mediaFeatures_);
-
 const mediaValueKeywords_ = [
   'landscape',
   'portrait',
@@ -523,7 +518,6 @@ const mediaValueKeywords_ = [
   'high',
 ];
 const mediaValueKeywords = keySet(mediaValueKeywords_);
-
 const propertyKeywords_ = [
   'align-content',
   'align-items',
@@ -972,7 +966,6 @@ const propertyKeywords_ = [
   'writing-mode',
 ];
 const propertyKeywords = keySet(propertyKeywords_);
-
 const nonStandardPropertyKeywords_ = [
   'accent-color',
   'aspect-ratio',
@@ -1032,7 +1025,6 @@ const nonStandardPropertyKeywords_ = [
   'zoom',
 ];
 const nonStandardPropertyKeywords = keySet(nonStandardPropertyKeywords_);
-
 const fontProperties_ = [
   'font-display',
   'font-family',
@@ -1045,7 +1037,6 @@ const fontProperties_ = [
   'font-style',
 ];
 const fontProperties = keySet(fontProperties_);
-
 const counterDescriptors_ = [
   'additive-symbols',
   'fallback',
@@ -1059,7 +1050,6 @@ const counterDescriptors_ = [
   'system',
 ];
 const counterDescriptors = keySet(counterDescriptors_);
-
 const colorKeywords_ = [
   'aliceblue',
   'antiquewhite',
@@ -1211,7 +1201,6 @@ const colorKeywords_ = [
   'yellowgreen',
 ];
 const colorKeywords = keySet(colorKeywords_);
-
 const valueKeywords_ = [
   'above',
   'absolute',
@@ -1734,8 +1723,7 @@ const valueKeywords_ = [
   'xx-small',
 ];
 const valueKeywords = keySet(valueKeywords_);
-
-var allWords = documentTypes_
+const allWords = documentTypes_
   .concat(mediaTypes_)
   .concat(mediaFeatures_)
   .concat(mediaValueKeywords_)

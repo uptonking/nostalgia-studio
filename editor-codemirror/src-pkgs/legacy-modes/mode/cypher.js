@@ -1,7 +1,6 @@
 const wordRegexp = function (words) {
   return new RegExp('^(?:' + words.join('|') + ')$', 'i');
 };
-
 const tokenBase = function (stream /*, state*/) {
   curPunc = null;
   const ch = stream.next();
@@ -48,7 +47,7 @@ const popContext = function (state) {
   return (state.context = state.context.prev);
 };
 let curPunc;
-var funcs = wordRegexp([
+const funcs = wordRegexp([
   'abs',
   'acos',
   'allShortestPaths',
@@ -122,7 +121,7 @@ var funcs = wordRegexp([
   'type',
   'upper',
 ]);
-var preds = wordRegexp([
+const preds = wordRegexp([
   'all',
   'and',
   'any',
@@ -136,7 +135,7 @@ var preds = wordRegexp([
   'single',
   'xor',
 ]);
-var keywords = wordRegexp([
+const keywords = wordRegexp([
   'as',
   'asc',
   'ascending',
@@ -196,7 +195,7 @@ var keywords = wordRegexp([
   'call',
   'yield',
 ]);
-var systemKeywords = wordRegexp([
+const systemKeywords = wordRegexp([
   'access',
   'active',
   'assign',
@@ -267,7 +266,7 @@ var systemKeywords = wordRegexp([
   'with',
   'write',
 ]);
-var operatorChars = /[*+\-<>=&|~%^]/;
+const operatorChars = /[*+\-<>=&|~%^]/;
 
 export const cypher = {
   name: 'cypher',

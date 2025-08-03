@@ -52,7 +52,6 @@ const parserConfig = {
   templateMatch: words('complement ifpresent subset superset permutation'),
   multiLineStrings: true,
 };
-
 const wordList = [];
 function add(obj) {
   if (obj)

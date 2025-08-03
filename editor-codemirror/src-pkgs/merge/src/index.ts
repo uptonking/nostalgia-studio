@@ -1,26 +1,18 @@
-export { Change, diff, presentableDiff } from './diff';
-export type { DiffConfig } from './diff';
+export { Change, diff, presentableDiff, DiffConfig } from './diff';
 
 export { getChunks, goToNextChunk, goToPreviousChunk } from './merge';
 
-export { MergeView } from './mergeview';
-export type { MergeConfig, DirectMergeConfig } from './mergeview';
+export { MergeConfig, DirectMergeConfig, MergeView } from './mergeview';
 
 export {
   unifiedMergeView,
-  // acceptChunk,
-  // rejectChunk,
-  // getOriginalDoc,
-  // originalDocChangeEffect,
-  // updateOriginalDoc,
-} from './unified';
-export {
-  animatableDiffView,
   acceptChunk,
   rejectChunk,
   getOriginalDoc,
   originalDocChangeEffect,
   updateOriginalDoc,
-} from './animatable-diff';
+} from './unified';
+
+export { uncollapseUnchanged } from './deco';
 
 export { Chunk } from './chunk';

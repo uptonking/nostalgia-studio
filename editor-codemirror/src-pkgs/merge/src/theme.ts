@@ -41,46 +41,13 @@ export const baseTheme = EditorView.baseTheme({
     overflowY: 'visible !important',
   },
 
-  '&light.cm-merge-a .cm-changedLine, .cm-deletedChunk': {
-    // backgroundColor: 'rgba(160, 128, 100, .08)',
-    // backgroundColor: '#ff0000',
-    // backgroundColor: '#ffebe9',
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+  '&.cm-merge-a .cm-changedLine, .cm-deletedChunk': {
+    backgroundColor: 'rgba(160, 128, 100, .08)',
   },
-  '&light.cm-merge-b .cm-changedLine': {
-    // backgroundColor: 'rgba(100, 160, 128, .08)',
-    // backgroundColor: '#dafbe1',
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+  '&.cm-merge-b .cm-changedLine, .cm-inlineChangedLine': {
+    backgroundColor: 'rgba(100, 160, 128, .08)',
   },
-  '&dark.cm-merge-a .cm-changedLine, .cm-deletedChunk': {
-    // backgroundColor: 'rgba(239, 68, 68, 0.3)',
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-  },
-  '&dark.cm-merge-b .cm-changedLine': {
-    // backgroundColor: 'rgba(16, 185, 129, 0.3)',
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-  },
-  '&light.cm-merge-b .cm-line-hidden': {
-    // backgroundColor: 'rgba(100, 160, 128, .08)',
-    display: 'none',
-  },
-  '&.cm-merge-b .anime-diff-off': {
-    backgroundColor: 'transparent',
-  },
-  '&.cm-merge-b .cm-line-typing': {
-    animation:
-      'typing 0.5s steps(20), blink 0.025s step-end infinite alternate',
-    width: '100%',
-    // 👇 make characters on the right of the line invisible
-    overflow: 'hidden',
-    // borderRight: '1.5px solid',
-  },
-  '@keyframes typing': {
-    from: { width: '0px' },
-  },
-  '@keyframes blink': {
-    '50%': { borderColor: 'transparent' },
-  },
+
   '&light.cm-merge-a .cm-changedText, &light .cm-deletedChunk .cm-deletedText':
     {
       background:
@@ -94,37 +61,27 @@ export const baseTheme = EditorView.baseTheme({
 
   '&light.cm-merge-b .cm-changedText': {
     background:
-      'linear-gradient(#22bb2266, #22bb2266) bottom/100% 2px no-repeat',
+      'linear-gradient(#22bb22aa, #22bb22aa) bottom/100% 2px no-repeat',
   },
 
   '&dark.cm-merge-b .cm-changedText': {
     background:
-      'linear-gradient(#88ff8866, #88ff8866) bottom/100% 2px no-repeat',
+      'linear-gradient(#88ff88aa, #88ff88aa) bottom/100% 2px no-repeat',
   },
 
-  '.cm-insertedLine, .cm-deletedLine': {
+  '&.cm-merge-b .cm-deletedText': {
+    background: '#ff000033',
+  },
+
+  '.cm-insertedLine, .cm-deletedLine, .cm-deletedLine del': {
     textDecoration: 'none',
   },
-  '.cm-insertedLine-typing': {
-    color: 'transparent',
-    backgroundClip: 'text',
-    fontFamily: 'monospace',
-    backgroundImage: 'linear-gradient(#777 0, #777 0)',
-    backgroundSize: 'calc(var(--lineCharsCount) * 1ch) 200%',
-    backgroundRepeat: 'no-repeat',
-    animation: 'charsTyping calc(var(--lineCharsCount) * 0.004s) linear',
-  },
-  '@keyframes charsTyping': {
-    from: { backgroundSize: '0 200%' },
-  },
+
   '.cm-deletedChunk': {
     paddingLeft: '6px',
     '& .cm-chunkButtons': {
       position: 'absolute',
       insetInlineEnd: '5px',
-    },
-    '& del': {
-      textDecoration: 'none',
     },
     '& button': {
       border: 'none',
@@ -140,6 +97,14 @@ export const baseTheme = EditorView.baseTheme({
   '.cm-collapsedLines': {
     padding: '5px 5px 5px 10px',
     cursor: 'pointer',
+    '&:before': {
+      content: '"⦚"',
+      marginInlineEnd: '7px',
+    },
+    '&:after': {
+      content: '"⦚"',
+      marginInlineStart: '7px',
+    },
   },
   '&light .cm-collapsedLines': {
     color: '#444',
@@ -161,4 +126,5 @@ export const baseTheme = EditorView.baseTheme({
   },
   '&light.cm-merge-b .cm-changedLineGutter': { background: '#2b2' },
   '&dark.cm-merge-b .cm-changedLineGutter': { background: '#8f8' },
+  '.cm-inlineChangedLineGutter': { background: '#75d' },
 });

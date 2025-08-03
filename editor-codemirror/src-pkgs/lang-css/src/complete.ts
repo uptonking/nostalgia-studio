@@ -27,7 +27,7 @@ function properties() {
       }
     _properties = names
       .sort()
-      .map((name) => ({ type: 'property', label: name }));
+      .map((name) => ({ type: 'property', label: name, apply: name + ': ' }));
   }
   return _properties || [];
 }
@@ -97,7 +97,6 @@ const pseudoClasses = [
   'visited',
   'where',
 ].map((name) => ({ type: 'class', label: name }));
-
 const values = [
   'above',
   'absolute',
@@ -666,7 +665,6 @@ const values = [
       'yellowgreen',
     ].map((name) => ({ type: 'constant', label: name })),
   );
-
 const tags = [
   'a',
   'abbr',
@@ -747,7 +745,6 @@ const tags = [
   'u',
   'ul',
 ].map((name) => ({ type: 'type', label: name }));
-
 const atRules = [
   '@charset',
   '@color-profile',
@@ -769,7 +766,6 @@ const atRules = [
   '@supports',
   '@view-transition',
 ].map((label) => ({ type: 'keyword', label }));
-
 const identifier = /^(\w[\w-]*|-\w[\w-]*|)$/;
 const variable = /^-(-[\w-]*)?$/;
 

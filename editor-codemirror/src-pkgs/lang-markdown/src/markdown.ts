@@ -22,9 +22,7 @@ import { type SyntaxNode, type NodeType, NodeProp } from '@lezer/common';
 const data = defineLanguageFacet({
   commentTokens: { block: { open: '<!--', close: '-->' } },
 });
-
 const headingProp = new NodeProp<number>();
-
 const commonmark = baseParser.configure({
   props: [
     foldNodeProp.add((type) => {
@@ -69,7 +67,7 @@ function findSectionEnd(headerNode: SyntaxNode, level: number) {
   return last.to;
 }
 
-const headerIndent = foldService.of((state, start, end) => {
+export const headerIndent = foldService.of((state, start, end) => {
   for (
     let node: SyntaxNode | null = syntaxTree(state).resolveInner(end, -1);
     node;
@@ -85,7 +83,7 @@ const headerIndent = foldService.of((state, start, end) => {
 });
 
 export function mkLang(parser: MarkdownParser) {
-  return new Language(data, parser, [headerIndent], 'markdown');
+  return new Language(data, parser, [], 'markdown');
 }
 
 /// Language support for strict CommonMark.

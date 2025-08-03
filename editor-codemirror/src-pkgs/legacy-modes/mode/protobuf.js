@@ -36,7 +36,6 @@ const keywordArray = [
   'returns',
 ];
 const keywords = wordRegexp(keywordArray);
-
 const identifiers = new RegExp('^[_A-Za-z\xa1-\uffff][_A-Za-z0-9\xa1-\uffff]*');
 
 function tokenBase(stream) {

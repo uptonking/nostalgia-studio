@@ -16,7 +16,6 @@ const blockKeywords = words(
 );
 const standaloneKeywords = words('return break continue');
 const atoms = words('null true false this');
-
 let curPunc;
 function tokenBase(stream, state) {
   const ch = stream.next();
@@ -138,10 +137,9 @@ function tokenBaseUntilBrace() {
 
 function tokenVariableDeref(stream, state) {
   const next = stream.match(/^(\.|[\w\$_]+)/);
-  if (!next) {
+  if (!next || !stream.match(next[0] == '.' ? /^[\w$_]/ : /^\./))
     state.tokenize.pop();
-    return state.tokenize[state.tokenize.length - 1](stream, state);
-  }
+  if (!next) return state.tokenize[state.tokenize.length - 1](stream, state);
   return next[0] == '.' ? null : 'variable';
 }
 

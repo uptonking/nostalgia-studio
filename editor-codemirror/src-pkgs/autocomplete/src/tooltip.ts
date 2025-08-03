@@ -104,7 +104,7 @@ class CompletionTooltip {
   dom: HTMLElement;
   info: HTMLElement | null = null;
   infoDestroy: (() => void) | null = null;
-  list!: HTMLElement;
+  declare list: HTMLElement;
   placeInfoReq = {
     read: () => this.measureInfo(),
     write: (pos: { style?: string; class?: string } | null) =>
@@ -306,12 +306,12 @@ class CompletionTooltip {
     const selRect = sel.getBoundingClientRect();
     let space = this.space;
     if (!space) {
-      const win = this.dom.ownerDocument.defaultView || window;
+      const docElt = this.dom.ownerDocument.documentElement;
       space = {
         left: 0,
         top: 0,
-        right: win.innerWidth,
-        bottom: win.innerHeight,
+        right: docElt.clientWidth,
+        bottom: docElt.clientHeight,
       };
     }
     if (
@@ -351,6 +351,10 @@ class CompletionTooltip {
     ul.setAttribute('role', 'listbox');
     ul.setAttribute('aria-expanded', 'true');
     ul.setAttribute('aria-label', this.view.state.phrase('Completions'));
+    ul.addEventListener('mousedown', (e) => {
+      // Prevent focus change when clicking the scrollbar
+      if (e.target == ul) e.preventDefault();
+    });
     let curSection: string | null = null;
     for (let i = range.from; i < range.to; i++) {
       const { completion, match } = options[i];

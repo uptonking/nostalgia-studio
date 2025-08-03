@@ -32,7 +32,6 @@ const blockKeywords = words(
 const atoms = words('true false null');
 const hooks = { '#': metaHook };
 const isOperatorChar = /[+\-*&%=<>!?|\/]/;
-
 let curPunc;
 
 function tokenBase(stream, state) {

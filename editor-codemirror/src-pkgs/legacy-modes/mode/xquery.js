@@ -10,12 +10,10 @@ const keywords = (function () {
   const atom = { type: 'atom', style: 'atom' };
   const punctuation = { type: 'punctuation', style: null };
   const qualifier = { type: 'axis_specifier', style: 'qualifier' };
-
   // kwObj is what is return from this function at the end
   const kwObj = {
     ',': punctuation,
   };
-
   // a list of 'basic' keywords. For each add a property to kwObj with the value of
   // {type: basic[i], style: "keyword"} e.g. 'after' --> {type: "after", style: "keyword"}
   const basic = [
@@ -372,7 +370,7 @@ function tokenBase(stream, state) {
   }
   // quoted string
   else if (!isEQName && (ch === '"' || ch === "'"))
-    return chain(stream, state, tokenString(ch));
+    return startString(stream, state, ch);
   // variable
   else if (ch === '$') {
     return chain(stream, state, tokenVariable);
@@ -404,7 +402,7 @@ function tokenBase(stream, state) {
     let known = keywords.propertyIsEnumerable(ch) && keywords[ch];
 
     // if there's a EQName ahead, consume the rest of the string portion, it's likely a function
-    if (isEQName && ch === '"') while (stream.next() !== '"') {}
+    if (isEQName && ch === '\"') while (stream.next() !== '"') {}
     if (isEQName && ch === "'") while (stream.next() !== "'") {}
 
     // gobble up a word if the character is not known
@@ -478,41 +476,27 @@ function tokenComment(stream, state) {
 function tokenString(quote, f) {
   return function (stream, state) {
     let ch;
-
-    if (isInString(state) && stream.current() == quote) {
-      popStateStack(state);
-      if (f) state.tokenize = f;
-      return 'string';
-    }
-
-    pushStateStack(state, {
-      type: 'string',
-      name: quote,
-      tokenize: tokenString(quote, f),
-    });
-
-    // if we're in a string and in an XML block, allow an embedded code block
-    if (stream.match('{', false) && isInXmlAttributeBlock(state)) {
-      state.tokenize = tokenBase;
-      return 'string';
-    }
-
     while ((ch = stream.next())) {
       if (ch == quote) {
         popStateStack(state);
         if (f) state.tokenize = f;
         break;
-      } else {
+      } else if (stream.match('{', false) && isInXmlAttributeBlock(state)) {
         // if we're in a string and in an XML block, allow an embedded code block in an attribute
-        if (stream.match('{', false) && isInXmlAttributeBlock(state)) {
-          state.tokenize = tokenBase;
-          return 'string';
-        }
+        pushStateStack(state, { type: 'codeblock' });
+        state.tokenize = tokenBase;
+        return 'string';
       }
     }
 
     return 'string';
   };
+}
+
+function startString(stream, state, quote, f) {
+  const tokenize = tokenString(quote, f);
+  pushStateStack(state, { type: 'string', name: quote, tokenize });
+  return chain(stream, state, tokenize);
 }
 
 // tokenizer for variables
@@ -521,7 +505,7 @@ function tokenVariable(stream, state) {
 
   // a variable may start with a quoted EQName so if the next character is quote, consume to the next quote
   if (stream.eat('"')) {
-    while (stream.next() !== '"') {}
+    while (stream.next() !== '\"') {}
     stream.eat(':');
   } else {
     stream.eatWhile(isVariableChar);
@@ -570,7 +554,7 @@ function tokenAttribute(stream, state) {
   if (ch == '=') return null;
   // quoted string
   if (ch == '"' || ch == "'")
-    return chain(stream, state, tokenString(ch, tokenAttribute));
+    return startString(stream, state, ch, tokenAttribute);
 
   if (!isInXmlAttributeBlock(state))
     pushStateStack(state, { type: 'attribute', tokenize: tokenAttribute });

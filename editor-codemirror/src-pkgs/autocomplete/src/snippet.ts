@@ -189,9 +189,7 @@ const setActive = StateEffect.define<ActiveSnippet | null>({
     return value && value.map(changes);
   },
 });
-
 const moveToField = StateEffect.define<number>();
-
 const snippetState = StateField.define<ActiveSnippet | null>({
   create() {
     return null;
@@ -258,8 +256,13 @@ export function snippet(template: string) {
     to: number,
   ) => {
     const { text, ranges } = snippet.instantiate(editor.state, from);
+    const { main } = editor.state.selection;
     const spec: TransactionSpec = {
-      changes: { from, to, insert: Text.of(text) },
+      changes: {
+        from,
+        to: to == main.from ? main.to : to,
+        insert: Text.of(text),
+      },
       scrollIntoView: true,
       annotations: completion
         ? [

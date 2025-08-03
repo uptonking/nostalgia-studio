@@ -14,7 +14,6 @@ const doubleDelimiters = new RegExp(
 );
 const tripleDelimiters = new RegExp('^((//=)|(>>=)|(<<=)|(\\*\\*=))');
 const identifiers = new RegExp('^[_A-Za-z][_A-Za-z0-9]*');
-
 const openingKeywords = [
   'class',
   'module',
@@ -35,7 +34,6 @@ const openingKeywords = [
 ];
 const middleKeywords = ['else', 'elseif', 'case', 'catch', 'finally'];
 const endKeywords = ['next', 'loop'];
-
 const operatorKeywords = [
   'and',
   'andalso',
@@ -49,7 +47,6 @@ const operatorKeywords = [
   'like',
 ];
 const wordOperators = wordRegexp(operatorKeywords);
-
 const commonKeywords = [
   '#const',
   '#else',
@@ -160,7 +157,6 @@ const commonKeywords = [
   'withevents',
   'writeonly',
 ];
-
 const commontypes = [
   'object',
   'boolean',
@@ -189,17 +185,14 @@ const commontypes = [
   'intptr',
   'uintptr',
 ];
-
 const keywords = wordRegexp(commonKeywords);
 const types = wordRegexp(commontypes);
 const stringPrefixes = '"';
-
 const opening = wordRegexp(openingKeywords);
 const middle = wordRegexp(middleKeywords);
 const closing = wordRegexp(endKeywords);
 const doubleClosing = wordRegexp(['end']);
 const doOpening = wordRegexp(['do']);
-
 const indentInfo = null;
 
 function indent(_stream, state) {

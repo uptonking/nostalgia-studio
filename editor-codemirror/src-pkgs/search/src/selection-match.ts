@@ -36,7 +36,6 @@ const defaultHighlightOptions = {
   maxMatches: 100,
   wholeWords: false,
 };
-
 const highlightConfig = Facet.define<
   HighlightOptions,
   Required<HighlightOptions>
@@ -160,12 +159,10 @@ const matchHighlighter = ViewPlugin.fromClass(
     decorations: (v) => v.decorations,
   },
 );
-
 const defaultTheme = EditorView.baseTheme({
   '.cm-selectionMatch': { backgroundColor: '#99ff7780' },
   '.cm-searchMatch .cm-selectionMatch': { backgroundColor: 'transparent' },
 });
-
 // Select the words around the cursors.
 const selectWord: StateCommand = ({ state, dispatch }) => {
   const { selection } = state;

@@ -27,7 +27,6 @@ const observeOptions = {
   attributes: true,
   characterDataOldValue: true,
 };
-
 // IE11 has very broken mutation observers, so we also listen to
 // DOMCharacterDataModified there
 const useCharData = browser.ie && browser.ie_version <= 11;
@@ -101,6 +100,7 @@ export class DOMObserver {
 
     if (
       window.EditContext &&
+      browser.android &&
       (view.constructor as any).EDIT_CONTEXT !== false &&
       // Chrome <126 doesn't support inverted selections in edit context (#1392)
       !(browser.chrome && browser.chrome_version < 126)
@@ -111,7 +111,7 @@ export class DOMObserver {
     }
 
     if (useCharData)
-      this.onCharData = (event: MutationEvent) => {
+      this.onCharData = (event: any) => {
         this.queue.push({
           target: event.target,
           type: 'characterData',
@@ -681,6 +681,13 @@ class EditContextManager {
   pendingContextChange: { from: number; to: number; insert: Text } | null =
     null;
   handlers: { [name: string]: (e: any) => void } = Object.create(null);
+  // Kludge to work around the fact that EditContext does not respond
+  // well to having its content updated during a composition (see #1472)
+  composing: {
+    contextBase: number;
+    editorBase: number;
+    drifted: boolean;
+  } | null = null;
 
   constructor(view: EditorView) {
     this.resetRange(view.state);
@@ -696,30 +703,55 @@ class EditContextManager {
       selectionEnd: this.toContextPos(view.state.selection.main.head),
     }));
     this.handlers.textupdate = (e) => {
-      const { anchor } = view.state.selection.main;
-      const change = {
-        from: this.toEditorPos(e.updateRangeStart),
-        to: this.toEditorPos(e.updateRangeEnd),
-        insert: Text.of(e.text.split('\n')),
-      };
+      const main = view.state.selection.main;
+      const { anchor, head } = main;
+      const from = this.toEditorPos(e.updateRangeStart);
+      const to = this.toEditorPos(e.updateRangeEnd);
+      if (view.inputState.composing >= 0 && !this.composing)
+        this.composing = {
+          contextBase: e.updateRangeStart,
+          editorBase: from,
+          drifted: false,
+        };
+      let change = { from, to, insert: Text.of(e.text.split('\n')) };
       // If the window doesn't include the anchor, assume changes
       // adjacent to a side go up to the anchor.
       if (change.from == this.from && anchor < this.from) change.from = anchor;
       else if (change.to == this.to && anchor > this.to) change.to = anchor;
 
       // Edit contexts sometimes fire empty changes
-      if (change.from == change.to && !change.insert.length) return;
+      if (change.from == change.to && !change.insert.length) {
+        const newSel = EditorSelection.single(
+          this.toEditorPos(e.selectionStart),
+          this.toEditorPos(e.selectionEnd),
+        );
+        if (!newSel.main.eq(main))
+          view.dispatch({ selection: newSel, userEvent: 'select' });
+        return;
+      }
+      if (
+        (browser.mac || browser.android) &&
+        change.from == head - 1 &&
+        /^\. ?$/.test(e.text) &&
+        view.contentDOM.getAttribute('autocorrect') == 'off'
+      )
+        change = { from, to, insert: Text.of([e.text.replace('.', ' ')]) };
 
       this.pendingContextChange = change;
-      if (!view.state.readOnly)
+      if (!view.state.readOnly) {
+        const newLen =
+          this.to -
+          this.from +
+          (change.to - change.from + change.insert.length);
         applyDOMChangeInner(
           view,
           change,
           EditorSelection.single(
-            this.toEditorPos(e.selectionStart),
-            this.toEditorPos(e.selectionEnd),
+            this.toEditorPos(e.selectionStart, newLen),
+            this.toEditorPos(e.selectionEnd, newLen),
           ),
         );
+      }
       // If the transaction didn't flush our change, revert it so
       // that the context is in sync with the editor state again.
       if (this.pendingContextChange) {
@@ -757,19 +789,20 @@ class EditContextManager {
         const lineStyle = format.underlineStyle;
         const thickness = format.underlineThickness;
         if (lineStyle != 'None' && thickness != 'None') {
-          const style = `text-decoration: underline ${
-            lineStyle == 'Dashed'
-              ? 'dashed '
-              : lineStyle == 'Squiggle'
-                ? 'wavy '
-                : ''
-          }${thickness == 'Thin' ? 1 : 2}px`;
-          deco.push(
-            Decoration.mark({ attributes: { style } }).range(
-              this.toEditorPos(format.rangeStart),
-              this.toEditorPos(format.rangeEnd),
-            ),
-          );
+          const from = this.toEditorPos(format.rangeStart);
+          const to = this.toEditorPos(format.rangeEnd);
+          if (from < to) {
+            const style = `text-decoration: underline ${
+              lineStyle == 'Dashed'
+                ? 'dashed '
+                : lineStyle == 'Squiggle'
+                  ? 'wavy '
+                  : ''
+            }${thickness == 'Thin' ? 1 : 2}px`;
+            deco.push(
+              Decoration.mark({ attributes: { style } }).range(from, to),
+            );
+          }
         }
       }
       view.dispatch({
@@ -785,6 +818,11 @@ class EditContextManager {
     this.handlers.compositionend = () => {
       view.inputState.composing = -1;
       view.inputState.compositionFirstChange = null;
+      if (this.composing) {
+        const { drifted } = this.composing;
+        this.composing = null;
+        if (drifted) this.reset(view.state);
+      }
     };
     for (const event in this.handlers)
       context.addEventListener(event as any, this.handlers[event]);
@@ -859,15 +897,24 @@ class EditContextManager {
 
   update(update: ViewUpdate) {
     const reverted = this.pendingContextChange;
-    if (!this.applyEdits(update) || !this.rangeIsValid(update.state)) {
-      this.pendingContextChange = null;
-      this.resetRange(update.state);
-      this.editContext.updateText(
-        0,
-        this.editContext.text.length,
-        update.state.doc.sliceString(this.from, this.to),
+    const startSel = update.startState.selection.main;
+    if (
+      this.composing &&
+      (this.composing.drifted ||
+        (!update.changes.touchesRange(startSel.from, startSel.to) &&
+          update.transactions.some(
+            (tr) =>
+              !tr.isUserEvent('input.type') &&
+              tr.changes.touchesRange(this.from, this.to),
+          )))
+    ) {
+      this.composing.drifted = true;
+      this.composing.editorBase = update.changes.mapPos(
+        this.composing.editorBase,
       );
-      this.setSelection(update.state);
+    } else if (!this.applyEdits(update) || !this.rangeIsValid(update.state)) {
+      this.pendingContextChange = null;
+      this.reset(update.state);
     } else if (update.docChanged || update.selectionSet || reverted) {
       this.setSelection(update.state);
     }
@@ -879,6 +926,16 @@ class EditContextManager {
     const { head } = state.selection.main;
     this.from = Math.max(0, head - CxVp.Margin);
     this.to = Math.min(state.doc.length, head + CxVp.Margin);
+  }
+
+  reset(state: EditorState) {
+    this.resetRange(state);
+    this.editContext.updateText(
+      0,
+      this.editContext.text.length,
+      state.doc.sliceString(this.from, this.to),
+    );
+    this.setSelection(state);
   }
 
   revertPending(state: EditorState) {
@@ -913,11 +970,18 @@ class EditContextManager {
     );
   }
 
-  toEditorPos(contextPos: number) {
-    return contextPos + this.from;
+  toEditorPos(contextPos: number, clipLen = this.to - this.from) {
+    contextPos = Math.min(contextPos, clipLen);
+    const c = this.composing;
+    return c && c.drifted
+      ? c.editorBase + (contextPos - c.contextBase)
+      : contextPos + this.from;
   }
   toContextPos(editorPos: number) {
-    return editorPos - this.from;
+    const c = this.composing;
+    return c && c.drifted
+      ? c.contextBase + (editorPos - c.editorBase)
+      : editorPos - this.from;
   }
 
   destroy() {

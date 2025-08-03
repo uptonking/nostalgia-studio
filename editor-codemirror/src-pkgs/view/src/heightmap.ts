@@ -51,7 +51,9 @@ export class HeightOracle {
       1 +
       Math.max(
         0,
-        Math.ceil((length - this.lineLength) / (this.lineLength - 5)),
+        Math.ceil(
+          (length - this.lineLength) / Math.max(1, this.lineLength - 5),
+        ),
       );
     return lines * this.lineHeight;
   }
@@ -213,8 +215,7 @@ export abstract class HeightMap {
     public flags: number = Flag.Outdated,
   ) {}
 
-  // size!: number;
-  size: number = 1;
+  declare size: number;
 
   get outdated() {
     return (this.flags & Flag.Outdated) > 0;
@@ -684,7 +685,7 @@ class HeightMapGap extends HeightMap {
 }
 
 class HeightMapBranch extends HeightMap {
-  declare size: number;
+  size: number;
 
   constructor(
     public left: HeightMap,

@@ -92,7 +92,7 @@ export const toggleBlockCommentByLine = command(
 );
 
 function getConfig(state: EditorState, pos: number) {
-  const data = state.languageDataAt<CommentTokens>('commentTokens', pos);
+  const data = state.languageDataAt<CommentTokens>('commentTokens', pos, 1);
   return data.length ? data[0] : {};
 }
 

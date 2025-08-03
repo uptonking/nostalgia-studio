@@ -1,6 +1,5 @@
 import type { Text } from '@codemirror/state';
-
-import { domIndex, maxOffset, type Rect } from './dom';
+import { type Rect, maxOffset, domIndex } from './dom';
 import type { EditorView } from './editorview';
 
 // Track mutated / outdated status of a view node's DOM
@@ -41,7 +40,7 @@ export abstract class ContentView {
   flags: number = ViewFlag.NodeDirty;
   abstract length: number;
   abstract children: ContentView[];
-  breakAfter: number = 0;
+  declare breakAfter: number;
 
   get overrideDOMText(): Text | null {
     return null;

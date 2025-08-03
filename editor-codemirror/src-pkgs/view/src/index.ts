@@ -1,41 +1,46 @@
-export { EditorView } from './editorview';
-export type {
+export {
+  EditorView,
   EditorViewConfig,
   DOMEventMap,
   DOMEventHandlers,
 } from './editorview';
-export { ViewPlugin, ViewUpdate, logException } from './extension';
-export type { Command, PluginValue, PluginSpec } from './extension';
-export { Decoration, WidgetType, BlockType } from './decoration';
-export type { DecorationSet } from './decoration';
+export {
+  Command,
+  ViewPlugin,
+  PluginValue,
+  PluginSpec,
+  ViewUpdate,
+  logException,
+} from './extension';
+export { Decoration, DecorationSet, WidgetType, BlockType } from './decoration';
 export { BlockInfo } from './heightmap';
-export type { MouseSelectionStyle } from './input';
+export { MouseSelectionStyle } from './input';
 export { BidiSpan, Direction } from './bidi';
-export { keymap, runScopeHandlers } from './keymap';
-export type { KeyBinding } from './keymap';
+export { KeyBinding, keymap, runScopeHandlers } from './keymap';
 export { drawSelection, getDrawSelectionConfig } from './draw-selection';
 export { dropCursor } from './dropcursor';
 export { highlightSpecialChars } from './special-chars';
 export { scrollPastEnd } from './scrollpastend';
 export { highlightActiveLine } from './active-line';
 export { placeholder } from './placeholder';
-export type { Rect } from './dom';
-export { layer, RectangleMarker } from './layer';
-export type { LayerMarker } from './layer';
+export { Rect } from './dom';
+export { layer, LayerMarker, RectangleMarker } from './layer';
 export { MatchDecorator } from './matchdecorator';
 export { rectangularSelection, crosshairCursor } from './rectangular-selection';
 export {
   showTooltip,
+  Tooltip,
+  TooltipView,
   tooltips,
   getTooltip,
   hoverTooltip,
+  HoverTooltipSource,
   hasHoverTooltips,
   closeHoverTooltips,
   repositionTooltips,
 } from './tooltip';
-export type { Tooltip, TooltipView, HoverTooltipSource } from './tooltip';
-export { showPanel, getPanel, panels } from './panel';
-export type { PanelConstructor, Panel } from './panel';
+export { showPanel, PanelConstructor, Panel, getPanel, panels } from './panel';
+export { showDialog, getDialog } from './dialog';
 export {
   lineNumbers,
   highlightActiveLineGutter,

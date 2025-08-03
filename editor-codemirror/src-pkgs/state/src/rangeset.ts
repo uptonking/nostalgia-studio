@@ -14,20 +14,20 @@ export abstract class RangeValue {
   /// The bias value at the start of the range. Determines how the
   /// range is positioned relative to other ranges starting at this
   /// position. Defaults to 0.
-  startSide: number = 0;
+  declare startSide: number;
   /// The bias value at the end of the range. Defaults to 0.
-  endSide: number = 0;
+  declare endSide: number;
 
   /// The mode with which the location of the range should be mapped
   /// when its `from` and `to` are the same, to decide whether a
   /// change deletes the range. Defaults to `MapMode.TrackDel`.
-  mapMode: MapMode = MapMode.TrackDel;
+  declare mapMode: MapMode;
   /// Determines whether this value marks a point range. Regular
   /// ranges affect the part of the document they cover, and are
   /// meaningless when empty. Point ranges have a meaning on their
   /// own. When non-empty, a point range is treated as atomic and
   /// shadows any ranges contained in it.
-  point: boolean = false;
+  declare point: boolean;
 
   /// Create a [range](#state.Range) with this value.
   range(from: number, to = from) {
@@ -73,6 +73,11 @@ export interface RangeComparator<T extends RangeValue> {
     pointA: T | null,
     pointB: T | null,
   ): void;
+  /// Notification for a changed boundary between ranges. For example,
+  /// if the same span is covered by two partial ranges before and one
+  /// bigger range after, this is called at the point where the ranges
+  /// used to be split.
+  boundChange?(pos: number): void;
 }
 
 /// Methods used when iterating over the spans created by a set of
@@ -448,7 +453,6 @@ export class RangeSet<T extends RangeValue> {
         set.maxPoint > 0 || (!set.isEmpty && set.maxPoint >= minPointSize!),
     );
     const sharedChunks = findSharedChunks(a, b, textDiff);
-
     const sideA = new SpanCursor(a, sharedChunks, minPointSize!);
     const sideB = new SpanCursor(b, sharedChunks, minPointSize!);
 
@@ -722,12 +726,12 @@ function findSharedChunks(
 }
 
 class LayerCursor<T extends RangeValue> {
-  from!: number;
-  to!: number;
-  value!: T | null;
+  declare from: number;
+  declare to: number;
+  declare value: T | null;
 
-  chunkIndex!: number;
-  rangeIndex!: number;
+  declare chunkIndex: number;
+  declare rangeIndex: number;
 
   constructor(
     readonly layer: RangeSet<T>,
@@ -837,10 +841,10 @@ class LayerCursor<T extends RangeValue> {
 }
 
 class HeapCursor<T extends RangeValue> {
-  from!: number;
-  to!: number;
-  value!: T | null;
-  rank!: number;
+  declare from: number;
+  declare to: number;
+  declare value: T | null;
+  declare rank: number;
 
   constructor(readonly heap: LayerCursor<T>[]) {}
 
@@ -1084,7 +1088,8 @@ function compare<T extends RangeValue>(
   let pos = startB;
   const dPos = startB - startA;
   for (;;) {
-    const diff = a.to + dPos - b.to || a.endSide - b.endSide;
+    const dEnd = a.to + dPos - b.to;
+    const diff = dEnd || a.endSide - b.endSide;
     const end = diff < 0 ? a.to + dPos : b.to;
     const clipEnd = Math.min(end, endB);
     if (a.point || b.point) {
@@ -1102,6 +1107,8 @@ function compare<T extends RangeValue>(
         comparator.compareRange(pos, clipEnd, a.active, b.active);
     }
     if (end > endB) break;
+    if ((dEnd || a.openEnd != b.openEnd) && comparator.boundChange)
+      comparator.boundChange(end);
     pos = end;
     if (diff <= 0) a.next();
     if (diff >= 0) b.next();

@@ -45,10 +45,8 @@ const baseTheme = EditorView.baseTheme({
   '&.cm-focused .cm-matchingBracket': { backgroundColor: '#328c8252' },
   '&.cm-focused .cm-nonmatchingBracket': { backgroundColor: '#bb555544' },
 });
-
 const DefaultScanDist = 10000;
 const DefaultBrackets = '()[]{}';
-
 const bracketMatchingConfig = Facet.define<Config, Required<Config>>({
   combine(configs) {
     return combineConfig(configs, {
@@ -59,7 +57,6 @@ const bracketMatchingConfig = Facet.define<Config, Required<Config>>({
     });
   },
 });
-
 const matchingMark = Decoration.mark({ class: 'cm-matchingBracket' });
 const nonmatchingMark = Decoration.mark({ class: 'cm-nonmatchingBracket' });
 
@@ -96,7 +93,6 @@ const bracketMatchingState = StateField.define<DecorationSet>({
   },
   provide: (f) => EditorView.decorations.from(f),
 });
-
 const bracketMatchingUnique = [bracketMatchingState, baseTheme];
 
 /// Create an extension that enables bracket matching. Whenever the

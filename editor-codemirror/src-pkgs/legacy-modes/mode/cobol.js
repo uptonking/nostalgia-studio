@@ -128,7 +128,6 @@ const keywords = makeKeywords(
     'WORDS WORKING-STORAGE WRITE XML XML-CODE ' +
     'XML-EVENT XML-NTEXT XML-TEXT ZERO ZERO-FILL ',
 );
-
 const builtins = makeKeywords('- * ** / + < <= = > >= ');
 const tests = {
   digit: /\d/,
@@ -188,7 +187,7 @@ export const cobol = {
       case 'string': // multi-line string parsing mode
         var next = false;
         while ((next = stream.next()) != null) {
-          if ((next == '"' || next == "'") && !stream.match(/['"]/, false)) {
+          if ((next == '"' || next == "\'") && !stream.match(/['"]/, false)) {
             state.mode = false;
             break;
           }
@@ -207,7 +206,7 @@ export const cobol = {
           // comment
           stream.skipToEnd(); // rest of the line is a comment
           returnType = COMMENT;
-        } else if (ch == '"' || ch == "'") {
+        } else if (ch == '"' || ch == "\'") {
           state.mode = 'string';
           returnType = STRING;
         } else if (ch == "'" && !tests.digit_or_colon.test(stream.peek())) {

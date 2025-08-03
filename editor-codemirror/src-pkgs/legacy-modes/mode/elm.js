@@ -6,7 +6,6 @@ function switchState(source, setState, f) {
 const lowerRE = /[a-z]/;
 const upperRE = /[A-Z]/;
 const innerRE = /[a-zA-Z0-9_]/;
-
 const digitRE = /[0-9]/;
 const hexRE = /[0-9A-Fa-f]/;
 const symbolRE = /[-&*+.\\/<>=?^|:]/;

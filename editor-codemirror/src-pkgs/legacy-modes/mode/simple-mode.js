@@ -33,6 +33,7 @@ export function simpleMode(states) {
     },
     token: tokenFunction(states_),
     indent: indentFunction(states_, meta),
+    mergeTokens: meta.mergeTokens,
     languageData: meta,
   };
 }
@@ -132,7 +133,7 @@ function indentFunction(states, meta) {
   return function (state, textAfter) {
     if (
       state.indent == null ||
-      (meta.dontIndentStates && meta.doneIndentState.indexOf(state.state) > -1)
+      (meta.dontIndentStates && meta.dontIndentStates.indexOf(state.state) > -1)
     )
       return null;
 

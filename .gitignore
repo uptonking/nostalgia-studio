@@ -9,7 +9,6 @@ dist/
 lib/
 
 target/
-build/
 tomcat.**
 
 *.log
@@ -23,6 +22,8 @@ log.json
 tmp/
 bak/
 -bak/
+-bak-*/
+*.bak
 sample-**/
 bookmarks.json
 # repos/
@@ -109,7 +110,5 @@ typings/
 .env
 
 # End of https://www.gitignore.io/api/node
-
-lib/
 
 *.tsbuildinfo

@@ -13,7 +13,6 @@ const doubleDelimiters = new RegExp(
 const tripleDelimiters = new RegExp('^((>>=)|(<<=))');
 const expressionEnd = new RegExp('^[\\]\\)]');
 const identifiers = new RegExp('^[_A-Za-z\xa1-\uffff][_A-Za-z0-9\xa1-\uffff]*');
-
 const builtins = wordRegexp([
   'error',
   'eval',
@@ -83,7 +82,6 @@ const builtins = wordRegexp([
   'flipud',
   'ismember',
 ]);
-
 const keywords = wordRegexp([
   'return',
   'case',

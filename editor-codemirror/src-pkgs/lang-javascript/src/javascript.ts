@@ -42,7 +42,7 @@ export const javascriptLanguage = LRLanguage.define({
         Block: delimitedIndent({ closing: '}' }),
         ArrowFunction: (cx) => cx.baseIndent + cx.unit,
         'TemplateString BlockComment': () => null,
-        'Statement Property': continuedIndent({ except: /^{/ }),
+        'Statement Property': continuedIndent({ except: /^\s*{/ }),
         JSXElement(context) {
           const closed = /^\s*<\//.test(context.textAfter);
           return (
@@ -107,7 +107,6 @@ export const tsxLanguage = javascriptLanguage.configure(
 );
 
 const kwCompletion = (name: string) => ({ label: name, type: 'keyword' });
-
 const keywords =
   'break case const continue default delete export extends false finally in instanceof let new return static super switch this throw true typeof var yield'
     .split(' ')

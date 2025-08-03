@@ -291,9 +291,17 @@ class StringQuery extends QueryType<SearchResult> {
       curTo,
       state.doc.length,
     ).nextOverlapping();
-    if (cursor.done)
-      cursor = stringCursor(this.spec, state, 0, curFrom).nextOverlapping();
-    return cursor.done ? null : cursor.value;
+    if (cursor.done) {
+      const end = Math.min(
+        state.doc.length,
+        curFrom + this.spec.unquoted.length,
+      );
+      cursor = stringCursor(this.spec, state, 0, end).nextOverlapping();
+    }
+    return cursor.done ||
+      (cursor.value.from == curFrom && cursor.value.to == curTo)
+      ? null
+      : cursor.value;
   }
 
   // Searching in reverse is, rather than implementing an inverted search
@@ -314,10 +322,14 @@ class StringQuery extends QueryType<SearchResult> {
   }
 
   prevMatch(state: EditorState, curFrom: number, curTo: number) {
-    return (
-      this.prevMatchInRange(state, 0, curFrom) ||
-      this.prevMatchInRange(state, curTo, state.doc.length)
-    );
+    let found = this.prevMatchInRange(state, 0, curFrom);
+    if (!found)
+      found = this.prevMatchInRange(
+        state,
+        Math.max(0, curTo - this.spec.unquoted.length),
+        state.doc.length,
+      );
+    return found && (found.from != curFrom || found.to != curTo) ? found : null;
   }
 
   getReplacement(_result: SearchResult) {
@@ -422,15 +434,16 @@ class RegExpQuery extends QueryType<RegExpResult> {
   getReplacement(result: RegExpResult) {
     return this.spec
       .unquote(this.spec.replace)
-      .replace(/\$([$&\d+])/g, (m, i) =>
-        i == '$'
-          ? '$'
-          : i == '&'
-            ? result.match[0]
-            : i != '0' && Number(i) < result.match.length
-              ? result.match[i]
-              : m,
-      );
+      .replace(/\$([$&]|\d+)/g, (m, i) => {
+        if (i == '&') return result.match[0];
+        if (i == '$') return '$';
+        for (let l = i.length; l > 0; l--) {
+          const n = Number(i.slice(0, l));
+          if (n > 0 && n < result.match.length)
+            return result.match[n] + i.slice(l);
+        }
+        return m;
+      });
   }
 
   matchAll(state: EditorState, limit: number) {
@@ -467,7 +480,6 @@ class RegExpQuery extends QueryType<RegExpResult> {
 export const setSearchQuery = StateEffect.define<SearchQuery>();
 
 const togglePanel = StateEffect.define<boolean>();
-
 const searchState: StateField<SearchState> = StateField.define<SearchState>({
   create(state) {
     return new SearchState(defaultQuery(state).create(), null);
@@ -509,7 +521,6 @@ const matchMark = Decoration.mark({ class: 'cm-searchMatch' });
 const selectedMatchMark = Decoration.mark({
   class: 'cm-searchMatch cm-searchMatch-selected',
 });
-
 const searchHighlighter = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
@@ -657,8 +668,9 @@ export const replaceNext = searchCommand((view, { query }) => {
   const { state } = view;
   const { from, to } = state.selection.main;
   if (state.readOnly) return false;
-  let next = query.nextMatch(state, from, from);
-  if (!next) return false;
+  const match = query.nextMatch(state, from, from);
+  if (!match) return false;
+  let next: SearchResult | null = match;
   const changes = [];
   let selection: EditorSelection | undefined;
   let replacement: Text | undefined;
@@ -676,19 +688,16 @@ export const replaceNext = searchCommand((view, { query }) => {
       ),
     );
   }
+  const changeSet = view.state.changes(changes);
   if (next) {
-    const off =
-      changes.length == 0 || changes[0].from >= next.to
-        ? 0
-        : next.to - next.from - replacement!.length;
-    selection = EditorSelection.single(next.from - off, next.to - off);
+    selection = EditorSelection.single(next.from, next.to).map(changeSet);
     effects.push(announceMatch(view, next));
     effects.push(
       state.facet(searchConfigFacet).scrollToMatch(selection.main, view),
     );
   }
   view.dispatch({
-    changes,
+    changes: changeSet,
     selection,
     effects,
     userEvent: 'input.replace',
@@ -729,7 +738,7 @@ function defaultQuery(state: EditorState, fallback?: SearchQuery) {
   const config = state.facet(searchConfigFacet);
   return new SearchQuery({
     search:
-      fallback?.literal ?? config.literal
+      (fallback?.literal ?? config.literal)
         ? selText
         : selText.replace(/\n/g, '\\n'),
     caseSensitive: fallback?.caseSensitive ?? config.caseSensitive,
@@ -980,7 +989,6 @@ function phrase(view: EditorView, phrase: string) {
 }
 
 const AnnounceMargin = 30;
-
 const Break = /[\s\.,:;?!]/;
 
 function announceMatch(
@@ -1044,5 +1052,4 @@ const baseTheme = EditorView.baseTheme({
   '&light .cm-searchMatch-selected': { backgroundColor: '#ff6a0054' },
   '&dark .cm-searchMatch-selected': { backgroundColor: '#ff00ff8a' },
 });
-
 const searchExtensions = [searchState, Prec.low(searchHighlighter), baseTheme];

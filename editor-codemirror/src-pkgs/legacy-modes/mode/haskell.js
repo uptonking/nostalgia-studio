@@ -189,7 +189,7 @@ const wellKnownWords = (function () {
     '_',
   );
 
-  setType('keyword')('..', ':', '::', '=', '\\', '<-', '->', '@', '~', '=>');
+  setType('keyword')('\.\.', ':', '::', '=', '\\', '<-', '->', '@', '~', '=>');
 
   setType('builtin')(
     '!!',

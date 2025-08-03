@@ -82,7 +82,6 @@ const htmlConfig = {
   allowMissing: true,
   caseFold: true,
 };
-
 const xmlConfig = {
   autoSelfClosers: {},
   implicitlyClosed: {},

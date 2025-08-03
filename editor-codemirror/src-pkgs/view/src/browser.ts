@@ -6,7 +6,6 @@ const doc: any =
   typeof document !== 'undefined'
     ? document
     : { documentElement: { style: {} } };
-
 const ie_edge = /Edge\/(\d+)/.exec(nav.userAgent);
 const ie_upto10 = /MSIE \d/.test(nav.userAgent);
 const ie_11up = /Trident\/(?:[7-9]|\d{2,})\..*rv:(\d+)/.exec(nav.userAgent);

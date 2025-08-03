@@ -10,7 +10,6 @@ function mkVBScript(parserConf) {
   const singleDelimiters = new RegExp('^[\\.,]');
   const brackets = new RegExp('^[\\(\\)]');
   const identifiers = new RegExp('^[A-Za-z][_A-Za-z0-9]*');
-
   const openingKeywords = [
     'class',
     'sub',
@@ -24,7 +23,6 @@ function mkVBScript(parserConf) {
   ];
   const middleKeywords = ['else', 'elseif', 'case'];
   const endKeywords = ['next', 'loop', 'wend'];
-
   const wordOperators = wordRegexp([
     'and',
     'or',
@@ -60,7 +58,6 @@ function mkVBScript(parserConf) {
     'call',
     'me',
   ];
-
   //This list was from: http://msdn.microsoft.com/en-us/library/f8tbc79x(v=vs.84).aspx
   const atomWords = ['true', 'false', 'nothing', 'empty', 'null'];
   //This list was from: http://msdn.microsoft.com/en-us/library/3ca8tfek(v=vs.84).aspx
@@ -163,7 +160,6 @@ function mkVBScript(parserConf) {
     'weekdayname',
     'year',
   ];
-
   //This list was from: http://msdn.microsoft.com/en-us/library/ydz4cfk3(v=vs.84).aspx
   const builtinConsts = [
     'vbBlack',
@@ -280,7 +276,6 @@ function mkVBScript(parserConf) {
     'createobject',
     'quit',
   ];
-
   const aspBuiltinObjsWords = [
     'server',
     'response',
@@ -331,7 +326,6 @@ function mkVBScript(parserConf) {
     'transfer',
     'urlencode',
   ]; //server
-
   let knownWords = knownMethods.concat(knownProperties);
 
   builtinObjsWords = builtinObjsWords.concat(builtinConsts);
@@ -347,7 +341,6 @@ function mkVBScript(parserConf) {
   const builtinObjs = wordRegexp(builtinObjsWords);
   const known = wordRegexp(knownWords);
   const stringPrefixes = '"';
-
   const opening = wordRegexp(openingKeywords);
   const middle = wordRegexp(middleKeywords);
   const closing = wordRegexp(endKeywords);

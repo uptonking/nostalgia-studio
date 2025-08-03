@@ -26,8 +26,8 @@ export const indentService =
   >();
 
 /// Facet for overriding the unit by which indentation happens. Should
-/// be a string consisting either entirely of the same whitespace
-/// character. When not set, this defaults to 2 spaces.
+/// be a string consisting entirely of the same whitespace character.
+/// When not set, this defaults to 2 spaces.
 export const indentUnit = Facet.define<string, string>({
   combine: (values) => {
     if (!values.length) return '  ';
@@ -237,10 +237,23 @@ export const indentNodeProp = new NodeProp<
 // Compute the indentation for a given position from the syntax tree.
 function syntaxIndentation(cx: IndentContext, ast: Tree, pos: number) {
   let stack = ast.resolveStack(pos);
-  const inner = stack.node.enterUnfinishedNodesBefore(pos);
+  const inner = ast
+    .resolveInner(pos, -1)
+    .resolve(pos, 0)
+    .enterUnfinishedNodesBefore(pos);
   if (inner != stack.node) {
     const add = [];
-    for (let cur = inner; cur != stack.node; cur = cur.parent!) add.push(cur);
+    for (
+      let cur = inner;
+      cur &&
+      !(
+        cur.from < stack.node.from ||
+        cur.to > stack.node.to ||
+        (cur.from == stack.node.from && cur.type == stack.node.type)
+      );
+      cur = cur.parent!
+    )
+      add.push(cur);
     for (let i = add.length - 1; i >= 0; i--)
       stack = { node: add[i], next: stack };
   }
@@ -373,7 +386,13 @@ function bracketedAligned(context: TreeIndentContext) {
   for (let pos = openToken.to; ; ) {
     const next = tree.childAfter(pos);
     if (!next || next == last) return null;
-    if (!next.type.isSkipped) return next.from < lineEnd ? openToken : null;
+    if (!next.type.isSkipped) {
+      if (next.from >= lineEnd) return null;
+      const space = /^ */.exec(
+        openLine.text.slice(openToken.to - openLine.from),
+      )![0].length;
+      return { from: openToken.from, to: openToken.to + space };
+    }
     pos = next.to;
   }
 }

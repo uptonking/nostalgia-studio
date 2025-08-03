@@ -6,13 +6,9 @@ import {
   Prec,
   type EditorState,
 } from '@codemirror/state';
-import type { StyleSpec } from 'style-mod';
 import { type ViewUpdate, nativeSelectionHidden } from './extension';
 import { EditorView } from './editorview';
 import { layer, RectangleMarker } from './layer';
-import browser from './browser';
-
-const CanHidePrimary = !browser.ios; // FIXME test IE
 
 type SelectionConfig = {
   /// The length of a full cursor blink cycle, in milliseconds.
@@ -90,7 +86,7 @@ const cursorLayer = layer({
     const cursors = [];
     for (const r of state.selection.ranges) {
       const prim = r == state.selection.main;
-      if (r.empty ? !prim || CanHidePrimary : conf.drawRangeCursor) {
+      if (r.empty || conf.drawRangeCursor) {
         const className = prim
           ? 'cm-cursor cm-cursor-primary'
           : 'cm-cursor cm-cursor-secondary';
@@ -143,23 +139,22 @@ const selectionLayer = layer({
   },
   class: 'cm-selectionLayer',
 });
-
-const themeSpec: { [selector: string]: StyleSpec } = {
-  '.cm-line': {
-    '& ::selection, &::selection': {
-      backgroundColor: 'transparent !important',
+const hideNativeSelection = Prec.highest(
+  EditorView.theme({
+    '.cm-line': {
+      '& ::selection, &::selection': {
+        backgroundColor: 'transparent !important',
+      },
+      caretColor: 'transparent !important',
     },
-  },
-  '.cm-content': {
-    '& :focus': {
-      caretColor: 'initial !important',
-      '&::selection, & ::selection': {
-        backgroundColor: 'Highlight !important',
+    '.cm-content': {
+      caretColor: 'transparent !important',
+      '& :focus': {
+        caretColor: 'initial !important',
+        '&::selection, & ::selection': {
+          backgroundColor: 'Highlight !important',
+        },
       },
     },
-  },
-};
-if (CanHidePrimary)
-  themeSpec['.cm-line'].caretColor = themeSpec['.cm-content'].caretColor =
-    'transparent !important';
-const hideNativeSelection = Prec.highest(EditorView.theme(themeSpec));
+  }),
+);

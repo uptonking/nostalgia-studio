@@ -13,11 +13,9 @@ const bodiedOps = words(
     'TSum Taylor Taylor1 Taylor2 Taylor3 ToFile ' +
     'ToStdout ToString TraceRule Until While',
 );
-
 // patterns
 const pFloatForm = '(?:(?:\\.\\d+|\\d+\\.\\d*|\\d+)(?:[eE][+-]?\\d+)?)';
 const pIdentifier = "(?:[a-zA-Z\\$'][a-zA-Z0-9\\$']*)";
-
 // regular expressions
 const reFloatForm = new RegExp(pFloatForm);
 const reIdentifier = new RegExp(pIdentifier);

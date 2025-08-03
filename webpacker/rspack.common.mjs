@@ -13,7 +13,7 @@ export const commonConfig = {
           loader: 'builtin:swc-loader',
           options: {
             isModule: true,
-            sourceMap: true,
+            sourceMaps: true,
             jsc: {
               target: 'es2020',
               loose: false,
@@ -45,7 +45,7 @@ export const commonConfig = {
           loader: 'builtin:swc-loader',
           options: {
             isModule: true,
-            sourceMap: true,
+            sourceMaps: true,
             jsc: {
               target: 'es2020',
               loose: false,
@@ -65,6 +65,13 @@ export const commonConfig = {
           { loader: 'style-loader', options: { esModule: false } },
           'css-loader',
           'sass-loader',
+        ],
+      },
+      {
+        test: /\.css$/,
+        use: [
+          { loader: 'style-loader', options: { esModule: false } },
+          'css-loader',
         ],
       },
       {
@@ -94,6 +101,7 @@ export const commonConfig = {
     // css: false,
     // outputModule: true,
     rspackFuture: {
+      bundlerInfo: { force: true },
       // newTreeshaking: true,
     },
   },

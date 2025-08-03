@@ -29,19 +29,17 @@ export {
   snippetKeymap,
 } from './snippet';
 export {
-  CompletionContext,
+  type Completion,
+  type CompletionInfo,
+  type CompletionSection,
+  type CompletionContext,
+  type CompletionSource,
+  type CompletionResult,
   pickedCompletion,
   completeFromList,
   ifIn,
   ifNotIn,
   insertCompletionText,
-} from './completion';
-export type {
-  Completion,
-  CompletionInfo,
-  CompletionSection,
-  CompletionSource,
-  CompletionResult,
 } from './completion';
 export {
   startCompletion,
@@ -51,12 +49,12 @@ export {
 } from './view';
 export { completeAnyWord } from './word';
 export {
+  type CloseBracketConfig,
   closeBrackets,
   closeBracketsKeymap,
   deleteBracketPair,
   insertBracket,
 } from './closebrackets';
-export type { CloseBracketConfig } from './closebrackets';
 
 /// Returns an extension that enables autocompletion.
 export function autocompletion(config: CompletionConfig = {}): Extension {
@@ -72,15 +70,17 @@ export function autocompletion(config: CompletionConfig = {}): Extension {
 
 /// Basic keybindings for autocompletion.
 ///
-///  - Ctrl-Space (and Alt-\` on macOS): [`startCompletion`](#autocomplete.startCompletion)///  - Escape: [`closeCompletion`](#autocomplete.closeCompletion)
+///  - Ctrl-Space (and Alt-\` or Alt-i on macOS): [`startCompletion`](#autocomplete.startCompletion)
+///  - Escape: [`closeCompletion`](#autocomplete.closeCompletion)
 ///  - ArrowDown: [`moveCompletionSelection`](#autocomplete.moveCompletionSelection)`(true)`
 ///  - ArrowUp: [`moveCompletionSelection`](#autocomplete.moveCompletionSelection)`(false)`
 ///  - PageDown: [`moveCompletionSelection`](#autocomplete.moveCompletionSelection)`(true, "page")`
-///  - PageDown: [`moveCompletionSelection`](#autocomplete.moveCompletionSelection)`(true, "page")`
+///  - PageUp: [`moveCompletionSelection`](#autocomplete.moveCompletionSelection)`(false, "page")`
 ///  - Enter: [`acceptCompletion`](#autocomplete.acceptCompletion)
 export const completionKeymap: readonly KeyBinding[] = [
   { key: 'Ctrl-Space', run: startCompletion },
   { mac: 'Alt-`', run: startCompletion },
+  { mac: 'Alt-i', run: startCompletion },
   { key: 'Escape', run: closeCompletion },
   { key: 'ArrowDown', run: moveCompletionSelection(true) },
   { key: 'ArrowUp', run: moveCompletionSelection(false) },
@@ -103,7 +103,7 @@ export function completionStatus(
   state: EditorState,
 ): null | 'active' | 'pending' {
   const cState = state.field(completionState, false);
-  return cState && cState.active.some((a) => a.state == State.Pending)
+  return cState && cState.active.some((a) => a.isPending)
     ? 'pending'
     : cState && cState.active.some((a) => a.state != State.Inactive)
       ? 'active'

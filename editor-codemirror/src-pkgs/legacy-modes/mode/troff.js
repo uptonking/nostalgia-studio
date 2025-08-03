@@ -27,14 +27,14 @@ function tokenBase(stream) {
       stream.eatWhile(/[\d-]/);
       return 'string';
     }
-    if (stream.match('(') || stream.match('*(')) {
+    if (stream.match('\(') || stream.match('*\(')) {
       stream.eatWhile(/[\w-]/);
       return 'string';
     }
     return 'string';
   }
   if (sol && (ch === '.' || ch === "'")) {
-    if (stream.eat('\\') && stream.eat('"')) {
+    if (stream.eat('\\') && stream.eat('\"')) {
       stream.skipToEnd();
       return 'comment';
     }

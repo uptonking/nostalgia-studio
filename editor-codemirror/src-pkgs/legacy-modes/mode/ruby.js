@@ -66,7 +66,6 @@ const keywordList = [
   '__dir__',
 ];
 const keywords = wordObj(keywordList);
-
 const indentWords = wordObj([
   'def',
   'class',
@@ -83,7 +82,6 @@ const indentWords = wordObj([
 const dedentWords = wordObj(['end', 'until']);
 const opening = { '[': ']', '{': '}', '(': ')' };
 const closing = { ']': '[', '}': '{', ')': '(' };
-
 let curPunc;
 
 function chain(newtok, stream, state) {

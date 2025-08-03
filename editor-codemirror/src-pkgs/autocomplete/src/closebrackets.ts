@@ -40,14 +40,12 @@ const defaults: Required<CloseBracketConfig> = {
   before: ')]}:;>',
   stringPrefixes: [],
 };
-
 const closeBracketEffect = StateEffect.define<number>({
   map(value, mapping) {
     const mapped = mapping.mapPos(value, -1, MapMode.TrackAfter);
     return mapped == null ? undefined : mapped;
   },
 });
-
 const closedBracket = new (class extends RangeValue {})();
 closedBracket.startSide = 1;
 closedBracket.endSide = -1;
@@ -82,7 +80,7 @@ export function closeBrackets(): Extension {
   return [inputHandler, bracketState];
 }
 
-const definedClosing = '()[]{}<>';
+const definedClosing = '()[]{}<>«»»«［］｛｝';
 
 function closing(ch: number) {
   for (let i = 0; i < definedClosing.length; i += 2)
@@ -99,7 +97,6 @@ function config(state: EditorState, pos: number) {
 
 const android =
   typeof navigator === 'object' && /Android\b/.test(navigator.userAgent);
-
 const inputHandler = EditorView.inputHandler.of((view, from, to, insert) => {
   if (
     (android ? view.composing : view.compositionStarted) ||

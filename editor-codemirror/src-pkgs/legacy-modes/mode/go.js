@@ -47,7 +47,6 @@ const keywords = {
   any: true,
   comparable: true,
 };
-
 const atoms = {
   true: true,
   false: true,
@@ -69,9 +68,7 @@ const atoms = {
   real: true,
   recover: true,
 };
-
 const isOperatorChar = /[+\-*&^%:=<>!|\/]/;
-
 let curPunc;
 
 function tokenBase(stream, state) {

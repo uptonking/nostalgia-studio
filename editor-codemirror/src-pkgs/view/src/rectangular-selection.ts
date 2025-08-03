@@ -124,7 +124,6 @@ const keys: {
   Shift: [16, (e) => Boolean(e.shiftKey)],
   Meta: [91, (e) => Boolean(e.metaKey)],
 };
-
 const showCrosshair = { style: 'cursor: crosshair' };
 
 /// Returns an extension that turns the pointer cursor into a

@@ -144,12 +144,15 @@ export class MatchDecorator {
     let changeTo = -1;
     if (update.docChanged)
       update.changes.iterChanges((_f, _t, from, to) => {
-        if (to > update.view.viewport.from && from < update.view.viewport.to) {
+        if (
+          to >= update.view.viewport.from &&
+          from <= update.view.viewport.to
+        ) {
           changeFrom = Math.min(from, changeFrom);
           changeTo = Math.max(to, changeTo);
         }
       });
-    if (update.viewportChanged || changeTo - changeFrom > 1000)
+    if (update.viewportMoved || changeTo - changeFrom > 1000)
       return this.createDeco(update.view);
     if (changeTo > -1)
       return this.updateRange(
@@ -170,7 +173,7 @@ export class MatchDecorator {
     for (const r of view.visibleRanges) {
       let from = Math.max(r.from, updateFrom);
       let to = Math.min(r.to, updateTo);
-      if (to > from) {
+      if (to >= from) {
         const fromLine = view.state.doc.lineAt(from);
         const toLine = fromLine.to < to ? view.state.doc.lineAt(to) : fromLine;
         let start = Math.max(r.from, fromLine.from);

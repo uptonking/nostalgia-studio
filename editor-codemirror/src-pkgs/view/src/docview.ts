@@ -44,6 +44,7 @@ import {
   decorations as decorationsFacet,
   outerDecorations,
   ChangedRange,
+  editable,
   type ScrollTarget,
   scrollHandler,
   getScrollMargins,
@@ -61,7 +62,7 @@ type Composition = {
 };
 
 export class DocView extends ContentView {
-  children!: BlockView[];
+  declare children: BlockView[];
 
   decorations: readonly DecorationSet[] = [];
   dynamicDecorationMap: boolean[] = [false];
@@ -392,6 +393,7 @@ export class DocView extends ContentView {
     const focused = activeElt == this.dom;
     const selectionNotFocus =
       !focused &&
+      !(this.view.state.facet(editable) || this.dom.tabIndex > -1) &&
       hasSelection(this.dom, this.view.observer.selectionRange) &&
       !(activeElt && this.dom.contains(activeElt));
     if (!(focused || fromPointer || selectionNotFocus)) return;
@@ -864,7 +866,7 @@ export class DocView extends ContentView {
   }
 
   // Will never be called but needs to be present
-  split!: () => ContentView;
+  declare split: () => ContentView;
 }
 
 function betweenUneditable(pos: DOMPos) {
@@ -987,6 +989,9 @@ class DecorationComparator {
   }
   comparePoint(from: number, to: number) {
     addRange(from, to, this.changes);
+  }
+  boundChange(pos: number) {
+    addRange(pos, pos, this.changes);
   }
 }
 

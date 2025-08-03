@@ -184,14 +184,17 @@ export const baseTheme = buildTheme(
       display: 'flex',
       height: '100%',
       boxSizing: 'border-box',
-      insetInlineStart: 0,
       zIndex: 200,
     },
+    '.cm-gutters-before': { insetInlineStart: 0 },
+    '.cm-gutters-after': { insetInlineEnd: 0 },
 
     '&light .cm-gutters': {
       backgroundColor: '#f5f5f5',
       color: '#6c6c6c',
-      borderRight: '1px solid #ddd',
+      border: '0px solid #ddd',
+      '&.cm-gutters-before': { borderRightWidth: '1px' },
+      '&.cm-gutters-after': { borderLeftWidth: '1px' },
     },
 
     '&dark .cm-gutters': {
@@ -249,6 +252,22 @@ export const baseTheme = buildTheme(
       color: 'white',
     },
 
+    '.cm-dialog': {
+      padding: '2px 19px 4px 6px',
+      position: 'relative',
+      '& label': { fontSize: '80%' },
+    },
+    '.cm-dialog-close': {
+      position: 'absolute',
+      top: '3px',
+      right: '4px',
+      backgroundColor: 'inherit',
+      border: 'none',
+      font: 'inherit',
+      fontSize: '14px',
+      padding: '0',
+    },
+
     '.cm-tab': {
       display: 'inline-block',
       overflow: 'hidden',
@@ -266,6 +285,7 @@ export const baseTheme = buildTheme(
       color: '#888',
       display: 'inline-block',
       verticalAlign: 'top',
+      userSelect: 'none',
     },
 
     '.cm-highlightSpace': {

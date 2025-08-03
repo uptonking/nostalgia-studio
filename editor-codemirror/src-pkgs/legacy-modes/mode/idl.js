@@ -907,7 +907,6 @@ const builtinArray = [
   'zoom_24',
 ];
 const builtins = wordRegexp(builtinArray);
-
 const keywordArray = [
   'begin',
   'end',
@@ -935,9 +934,7 @@ const keywordArray = [
   'function',
 ];
 const keywords = wordRegexp(keywordArray);
-
 const identifiers = new RegExp('^[_a-z\xa1-\uffff][_a-z0-9\xa1-\uffff]*', 'i');
-
 const singleOperators = /[+\-*&=<>\/@#~$]/;
 const boolOperators = new RegExp('(and|or|eq|lt|le|gt|ge|ne|not)', 'i');
 

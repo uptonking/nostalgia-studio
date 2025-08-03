@@ -19,7 +19,6 @@ function matcher(decorator: MatchDecorator): Extension {
 
 const tabDeco = Decoration.mark({ class: 'cm-highlightTab' });
 const spaceDeco = Decoration.mark({ class: 'cm-highlightSpace' });
-
 const whitespaceHighlighter = matcher(
   new MatchDecorator({
     regexp: /\t| /g,
@@ -40,7 +39,6 @@ const trailingHighlighter = matcher(
   new MatchDecorator({
     regexp: /\s+$/g,
     decoration: Decoration.mark({ class: 'cm-trailingSpace' }),
-    boundary: /\S/,
   }),
 );
 

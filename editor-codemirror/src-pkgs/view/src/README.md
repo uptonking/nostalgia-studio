@@ -95,7 +95,11 @@ example](../../examples/gutter/).
 
 @gutterLineClass
 
+@gutterWidgetClass
+
 @lineNumberMarkers
+
+@lineNumberWidgetMarker
 
 ### Tooltips
 
@@ -115,6 +119,8 @@ See also the [tooltip example](../../examples/tooltip/).
 @getTooltip
 
 @hoverTooltip
+
+@HoverTooltipSource
 
 @hasHoverTooltips
 
@@ -140,6 +146,10 @@ See also the [panel example](../../examples/panel/).
 @getPanel
 
 @panels
+
+@showDialog
+
+@getDialog
 
 ### Layers
 

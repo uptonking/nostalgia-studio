@@ -67,7 +67,6 @@ export function clike(parserConfig) {
   // An optional function that takes a {string} token and returns true if it
   // should be treated as a builtin.
   const isReservedIdentifier = parserConfig.isReservedIdentifier || false;
-
   let curPunc;
   let isDefKeyword;
 
@@ -317,7 +316,6 @@ const cKeywords =
   'auto if break case register continue return default do sizeof ' +
   'static else struct switch extern typedef union for goto while enum const ' +
   'volatile inline restrict asm fortran';
-
 // Keywords from https://en.cppreference.com/w/cpp/keyword includes C++20.
 const cppKeywords =
   'alignas alignof and and_eq audit axiom bitand bitor catch ' +
@@ -326,26 +324,22 @@ const cppKeywords =
   'not not_eq operator or or_eq override private protected public ' +
   'reinterpret_cast requires static_assert static_cast template this ' +
   'thread_local throw try typeid typename using virtual xor xor_eq';
-
 const objCKeywords =
   'bycopy byref in inout oneway out self super atomic nonatomic retain copy ' +
   'readwrite readonly strong weak assign typeof nullable nonnull null_resettable _cmd ' +
   '@interface @implementation @end @protocol @encode @property @synthesize @dynamic @class ' +
   '@public @package @private @protected @required @optional @try @catch @finally @import ' +
   '@selector @encode @defs @synchronized @autoreleasepool @compatibility_alias @available';
-
 const objCBuiltins =
   'FOUNDATION_EXPORT FOUNDATION_EXTERN NS_INLINE NS_FORMAT_FUNCTION ' +
   ' NS_RETURNS_RETAINEDNS_ERROR_ENUM NS_RETURNS_NOT_RETAINED NS_RETURNS_INNER_POINTER ' +
   'NS_DESIGNATED_INITIALIZER NS_ENUM NS_OPTIONS NS_REQUIRES_NIL_TERMINATION ' +
   'NS_ASSUME_NONNULL_BEGIN NS_ASSUME_NONNULL_END NS_SWIFT_NAME NS_REFINED_FOR_SWIFT';
-
 // Do not use this. Use the cTypes function below. This is global just to avoid
 // excessive calls when cTypes is being called multiple times during a parse.
 const basicCTypes = words(
   'int long char short double float unsigned signed ' + 'void bool',
 );
-
 // Do not use this. Use the objCTypes function below. This is global just to avoid
 // excessive calls when objCTypes is being called multiple times during a parse.
 const basicObjCTypes = words('SEL instancetype id Class Protocol BOOL');
@@ -1118,6 +1112,8 @@ export const dart = clike({
   blockKeywords: words('try catch finally do else for if switch while'),
   builtin: words('void bool num int double dynamic var String Null Never'),
   atoms: words('true false null'),
+  // clike numbers without the suffixes, and with '_' separators.
+  number: /^(?:0x[a-f\d_]+|(?:[\d_]+\.?[\d_]*|\.[\d_]+)(?:e[-+]?[\d_]+)?)/i,
   hooks: {
     '@': function (stream) {
       stream.eatWhile(/[\w\$_\.]/);

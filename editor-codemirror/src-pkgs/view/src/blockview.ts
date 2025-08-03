@@ -1,29 +1,28 @@
-import { Text } from '@codemirror/state';
-
-import { type Attrs, attrsEq, combineAttrs, updateAttrs } from './attributes';
-import browser from './browser';
 import {
   ContentView,
   DOMPos,
-  mergeChildrenInto,
-  noChildren,
   ViewFlag,
+  noChildren,
+  mergeChildrenInto,
 } from './contentview';
-import {
-  type LineDecoration,
-  type PointDecoration,
-  WidgetType,
-} from './decoration';
 import type { DocView } from './docview';
-import { clientRectsFor, type Rect, flattenRect, clearAttributes } from './dom';
-import type { EditorView } from './editorview';
 import {
-  coordsInChildren,
+  TextView,
+  MarkView,
   inlineDOMAtPos,
   joinInlineInto,
-  MarkView,
-  TextView,
+  coordsInChildren,
 } from './inlineview';
+import { clientRectsFor, type Rect, flattenRect, clearAttributes } from './dom';
+import {
+  type LineDecoration,
+  WidgetType,
+  type PointDecoration,
+} from './decoration';
+import { type Attrs, combineAttrs, attrsEq, updateAttrs } from './attributes';
+import browser from './browser';
+import type { EditorView } from './editorview';
+import { Text } from '@codemirror/state';
 
 export interface BlockView extends ContentView {
   covers(side: -1 | 1): boolean;

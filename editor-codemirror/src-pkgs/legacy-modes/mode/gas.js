@@ -3,13 +3,11 @@ function mkGas(arch) {
   // populate this array with custom parsing functions which will be
   // tried in the event that the standard functions do not find a match.
   const custom = [];
-
   // The symbol used to start a line comment changes based on the target
   // architecture.
   // If no architecture is pased in "parserConfig" then only multiline
   // comments will have syntax support.
   let lineCommentStartSymbol = '';
-
   // These directives are architecture independent.
   // Machine specific directives should go in their respective
   // architecture initialization function.
@@ -123,7 +121,6 @@ function mkGas(arch) {
     '.weakref': 'builtin',
     '.word': 'builtin',
   };
-
   const registers = {};
 
   function x86() {

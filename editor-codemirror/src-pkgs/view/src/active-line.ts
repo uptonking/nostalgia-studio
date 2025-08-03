@@ -10,7 +10,6 @@ export function highlightActiveLine(): Extension {
 }
 
 const lineDeco = Decoration.line({ class: 'cm-activeLine' });
-
 const activeLineHighlighter = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;

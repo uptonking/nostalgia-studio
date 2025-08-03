@@ -24,7 +24,6 @@ const keywords = buildRegexp(
   ],
   { suffix: notCharacterOrDash },
 );
-
 const punctuation = /[\[\]{},;`\\\.]|@[({]/;
 const wordOperators = buildRegexp(
   [
@@ -43,12 +42,9 @@ const wordOperators = buildRegexp(
 );
 const symbolOperators = /[+\-*\/%]=|\+\+|--|\.\.|[+\-*&^%:=!|\/]|<(?!#)|(?!#)>/;
 const operators = buildRegexp([wordOperators, symbolOperators], { suffix: '' });
-
 const numbers =
   /^((0x[\da-f]+)|((\d+\.\d+|\d\.|\.\d+|\d+)(e[\+\-]?\d+)?))[ld]?([kmgtp]b)?/i;
-
 const identifiers = /^[A-Za-z\_][A-Za-z\-\_\d]*\b/;
-
 const symbolBuiltins = /[A-Z]:|%|\?/i;
 const namedBuiltins = buildRegexp(
   [
@@ -151,14 +147,12 @@ const variableBuiltins = buildRegexp(
   ],
   { prefix: '\\$', suffix: '' },
 );
-
 const builtins = buildRegexp(
   [symbolBuiltins, namedBuiltins, variableBuiltins],
   {
     suffix: notCharacterOrDash,
   },
 );
-
 const grammar = {
   keyword: keywords,
   number: numbers,

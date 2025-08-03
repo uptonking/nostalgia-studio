@@ -2,16 +2,13 @@ import { simpleMode } from './simple-mode.js';
 
 const from = 'from';
 const fromRegex = new RegExp('^(\\s*)\\b(' + from + ')\\b', 'i');
-
 const shells = ['run', 'cmd', 'entrypoint', 'shell'];
 const shellsAsArrayRegex = new RegExp(
   '^(\\s*)(' + shells.join('|') + ')(\\s+\\[)',
   'i',
 );
-
 const expose = 'expose';
 const exposeRegex = new RegExp('^(\\s*)(' + expose + ')(\\s+)', 'i');
-
 const others = [
   'arg',
   'from',
@@ -28,7 +25,6 @@ const others = [
   'healthcheck',
   'shell',
 ];
-
 // Collect all Dockerfile directives
 const instructions = [from, expose].concat(shells).concat(others);
 const instructionRegex = '(' + instructions.join('|') + ')';

@@ -1,24 +1,40 @@
-import { EditorView } from '@codemirror/view';
+import {
+  EditorView,
+  type Decoration,
+  type GutterMarker,
+} from '@codemirror/view';
 import {
   type EditorState,
   EditorSelection,
   Facet,
+  type Transaction,
   StateEffect,
   StateField,
   type StateCommand,
+  type RangeSetBuilder,
 } from '@codemirror/state';
 import type { Chunk } from './chunk';
 
 type Config = {
   sibling?: () => EditorView;
-  markGutter: boolean;
-  showTypewriterAnimation?: boolean;
-  showAnimeWithDiffOff?: boolean;
-  lineAnimeDuration: number;
-  totalAnimeDuration: number;
   highlightChanges: boolean;
+  markGutter: boolean;
   syntaxHighlightDeletions?: boolean;
-  mergeControls?: boolean;
+  syntaxHighlightDeletionsMaxLength?: number;
+  mergeControls?:
+    | boolean
+    | ((
+        type: 'accept' | 'reject',
+        action: (event: MouseEvent) => void,
+      ) => HTMLElement);
+  overrideChunk?:
+    | ((
+        state: EditorState,
+        chunk: Chunk,
+        builder: RangeSetBuilder<Decoration>,
+        gutterBuilder: RangeSetBuilder<GutterMarker> | null,
+      ) => boolean)
+    | undefined;
   side: 'a' | 'b';
 };
 
@@ -28,21 +44,27 @@ export const mergeConfig = Facet.define<Config, Config>({
 
 export const setChunks = StateEffect.define<readonly Chunk[]>();
 
+export const computeChunks =
+  Facet.define<
+    (current: readonly Chunk[], tr: Transaction) => readonly Chunk[]
+  >();
+
 export const ChunkField = StateField.define<readonly Chunk[]>({
   create(state) {
     return null as any;
   },
   update(current, tr) {
     for (const e of tr.effects) if (e.is(setChunks)) current = e.value;
+    for (const comp of tr.state.facet(computeChunks))
+      current = comp(current, tr);
     return current;
   },
 });
 
-/** Get the changed chunks for the merge view that this editor is part
- * of, plus the side it is on if it is part of a `MergeView`. Returns
- * null if the editor doesn't have a merge extension active or the
- * merge view hasn't finished initializing yet.
- */
+/// Get the changed chunks for the merge view that this editor is part
+/// of, plus the side it is on if it is part of a `MergeView`. Returns
+/// null if the editor doesn't have a merge extension active or the
+/// merge view hasn't finished initializing yet.
 export function getChunks(state: EditorState) {
   const field = state.field(ChunkField, false);
   if (!field) return null;

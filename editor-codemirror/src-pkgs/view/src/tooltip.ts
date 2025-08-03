@@ -10,14 +10,19 @@ import {
   type FacetReader,
 } from '@codemirror/state';
 import { EditorView } from './editorview';
-import { ViewPlugin, type ViewUpdate, logException } from './extension';
+import {
+  ViewPlugin,
+  type ViewUpdate,
+  logException,
+  getScrollMargins,
+} from './extension';
 import { Direction } from './bidi';
 import { WidgetView } from './inlineview';
 import type { Rect } from './dom';
 import browser from './browser';
 
 type Measured = {
-  editor: DOMRect;
+  visible: Rect;
   parent: DOMRect;
   pos: (Rect | null)[];
   size: DOMRect[];
@@ -128,9 +133,10 @@ export function tooltips(
     parent?: HTMLElement;
     /// By default, when figuring out whether there is room for a
     /// tooltip at a given position, the extension considers the entire
-    /// space between 0,0 and `innerWidth`,`innerHeight` to be available
-    /// for showing tooltips. You can provide a function here that
-    /// returns an alternative rectangle.
+    /// space between 0,0 and
+    /// `documentElement.clientWidth`/`clientHeight` to be available for
+    /// showing tooltips. You can provide a function here that returns
+    /// an alternative rectangle.
     tooltipSpace?: (view: EditorView) => Rect;
   } = {},
 ): Extension {
@@ -144,8 +150,13 @@ type TooltipConfig = {
 };
 
 function windowSpace(view: EditorView) {
-  const { win } = view;
-  return { top: 0, left: 0, bottom: win.innerHeight, right: win.innerWidth };
+  const docElt = view.dom.ownerDocument.documentElement;
+  return {
+    top: 0,
+    left: 0,
+    bottom: docElt.clientHeight,
+    right: docElt.clientWidth,
+  };
 }
 
 const tooltipConfig = Facet.define<Partial<TooltipConfig>, TooltipConfig>({
@@ -158,9 +169,7 @@ const tooltipConfig = Facet.define<Partial<TooltipConfig>, TooltipConfig>({
       values.find((conf) => conf.tooltipSpace)?.tooltipSpace || windowSpace,
   }),
 });
-
 const knownHeight = new WeakMap<TooltipView, number>();
-
 const tooltipPlugin = ViewPlugin.fromClass(
   class {
     manager: TooltipViewManager;
@@ -174,7 +183,7 @@ const tooltipPlugin = ViewPlugin.fromClass(
     position: 'fixed' | 'absolute';
     madeAbsolute = false;
     parent: HTMLElement | null;
-    container!: HTMLElement;
+    declare container: HTMLElement;
     classes: string;
     intersectionObserver: IntersectionObserver | null;
     resizeObserver: ResizeObserver | null;
@@ -314,7 +323,6 @@ const tooltipPlugin = ViewPlugin.fromClass(
     }
 
     readMeasure(): Measured {
-      const editor = this.view.dom.getBoundingClientRect();
       let scaleX = 1;
       let scaleY = 1;
       let makeAbsolute = false;
@@ -344,9 +352,18 @@ const tooltipPlugin = ViewPlugin.fromClass(
           ({ scaleX, scaleY } = this.view.viewState);
         }
       }
+      const visible = this.view.scrollDOM.getBoundingClientRect();
+      const margins = getScrollMargins(this.view);
       return {
-        editor,
-        parent: this.parent ? this.container.getBoundingClientRect() : editor,
+        visible: {
+          left: visible.left + margins.left,
+          top: visible.top + margins.top,
+          right: visible.right - margins.right,
+          bottom: visible.bottom - margins.bottom,
+        },
+        parent: this.parent
+          ? this.container.getBoundingClientRect()
+          : this.view.dom.getBoundingClientRect(),
         pos: this.manager.tooltips.map((t, i) => {
           const tv = this.manager.tooltipViews[i];
           return tv.getCoords
@@ -371,7 +388,7 @@ const tooltipPlugin = ViewPlugin.fromClass(
           t.dom.style.position = 'absolute';
       }
 
-      const { editor, space, scaleX, scaleY } = measured;
+      const { visible, space, scaleX, scaleY } = measured;
       const others = [];
       for (let i = 0; i < this.manager.tooltips.length; i++) {
         const tooltip = this.manager.tooltips[i];
@@ -382,10 +399,11 @@ const tooltipPlugin = ViewPlugin.fromClass(
         // Hide tooltips that are outside of the editor.
         if (
           !pos ||
-          pos.bottom <= Math.max(editor.top, space.top) ||
-          pos.top >= Math.min(editor.bottom, space.bottom) ||
-          pos.right < Math.max(editor.left, space.left) - 0.1 ||
-          pos.left > Math.min(editor.right, space.right) + 0.1
+          (tooltip.clip !== false &&
+            (pos.bottom <= Math.max(visible.top, space.top) ||
+              pos.top >= Math.min(visible.bottom, space.bottom) ||
+              pos.right < Math.max(visible.left, space.left) - 0.1 ||
+              pos.left > Math.min(visible.right, space.right) + 0.1))
         ) {
           dom.style.top = Outside;
           continue;
@@ -422,9 +440,8 @@ const tooltipPlugin = ViewPlugin.fromClass(
         if (
           !tooltip.strictSide &&
           (above
-            ? pos.top - (size.bottom - size.top) - offset.y < space.top
-            : pos.bottom + (size.bottom - size.top) + offset.y >
-              space.bottom) &&
+            ? pos.top - height - arrowHeight - offset.y < space.top
+            : pos.bottom + height + arrowHeight + offset.y > space.bottom) &&
           above == space.bottom - pos.bottom > pos.top - space.top
         )
           above = this.above[i] = !above;
@@ -458,10 +475,10 @@ const tooltipPlugin = ViewPlugin.fromClass(
                 : r.bottom + arrowHeight + 2;
         if (this.position == 'absolute') {
           dom.style.top = (top - measured.parent.top) / scaleY + 'px';
-          dom.style.left = (left - measured.parent.left) / scaleX + 'px';
+          setLeftStyle(dom, (left - measured.parent.left) / scaleX);
         } else {
           dom.style.top = top / scaleY + 'px';
-          dom.style.left = left / scaleX + 'px';
+          setLeftStyle(dom, left / scaleX);
         }
         if (arrow) {
           const arrowLeft =
@@ -500,9 +517,15 @@ const tooltipPlugin = ViewPlugin.fromClass(
   },
 );
 
+function setLeftStyle(elt: HTMLElement, value: number) {
+  const current = parseInt(elt.style.left, 10);
+  if (isNaN(current) || Math.abs(value - current) > 1)
+    elt.style.left = value + 'px';
+}
+
 const baseTheme = EditorView.baseTheme({
   '.cm-tooltip': {
-    zIndex: 100,
+    zIndex: 500,
     boxSizing: 'border-box',
   },
   '&light .cm-tooltip': {
@@ -587,6 +610,10 @@ export interface Tooltip {
   /// When set to true, show a triangle connecting the tooltip element
   /// to position `pos`.
   arrow?: boolean;
+  /// By default, tooltips are hidden when their position is outside
+  /// of the visible editor content. Set this to false to turn that
+  /// off.
+  clip?: boolean;
 }
 
 /// Describes the way a tooltip is displayed.

@@ -8,7 +8,6 @@ function words(str) {
 const blockKeywordsStr =
   'body catch class do else enum for foreach foreach_reverse if in interface mixin ' +
   'out scope struct switch try union unittest version while with';
-
 const parserConfig = {
   keywords: words(
     'abstract alias align asm assert auto break case cast cdouble cent cfloat const continue ' +
@@ -40,7 +39,6 @@ const atoms = parserConfig.atoms;
 const hooks = parserConfig.hooks;
 const multiLineStrings = parserConfig.multiLineStrings;
 const isOperatorChar = /[+\-*&%=<>!?|\/]/;
-
 let curPunc;
 
 function tokenBase(stream, state) {

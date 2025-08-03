@@ -1,25 +1,27 @@
+import {
+  Tree,
+  type Input,
+  type TreeFragment,
+  NodeType,
+  NodeSet,
+  type PartialParse,
+  Parser,
+  NodeProp,
+} from '@lezer/common';
+import { type Tag, tags as highlightTags, styleTags } from '@lezer/highlight';
 import type { EditorState, Facet } from '@codemirror/state';
 import {
-  type Input,
-  NodeProp,
-  NodeSet,
-  NodeType,
-  Parser,
-  type PartialParse,
-  type SyntaxNode,
-  Tree,
-  type TreeFragment,
-} from '@lezer/common';
-import { styleTags, type Tag, tags as highlightTags } from '@lezer/highlight';
-
-import { getIndentUnit, type IndentContext, indentService } from './indent';
-import {
-  defineLanguageFacet,
   Language,
+  defineLanguageFacet,
   languageDataProp,
   ParseContext,
-  syntaxTree,
 } from './language';
+import {
+  type TreeIndentContext,
+  type IndentContext,
+  indentNodeProp,
+  getIndentUnit,
+} from './indent';
 import { StringStream } from './stringstream';
 
 export { StringStream };
@@ -68,6 +70,9 @@ export interface StreamParser<State> {
   /// token name that exists as a property in this object, the
   /// corresponding tags will be assigned to the token.
   tokenTable?: { [name: string]: Tag | readonly Tag[] };
+  /// By default, adjacent tokens of the same type are merged in the
+  /// output tree. Set this to false to disable that.
+  mergeTokens?: boolean;
 }
 
 function fullParser<State>(
@@ -82,6 +87,7 @@ function fullParser<State>(
     indent: spec.indent || (() => null),
     languageData: spec.languageData || {},
     tokenTable: spec.tokenTable || noTokens,
+    mergeTokens: spec.mergeTokens !== false,
   };
 }
 
@@ -122,13 +128,8 @@ export class StreamLanguage<State> extends Language {
         return new Parse(self, input, fragments, ranges);
       }
     })();
-    super(
-      data,
-      impl,
-      [indentService.of((cx, pos) => this.getIndent(cx, pos))],
-      parser.name,
-    );
-    this.topNode = docID(data);
+    super(data, impl, [], parser.name);
+    this.topNode = docID(data, this);
     self = this;
     this.streamParser = p;
     this.stateAfter = new NodeProp<State>({ perNode: true });
@@ -142,18 +143,21 @@ export class StreamLanguage<State> extends Language {
     return new StreamLanguage(spec);
   }
 
-  private getIndent(cx: IndentContext, pos: number) {
-    const tree = syntaxTree(cx.state);
-    let at: SyntaxNode | null = tree.resolve(pos);
-    while (at && at.type != this.topNode) at = at.parent;
-    if (!at) return null;
+  /// @internal
+  getIndent(cx: TreeIndentContext) {
     let from = undefined;
     const { overrideIndentation } = cx.options;
     if (overrideIndentation) {
       from = IndentedFrom.get(cx.state);
-      if (from != null && from < pos - 1e4) from = undefined;
+      if (from != null && from < cx.pos - 1e4) from = undefined;
     }
-    const start = findState(this, tree, 0, at.from, from ?? pos);
+    const start = findState(
+      this,
+      cx.node.tree!,
+      cx.node.from,
+      cx.node.from,
+      from ?? cx.pos,
+    );
     let statePos;
     let state;
     if (start) {
@@ -161,12 +165,12 @@ export class StreamLanguage<State> extends Language {
       statePos = start.pos + 1;
     } else {
       state = this.streamParser.startState(cx.unit);
-      statePos = 0;
+      statePos = cx.node.from;
     }
-    if (pos - statePos > C.MaxIndentScanDist) return null;
-    while (statePos < pos) {
+    if (cx.pos - statePos > C.MaxIndentScanDist) return null;
+    while (statePos < cx.pos) {
       const line = cx.state.doc.lineAt(statePos);
-      const end = Math.min(pos, line.to);
+      const end = Math.min(cx.pos, line.to);
       if (line.length) {
         const indentation = overrideIndentation
           ? overrideIndentation(line.from)
@@ -182,10 +186,10 @@ export class StreamLanguage<State> extends Language {
       } else {
         this.streamParser.blankLine(state, cx.unit);
       }
-      if (end == pos) break;
+      if (end == cx.pos) break;
       statePos = line.to + 1;
     }
-    const line = cx.lineAt(pos);
+    const line = cx.lineAt(cx.pos);
     if (overrideIndentation && from == null)
       IndentedFrom.set(cx.state, line.from);
     return this.streamParser.indent(state, /^\s*(.*)/.exec(line.text)![1], cx);
@@ -232,7 +236,7 @@ function cutTree(
   inside: boolean,
 ): Tree | null {
   if (inside && from <= 0 && to >= tree.length) return tree;
-  if (!inside && tree.type == lang.topNode) inside = true;
+  if (!inside && from == 0 && tree.type == lang.topNode) inside = true;
   for (let i = tree.children.length - 1; i >= 0; i--) {
     const pos = tree.positions[i];
     const child = tree.children[i];
@@ -256,6 +260,7 @@ function findStartInFragments<State>(
   lang: StreamLanguage<State>,
   fragments: readonly TreeFragment[],
   startPos: number,
+  endPos: number,
   editorState?: EditorState,
 ) {
   for (const f of fragments) {
@@ -268,6 +273,7 @@ function findStartInFragments<State>(
     let tree;
     if (
       found &&
+      found.pos <= endPos &&
       (tree = cutTree(
         lang,
         f.tree,
@@ -290,7 +296,6 @@ const enum C {
   ChunkSize = 2048,
   MaxDistanceBeforeViewport = 1e5,
   MaxIndentScanDist = 1e4,
-  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   MaxLineLength = 1e4,
 }
 
@@ -319,6 +324,7 @@ class Parse<State> implements PartialParse {
       lang,
       fragments,
       from,
+      this.to,
       context?.state,
     );
     this.state = state;
@@ -329,7 +335,11 @@ class Parse<State> implements PartialParse {
     }
     if (
       context &&
-      this.parsedPos < context.viewport.from - C.MaxDistanceBeforeViewport
+      this.parsedPos < context.viewport.from - C.MaxDistanceBeforeViewport &&
+      ranges.some(
+        (r) =>
+          r.from <= context!.viewport.from && r.to >= context!.viewport.from,
+      )
     ) {
       this.state = this.lang.streamParser.startState(
         getIndentUnit(context.state),
@@ -406,13 +416,8 @@ class Parse<State> implements PartialParse {
     while (this.ranges[this.rangeIndex].to < this.parsedPos) this.rangeIndex++;
   }
 
-  emitToken(
-    id: number,
-    from: number,
-    to: number,
-    size: number,
-    offset: number,
-  ) {
+  emitToken(id: number, from: number, to: number, offset: number) {
+    let size = 4;
     if (this.ranges.length > 1) {
       offset = this.skipGapsTo(from, offset, 1);
       from += offset;
@@ -421,7 +426,16 @@ class Parse<State> implements PartialParse {
       to += offset;
       size += this.chunk.length - len0;
     }
-    this.chunk.push(id, from, to, size);
+    const last = this.chunk.length - 4;
+    if (
+      this.lang.streamParser.mergeTokens &&
+      size == 4 &&
+      last >= 0 &&
+      this.chunk[last] == id &&
+      this.chunk[last + 2] == from
+    )
+      this.chunk[last + 2] = to;
+    else this.chunk.push(id, from, to, size);
     return offset;
   }
 
@@ -444,7 +458,6 @@ class Parse<State> implements PartialParse {
             this.lang.tokenTable.resolve(token),
             this.parsedPos + stream.start,
             this.parsedPos + stream.pos,
-            4,
             offset,
           );
         if (stream.start > C.MaxLineLength) break;
@@ -499,14 +512,11 @@ function readToken<State>(
 }
 
 const noTokens: { [name: string]: Tag } = Object.create(null);
-
 const typeArray: NodeType[] = [NodeType.none];
 const nodeSet = new NodeSet(typeArray);
 const warned: string[] = [];
-
 // Cache of node types by name and tags
 const byTag: { [key: string]: NodeType } = Object.create(null);
-
 const defaultTable: { [name: string]: number } = Object.create(null);
 for (const [legacyName, name] of [
   ['variable', 'variableName'],
@@ -588,11 +598,17 @@ function createTokenType(
   return type.id;
 }
 
-function docID(data: Facet<{ [name: string]: any }>) {
+function docID(
+  data: Facet<{ [name: string]: any }>,
+  lang: StreamLanguage<unknown>,
+) {
   const type = NodeType.define({
     id: typeArray.length,
     name: 'Document',
-    props: [languageDataProp.add(() => data)],
+    props: [
+      languageDataProp.add(() => data),
+      indentNodeProp.add(() => (cx) => lang.getIndent(cx)),
+    ],
     top: true,
   });
   typeArray.push(type);

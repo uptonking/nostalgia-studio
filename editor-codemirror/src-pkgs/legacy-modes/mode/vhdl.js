@@ -19,7 +19,6 @@ function metaHook(stream) {
 const atoms = words('null');
 const hooks = { '`': metaHook, $: metaHook };
 const multiLineStrings = false;
-
 const keywords = words(
   'abs,access,after,alias,all,and,architecture,array,assert,attribute,begin,block,' +
     'body,buffer,bus,case,component,configuration,constant,disconnect,downto,else,elsif,end,end block,end case,' +
@@ -29,11 +28,9 @@ const keywords = words(
     'postponed,procedure,process,pure,range,record,register,reject,rem,report,return,rol,ror,select,severity,signal,' +
     'sla,sll,sra,srl,subtype,then,to,transport,type,unaffected,units,until,use,variable,wait,when,while,with,xnor,xor',
 );
-
 const blockKeywords = words(
   'architecture,entity,begin,case,port,else,elsif,end,for,function,if',
 );
-
 const isOperatorChar = /[&|~><!\)\(*#%@+\/=?\:;}{,\.\^\-\[\]]/;
 let curPunc;
 
