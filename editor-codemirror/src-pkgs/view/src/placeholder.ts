@@ -70,7 +70,7 @@ export function placeholder(
           : Decoration.none;
       }
 
-      declare update: () => void; // Kludge to convince TypeScript that this is a plugin value
+      update: () => void; // Kludge to convince TypeScript that this is a plugin value
 
       get decorations() {
         return this.view.state.doc.length ? Decoration.none : this.placeholder;

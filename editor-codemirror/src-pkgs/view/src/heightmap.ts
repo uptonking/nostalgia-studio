@@ -215,7 +215,7 @@ export abstract class HeightMap {
     public flags: number = Flag.Outdated,
   ) {}
 
-  declare size: number;
+  size: number;
 
   get outdated() {
     return (this.flags & Flag.Outdated) > 0;

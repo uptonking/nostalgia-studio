@@ -86,8 +86,30 @@ async function backupAndUpdateCode(backupFolderName = dateNow()) {
   );
 }
 
-
 function formatCode() {}
+
+async function replaceFilesBeforePatch() {
+  const projectRoot = path.resolve(import.meta.dirname, `../..`);
+  const filesToReplace = [
+    {
+      src: `${projectRoot}/scripts/codemirror-codemod/replacements/language-data.ts`,
+      dest: `${projectRoot}/editor-codemirror/src-pkgs/language-data/src/language-data.ts`,
+    },
+  ];
+  // console.log(';; filesToReplace ', filesToReplace);
+
+  const cpFile = async (src: string, dest: string) => {
+    try {
+      await copy(src, dest, { overwrite: true, preserveTimestamps: true });
+    } catch (error) {
+      console.warn(';; cpFile failed ', src, dest, error);
+    }
+  };
+
+  await Promise.allSettled(
+    filesToReplace.map((file) => cpFile(file.src, file.dest)),
+  );
+}
 
 /**
  * executing steps sequentially and separately is more reliable
@@ -98,6 +120,8 @@ async function runMod() {
   // } catch (error) {
   //   console.log(';; backupThenUpdateCode failed ', error);
   // }
+
+  // await replaceFilesBeforePatch();
 
   // formatCode(); // lint + format
 

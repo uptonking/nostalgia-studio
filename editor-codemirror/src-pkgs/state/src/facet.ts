@@ -128,7 +128,7 @@ export class Facet<Input, Output = readonly Input[]>
     return this.compute([field], (state) => get!(state.field(field)));
   }
 
-  declare tag: Output;
+  tag: Output;
 }
 
 /// A facet reader can be used to fetch the value of a facet, through
@@ -160,7 +160,7 @@ const enum Provider {
 
 class FacetProvider<Input> {
   readonly id = nextID++;
-  declare extension: Extension; // Kludge to convince the type system these count as extensions
+  extension: Extension; // Kludge to convince the type system these count as extensions
 
   constructor(
     readonly dependencies: readonly Slot<any>[],
@@ -479,7 +479,7 @@ class PrecExtension {
     readonly inner: Extension,
     readonly prec: number,
   ) {}
-  declare extension: Extension;
+  extension: Extension;
 }
 
 /// Extension compartments can be used to make a configuration
@@ -522,7 +522,7 @@ export class CompartmentInstance {
     readonly compartment: Compartment,
     readonly inner: Extension,
   ) {}
-  declare extension: Extension;
+  extension: Extension;
 }
 
 export interface DynamicSlot {

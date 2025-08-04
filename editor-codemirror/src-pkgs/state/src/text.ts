@@ -184,7 +184,7 @@ export abstract class Text implements Iterable<string> {
   abstract readonly children: readonly Text[] | null;
 
   /// @hide
-  declare [Symbol.iterator]: () => Iterator<string>;
+  [Symbol.iterator]: () => Iterator<string>;
 
   /// Create a `Text` instance for the given array of lines.
   static of(text: readonly string[]): Text {
@@ -614,7 +614,7 @@ class RawTextCursor implements TextIterator {
   }
 
   /// @internal
-  declare [Symbol.iterator]: () => Iterator<string>;
+  [Symbol.iterator]: () => Iterator<string>;
 }
 
 class PartialTextCursor implements TextIterator {
@@ -665,7 +665,7 @@ class PartialTextCursor implements TextIterator {
   }
 
   /// @internal
-  declare [Symbol.iterator]: () => Iterator<string>;
+  [Symbol.iterator]: () => Iterator<string>;
 }
 
 class LineCursor implements TextIterator {
@@ -702,7 +702,7 @@ class LineCursor implements TextIterator {
   }
 
   /// @internal
-  declare [Symbol.iterator]: () => Iterator<string>;
+  [Symbol.iterator]: () => Iterator<string>;
 }
 
 if (typeof Symbol !== 'undefined') {

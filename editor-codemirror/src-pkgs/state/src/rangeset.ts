@@ -14,20 +14,20 @@ export abstract class RangeValue {
   /// The bias value at the start of the range. Determines how the
   /// range is positioned relative to other ranges starting at this
   /// position. Defaults to 0.
-  declare startSide: number;
+  startSide: number;
   /// The bias value at the end of the range. Defaults to 0.
-  declare endSide: number;
+  endSide: number;
 
   /// The mode with which the location of the range should be mapped
   /// when its `from` and `to` are the same, to decide whether a
   /// change deletes the range. Defaults to `MapMode.TrackDel`.
-  declare mapMode: MapMode;
+  mapMode: MapMode;
   /// Determines whether this value marks a point range. Regular
   /// ranges affect the part of the document they cover, and are
   /// meaningless when empty. Point ranges have a meaning on their
   /// own. When non-empty, a point range is treated as atomic and
   /// shadows any ranges contained in it.
-  declare point: boolean;
+  point: boolean;
 
   /// Create a [range](#state.Range) with this value.
   range(from: number, to = from) {
@@ -726,12 +726,12 @@ function findSharedChunks(
 }
 
 class LayerCursor<T extends RangeValue> {
-  declare from: number;
-  declare to: number;
-  declare value: T | null;
+  from: number;
+  to: number;
+  value: T | null;
 
-  declare chunkIndex: number;
-  declare rangeIndex: number;
+  chunkIndex: number;
+  rangeIndex: number;
 
   constructor(
     readonly layer: RangeSet<T>,
@@ -841,10 +841,10 @@ class LayerCursor<T extends RangeValue> {
 }
 
 class HeapCursor<T extends RangeValue> {
-  declare from: number;
-  declare to: number;
-  declare value: T | null;
-  declare rank: number;
+  from: number;
+  to: number;
+  value: T | null;
+  rank: number;
 
   constructor(readonly heap: LayerCursor<T>[]) {}
 

@@ -32,7 +32,7 @@ export {
   type Completion,
   type CompletionInfo,
   type CompletionSection,
-  type CompletionContext,
+  CompletionContext,
   type CompletionSource,
   type CompletionResult,
   pickedCompletion,

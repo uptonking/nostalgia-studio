@@ -235,7 +235,7 @@ export abstract class Decoration extends RangeValue {
   }
 
   /// @internal
-  declare point: boolean;
+  point: boolean;
 
   /// @internal
   get heightRelevant() {

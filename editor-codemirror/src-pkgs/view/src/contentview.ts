@@ -40,7 +40,7 @@ export abstract class ContentView {
   flags: number = ViewFlag.NodeDirty;
   abstract length: number;
   abstract children: ContentView[];
-  declare breakAfter: number;
+  breakAfter: number;
 
   get overrideDOMText(): Text | null {
     return null;

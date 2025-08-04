@@ -33,7 +33,7 @@ export class Annotation<T> {
 
   // This is just to get less sloppy typing (where StateEffect is a subtype of Annotation)
   // @ts-ignore
-  declare private _isAnnotation: true;
+  private _isAnnotation: true;
 }
 
 /// Marker that identifies a type of [annotation](#state.Annotation).

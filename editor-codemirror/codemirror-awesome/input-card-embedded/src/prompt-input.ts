@@ -1,5 +1,5 @@
 import { redo, undo } from '@codemirror/commands';
-import { animatableDiffView, getChunks, rejectChunk } from '@codemirror/merge';
+import { animatableDiffView, getChunks, rejectChunk } from 'codemirror-merge-diff';
 import {
   EditorState,
   type Extension,

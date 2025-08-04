@@ -5,7 +5,7 @@ import { basicSetup, EditorView } from 'codemirror';
 import { Compartment } from '@codemirror/state';
 import { inputCardEmbedded } from '@datalking/cm-input-card-embedded';
 import { floatingToolbar } from '@datalking/cm-floating-toolbar';
-import { diffToolbar } from '../../../../../../editor-codemirror/src-pkgs/merge/src/diff-toolbar';
+// import { diffToolbar } from '../../../../../../editor-codemirror/src-pkgs/merge/src/diff-toolbar';
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -57,7 +57,7 @@ export const floatingToolbarState = StateField.define<readonly Tooltip[]>({
         basicSetup,
         cmdkInputCardExt,
         floatingToolbar(),
-        diffToolbar(),
+        // diffToolbar(),
         // language.of(markdown())
       ],
       doc: content,

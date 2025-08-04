@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { basicSetup, EditorView } from 'codemirror';
 
-import { animatableDiffView } from '@codemirror/merge';
-import { animatableDiffViewCompartment } from '@codemirror/merge/src/diff-actions';
+import { animatableDiffView } from 'codemirror-merge-diff';
+import { animatableDiffViewCompartment } from 'codemirror-merge-diff/src/diff-actions';
 import {
   Compartment,
   type ChangeSpec,
