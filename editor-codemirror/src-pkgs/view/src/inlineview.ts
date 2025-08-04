@@ -21,7 +21,7 @@ import type { EditorView } from './editorview';
 const MaxJoinLen = 256;
 
 export class TextView extends ContentView {
-  declare children: ContentView[];
+  children: ContentView[];
   declare dom: Text | null;
 
   constructor(public text: string) {
@@ -226,7 +226,7 @@ function textCoords(text: Text, pos: number, side: number): Rect | null {
 
 // Also used for collapsed ranges that don't have a placeholder widget!
 export class WidgetView extends ContentView {
-  declare children: ContentView[];
+  children: ContentView[];
   declare dom: HTMLElement | null;
   prevWidget: WidgetType | null = null;
 
@@ -364,7 +364,7 @@ export class WidgetView extends ContentView {
 // browser bugs that show up when the cursor is directly next to
 // uneditable inline content.
 export class WidgetBufferView extends ContentView {
-  declare children: ContentView[];
+  children: ContentView[];
   declare dom: HTMLElement | null;
 
   constructor(readonly side: number) {

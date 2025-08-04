@@ -685,7 +685,7 @@ class HeightMapGap extends HeightMap {
 }
 
 class HeightMapBranch extends HeightMap {
-  size: number;
+  declare size: number;
 
   constructor(
     public left: HeightMap,

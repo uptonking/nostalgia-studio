@@ -62,7 +62,7 @@ type Composition = {
 };
 
 export class DocView extends ContentView {
-  declare children: BlockView[];
+  children: BlockView[];
 
   decorations: readonly DecorationSet[] = [];
   dynamicDecorationMap: boolean[] = [false];
@@ -866,7 +866,7 @@ export class DocView extends ContentView {
   }
 
   // Will never be called but needs to be present
-  declare split: () => ContentView;
+  split: () => ContentView;
 }
 
 function betweenUneditable(pos: DOMPos) {

@@ -18,6 +18,8 @@ async function removeDeclareFromClassField() {
     `${codemirrorProjectRoot}/state/src/transaction.ts`,
     `${codemirrorProjectRoot}/view/src/editorview.ts`,
     `${codemirrorProjectRoot}/view/src/contentview.ts`,
+    `${codemirrorProjectRoot}/view/src/inlineview.ts`,
+    `${codemirrorProjectRoot}/view/src/docview.ts`,
     `${codemirrorProjectRoot}/view/src/decoration.ts`,
     `${codemirrorProjectRoot}/view/src/gutter.ts`,
     `${codemirrorProjectRoot}/view/src/heightmap.ts`,
@@ -26,8 +28,6 @@ async function removeDeclareFromClassField() {
     `${codemirrorProjectRoot}/view/src/viewstate.ts`,
     // unnecessary to remove declare
     // `${codemirrorProjectRoot}/view/src/blockview.ts`,
-    // `${codemirrorProjectRoot}/view/src/inlineview.ts`,
-    // `${codemirrorProjectRoot}/view/src/docview.ts`,
   ];
   const options = {
     dry: false,
@@ -40,7 +40,7 @@ async function removeDeclareFromClassField() {
     const res = await jscodeshift(transformPath, paths, options);
     // console.log(';; mod-res ', res);
   } catch (e) {
-    console.log(';; jscodeshift transform error ', e);
+    console.log(';; jscodeshift removeDeclareFromClassField error ', e);
   }
 }
 
@@ -59,6 +59,31 @@ async function addDeclareToClassField() {
       className: 'HeightMapBranch',
       fieldName: 'size',
     },
+    {
+      path: `${codemirrorProjectRoot}/view/src/docview.ts`,
+      className: 'DocView',
+      fieldName: 'dom',
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/inlineview.ts`,
+      className: 'TextView',
+      fieldName: 'dom',
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/inlineview.ts`,
+      className: 'MarkView',
+      fieldName: 'dom',
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/inlineview.ts`,
+      className: 'WidgetView',
+      fieldName: 'dom',
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/inlineview.ts`,
+      className: 'WidgetBufferView',
+      fieldName: 'dom',
+    },
   ];
   const options = {
     dry: false,
@@ -66,13 +91,17 @@ async function addDeclareToClassField() {
     verbose: 1,
     filesSrc,
   };
-  console.log(';; mod-filesToAddDeclare ', filesSrc, codemirrorProjectRoot);
+  // console.log(';; mod-filesToAddDeclare ', filesSrc, codemirrorProjectRoot);
 
   try {
-    // const res = await jscodeshift(transformPath, filesSrc.map(item=>item.path), options);
+    const res = await jscodeshift(
+      transformPath,
+      filesSrc.map((item) => item.path),
+      options,
+    );
     // console.log(';; mod-res ', res);
   } catch (e) {
-    console.log(';; jscodeshift transform error ', e);
+    console.log(';; jscodeshift addDeclareToClassField error ', e);
   }
 }
 
