@@ -105,10 +105,165 @@ async function addDeclareToClassField() {
   }
 }
 
+async function assignClassFieldValue() {
+  const transformPath = path.resolve(
+    import.meta.dirname,
+    'transforms/class-field-assign-value.ts',
+  );
+  const codemirrorProjectRoot = path.resolve(
+    import.meta.dirname,
+    '../../editor-codemirror/src-pkgs',
+  );
+  const filesSrc = [
+    {
+      path: `${codemirrorProjectRoot}/state/src/rangeset.ts`,
+      className: 'RangeValue',
+      fieldName: 'startSide',
+      fieldValue: 0,
+    },
+    {
+      path: `${codemirrorProjectRoot}/state/src/rangeset.ts`,
+      className: 'RangeValue',
+      fieldName: 'endSide',
+      fieldValue: 0,
+    },
+    {
+      path: `${codemirrorProjectRoot}/state/src/rangeset.ts`,
+      className: 'RangeValue',
+      fieldName: 'point',
+      fieldValue: false,
+    },
+    {
+      path: `${codemirrorProjectRoot}/state/src/rangeset.ts`,
+      className: 'RangeValue',
+      fieldName: 'mapMode',
+      fieldValue: `MapMode.TrackDel`,
+      literalFieldValue: true,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/heightmap.ts`,
+      className: 'HeightMap',
+      fieldName: 'size',
+      fieldValue: 1,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/contentview.ts`,
+      className: 'ContentView',
+      fieldName: 'breakAfter',
+      fieldValue: 1,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/decoration.ts`,
+      className: 'MarkDecoration',
+      fieldName: 'point',
+      fieldValue: false,
+      addFieldIfNotExist: true,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/decoration.ts`,
+      className: 'PointDecoration',
+      fieldName: 'point',
+      fieldValue: true,
+      addFieldIfNotExist: true,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/decoration.ts`,
+      className: 'LineDecoration',
+      fieldName: 'point',
+      fieldValue: true,
+      addFieldIfNotExist: true,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/decoration.ts`,
+      className: 'LineDecoration',
+      fieldName: 'mapMode',
+      fieldValue: 'MapMode.TrackBefore',
+      addFieldIfNotExist: true,
+      literalFieldValue: true,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/gutter.ts`,
+      className: 'GutterMarker',
+      fieldName: 'point',
+      fieldValue: true,
+      addFieldIfNotExist: true,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/gutter.ts`,
+      className: 'GutterMarker',
+      fieldName: 'elementClass',
+      fieldValue: '',
+      addFieldIfNotExist: true,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/gutter.ts`,
+      className: 'GutterMarker',
+      fieldName: 'startSide',
+      fieldValue: -1,
+      addFieldIfNotExist: true,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/gutter.ts`,
+      className: 'GutterMarker',
+      fieldName: 'endSide',
+      fieldValue: -1,
+      addFieldIfNotExist: true,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/gutter.ts`,
+      className: 'GutterMarker',
+      fieldName: 'mapMode',
+      fieldValue: 'MapMode.TrackBefore',
+      addFieldIfNotExist: true,
+      literalFieldValue: true,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/inlineview.ts`,
+      className: 'TextView',
+      fieldName: 'children',
+      fieldValue: 'noChildren',
+      literalFieldValue: true,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/inlineview.ts`,
+      className: 'WidgetView',
+      fieldName: 'children',
+      fieldValue: 'noChildren',
+      literalFieldValue: true,
+    },
+    {
+      path: `${codemirrorProjectRoot}/view/src/inlineview.ts`,
+      className: 'WidgetBufferView',
+      fieldName: 'children',
+      fieldValue: 'noChildren',
+      literalFieldValue: true,
+    },
+  ];
+  const options = {
+    dry: false,
+    print: false,
+    verbose: 1,
+    filesSrc,
+  };
+  // console.log(';; mod-filesToAssignField ', filesSrc, codemirrorProjectRoot);
+
+  try {
+    const res = await jscodeshift(
+      transformPath,
+      filesSrc.map((item) => item.path),
+      options,
+    );
+    // console.log(';; mod-res ', res);
+  } catch (e) {
+    console.log(';; jscodeshift assignClassFieldValue error ', e);
+  }
+}
+
 export async function patchCode() {
   try {
     await removeDeclareFromClassField();
     await addDeclareToClassField();
+    await assignClassFieldValue();
   } catch (error) {
     console.error('Error in patchCode:', error);
   }

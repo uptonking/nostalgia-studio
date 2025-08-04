@@ -35,11 +35,15 @@ export abstract class GutterMarker extends RangeValue {
 
   /// This property can be used to add CSS classes to the gutter
   /// element that contains this marker.
-  elementClass: string;
+  elementClass: string = '';
 
   /// Called if the marker has a `toDOM` method and its representation
   /// was removed from a gutter.
   destroy(dom: Node) {}
+  point = true;
+  startSide = -1;
+  endSide = -1;
+  mapMode = MapMode.TrackBefore;
 }
 
 GutterMarker.prototype.elementClass = '';

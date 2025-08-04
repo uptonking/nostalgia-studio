@@ -370,6 +370,7 @@ export class MarkDecoration extends Decoration {
     if (from >= to) throw new RangeError('Mark decorations may not be empty');
     return super.range(from, to);
   }
+  point = false;
 }
 
 MarkDecoration.prototype.point = false;
@@ -392,6 +393,8 @@ export class LineDecoration extends Decoration {
       throw new RangeError('Line decoration ranges must be zero-length');
     return super.range(from, to);
   }
+  point = true;
+  mapMode = MapMode.TrackBefore;
 }
 
 LineDecoration.prototype.mapMode = MapMode.TrackBefore;
@@ -453,6 +456,7 @@ export class PointDecoration extends Decoration {
       );
     return super.range(from, to);
   }
+  point = true;
 }
 
 PointDecoration.prototype.point = true;
