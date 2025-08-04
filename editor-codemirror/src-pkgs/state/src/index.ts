@@ -1,33 +1,33 @@
-export { EditorStateConfig, EditorState } from './state';
-export { StateCommand } from './extension';
+export { type EditorStateConfig, EditorState } from './state';
+export type { StateCommand } from './extension';
 export {
   Facet,
-  FacetReader,
+  type FacetReader,
   StateField,
-  Extension,
+  type Extension,
   Prec,
   Compartment,
 } from './facet';
 export { EditorSelection, SelectionRange } from './selection';
 export {
   Transaction,
-  TransactionSpec,
+  type TransactionSpec,
   Annotation,
   AnnotationType,
   StateEffect,
   StateEffectType,
 } from './transaction';
 export { combineConfig } from './config';
-export { ChangeSpec, ChangeSet, ChangeDesc, MapMode } from './change';
+export { type ChangeSpec, ChangeSet, ChangeDesc, MapMode } from './change';
 export { CharCategory } from './charcategory';
 export {
   RangeValue,
   Range,
   RangeSet,
-  RangeCursor,
+  type RangeCursor,
   RangeSetBuilder,
-  RangeComparator,
-  SpanIterator,
+  type RangeComparator,
+  type SpanIterator,
 } from './rangeset';
 export {
   findClusterBreak,
@@ -36,4 +36,4 @@ export {
   codePointSize,
 } from './char';
 export { countColumn, findColumn } from './column';
-export { Line, TextIterator, Text } from './text';
+export { Line, type TextIterator, Text } from './text';

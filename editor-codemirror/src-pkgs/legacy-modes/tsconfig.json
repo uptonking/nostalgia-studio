@@ -10,5 +10,5 @@
     "module": "es2020",
     "moduleResolution": "node"
   },
-  "include": ["./src/*.ts", "./test/*.ts"]
+  "include": ["./src/*.ts", "./test/*.ts", "./mode/*.ts"]
 }

@@ -31,7 +31,7 @@ import { type SyntaxNode, NodeProp } from '@lezer/common';
 import { toggleComment, toggleBlockComment } from './comment';
 
 export {
-  CommentTokens,
+  type CommentTokens,
   toggleComment,
   toggleLineComment,
   lineComment,

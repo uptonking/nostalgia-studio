@@ -14,7 +14,32 @@ module.exports = {
     },
     ecmaVersion: 2020,
     sourceType: 'module',
+    // project: true,
   },
+  overrides: [
+    {
+      files: ['**/*.ts', '**/*.tsx'],
+      parserOptions: {
+        // better not use project true, very slow
+        project: true,
+        // project: [
+        //   './tsconfig.json',
+        //   './packages/**/*/tsconfig.json',
+        //   './examples/**/*/tsconfig.json',
+        // ],
+        // tsconfigRootDir: __dirname,
+      },
+    },
+    {
+      files: ['**/*.js', '**/*.jsx'],
+      rules: {
+        // Disable TypeScript-specific rules that require type information for JS files
+        '@typescript-eslint/consistent-type-exports': 'off',
+        '@typescript-eslint/consistent-type-imports': 'off',
+        '@typescript-eslint/no-import-type-side-effects': 'off',
+      },
+    },
+  ],
   settings: {
     react: {
       version: 'detect',
@@ -121,6 +146,10 @@ module.exports = {
     '@typescript-eslint/explicit-member-accessibility': 0,
     '@typescript-eslint/member-ordering': 0,
     '@typescript-eslint/consistent-type-definitions': 0,
+    '@typescript-eslint/consistent-type-exports': [
+      'error',
+      { fixMixedExportsWithInlineTypeSpecifier: true },
+    ],
     '@typescript-eslint/class-literal-property-style': 0,
     '@typescript-eslint/explicit-module-boundary-types': 0,
     '@typescript-eslint/triple-slash-reference': 1,

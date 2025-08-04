@@ -26,7 +26,7 @@ import {
 } from './complete';
 export {
   htmlCompletionSource,
-  TagSpec,
+  type TagSpec,
   htmlCompletionSourceWith,
 } from './complete';
 

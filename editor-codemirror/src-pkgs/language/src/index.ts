@@ -2,7 +2,7 @@ export {
   language,
   Language,
   LRLanguage,
-  Sublanguage,
+  type Sublanguage,
   sublanguageProp,
   defineLanguageFacet,
   syntaxTree,
@@ -56,19 +56,19 @@ export {
   HighlightStyle,
   syntaxHighlighting,
   highlightingFor,
-  TagStyle,
+  type TagStyle,
   defaultHighlightStyle,
 } from './highlight';
 
 export {
   bracketMatching,
-  Config,
+  type Config,
   matchBrackets,
-  MatchResult,
+  type MatchResult,
   bracketMatchingHandle,
 } from './matchbrackets';
 
-export { StreamLanguage, StreamParser } from './stream-parser';
+export { StreamLanguage, type StreamParser } from './stream-parser';
 
 export { StringStream } from './stringstream';
 

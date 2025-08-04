@@ -1,8 +1,8 @@
-export { Change, diff, presentableDiff, DiffConfig } from './diff';
+export { Change, diff, presentableDiff, type DiffConfig } from './diff';
 
 export { getChunks, goToNextChunk, goToPreviousChunk } from './merge';
 
-export { MergeConfig, DirectMergeConfig, MergeView } from './mergeview';
+export { type MergeConfig, type DirectMergeConfig, MergeView } from './mergeview';
 
 export {
   unifiedMergeView,

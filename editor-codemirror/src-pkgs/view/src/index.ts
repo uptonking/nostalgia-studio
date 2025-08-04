@@ -1,45 +1,45 @@
 export {
   EditorView,
-  EditorViewConfig,
-  DOMEventMap,
-  DOMEventHandlers,
+  type EditorViewConfig,
+  type DOMEventMap,
+  type DOMEventHandlers,
 } from './editorview';
 export {
-  Command,
+  type Command,
   ViewPlugin,
-  PluginValue,
-  PluginSpec,
+  type PluginValue,
+  type PluginSpec,
   ViewUpdate,
   logException,
 } from './extension';
-export { Decoration, DecorationSet, WidgetType, BlockType } from './decoration';
+export { Decoration, type DecorationSet, WidgetType, BlockType } from './decoration';
 export { BlockInfo } from './heightmap';
-export { MouseSelectionStyle } from './input';
+export type { MouseSelectionStyle } from './input';
 export { BidiSpan, Direction } from './bidi';
-export { KeyBinding, keymap, runScopeHandlers } from './keymap';
+export { type KeyBinding, keymap, runScopeHandlers } from './keymap';
 export { drawSelection, getDrawSelectionConfig } from './draw-selection';
 export { dropCursor } from './dropcursor';
 export { highlightSpecialChars } from './special-chars';
 export { scrollPastEnd } from './scrollpastend';
 export { highlightActiveLine } from './active-line';
 export { placeholder } from './placeholder';
-export { Rect } from './dom';
-export { layer, LayerMarker, RectangleMarker } from './layer';
+export type { Rect } from './dom';
+export { layer, type LayerMarker, RectangleMarker } from './layer';
 export { MatchDecorator } from './matchdecorator';
 export { rectangularSelection, crosshairCursor } from './rectangular-selection';
 export {
   showTooltip,
-  Tooltip,
-  TooltipView,
+  type Tooltip,
+  type TooltipView,
   tooltips,
   getTooltip,
   hoverTooltip,
-  HoverTooltipSource,
+  type HoverTooltipSource,
   hasHoverTooltips,
   closeHoverTooltips,
   repositionTooltips,
 } from './tooltip';
-export { showPanel, PanelConstructor, Panel, getPanel, panels } from './panel';
+export { showPanel, type PanelConstructor, type Panel, getPanel, panels } from './panel';
 export { showDialog, getDialog } from './dialog';
 export {
   lineNumbers,

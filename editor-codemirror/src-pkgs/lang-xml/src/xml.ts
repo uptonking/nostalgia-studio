@@ -11,7 +11,7 @@ import {
 import { EditorSelection, type Text } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { ElementSpec, AttrSpec, completeFromSchema } from './complete';
-export { ElementSpec, AttrSpec, completeFromSchema };
+export { type ElementSpec, type AttrSpec, completeFromSchema };
 
 /// A language provider based on the [Lezer XML
 /// parser](https://github.com/lezer-parser/xml), extended with
