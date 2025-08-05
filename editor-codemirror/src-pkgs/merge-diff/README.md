@@ -1,6 +1,6 @@
 <!-- NOTE: README.md is generated from src/README.md -->
 
-# @codemirror/merge [![NPM version](https://img.shields.io/npm/v/@codemirror/merge.svg)](https://www.npmjs.org/package/@codemirror/merge)
+# codemirror-merge-diff
 
 [ [**WEBSITE**](https://codemirror.net/) | [**ISSUES**](https://github.com/codemirror/dev/issues) | [**FORUM**](https://discuss.codemirror.net/c/next/) | [**CHANGELOG**](https://github.com/codemirror/merge/blob/main/CHANGELOG.md) ]
 
@@ -19,6 +19,8 @@ we have a [code of
 conduct](http://contributor-covenant.org/version/1/1/0/) that applies
 to communication around the project.
 
+## Note 👀
+- codemirror-merge-diff 和 @codemirror/merge 同时使用时，所有用例的diff样式会与第一个初始化的样式保持一致，这与codemirror内部css-in-js生成样式类的实现相关
 ## Example
 
 An example is available at [Try CodeMirror](https://codemirror.net/try/?example=Merge%20View).

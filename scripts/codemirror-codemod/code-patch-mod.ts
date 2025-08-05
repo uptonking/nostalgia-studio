@@ -26,6 +26,10 @@ async function removeDeclareFromClassField() {
     `${codemirrorProjectRoot}/view/src/placeholder.ts`,
     `${codemirrorProjectRoot}/view/src/tooltip.ts`,
     `${codemirrorProjectRoot}/view/src/viewstate.ts`,
+    `${codemirrorProjectRoot}/merge/src/diff.ts`,
+    `${codemirrorProjectRoot}/autocomplete/src/tooltip.ts`,
+    `${codemirrorProjectRoot}/search/src/cursor.ts`,
+    `${codemirrorProjectRoot}/search/src/regexp.ts`,
     // unnecessary to remove declare
     // `${codemirrorProjectRoot}/view/src/blockview.ts`,
   ];
@@ -40,7 +44,7 @@ async function removeDeclareFromClassField() {
     const res = await jscodeshift(transformPath, paths, options);
     // console.log(';; mod-res ', res);
   } catch (e) {
-    console.log(';; jscodeshift removeDeclareFromClassField error ', e);
+    console.warn(';; jscodeshift removeDeclareFromClassField error ', e);
   }
 }
 
@@ -101,7 +105,7 @@ async function addDeclareToClassField() {
     );
     // console.log(';; mod-res ', res);
   } catch (e) {
-    console.log(';; jscodeshift addDeclareToClassField error ', e);
+    console.warn(';; jscodeshift addDeclareToClassField error ', e);
   }
 }
 
@@ -255,7 +259,7 @@ async function assignClassFieldValue() {
     );
     // console.log(';; mod-res ', res);
   } catch (e) {
-    console.log(';; jscodeshift assignClassFieldValue error ', e);
+    console.warn(';; jscodeshift assignClassFieldValue error ', e);
   }
 }
 

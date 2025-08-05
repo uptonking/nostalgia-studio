@@ -14,12 +14,12 @@ export interface RegExpCursorOptions {
 export class RegExpCursor
   implements Iterator<{ from: number; to: number; match: RegExpExecArray }>
 {
-  declare private iter: TextIterator;
-  declare private re: RegExp;
+  private iter: TextIterator;
+  private re: RegExp;
   private test?: (from: number, to: number, match: RegExpExecArray) => boolean;
   private curLine = '';
-  declare private curLineStart: number;
-  declare private matchPos: number;
+  private curLineStart: number;
+  private matchPos: number;
 
   /// Set to `true` when the cursor has reached the end of the search
   /// range.
@@ -97,7 +97,7 @@ export class RegExpCursor
     }
   }
 
-  declare [Symbol.iterator]: () => Iterator<{
+  [Symbol.iterator]: () => Iterator<{
     from: number;
     to: number;
     match: RegExpExecArray;
@@ -207,7 +207,7 @@ class MultilineRegExpCursor
     }
   }
 
-  declare [Symbol.iterator]: () => Iterator<{
+  [Symbol.iterator]: () => Iterator<{
     from: number;
     to: number;
     match: RegExpExecArray;

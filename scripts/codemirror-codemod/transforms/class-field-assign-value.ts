@@ -72,7 +72,13 @@ export default function transformer(
 
   // Process each configuration for this file
   currentFileConfigs.forEach(
-    ({ className, fieldName, fieldValue, literalFieldValue = false, addFieldIfNotExist = false }) => {
+    ({
+      className,
+      fieldName,
+      fieldValue,
+      literalFieldValue = false,
+      addFieldIfNotExist = false,
+    }) => {
       // Find the specific class to work with
       root
         .find(j.ClassDeclaration)
@@ -99,7 +105,10 @@ export default function transformer(
 
               // Only assign value if there's no existing value
               if (!node.value) {
-                const valueNode = createValueNode(fieldValue, literalFieldValue);
+                const valueNode = createValueNode(
+                  fieldValue,
+                  literalFieldValue,
+                );
                 node.value = valueNode;
               }
             });
@@ -135,8 +144,11 @@ export default function transformer(
           // If field not found and addFieldIfNotExist is true, add new field
           if (!fieldFound && addFieldIfNotExist) {
             const valueNode = createValueNode(fieldValue, literalFieldValue);
-            const newProperty = j.classProperty(j.identifier(fieldName), valueNode);
-            
+            const newProperty = j.classProperty(
+              j.identifier(fieldName),
+              valueNode,
+            );
+
             // Add the new property to the class body
             const classBody = classPath.value.body;
             classBody.body.push(newProperty);

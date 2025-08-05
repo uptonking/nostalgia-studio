@@ -20,7 +20,11 @@ interface TransformOptions {
   }>;
 }
 
-export default function transformer(fileInfo: FileInfo, api: API, options: TransformOptions = {}) {
+export default function transformer(
+  fileInfo: FileInfo,
+  api: API,
+  options: TransformOptions = {},
+) {
   const j = api.jscodeshift;
   const { filesSrc = [] } = options;
 
@@ -28,8 +32,9 @@ export default function transformer(fileInfo: FileInfo, api: API, options: Trans
   const root = j(fileInfo.source);
 
   // Find ALL configurations for the current file (not just the first one)
-  const currentFileConfigs = filesSrc.filter(config => 
-    fileInfo.path.endsWith(config.path) || fileInfo.path === config.path
+  const currentFileConfigs = filesSrc.filter(
+    (config) =>
+      fileInfo.path.endsWith(config.path) || fileInfo.path === config.path,
   );
 
   if (currentFileConfigs.length === 0) {
@@ -51,9 +56,11 @@ export default function transformer(fileInfo: FileInfo, api: API, options: Trans
           .find(j.ClassProperty)
           .filter((propertyPath) => {
             const key = propertyPath.value.key;
-            return key && 
-                   ((key.type === 'Identifier' && key.name === fieldName) ||
-                    (key.type === 'StringLiteral' && key.value === fieldName));
+            return (
+              key &&
+              ((key.type === 'Identifier' && key.name === fieldName) ||
+                (key.type === 'StringLiteral' && key.value === fieldName))
+            );
           })
           .forEach((propertyPath) => {
             // Add declare modifier
@@ -66,9 +73,11 @@ export default function transformer(fileInfo: FileInfo, api: API, options: Trans
           .find(j.TSPropertySignature)
           .filter((propertyPath) => {
             const key = propertyPath.value.key;
-            return key && 
-                   ((key.type === 'Identifier' && key.name === fieldName) ||
-                    (key.type === 'StringLiteral' && key.value === fieldName));
+            return (
+              key &&
+              ((key.type === 'Identifier' && key.name === fieldName) ||
+                (key.type === 'StringLiteral' && key.value === fieldName))
+            );
           })
           .forEach((propertyPath) => {
             const node = propertyPath.value as TSPropertySignatureWithDeclare;

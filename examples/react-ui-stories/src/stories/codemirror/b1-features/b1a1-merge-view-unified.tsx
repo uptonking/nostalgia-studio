@@ -53,6 +53,7 @@ export const MergeViewUnified = () => {
           highlightChanges: true,
           syntaxHighlightDeletions: true,
           mergeControls: false,
+          allowInlineDiffs: true,
           // diffConfig:{ scanLimit: 10000 },
         }),
       ],

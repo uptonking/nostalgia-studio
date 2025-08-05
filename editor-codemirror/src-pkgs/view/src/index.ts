@@ -12,7 +12,12 @@ export {
   ViewUpdate,
   logException,
 } from './extension';
-export { Decoration, type DecorationSet, WidgetType, BlockType } from './decoration';
+export {
+  Decoration,
+  type DecorationSet,
+  WidgetType,
+  BlockType,
+} from './decoration';
 export { BlockInfo } from './heightmap';
 export type { MouseSelectionStyle } from './input';
 export { BidiSpan, Direction } from './bidi';
@@ -39,7 +44,13 @@ export {
   closeHoverTooltips,
   repositionTooltips,
 } from './tooltip';
-export { showPanel, type PanelConstructor, type Panel, getPanel, panels } from './panel';
+export {
+  showPanel,
+  type PanelConstructor,
+  type Panel,
+  getPanel,
+  panels,
+} from './panel';
 export { showDialog, getDialog } from './dialog';
 export {
   lineNumbers,

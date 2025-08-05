@@ -145,9 +145,9 @@ function findSnake(
 
 class Frontier {
   vec: number[] = [];
-  declare len: number;
-  declare start: number;
-  declare end: number;
+  len: number;
+  start: number;
+  end: number;
 
   reset(off: number) {
     this.len = off << 1;
