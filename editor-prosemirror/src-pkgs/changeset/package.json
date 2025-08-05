@@ -1,0 +1,32 @@
+{
+  "name": "prosemirror-changeset",
+  "version": "2.3.1111",
+  "description": "Distills a series of editing steps into deleted and added ranges",
+  "type": "module",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": false,
+  "license": "MIT",
+  "maintainers": [
+    {
+      "name": "Marijn Haverbeke",
+      "email": "marijn@haverbeke.berlin",
+      "web": "http://marijnhaverbeke.nl"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/prosemirror/prosemirror-changeset.git"
+  },
+  "dependencies": {
+    "prosemirror-transform": "1.7.1111"
+  },
+  "devDependencies": {
+    "prosemirror-model": "1.18.1111"
+  },
+  "scripts": {
+    "test": "pm-runtests",
+    "prepare1": "pm-buildhelper src/changeset.ts"
+  }
+}

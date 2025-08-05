@@ -1,0 +1,33 @@
+{
+  "name": "prosemirror-search",
+  "version": "1.1.1111",
+  "description": "Search API for ProseMirror",
+  "type": "module",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": false,
+  "style": "style/search.css",
+  "license": "MIT",
+  "maintainers": [
+    {
+      "name": "Marijn Haverbeke",
+      "email": "marijn@haverbeke.berlin",
+      "web": "http://marijnhaverbeke.nl"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/prosemirror/prosemirror-search.git"
+  },
+  "dependencies": {
+    "prosemirror-model": "1.18.1111",
+    "prosemirror-state": "1.4.1111",
+    "prosemirror-view": "1.27.2111"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "pm-runtests",
+    "prepare1": "pm-buildhelper src/search.ts"
+  }
+}

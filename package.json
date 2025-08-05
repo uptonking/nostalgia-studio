@@ -22,6 +22,8 @@
     "editor-quill/*",
     "editor-codemirror/src-pkgs/*",
     "editor-codemirror/codemirror-awesome/*",
+    "editor-prosemirror/src-pkgs/*",
+    "editor-prosemirror/prosemirror-awesome/*",
     "cms-strapi/strapi-awesome/*",
     "cms-strapi/*",
     "examples/*",
@@ -50,10 +52,11 @@
     "format": "prettier \"**/*.{js,jsx,ts,tsx,mjs,mts,cjs,json}\" --write",
     "format:check": "npm run formatter -- --check",
     "lint": "eslint src --ext .ts,.tsx --fix -o eslint.log",
-    "lint1": "eslint --ext .js,.ts,.tsx --fix  --quiet ./editor-codemirror && eslint --ext .js,.ts,.tsx --fix --quiet ./examples",
+    "lint1": "eslint --ext .js,.ts,.tsx --fix  --quiet ./editor-prosemirror && eslint --ext .js,.ts,.tsx --fix --quiet ./examples",
     "syncpack-fix": "syncpack-fix-mismatches",
     "syncpack-ls": "syncpack-list-mismatches",
     "upgrade:codemirror": "tsx ./scripts/codemirror-codemod/run-mod.ts",
+    "upgrade:prosemirror": "tsx ./scripts/prosemirror-codemod/run-mod.ts",
     "help": "echo 'exec npm run build to build all projects'"
   },
   "husky": {
@@ -73,7 +76,7 @@
   ],
   "dependencies": {
     "@atao60/fse-cli": "^0.1.9",
-    "@faker-js/faker": "^9.9.0",
+    "@faker-js/faker": "^8.4.1",
     "@strapi/design-system": "^1.19.0",
     "@strapi/plugin-i18n": "^5.0.0-beta.5",
     "@strapi/plugin-users-permissions": "^5.0.0-beta.14",

@@ -1,0 +1,16 @@
+export { PMMinimalApp as A1b1PMMinimalApp } from './a1-starter/a1b1-minimal';
+export { PMExampleSetupBasicEditor as A1b2EgSetupBasic } from './a1-starter/a1b2-example-setup-basic-editor';
+export { CustomElementEditor as B1a1CustomElementEditor } from './b1-features/b1a1-custom-element-and-formatting';
+// export { CustomMenuToolbar as A14CustomMenuToolbar } from './b1-features/b1c2-menu-toolbar';
+// export { TooltipPopoverApp as A15EditorTooltipPopover } from './b1-features/b1c1-tooltip';
+// export { CustomSchemaBlockGroupLink as A16CustomSchemaBlockGroupLink } from './b1-features/b1a2-custom-schema-link';
+// export { ImageUploadApp as A17ImageUpload } from './b1-features/b1d1-image-upload';
+// export { MarkdownViewsSwitcher as A18MarkdownViewsSwitcher } from './b1-features/b1f1-markdown-views-switcher';
+// export { FootnoteApp as A1b1Footnote } from './b1-features/b1b1-footnote';
+// export { LintApp as A1b2Lint } from './c1-collab/c1b3-lint';
+// export { TrackChangesMiniApp as A1b3TrackChanges } from './c1-collab/c1b2-track-changes';
+// export { ProseMirrorCollabBasic as A1b4ProseMirrorCollabBasic } from './a1-starter/a1b4-collab-basic';
+// export { PMCollabMinimalApp as A1b5ProseMirrorCollabMinimal } from '../../prosemirror-collab-minimal/client/collab-minimal-app';
+// export { TeemuApp as A1b5TeemuApp } from '../teemu-examples/index';
+// export { Footnote2 as A1b1Footnote2 } from './a1-starter/a1b1-footnote2';
+// export { InlineToolbarApp as A22InlineToolbarApp } from './a2-features/a22-inline-toolbar';

@@ -2,7 +2,7 @@ import { homedir } from 'node:os';
 import { readdirSync } from 'node:fs';
 import path from 'node:path';
 import { ensureDirSync, copy, moveSync } from 'fs-extra';
-import { checkIfPathExist, dateNow } from './utils';
+import { checkIfPathExist, cpFolder, dateNow } from '../utils/common';
 import { patchCode } from './code-patch-mod';
 
 async function backupAndUpdateCode(backupFolderName = dateNow()) {
@@ -35,15 +35,7 @@ async function backupAndUpdateCode(backupFolderName = dateNow()) {
         file,
       ),
   );
-  // console.log(';; folders ', Array.isArray(folders), foldersToBackup);
-
-  const cpFolder = async (src: string, dest: string) => {
-    try {
-      await copy(src, dest, { overwrite: true, preserveTimestamps: true });
-    } catch (error) {
-      console.warn(';; cpFolder failed ', src, dest, error);
-    }
-  };
+  // console.log(';; folders ', foldersToBackup.length, foldersToBackup);
 
   // backup code from this repo
   await Promise.allSettled(

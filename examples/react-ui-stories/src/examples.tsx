@@ -2,7 +2,8 @@ import './index.css';
 
 import React, { useState } from 'react';
 
-import * as stories from './stories/codemirror';
+// import * as stories from './stories/codemirror';
+import * as stories from './stories/prosemirror';
 
 // import * as stories from './stories/nosontable';
 // import * as stories from './stories/tanstack-table';
@@ -19,10 +20,10 @@ const storiesNames = Object.keys(stories);
 // console.log(';; stories ', stories)
 
 export function ExamplesApp() {
-  // const [currentStory, setCurrentStory] = useState(storiesNames[0]);
+  const [currentStory, setCurrentStory] = useState(storiesNames[0]);
   // const [currentStory, setCurrentStory] = useState('B1a3CmdkInputCard');
   // const [currentStory, setCurrentStory] = useState('B1a3MergeViewAnimatable');
-  const [currentStory, setCurrentStory] = useState('B1d3CursorTooltip');
+  // const [currentStory, setCurrentStory] = useState('B1d3CursorTooltip');
 
   const CurrentExampleComponent = currentStory
     ? stories[currentStory]

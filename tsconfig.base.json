@@ -86,6 +86,7 @@
       "@datalking/codemirror-react": [
         "./editor-codemirror/codemirror-awesome/codemirror-react/src/"
       ],
+      "prosemirror-*": ["./editor-prosemirror/src-pkgs/*/src"],
       "@datalking/noseditor-react": ["./editor-quill/noseditor-react/src/"],
       "strapi-plugin-*": ["./cms-strapi/strapi-awesome/plugin-*/"],
       "@datalking/pivot-core": ["./excel-watarble/core/src/"],
