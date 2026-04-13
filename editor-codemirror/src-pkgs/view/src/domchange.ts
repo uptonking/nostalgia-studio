@@ -1,15 +1,18 @@
-import type { EditorView } from './editorview';
-import { inputHandler, editable } from './extension';
+import { EditorView } from './editorview';
+import { inputHandler, editable, atomicRanges } from './extension';
 import { contains, dispatchKey } from './dom';
 import browser from './browser';
 import { DOMReader, DOMPoint, LineBreakPlaceholder } from './domreader';
 import { findCompositionNode } from './docview';
 import {
   EditorSelection,
+  SelectionRange,
   Text,
-  type Transaction,
-  type TransactionSpec,
+  Transaction,
+  TransactionSpec,
 } from '@codemirror/state';
+import { skipAtomsForSelection, skipAtomicRanges } from './cursor';
+import { Tile } from './tile';
 
 export class DOMChange {
   bounds: {
@@ -29,50 +32,51 @@ export class DOMChange {
     readonly typeOver: boolean,
   ) {
     this.domChanged = start > -1;
-    const { impreciseHead: iHead, impreciseAnchor: iAnchor } = view.docView;
+    let { impreciseHead: iHead, impreciseAnchor: iAnchor } = view.docView;
+    let curSel = view.state.selection;
     if (view.state.readOnly && start > -1) {
       // Ignore changes when the editor is read-only
       this.newSel = null;
     } else if (
       start > -1 &&
-      (this.bounds = view.docView.domBoundsAround(start, end, 0))
+      (this.bounds = domBoundsAround(view.docView.tile, start, end, 0))
     ) {
-      const selPoints = iHead || iAnchor ? [] : selectionPoints(view);
-      const reader = new DOMReader(selPoints, view.state);
+      let selPoints = iHead || iAnchor ? [] : selectionPoints(view);
+      let reader = new DOMReader(selPoints, view);
       reader.readRange(this.bounds.startDOM, this.bounds.endDOM);
       this.text = reader.text;
       this.newSel = selectionFromPoints(selPoints, this.bounds.from);
     } else {
-      const domSel = view.observer.selectionRange;
+      let domSel = view.observer.selectionRange;
       let head =
         (iHead &&
           iHead.node == domSel.focusNode &&
           iHead.offset == domSel.focusOffset) ||
         !contains(view.contentDOM, domSel.focusNode)
-          ? view.state.selection.main.head
+          ? curSel.main.head
           : view.docView.posFromDOM(domSel.focusNode!, domSel.focusOffset);
       let anchor =
         (iAnchor &&
           iAnchor.node == domSel.anchorNode &&
           iAnchor.offset == domSel.anchorOffset) ||
         !contains(view.contentDOM, domSel.anchorNode)
-          ? view.state.selection.main.anchor
+          ? curSel.main.anchor
           : view.docView.posFromDOM(domSel.anchorNode!, domSel.anchorOffset);
       // iOS will refuse to select the block gaps when doing
       // select-all.
       // Chrome will put the selection *inside* them, confusing
       // posFromDOM
-      const vp = view.viewport;
+      let vp = view.viewport;
       if (
         (browser.ios || browser.chrome) &&
-        view.state.selection.main.empty &&
+        curSel.main.empty &&
         head != anchor &&
         (vp.from > 0 || vp.to < view.state.doc.length)
       ) {
-        const from = Math.min(head, anchor);
-        const to = Math.max(head, anchor);
-        const offFrom = vp.from - from;
-        const offTo = vp.to - to;
+        let from = Math.min(head, anchor);
+        let to = Math.max(head, anchor);
+        let offFrom = vp.from - from;
+        let offTo = vp.to - to;
         if (
           (offFrom == 0 || offFrom == 1 || from == 0) &&
           (offTo == 0 || offTo == -1 || to == view.state.doc.length)
@@ -81,8 +85,85 @@ export class DOMChange {
           anchor = view.state.doc.length;
         }
       }
-      this.newSel = EditorSelection.single(anchor, head);
+      if (view.inputState.composing > -1 && curSel.ranges.length > 1) {
+        this.newSel = curSel.replaceRange(EditorSelection.range(anchor, head));
+      } else if (
+        view.lineWrapping &&
+        anchor == head &&
+        !(curSel.main.empty && curSel.main.head == head) &&
+        view.inputState.lastTouchTime > Date.now() - 100
+      ) {
+        // If this is a cursor selection change in a line-wrapping
+        // editor that may have been a touch, use the last touch
+        // position to assign a side to the cursor.
+        let before = view.coordsAtPos(head, -1);
+        let assoc = 0;
+        if (before)
+          assoc = view.inputState.lastTouchY <= before.bottom ? -1 : 1;
+        this.newSel = EditorSelection.create([
+          EditorSelection.cursor(head, assoc),
+        ]);
+      } else {
+        this.newSel = EditorSelection.single(anchor, head);
+      }
     }
+  }
+}
+
+function domBoundsAround(
+  tile: Tile,
+  from: number,
+  to: number,
+  offset: number,
+): {
+  startDOM: Node | null;
+  endDOM: Node | null;
+  from: number;
+  to: number;
+} | null {
+  if (tile.isComposite()) {
+    let fromI = -1;
+    let fromStart = -1;
+    let toI = -1;
+    let toEnd = -1;
+    for (
+      let i = 0, pos = offset, prevEnd = offset;
+      i < tile.children.length;
+      i++
+    ) {
+      let child = tile.children[i];
+      let end = pos + child.length;
+      if (pos < from && end > to) return domBoundsAround(child, from, to, pos);
+      if (end >= from && fromI == -1) {
+        fromI = i;
+        fromStart = pos;
+      }
+      if (pos > to && child.dom!.parentNode == tile.dom) {
+        toI = i;
+        toEnd = prevEnd;
+        break;
+      }
+      prevEnd = end;
+      pos = end + child.breakAfter;
+    }
+    return {
+      from: fromStart,
+      to: toEnd < 0 ? offset + tile.length : toEnd,
+      startDOM:
+        (fromI ? tile.children[fromI - 1].dom.nextSibling : null) ||
+        tile.dom.firstChild,
+      endDOM:
+        toI < tile.children.length && toI >= 0 ? tile.children[toI].dom : null,
+    };
+  } else if (tile.isText()) {
+    return {
+      from: offset,
+      to: offset + tile.length,
+      startDOM: tile.dom,
+      endDOM: tile.dom.nextSibling,
+    };
+  } else {
+    return null;
   }
 }
 
@@ -92,13 +173,14 @@ export function applyDOMChange(
 ): boolean {
   let change: undefined | { from: number; to: number; insert: Text };
   let { newSel } = domChange;
-  const sel = view.state.selection.main;
-  const lastKey =
+  let { state } = view;
+  let sel = state.selection.main;
+  let lastKey =
     view.inputState.lastKeyTime > Date.now() - 100
       ? view.inputState.lastKeyCode
       : -1;
   if (domChange.bounds) {
-    const { from, to } = domChange.bounds;
+    let { from, to } = domChange.bounds;
     let preferredPos = sel.from;
     let preferredSide = null;
     // Prefer anchoring to end when Backspace is pressed (or, on
@@ -110,13 +192,34 @@ export function applyDOMChange(
       preferredPos = sel.to;
       preferredSide = 'end';
     }
-    const diff = findDiff(
-      view.state.doc.sliceString(from, to, LineBreakPlaceholder),
-      domChange.text,
-      preferredPos - from,
-      preferredSide,
-    );
-    if (diff) {
+    let cmp = state.doc.sliceString(from, to, LineBreakPlaceholder);
+    let selEnd;
+    let diff;
+    if (
+      !sel.empty &&
+      sel.from >= from &&
+      sel.to <= to &&
+      (domChange.typeOver || cmp != domChange.text) &&
+      cmp.slice(0, sel.from - from) ==
+        domChange.text.slice(0, sel.from - from) &&
+      cmp.slice(sel.to - from) ==
+        domChange.text.slice(
+          (selEnd = domChange.text.length - (cmp.length - (sel.to - from))),
+        )
+    ) {
+      // This looks like a selection replacement
+      change = {
+        from: sel.from,
+        to: sel.to,
+        insert: Text.of(
+          domChange.text
+            .slice(sel.from - from, selEnd)
+            .split(LineBreakPlaceholder),
+        ),
+      };
+    } else if (
+      (diff = findDiff(cmp, domChange.text, preferredPos - from, preferredSide))
+    ) {
       // Chrome inserts two newlines when pressing shift-enter at the
       // end of a line. DomChange drops one of those.
       if (
@@ -138,7 +241,7 @@ export function applyDOMChange(
     }
   } else if (
     newSel &&
-    ((!view.hasFocus && view.state.facet(editable)) || newSel.main.eq(sel))
+    ((!view.hasFocus && state.facet(editable)) || sameSelPos(newSel, sel))
   ) {
     newSel = null;
   }
@@ -146,19 +249,6 @@ export function applyDOMChange(
   if (!change && !newSel) return false;
 
   if (
-    !change &&
-    domChange.typeOver &&
-    !sel.empty &&
-    newSel &&
-    newSel.main.empty
-  ) {
-    // Heuristic to notice typing over a selected character
-    change = {
-      from: sel.from,
-      to: sel.to,
-      insert: view.state.doc.slice(sel.from, sel.to),
-    };
-  } else if (
     (browser.mac || browser.android) &&
     change &&
     change.from == change.to &&
@@ -179,22 +269,19 @@ export function applyDOMChange(
       insert: Text.of([change.insert.toString().replace('.', ' ')]),
     };
   } else if (
-    change &&
-    change.from >= sel.from &&
-    change.to <= sel.to &&
-    (change.from != sel.from || change.to != sel.to) &&
-    sel.to - sel.from - (change.to - change.from) <= 4
+    state.doc.lineAt(sel.from).to < sel.to &&
+    view.docView.lineHasWidget(sel.to) &&
+    view.inputState.insertingTextAt > Date.now() - 50
   ) {
-    // If the change is inside the selection and covers most of it,
-    // assume it is a selection replace (with identical characters at
-    // the start/end not included in the diff)
+    // For a cross-line insertion, Chrome and Safari will crudely take
+    // the text of the line after the selection, flattening any
+    // widgets, and move it into the joined line. This tries to detect
+    // such a situation, and replaces the change with a selection
+    // replace of the text provided by the beforeinput event.
     change = {
       from: sel.from,
       to: sel.to,
-      insert: view.state.doc
-        .slice(sel.from, change.from)
-        .append(change.insert)
-        .append(view.state.doc.slice(change.to, sel.to)),
+      insert: state.toText(view.inputState.insertingText),
     };
   } else if (
     browser.chrome &&
@@ -217,13 +304,18 @@ export function applyDOMChange(
 
   if (change) {
     return applyDOMChangeInner(view, change, newSel, lastKey);
-  } else if (newSel && !newSel.main.eq(sel)) {
+  } else if (newSel && !sameSelPos(newSel, sel)) {
     let scrollIntoView = false;
     let userEvent = 'select';
     if (view.inputState.lastSelectionTime > Date.now() - 50) {
       if (view.inputState.lastSelectionOrigin == 'select')
         scrollIntoView = true;
       userEvent = view.inputState.lastSelectionOrigin!;
+      if (userEvent == 'select.pointer')
+        newSel = skipAtomsForSelection(
+          state.facet(atomicRanges).map((f) => f(view)),
+          newSel,
+        );
     }
     view.dispatch({ selection: newSel, scrollIntoView, userEvent });
     return true;
@@ -239,7 +331,7 @@ export function applyDOMChangeInner(
   lastKey: number = -1,
 ): boolean {
   if (browser.ios && view.inputState.flushIOSKey(change)) return true;
-  const sel = view.state.selection.main;
+  let sel = view.state.selection.main;
   // Android browsers don't fire reasonable key events for enter,
   // backspace, or delete. So this detects changes that look like
   // they're caused by those keys, and reinterprets them as key
@@ -271,11 +363,11 @@ export function applyDOMChangeInner(
   )
     return true;
 
-  const text = change.insert.toString();
+  let text = change.insert.toString();
   if (view.inputState.composing >= 0) view.inputState.composing++;
 
   let defaultTr: Transaction | null;
-  const defaultInsert = () =>
+  let defaultInsert = () =>
     defaultTr || (defaultTr = applyDefaultInsert(view, change!, newSel));
   if (
     !view.state
@@ -292,9 +384,28 @@ function applyDefaultInsert(
   newSel: EditorSelection | null,
 ): Transaction {
   let tr: TransactionSpec;
-  const startState = view.state;
-  const sel = startState.selection.main;
+  let startState = view.state;
+  let sel = startState.selection.main;
+  let inAtomic = -1;
   if (
+    (change.from == change.to && change.from < sel.from) ||
+    change.from > sel.to
+  ) {
+    let side: -1 | 1 = change.from < sel.from ? -1 : 1;
+    let pos = side < 0 ? sel.from : sel.to;
+    let moved = skipAtomicRanges(
+      startState.facet(atomicRanges).map((f) => f(view)),
+      pos,
+      side,
+    );
+    if (change.from == moved) inAtomic = moved;
+  }
+  if (inAtomic > -1) {
+    tr = {
+      changes: change,
+      selection: EditorSelection.cursor(change.from + change.insert.length, -1),
+    };
+  } else if (
     change.from >= sel.from &&
     change.to <= sel.to &&
     change.to - change.from >= (sel.to - sel.from) / 3 &&
@@ -303,9 +414,9 @@ function applyDefaultInsert(
         newSel.main.from == change.from + change.insert.length)) &&
     view.inputState.composing < 0
   ) {
-    const before =
+    let before =
       sel.from < change.from ? startState.sliceDoc(sel.from, change.from) : '';
-    const after =
+    let after =
       sel.to > change.to ? startState.sliceDoc(change.to, sel.to) : '';
     tr = startState.replaceSelection(
       view.state.toText(
@@ -315,21 +426,22 @@ function applyDefaultInsert(
       ),
     );
   } else {
-    const changes = startState.changes(change);
-    const mainSel =
+    let changes = startState.changes(change);
+    let mainSel =
       newSel && newSel.main.to <= changes.newLength ? newSel.main : undefined;
     // Try to apply a composition change to all cursors
     if (
       startState.selection.ranges.length > 1 &&
-      view.inputState.composing >= 0 &&
-      change.to <= sel.to &&
+      (view.inputState.composing >= 0 ||
+        view.inputState.compositionPendingChange) &&
+      change.to <= sel.to + 10 &&
       change.to >= sel.to - 10
     ) {
-      const replaced = view.state.sliceDoc(change.from, change.to);
+      let replaced = view.state.sliceDoc(change.from, change.to);
       let compositionRange: { from: number; to: number };
-      const composition = newSel && findCompositionNode(view, newSel.main.head);
+      let composition = newSel && findCompositionNode(view, newSel.main.head);
       if (composition) {
-        const dLen = change.insert.length - (change.to - change.from);
+        let dLen = change.insert.length - (change.to - change.from);
         compositionRange = {
           from: composition.from,
           to: composition.to - dLen,
@@ -337,30 +449,27 @@ function applyDefaultInsert(
       } else {
         compositionRange = view.state.doc.lineAt(sel.head);
       }
-      const offset = sel.to - change.to;
-      const size = sel.to - sel.from;
+      let offset = sel.to - change.to;
       tr = startState.changeByRange((range) => {
         if (range.from == sel.from && range.to == sel.to)
           return { changes, range: mainSel || range.map(changes) };
-        const to = range.to - offset;
-        const from = to - replaced.length;
+        let to = range.to - offset;
+        let from = to - replaced.length;
         if (
-          range.to - range.from != size ||
           view.state.sliceDoc(from, to) != replaced ||
           // Unfortunately, there's no way to make multiple
           // changes in the same node work without aborting
           // composition, so cursors in the composition range are
           // ignored.
-          (range.to >= compositionRange.from &&
-            range.from <= compositionRange.to)
+          (to >= compositionRange.from && from <= compositionRange.to)
         )
           return { range };
-        const rangeChanges = startState.changes({
+        let rangeChanges = startState.changes({
           from,
           to,
           insert: change!.insert,
         });
-        const selOff = range.to - sel.to;
+        let selOff = range.to - sel.to;
         return {
           changes: rangeChanges,
           range: !mainSel
@@ -394,13 +503,13 @@ function applyDefaultInsert(
   return startState.update(tr, { userEvent, scrollIntoView: true });
 }
 
-function findDiff(
+export function findDiff(
   a: string,
   b: string,
   preferredPos: number,
   preferredSide: string | null,
 ): { from: number; toA: number; toB: number } | null {
-  const minLen = Math.min(a.length, b.length);
+  let minLen = Math.min(a.length, b.length);
   let from = 0;
   while (from < minLen && a.charCodeAt(from) == b.charCodeAt(from)) from++;
   if (from == minLen && a.length == b.length) return null;
@@ -412,17 +521,17 @@ function findDiff(
   }
 
   if (preferredSide == 'end') {
-    const adjust = Math.max(0, from - Math.min(toA, toB));
+    let adjust = Math.max(0, from - Math.min(toA, toB));
     preferredPos -= toA + adjust - from;
   }
   if (toA < from && a.length < b.length) {
-    const move =
+    let move =
       preferredPos <= from && preferredPos >= toA ? from - preferredPos : 0;
     from -= move;
     toB = from + (toB - toA);
     toA = from;
   } else if (toB < from) {
-    const move =
+    let move =
       preferredPos <= from && preferredPos >= toB ? from - preferredPos : 0;
     from -= move;
     toA = from + (toA - toB);
@@ -432,9 +541,9 @@ function findDiff(
 }
 
 function selectionPoints(view: EditorView) {
-  const result: DOMPoint[] = [];
+  let result: DOMPoint[] = [];
   if (view.root.activeElement != view.contentDOM) return result;
-  const { anchorNode, anchorOffset, focusNode, focusOffset } =
+  let { anchorNode, anchorOffset, focusNode, focusOffset } =
     view.observer.selectionRange;
   if (anchorNode) {
     result.push(new DOMPoint(anchorNode, anchorOffset));
@@ -449,9 +558,15 @@ function selectionFromPoints(
   base: number,
 ): EditorSelection | null {
   if (points.length == 0) return null;
-  const anchor = points[0].pos;
-  const head = points.length == 2 ? points[1].pos : anchor;
+  let anchor = points[0].pos;
+  let head = points.length == 2 ? points[1].pos : anchor;
   return anchor > -1 && head > -1
     ? EditorSelection.single(anchor + base, head + base)
     : null;
+}
+
+export function sameSelPos(selection: EditorSelection, range: SelectionRange) {
+  return (
+    range.head == selection.main.head && range.anchor == selection.main.anchor
+  );
 }

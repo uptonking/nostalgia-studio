@@ -1,4 +1,4 @@
-import { ExternalTokenizer, type InputStream } from '@lezer/lr';
+import { ExternalTokenizer, InputStream } from '@lezer/lr';
 import {
   whitespace,
   LineComment,
@@ -128,8 +128,8 @@ function readDoubleDollarLiteral(input: InputStream, tag: string) {
 }
 
 function readPLSQLQuotedLiteral(input: InputStream, openDelim: number) {
-  const matchingDelim = '[{<('.indexOf(String.fromCharCode(openDelim));
-  const closeDelim =
+  let matchingDelim = '[{<('.indexOf(String.fromCharCode(openDelim));
+  let closeDelim =
     matchingDelim < 0 ? openDelim : ']}>)'.charCodeAt(matchingDelim);
 
   for (;;) {
@@ -159,7 +159,7 @@ function readWordOrQuoted(input: InputStream) {
     input.next == Ch.DoubleQuote ||
     input.next == Ch.Backtick
   ) {
-    const quote = input.next;
+    let quote = input.next;
     input.advance();
     readLiteral(input, quote, false);
   } else {
@@ -203,12 +203,12 @@ function inString(ch: number, str: string) {
 const Space = ' \t\r\n';
 
 function keywords(keywords: string, types: string, builtin?: string) {
-  const result: { [name: string]: number } = Object.create(null);
+  let result: { [name: string]: number } = Object.create(null);
   result['true'] = result['false'] = Bool;
   result['null'] = result['unknown'] = Null;
-  for (const kw of keywords.split(' ')) if (kw) result[kw] = Keyword;
-  for (const tp of types.split(' ')) if (tp) result[tp] = Type;
-  for (const kw of (builtin || '').split(' ')) if (kw) result[kw] = Builtin;
+  for (let kw of keywords.split(' ')) if (kw) result[kw] = Keyword;
+  for (let tp of types.split(' ')) if (tp) result[tp] = Type;
+  for (let kw of (builtin || '').split(' ')) if (kw) result[kw] = Builtin;
   return result;
 }
 
@@ -259,8 +259,8 @@ export function dialect(
   types?: string,
   builtin?: string,
 ): Dialect {
-  const dialect = {} as Dialect;
-  for (const prop in defaults)
+  let dialect = {} as Dialect;
+  for (let prop in defaults)
     (dialect as any)[prop] = (
       (spec.hasOwnProperty(prop) ? spec : defaults) as any
     )[prop];
@@ -270,13 +270,13 @@ export function dialect(
 
 export function tokensFor(d: Dialect) {
   return new ExternalTokenizer((input) => {
-    const { next } = input;
+    let { next } = input;
     input.advance();
     if (inString(next, Space)) {
       while (inString(input.next, Space)) input.advance();
       input.acceptToken(whitespace);
     } else if (next == Ch.Dollar && d.doubleDollarQuotedStrings) {
-      const tag = readWord(input, '');
+      let tag = readWord(input, '');
       if (input.next == Ch.Dollar) {
         input.advance();
         readDoubleDollarLiteral(input, tag);
@@ -304,7 +304,7 @@ export function tokensFor(d: Dialect) {
     } else if (next == Ch.Slash && input.next == Ch.Star) {
       input.advance();
       for (let depth = 1; ; ) {
-        const cur: number = input.next;
+        let cur: number = input.next;
         if (input.next < 0) break;
         input.advance();
         if (cur == Ch.Star && (input as any).next == Ch.Slash) {
@@ -347,7 +347,7 @@ export function tokensFor(d: Dialect) {
       input.peek(1) > 0 &&
       !inString(input.peek(1), Space)
     ) {
-      const openDelim = input.peek(1);
+      let openDelim = input.peek(1);
       input.advance(2);
       readPLSQLQuotedLiteral(input, openDelim);
       input.acceptToken(StringToken);
@@ -386,7 +386,7 @@ export function tokensFor(d: Dialect) {
       (next == Ch._0 && (input.next == Ch.x || input.next == Ch.X)) ||
       ((next == Ch.x || next == Ch.X) && input.next == Ch.SingleQuote)
     ) {
-      const quoted = input.next == Ch.SingleQuote;
+      let quoted = input.next == Ch.SingleQuote;
       input.advance();
       while (isHexDigit(input.next)) input.advance();
       if (quoted && input.next == Ch.SingleQuote) input.advance();
@@ -412,7 +412,7 @@ export function tokensFor(d: Dialect) {
     } else if (next == Ch.Colon || next == Ch.Comma) {
       input.acceptToken(Punctuation);
     } else if (isAlpha(next)) {
-      const word = readWord(input, String.fromCharCode(next));
+      let word = readWord(input, String.fromCharCode(next));
       input.acceptToken(
         input.next == Ch.Dot || input.peek(-word.length - 1) == Ch.Dot
           ? Identifier

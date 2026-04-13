@@ -105,7 +105,7 @@ export class EditorView {
   /// @internal
   declare domObserver: DOMObserver;
   /// Holds `true` when a hack node is needed in Firefox to prevent the
-  /// [space is eaten issue](https://github.com/ProseMirror/prosemirror/issues/651)
+  /// [space is eaten issue](https://code.haverbeke.berlin/prosemirror/prosemirror/issues/651)
   /// @internal
   requiresGeckoHackNode: boolean = false;
 
@@ -312,7 +312,11 @@ export class EditorView {
             this,
           );
         }
-        if (chromeKludge && !this.trackWrites) forceSelUpdate = true;
+        if (
+          chromeKludge &&
+          (!this.trackWrites || !this.dom.contains(this.trackWrites))
+        )
+          forceSelUpdate = true;
       }
       // Work around for an issue where an update arriving right between
       // a DOM selection change and the "selectionchange" event for it
@@ -408,12 +412,18 @@ export class EditorView {
   private updateDraggedNode(dragging: Dragging, prev: EditorState) {
     let sel = dragging.node!;
     let found = -1;
-    if (this.state.doc.nodeAt(sel.from) == sel.node) {
+    if (
+      sel.from < this.state.doc.content.size &&
+      this.state.doc.nodeAt(sel.from) == sel.node
+    ) {
       found = sel.from;
     } else {
       let movedPos =
         sel.from + (this.state.doc.content.size - prev.doc.content.size);
-      let moved = movedPos > 0 && this.state.doc.nodeAt(movedPos);
+      let moved =
+        movedPos > 0 &&
+        movedPos < this.state.doc.content.size &&
+        this.state.doc.nodeAt(movedPos);
       if (moved == sel.node) found = movedPos;
     }
     this.dragging = new Dragging(
@@ -1014,8 +1024,14 @@ export interface EditorProps<P = any> {
   ) => Slice;
 
   /// Can be used to transform pasted or dragged-and-dropped content
-  /// before it is applied to the document.
-  transformPasted?: (this: P, slice: Slice, view: EditorView) => Slice;
+  /// before it is applied to the document. The `plain` flag will be
+  /// true when the text is pasted as plain text.
+  transformPasted?: (
+    this: P,
+    slice: Slice,
+    view: EditorView,
+    plain: boolean,
+  ) => Slice;
 
   /// Can be used to transform copied or cut content before it is
   /// serialized to the clipboard.

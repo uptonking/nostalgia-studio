@@ -1,19 +1,15 @@
+import { EditorView, Decoration, GutterMarker } from '@codemirror/view';
 import {
-  EditorView,
-  type Decoration,
-  type GutterMarker,
-} from '@codemirror/view';
-import {
-  type EditorState,
+  EditorState,
   EditorSelection,
   Facet,
-  type Transaction,
+  Transaction,
   StateEffect,
   StateField,
-  type StateCommand,
-  type RangeSetBuilder,
+  StateCommand,
+  RangeSetBuilder,
 } from '@codemirror/state';
-import type { Chunk } from './chunk';
+import { Chunk } from './chunk';
 
 type Config = {
   sibling?: () => EditorView;
@@ -54,9 +50,8 @@ export const ChunkField = StateField.define<readonly Chunk[]>({
     return null as any;
   },
   update(current, tr) {
-    for (const e of tr.effects) if (e.is(setChunks)) current = e.value;
-    for (const comp of tr.state.facet(computeChunks))
-      current = comp(current, tr);
+    for (let e of tr.effects) if (e.is(setChunks)) current = e.value;
+    for (let comp of tr.state.facet(computeChunks)) current = comp(current, tr);
     return current;
   },
 });
@@ -66,23 +61,23 @@ export const ChunkField = StateField.define<readonly Chunk[]>({
 /// null if the editor doesn't have a merge extension active or the
 /// merge view hasn't finished initializing yet.
 export function getChunks(state: EditorState) {
-  const field = state.field(ChunkField, false);
+  let field = state.field(ChunkField, false);
   if (!field) return null;
-  const conf = state.facet(mergeConfig);
+  let conf = state.facet(mergeConfig);
   return { chunks: field, side: conf ? conf.side : null };
 }
 
-const moveByChunk =
+let moveByChunk =
   (dir: -1 | 1): StateCommand =>
   ({ state, dispatch }) => {
-    const chunks = state.field(ChunkField, false);
-    const conf = state.facet(mergeConfig);
+    let chunks = state.field(ChunkField, false);
+    let conf = state.facet(mergeConfig);
     if (!chunks || !chunks.length || !conf) return false;
-    const { head } = state.selection.main;
+    let { head } = state.selection.main;
     let pos = 0;
     for (let i = chunks.length - 1; i >= 0; i--) {
-      const chunk = chunks[i];
-      const [from, to] =
+      let chunk = chunks[i];
+      let [from, to] =
         conf.side == 'b' ? [chunk.fromB, chunk.toB] : [chunk.fromA, chunk.toA];
       if (to < head) {
         pos = i + 1;
@@ -94,9 +89,9 @@ const moveByChunk =
         break;
       }
     }
-    const next =
+    let next =
       chunks[(pos + (dir < 0 ? chunks.length - 1 : 0)) % chunks.length];
-    const [from, to] =
+    let [from, to] =
       conf.side == 'b' ? [next.fromB, next.toB] : [next.fromA, next.toA];
     dispatch(
       state.update({

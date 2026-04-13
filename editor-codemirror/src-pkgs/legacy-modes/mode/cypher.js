@@ -1,9 +1,10 @@
-const wordRegexp = function (words) {
+var wordRegexp = function (words) {
   return new RegExp('^(?:' + words.join('|') + ')$', 'i');
 };
-const tokenBase = function (stream /*, state*/) {
+
+var tokenBase = function (stream /*, state*/) {
   curPunc = null;
-  const ch = stream.next();
+  var ch = stream.next();
   if (ch === '"') {
     stream.match(/^.*?"/);
     return 'string';
@@ -27,14 +28,14 @@ const tokenBase = function (stream /*, state*/) {
       stream.eatWhile(/[\w\d_\-]/);
       return 'atom';
     }
-    const word = stream.current();
+    var word = stream.current();
     if (funcs.test(word)) return 'builtin';
     if (preds.test(word)) return 'def';
     if (keywords.test(word) || systemKeywords.test(word)) return 'keyword';
     return 'variable';
   }
 };
-const pushContext = function (state, type, col) {
+var pushContext = function (state, type, col) {
   return (state.context = {
     prev: state.context,
     indent: state.indent,
@@ -42,12 +43,12 @@ const pushContext = function (state, type, col) {
     type: type,
   });
 };
-const popContext = function (state) {
+var popContext = function (state) {
   state.indent = state.context.indent;
   return (state.context = state.context.prev);
 };
-let curPunc;
-const funcs = wordRegexp([
+var curPunc;
+var funcs = wordRegexp([
   'abs',
   'acos',
   'allShortestPaths',
@@ -121,7 +122,7 @@ const funcs = wordRegexp([
   'type',
   'upper',
 ]);
-const preds = wordRegexp([
+var preds = wordRegexp([
   'all',
   'and',
   'any',
@@ -135,7 +136,7 @@ const preds = wordRegexp([
   'single',
   'xor',
 ]);
-const keywords = wordRegexp([
+var keywords = wordRegexp([
   'as',
   'asc',
   'ascending',
@@ -195,7 +196,7 @@ const keywords = wordRegexp([
   'call',
   'yield',
 ]);
-const systemKeywords = wordRegexp([
+var systemKeywords = wordRegexp([
   'access',
   'active',
   'assign',
@@ -266,7 +267,7 @@ const systemKeywords = wordRegexp([
   'with',
   'write',
 ]);
-const operatorChars = /[*+\-<>=&|~%^]/;
+var operatorChars = /[*+\-<>=&|~%^]/;
 
 export const cypher = {
   name: 'cypher',
@@ -288,7 +289,7 @@ export const cypher = {
     if (stream.eatSpace()) {
       return null;
     }
-    const style = state.tokenize(stream, state);
+    var style = state.tokenize(stream, state);
     if (
       style !== 'comment' &&
       state.context &&
@@ -327,14 +328,14 @@ export const cypher = {
     return style;
   },
   indent: function (state, textAfter, cx) {
-    const firstChar = textAfter && textAfter.charAt(0);
-    let context = state.context;
+    var firstChar = textAfter && textAfter.charAt(0);
+    var context = state.context;
     if (/[\]\}]/.test(firstChar)) {
       while (context && context.type === 'pattern') {
         context = context.prev;
       }
     }
-    const closing = context && firstChar === context.type;
+    var closing = context && firstChar === context.type;
     if (!context) return 0;
     if (context.type === 'keywords') return null;
     if (context.align) return context.col + (closing ? 0 : 1);

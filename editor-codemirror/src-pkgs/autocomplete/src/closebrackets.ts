@@ -1,15 +1,15 @@
-import { EditorView, type KeyBinding } from '@codemirror/view';
+import { EditorView, KeyBinding } from '@codemirror/view';
 import {
-  type EditorState,
+  EditorState,
   EditorSelection,
-  type Transaction,
-  type Extension,
-  type StateCommand,
+  Transaction,
+  Extension,
+  StateCommand,
   StateField,
   StateEffect,
   MapMode,
   CharCategory,
-  type Text,
+  Text,
   codePointAt,
   fromCodePoint,
   codePointSize,
@@ -40,12 +40,14 @@ const defaults: Required<CloseBracketConfig> = {
   before: ')]}:;>',
   stringPrefixes: [],
 };
+
 const closeBracketEffect = StateEffect.define<number>({
   map(value, mapping) {
-    const mapped = mapping.mapPos(value, -1, MapMode.TrackAfter);
+    let mapped = mapping.mapPos(value, -1, MapMode.TrackAfter);
     return mapped == null ? undefined : mapped;
   },
 });
+
 const closedBracket = new (class extends RangeValue {})();
 closedBracket.startSide = 1;
 closedBracket.endSide = -1;
@@ -57,12 +59,12 @@ const bracketState = StateField.define<RangeSet<typeof closedBracket>>({
   update(value, tr) {
     value = value.map(tr.changes);
     if (tr.selection) {
-      const line = tr.state.doc.lineAt(tr.selection.main.head);
+      let line = tr.state.doc.lineAt(tr.selection.main.head);
       value = value.update({
         filter: (from) => from >= line.from && from <= line.to,
       });
     }
-    for (const effect of tr.effects)
+    for (let effect of tr.effects)
       if (effect.is(closeBracketEffect))
         value = value.update({
           add: [closedBracket.range(effect.value, effect.value + 1)],
@@ -96,14 +98,15 @@ function config(state: EditorState, pos: number) {
 }
 
 const android =
-  typeof navigator === 'object' && /Android\b/.test(navigator.userAgent);
+  typeof navigator == 'object' && /Android\b/.test(navigator.userAgent);
+
 const inputHandler = EditorView.inputHandler.of((view, from, to, insert) => {
   if (
     (android ? view.composing : view.compositionStarted) ||
     view.state.readOnly
   )
     return false;
-  const sel = view.state.selection.main;
+  let sel = view.state.selection.main;
   if (
     insert.length > 2 ||
     (insert.length == 2 && codePointSize(codePointAt(insert, 0)) == 1) ||
@@ -111,7 +114,7 @@ const inputHandler = EditorView.inputHandler.of((view, from, to, insert) => {
     to != sel.to
   )
     return false;
-  const tr = insertBracket(view.state, insert);
+  let tr = insertBracket(view.state, insert);
   if (!tr) return false;
   view.dispatch(tr);
   return true;
@@ -121,13 +124,13 @@ const inputHandler = EditorView.inputHandler.of((view, from, to, insert) => {
 /// the cursor is between them.
 export const deleteBracketPair: StateCommand = ({ state, dispatch }) => {
   if (state.readOnly) return false;
-  const conf = config(state, state.selection.main.head);
-  const tokens = conf.brackets || defaults.brackets;
+  let conf = config(state, state.selection.main.head);
+  let tokens = conf.brackets || defaults.brackets;
   let dont = null;
-  const changes = state.changeByRange((range) => {
+  let changes = state.changeByRange((range) => {
     if (range.empty) {
-      const before = prevChar(state.doc, range.head);
-      for (const token of tokens) {
+      let before = prevChar(state.doc, range.head);
+      for (let token of tokens) {
         if (
           token == before &&
           nextChar(state.doc, range.head) == closing(codePointAt(token, 0))
@@ -172,10 +175,10 @@ export function insertBracket(
   state: EditorState,
   bracket: string,
 ): Transaction | null {
-  const conf = config(state, state.selection.main.head);
-  const tokens = conf.brackets || defaults.brackets;
-  for (const tok of tokens) {
-    const closed = closing(codePointAt(tok, 0));
+  let conf = config(state, state.selection.main.head);
+  let tokens = conf.brackets || defaults.brackets;
+  for (let tok of tokens) {
+    let closed = closing(codePointAt(tok, 0));
     if (bracket == tok)
       return closed == tok
         ? handleSame(state, tok, tokens.indexOf(tok + tok + tok) > -1, conf)
@@ -195,12 +198,12 @@ function closedBracketAt(state: EditorState, pos: number) {
 }
 
 function nextChar(doc: Text, pos: number) {
-  const next = doc.sliceString(pos, pos + 2);
+  let next = doc.sliceString(pos, pos + 2);
   return next.slice(0, codePointSize(codePointAt(next, 0)));
 }
 
 function prevChar(doc: Text, pos: number) {
-  const prev = doc.sliceString(pos - 2, pos);
+  let prev = doc.sliceString(pos - 2, pos);
   return codePointSize(codePointAt(prev, 0)) == prev.length
     ? prev
     : prev.slice(1);
@@ -213,7 +216,7 @@ function handleOpen(
   closeBefore: string,
 ) {
   let dont = null;
-  const changes = state.changeByRange((range) => {
+  let changes = state.changeByRange((range) => {
     if (!range.empty)
       return {
         changes: [
@@ -226,7 +229,7 @@ function handleOpen(
           range.head + open.length,
         ),
       };
-    const next = nextChar(state.doc, range.head);
+    let next = nextChar(state.doc, range.head);
     if (!next || /\s/.test(next) || closeBefore.indexOf(next) > -1)
       return {
         changes: { insert: open + close, from: range.head },
@@ -245,7 +248,7 @@ function handleOpen(
 
 function handleClose(state: EditorState, _open: string, close: string) {
   let dont = null;
-  const changes = state.changeByRange((range) => {
+  let changes = state.changeByRange((range) => {
     if (range.empty && nextChar(state.doc, range.head) == close)
       return {
         changes: {
@@ -273,9 +276,9 @@ function handleSame(
   allowTriple: boolean,
   config: CloseBracketConfig,
 ) {
-  const stringPrefixes = config.stringPrefixes || defaults.stringPrefixes;
+  let stringPrefixes = config.stringPrefixes || defaults.stringPrefixes;
   let dont = null;
-  const changes = state.changeByRange((range) => {
+  let changes = state.changeByRange((range) => {
     if (!range.empty)
       return {
         changes: [
@@ -288,8 +291,8 @@ function handleSame(
           range.head + token.length,
         ),
       };
-    const pos = range.head;
-    const next = nextChar(state.doc, pos);
+    let pos = range.head;
+    let next = nextChar(state.doc, pos);
     let start;
     if (next == token) {
       if (nodeStart(state, pos)) {
@@ -299,10 +302,10 @@ function handleSame(
           range: EditorSelection.cursor(pos + token.length),
         };
       } else if (closedBracketAt(state, pos)) {
-        const isTriple =
+        let isTriple =
           allowTriple &&
           state.sliceDoc(pos, pos + token.length * 3) == token + token + token;
-        const content = isTriple ? token + token + token : token;
+        let content = isTriple ? token + token + token : token;
         return {
           changes: { from: pos, to: pos + content.length, insert: content },
           range: EditorSelection.cursor(pos + content.length),
@@ -345,7 +348,7 @@ function handleSame(
 }
 
 function nodeStart(state: EditorState, pos: number) {
-  const tree = syntaxTree(state).resolveInner(pos + 1);
+  let tree = syntaxTree(state).resolveInner(pos + 1);
   return tree.parent && tree.from == pos;
 }
 
@@ -356,13 +359,13 @@ function probablyInString(
   prefixes: readonly string[],
 ) {
   let node = syntaxTree(state).resolveInner(pos, -1);
-  const maxPrefix = prefixes.reduce((m, p) => Math.max(m, p.length), 0);
+  let maxPrefix = prefixes.reduce((m, p) => Math.max(m, p.length), 0);
   for (let i = 0; i < 5; i++) {
-    const start = state.sliceDoc(
+    let start = state.sliceDoc(
       node.from,
       Math.min(node.to, node.from + quoteToken.length + maxPrefix),
     );
-    const quotePos = start.indexOf(quoteToken);
+    let quotePos = start.indexOf(quoteToken);
     if (
       !quotePos ||
       (quotePos > -1 && prefixes.indexOf(start.slice(0, quotePos)) > -1)
@@ -381,7 +384,7 @@ function probablyInString(
       }
       return true;
     }
-    const parent = node.to == pos && node.parent;
+    let parent = node.to == pos && node.parent;
     if (!parent) break;
     node = parent;
   }
@@ -393,10 +396,10 @@ function canStartStringAt(
   pos: number,
   prefixes: readonly string[],
 ) {
-  const charCat = state.charCategorizer(pos);
+  let charCat = state.charCategorizer(pos);
   if (charCat(state.sliceDoc(pos - 1, pos)) != CharCategory.Word) return pos;
-  for (const prefix of prefixes) {
-    const start = pos - prefix.length;
+  for (let prefix of prefixes) {
+    let start = pos - prefix.length;
     if (
       state.sliceDoc(start, pos) == prefix &&
       charCat(state.sliceDoc(start - 1, start)) != CharCategory.Word

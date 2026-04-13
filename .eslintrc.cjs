@@ -39,6 +39,12 @@ module.exports = {
         '@typescript-eslint/no-import-type-side-effects': 'off',
       },
     },
+    {
+      files: ['**/*.ts', '**/*.tsx'],
+      rules: {
+        'import/named': 'off',
+      },
+    },
   ],
   settings: {
     react: {

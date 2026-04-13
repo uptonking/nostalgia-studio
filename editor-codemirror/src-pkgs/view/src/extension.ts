@@ -1,23 +1,23 @@
 import {
-  type EditorState,
-  type Transaction,
+  EditorState,
+  Transaction,
   ChangeSet,
-  type ChangeDesc,
+  ChangeDesc,
   Facet,
-  type Line,
+  Line,
   StateEffect,
-  type Extension,
-  type SelectionRange,
+  Extension,
+  SelectionRange,
   RangeSet,
   EditorSelection,
 } from '@codemirror/state';
-import type { StyleModule } from 'style-mod';
-import { type DecorationSet, Decoration } from './decoration';
-import type { EditorView, DOMEventHandlers } from './editorview';
-import type { Attrs } from './attributes';
-import { type Isolate, autoDirection } from './bidi';
-import type { Rect, ScrollStrategy } from './dom';
-import type { MakeSelectionStyle } from './input';
+import { StyleModule } from 'style-mod';
+import { DecorationSet, Decoration, BlockWrapper } from './decoration';
+import { EditorView, DOMEventHandlers } from './editorview';
+import { Attrs } from './attributes';
+import { Isolate, autoDirection } from './bidi';
+import { Rect, ScrollStrategy } from './dom';
+import { MakeSelectionStyle } from './input';
 
 /// Command functions are used in key bindings and other types of user
 /// actions. Given an editor view, they check whether their effect can
@@ -83,10 +83,10 @@ export const scrollHandler = Facet.define<
 export class ScrollTarget {
   constructor(
     readonly range: SelectionRange,
-    readonly y: ScrollStrategy = 'nearest',
-    readonly x: ScrollStrategy = 'nearest',
-    readonly yMargin: number = 5,
-    readonly xMargin: number = 5,
+    readonly y: ScrollStrategy,
+    readonly x: ScrollStrategy,
+    readonly yMargin: number,
+    readonly xMargin: number,
     // This data structure is abused to also store precise scroll
     // snapshots, instead of a `scrollIntoView` request. When this
     // flag is `true`, `range` points at a position in the reference
@@ -144,7 +144,7 @@ export function logException(
   exception: any,
   context?: string,
 ) {
-  const handler = state.facet(exceptionSink);
+  let handler = state.facet(exceptionSink);
   if (handler.length) handler[0](exception);
   else if (
     window.onerror &&
@@ -275,11 +275,11 @@ export class ViewPlugin<V extends PluginValue, Arg = undefined> {
       eventHandlers,
       eventObservers,
       (plugin) => {
-        const ext = [];
+        let ext = [];
         if (deco)
           ext.push(
             decorations.of((view) => {
-              const pluginInst = view.plugin(plugin);
+              let pluginInst = view.plugin(plugin);
               return pluginInst ? deco(pluginInst) : Decoration.none;
             }),
           );
@@ -326,7 +326,7 @@ export class PluginInstance {
         }
       }
     } else if (this.mustUpdate) {
-      const update = this.mustUpdate;
+      let update = this.mustUpdate;
       this.mustUpdate = null;
       if (this.value.update) {
         try {
@@ -382,6 +382,10 @@ export const decorations = Facet.define<
   DecorationSet | ((view: EditorView) => DecorationSet)
 >();
 
+export const blockWrappers = Facet.define<
+  RangeSet<BlockWrapper> | ((view: EditorView) => RangeSet<BlockWrapper>)
+>();
+
 export const outerDecorations = Facet.define<
   DecorationSet | ((view: EditorView) => DecorationSet)
 >();
@@ -396,17 +400,17 @@ export function getIsolatedRanges(
   view: EditorView,
   line: Line,
 ): readonly Isolate[] {
-  const isolates = view.state.facet(bidiIsolatedRanges);
+  let isolates = view.state.facet(bidiIsolatedRanges);
   if (!isolates.length) return isolates as any[];
-  const sets = isolates.map<DecorationSet>((i) =>
+  let sets = isolates.map<DecorationSet>((i) =>
     i instanceof Function ? i(view) : i,
   );
-  const result: Isolate[] = [];
+  let result: Isolate[] = [];
   RangeSet.spans(sets, line.from, line.to, {
     point() {},
     span(fromDoc, toDoc, active, open) {
-      const from = fromDoc - line.from;
-      const to = toDoc - line.from;
+      let from = fromDoc - line.from;
+      let to = toDoc - line.from;
       let level = result;
       for (let i = active.length - 1; i >= 0; i--, open--) {
         let direction = active[i].spec.bidiIsolate;
@@ -421,7 +425,7 @@ export function getIsolatedRanges(
           update.to = to;
           level = update.inner as Isolate[];
         } else {
-          const add = { from, to, direction, inner: [] };
+          let add = { from, to, direction, inner: [] };
           level.push(add);
           level = add.inner;
         }
@@ -439,8 +443,8 @@ export function getScrollMargins(view: EditorView) {
   let right = 0;
   let top = 0;
   let bottom = 0;
-  for (const source of view.state.facet(scrollMargins)) {
-    const m = source(view);
+  for (let source of view.state.facet(scrollMargins)) {
+    let m = source(view);
     if (m) {
       if (m.left != null) left = Math.max(left, m.left);
       if (m.right != null) right = Math.max(right, m.right);
@@ -482,7 +486,7 @@ export class ChangedRange {
     let i = set.length;
     let me: ChangedRange = this;
     for (; i > 0; i--) {
-      const range = set[i - 1];
+      let range = set[i - 1];
       if (range.fromA > me.toA) continue;
       if (range.toA < me.fromA) break;
       me = me.join(range);
@@ -492,33 +496,45 @@ export class ChangedRange {
     return set;
   }
 
+  // Extend a set to cover all the content in `ranges`, which is a
+  // flat array with each pair of numbers representing fromB/toB
+  // positions. These pairs are generated in unchanged ranges, so the
+  // offset between doc A and doc B is the same for their start and
+  // end points.
   static extendWithRanges(
     diff: readonly ChangedRange[],
     ranges: number[],
   ): readonly ChangedRange[] {
     if (ranges.length == 0) return diff;
-    const result: ChangedRange[] = [];
-    for (let dI = 0, rI = 0, posA = 0, posB = 0; ; dI++) {
-      const next = dI == diff.length ? null : diff[dI];
-      const off = posA - posB;
-      const end = next ? next.fromB : 1e9;
-      while (rI < ranges.length && ranges[rI] < end) {
-        const from = ranges[rI];
-        const to = ranges[rI + 1];
-        const fromB = Math.max(posB, from);
-        const toB = Math.min(end, to);
-        if (fromB <= toB)
-          new ChangedRange(fromB + off, toB + off, fromB, toB).addToSet(result);
-        if (to > end) break;
-        else rI += 2;
+    let result: ChangedRange[] = [];
+    outer: for (let dI = 0, rI = 0, off = 0; ; ) {
+      let nextD = dI < diff.length ? diff[dI].fromB : 1e9;
+      let nextR = rI < ranges.length ? ranges[rI] : 1e9;
+      let fromB = Math.min(nextD, nextR);
+      if (fromB == 1e9) break;
+      let fromA = fromB + off;
+      let toB = fromB;
+      let toA = fromA;
+      for (;;) {
+        if (rI < ranges.length && ranges[rI] <= toB) {
+          let end = ranges[rI + 1];
+          rI += 2;
+          toB = Math.max(toB, end);
+          for (let i = dI; i < diff.length && diff[i].fromB <= toB; i++)
+            off = diff[i].toA - diff[i].toB;
+          toA = Math.max(toA, end + off);
+        } else if (dI < diff.length && diff[dI].fromB <= toB) {
+          let next = diff[dI++];
+          toB = Math.max(toB, next.toB);
+          toA = Math.max(toA, next.toA);
+          off = next.toA - next.toB;
+        } else {
+          break;
+        }
       }
-      if (!next) return result;
-      new ChangedRange(next.fromA, next.toA, next.fromB, next.toB).addToSet(
-        result,
-      );
-      posA = next.toA;
-      posB = next.toB;
+      result.push(new ChangedRange(fromA, toA, fromB, toB));
     }
+    return result;
   }
 }
 
@@ -544,9 +560,9 @@ export class ViewUpdate {
   ) {
     this.startState = view.state;
     this.changes = ChangeSet.empty(this.startState.doc.length);
-    for (const tr of transactions)
+    for (let tr of transactions)
       this.changes = this.changes.compose(tr.changes);
-    const changedRanges: ChangedRange[] = [];
+    let changedRanges: ChangedRange[] = [];
     this.changes.iterChangedRanges((fromA, toA, fromB, toB) =>
       changedRanges.push(new ChangedRange(fromA, toA, fromB, toB)),
     );

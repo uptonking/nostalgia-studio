@@ -1,18 +1,23 @@
 import {
   combineConfig,
-  type EditorState,
+  EditorState,
   Facet,
-  StateField,
-  type Extension,
-  type Range,
+  Extension,
+  Range,
 } from '@codemirror/state';
 import { syntaxTree } from './language';
-import { EditorView, Decoration, type DecorationSet } from '@codemirror/view';
 import {
-  type Tree,
-  type SyntaxNode,
-  type SyntaxNodeRef,
-  type NodeType,
+  EditorView,
+  Decoration,
+  DecorationSet,
+  ViewPlugin,
+  ViewUpdate,
+} from '@codemirror/view';
+import {
+  Tree,
+  SyntaxNode,
+  SyntaxNodeRef,
+  NodeType,
   NodeProp,
 } from '@lezer/common';
 
@@ -45,8 +50,10 @@ const baseTheme = EditorView.baseTheme({
   '&.cm-focused .cm-matchingBracket': { backgroundColor: '#328c8252' },
   '&.cm-focused .cm-nonmatchingBracket': { backgroundColor: '#bb555544' },
 });
+
 const DefaultScanDist = 10000;
 const DefaultBrackets = '()[]{}';
+
 const bracketMatchingConfig = Facet.define<Config, Required<Config>>({
   combine(configs) {
     return combineConfig(configs, {
@@ -57,43 +64,61 @@ const bracketMatchingConfig = Facet.define<Config, Required<Config>>({
     });
   },
 });
+
 const matchingMark = Decoration.mark({ class: 'cm-matchingBracket' });
 const nonmatchingMark = Decoration.mark({ class: 'cm-nonmatchingBracket' });
 
 function defaultRenderMatch(match: MatchResult) {
-  const decorations = [];
-  const mark = match.matched ? matchingMark : nonmatchingMark;
+  let decorations = [];
+  let mark = match.matched ? matchingMark : nonmatchingMark;
   decorations.push(mark.range(match.start.from, match.start.to));
   if (match.end) decorations.push(mark.range(match.end.from, match.end.to));
   return decorations;
 }
 
-const bracketMatchingState = StateField.define<DecorationSet>({
-  create() {
-    return Decoration.none;
-  },
-  update(deco, tr) {
-    if (!tr.docChanged && !tr.selection) return deco;
-    let decorations: Range<Decoration>[] = [];
-    const config = tr.state.facet(bracketMatchingConfig);
-    for (const range of tr.state.selection.ranges) {
-      if (!range.empty) continue;
-      const match =
-        matchBrackets(tr.state, range.head, -1, config) ||
-        (range.head > 0 &&
-          matchBrackets(tr.state, range.head - 1, 1, config)) ||
-        (config.afterCursor &&
-          (matchBrackets(tr.state, range.head, 1, config) ||
-            (range.head < tr.state.doc.length &&
-              matchBrackets(tr.state, range.head + 1, -1, config))));
-      if (match)
-        decorations = decorations.concat(config.renderMatch(match, tr.state));
+function bracketDeco(state: EditorState) {
+  let decorations: Range<Decoration>[] = [];
+  let config = state.facet(bracketMatchingConfig);
+  for (let range of state.selection.ranges) {
+    if (!range.empty) continue;
+    let match =
+      matchBrackets(state, range.head, -1, config) ||
+      (range.head > 0 && matchBrackets(state, range.head - 1, 1, config)) ||
+      (config.afterCursor &&
+        (matchBrackets(state, range.head, 1, config) ||
+          (range.head < state.doc.length &&
+            matchBrackets(state, range.head + 1, -1, config))));
+    if (match)
+      decorations = decorations.concat(config.renderMatch(match, state));
+  }
+  return Decoration.set(decorations, true);
+}
+
+const bracketMatcher = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet;
+    paused = false;
+    constructor(view: EditorView) {
+      this.decorations = bracketDeco(view.state);
     }
-    return Decoration.set(decorations, true);
+    update(update: ViewUpdate) {
+      if (update.docChanged || update.selectionSet || this.paused) {
+        if (update.view.composing) {
+          this.decorations = this.decorations.map(update.changes);
+          this.paused = true;
+        } else {
+          this.decorations = bracketDeco(update.state);
+          this.paused = false;
+        }
+      }
+    }
   },
-  provide: (f) => EditorView.decorations.from(f),
-});
-const bracketMatchingUnique = [bracketMatchingState, baseTheme];
+  {
+    decorations: (v) => v.decorations,
+  },
+);
+
+const bracketMatchingUnique = [bracketMatcher, baseTheme];
 
 /// Create an extension that enables bracket matching. Whenever the
 /// cursor is next to a bracket, that bracket and the one it matches
@@ -118,10 +143,10 @@ function matchingNodes(
   dir: -1 | 1,
   brackets: string,
 ): null | readonly string[] {
-  const byProp = node.prop(dir < 0 ? NodeProp.openedBy : NodeProp.closedBy);
+  let byProp = node.prop(dir < 0 ? NodeProp.openedBy : NodeProp.closedBy);
   if (byProp) return byProp;
   if (node.name.length == 1) {
-    const index = brackets.indexOf(node.name);
+    let index = brackets.indexOf(node.name);
     if (index > -1 && index % 2 == (dir < 0 ? 1 : 0))
       return [brackets[index + dir]];
   }
@@ -140,7 +165,7 @@ export interface MatchResult {
 }
 
 function findHandle(node: SyntaxNodeRef) {
-  const hasHandle = node.type.prop(bracketMatchingHandle);
+  let hasHandle = node.type.prop(bracketMatchingHandle);
   return hasHandle ? hasHandle(node.node) : node;
 }
 
@@ -154,14 +179,14 @@ export function matchBrackets(
   dir: -1 | 1,
   config: Config = {},
 ): MatchResult | null {
-  const maxScanDistance = config.maxScanDistance || DefaultScanDist;
-  const brackets = config.brackets || DefaultBrackets;
-  const tree = syntaxTree(state);
-  const node = tree.resolveInner(pos, dir);
+  let maxScanDistance = config.maxScanDistance || DefaultScanDist;
+  let brackets = config.brackets || DefaultBrackets;
+  let tree = syntaxTree(state);
+  let node = tree.resolveInner(pos, dir);
   for (let cur: SyntaxNode | null = node; cur; cur = cur.parent) {
-    const matches = matchingNodes(cur.type, dir, brackets);
+    let matches = matchingNodes(cur.type, dir, brackets);
     if (matches && cur.from < cur.to) {
-      const handle = findHandle(cur);
+      let handle = findHandle(cur);
       if (
         handle &&
         (dir > 0
@@ -199,10 +224,10 @@ function matchMarkedBrackets(
   matching: readonly string[],
   brackets: string,
 ) {
-  const parent = token.parent;
-  const firstToken = { from: handle.from, to: handle.to };
+  let parent = token.parent;
+  let firstToken = { from: handle.from, to: handle.to };
   let depth = 0;
-  const cursor = parent?.cursor();
+  let cursor = parent?.cursor();
   if (
     cursor &&
     (dir < 0 ? cursor.childBefore(token.from) : cursor.childAfter(token.to))
@@ -214,7 +239,7 @@ function matchMarkedBrackets(
           matching.indexOf(cursor.type.name) > -1 &&
           cursor.from < cursor.to
         ) {
-          const endHandle = findHandle(cursor);
+          let endHandle = findHandle(cursor);
           return {
             start: firstToken,
             end: endHandle
@@ -226,7 +251,7 @@ function matchMarkedBrackets(
           depth++;
         } else if (matchingNodes(cursor.type, -dir as -1 | 1, brackets)) {
           if (depth == 0) {
-            const endHandle = findHandle(cursor);
+            let endHandle = findHandle(cursor);
             return {
               start: firstToken,
               end:
@@ -252,27 +277,28 @@ function matchPlainBrackets(
   maxScanDistance: number,
   brackets: string,
 ) {
-  const startCh =
+  if (dir < 0 ? !pos : pos == state.doc.length) return null;
+  let startCh =
     dir < 0 ? state.sliceDoc(pos - 1, pos) : state.sliceDoc(pos, pos + 1);
-  const bracket = brackets.indexOf(startCh);
+  let bracket = brackets.indexOf(startCh);
   if (bracket < 0 || (bracket % 2 == 0) != dir > 0) return null;
 
-  const startToken = {
+  let startToken = {
     from: dir < 0 ? pos - 1 : pos,
     to: dir > 0 ? pos + 1 : pos,
   };
-  const iter = state.doc.iterRange(pos, dir > 0 ? state.doc.length : 0);
+  let iter = state.doc.iterRange(pos, dir > 0 ? state.doc.length : 0);
   let depth = 0;
   for (let distance = 0; !iter.next().done && distance <= maxScanDistance; ) {
-    const text = iter.value;
+    let text = iter.value;
     if (dir < 0) distance += text.length;
-    const basePos = pos + distance * dir;
+    let basePos = pos + distance * dir;
     for (
       let pos = dir > 0 ? 0 : text.length - 1, end = dir > 0 ? text.length : -1;
       pos != end;
       pos += dir
     ) {
-      const found = brackets.indexOf(text[pos]);
+      let found = brackets.indexOf(text[pos]);
       if (found < 0 || tree.resolveInner(basePos + pos, 1).type != tokenType)
         continue;
       if ((found % 2 == 0) == dir > 0) {

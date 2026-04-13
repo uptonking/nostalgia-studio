@@ -1,7 +1,7 @@
 function words(str) {
-  const obj = {};
-  const words = str.split(' ');
-  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
+  var obj = {};
+  var words = str.split(' ');
+  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
 
@@ -64,16 +64,16 @@ const parserConfig = {
   multiLineStrings: true,
 };
 
-const keywords = parserConfig.keywords;
-const fileNCtrlMaskOptions = parserConfig.fileNCtrlMaskOptions;
-const externalCommands = parserConfig.externalCommands;
-const multiLineStrings = parserConfig.multiLineStrings;
-const indentStatements = parserConfig.indentStatements !== false;
-const isOperatorChar = /[\|]/;
-let curPunc;
+var keywords = parserConfig.keywords;
+var fileNCtrlMaskOptions = parserConfig.fileNCtrlMaskOptions;
+var externalCommands = parserConfig.externalCommands;
+var multiLineStrings = parserConfig.multiLineStrings;
+var indentStatements = parserConfig.indentStatements !== false;
+var isOperatorChar = /[\|]/;
+var curPunc;
 
 function tokenBase(stream, state) {
-  const ch = stream.next();
+  var ch = stream.next();
   if (ch == '"' || ch == "'") {
     state.tokenize = tokenString(ch);
     return state.tokenize(stream, state);
@@ -100,7 +100,7 @@ function tokenBase(stream, state) {
   }
 
   stream.eatWhile(/[\w\$_]/);
-  const cur = stream.current();
+  var cur = stream.current();
   if (keywords.propertyIsEnumerable(cur)) return 'keyword';
   if (fileNCtrlMaskOptions.propertyIsEnumerable(cur)) return 'atom';
   if (externalCommands.propertyIsEnumerable(cur)) return 'deleted';
@@ -110,12 +110,12 @@ function tokenBase(stream, state) {
 
 function tokenString(quote) {
   return function (stream, state) {
-    let escaped = false;
-    let next;
-    let end = false;
+    var escaped = false;
+    var next;
+    var end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
-        let afterNext = stream.peek();
+        var afterNext = stream.peek();
         //look if the character if the quote is like the B in '10100010'B
         if (afterNext) {
           afterNext = afterNext.toLowerCase();
@@ -140,13 +140,13 @@ function Context(indented, column, type, align, prev) {
   this.prev = prev;
 }
 function pushContext(state, col, type) {
-  let indent = state.indented;
+  var indent = state.indented;
   if (state.context && state.context.type == 'statement')
     indent = state.context.indented;
   return (state.context = new Context(indent, col, type, null, state.context));
 }
 function popContext(state) {
-  const t = state.context.type;
+  var t = state.context.type;
   if (t == ')' || t == ']' || t == '}') state.indented = state.context.indented;
   return (state.context = state.context.prev);
 }
@@ -164,7 +164,7 @@ export const ttcnCfg = {
   },
 
   token: function (stream, state) {
-    let ctx = state.context;
+    var ctx = state.context;
     if (stream.sol()) {
       if (ctx.align == null) ctx.align = false;
       state.indented = stream.indentation();
@@ -172,7 +172,7 @@ export const ttcnCfg = {
     }
     if (stream.eatSpace()) return null;
     curPunc = null;
-    const style = (state.tokenize || tokenBase)(stream, state);
+    var style = (state.tokenize || tokenBase)(stream, state);
     if (style == 'comment') return style;
     if (ctx.align == null) ctx.align = true;
 

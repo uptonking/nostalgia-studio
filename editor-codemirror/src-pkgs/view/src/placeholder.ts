@@ -1,6 +1,6 @@
-import type { Extension } from '@codemirror/state';
+import { Extension } from '@codemirror/state';
 import { ViewPlugin } from './extension';
-import { Decoration, type DecorationSet, WidgetType } from './decoration';
+import { Decoration, DecorationSet, WidgetType } from './decoration';
 import { EditorView } from './editorview';
 import { clientRectsFor, flattenRect } from './dom';
 
@@ -15,13 +15,13 @@ class Placeholder extends WidgetType {
   }
 
   toDOM(view: EditorView) {
-    const wrap = document.createElement('span');
+    let wrap = document.createElement('span');
     wrap.className = 'cm-placeholder';
     wrap.style.pointerEvents = 'none';
     wrap.appendChild(
-      typeof this.content === 'string'
+      typeof this.content == 'string'
         ? document.createTextNode(this.content)
-        : typeof this.content === 'function'
+        : typeof this.content == 'function'
           ? this.content(view)
           : this.content.cloneNode(true),
     );
@@ -30,11 +30,11 @@ class Placeholder extends WidgetType {
   }
 
   coordsAt(dom: HTMLElement) {
-    const rects = dom.firstChild ? clientRectsFor(dom.firstChild) : [];
+    let rects = dom.firstChild ? clientRectsFor(dom.firstChild) : [];
     if (!rects.length) return null;
-    const style = window.getComputedStyle(dom.parentNode as HTMLElement);
-    const rect = flattenRect(rects[0], style.direction != 'rtl');
-    const lineHeight = parseInt(style.lineHeight);
+    let style = window.getComputedStyle(dom.parentNode as HTMLElement);
+    let rect = flattenRect(rects[0], style.direction != 'rtl');
+    let lineHeight = parseInt(style.lineHeight);
     if (rect.bottom - rect.top > lineHeight * 1.5)
       return {
         left: rect.left,
@@ -55,7 +55,7 @@ class Placeholder extends WidgetType {
 export function placeholder(
   content: string | HTMLElement | ((view: EditorView) => HTMLElement),
 ): Extension {
-  const plugin = ViewPlugin.fromClass(
+  let plugin = ViewPlugin.fromClass(
     class {
       placeholder: DecorationSet;
 
@@ -78,7 +78,7 @@ export function placeholder(
     },
     { decorations: (v) => v.decorations },
   );
-  return typeof content === 'string'
+  return typeof content == 'string'
     ? [plugin, EditorView.contentAttributes.of({ 'aria-placeholder': content })]
     : plugin;
 }

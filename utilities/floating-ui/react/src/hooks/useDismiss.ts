@@ -41,11 +41,11 @@ export const normalizeProp = (
     escapeKey:
       typeof normalizable === 'boolean'
         ? normalizable
-        : normalizable?.escapeKey ?? false,
+        : (normalizable?.escapeKey ?? false),
     outsidePress:
       typeof normalizable === 'boolean'
         ? normalizable
-        : normalizable?.outsidePress ?? true,
+        : (normalizable?.outsidePress ?? true),
   };
 };
 

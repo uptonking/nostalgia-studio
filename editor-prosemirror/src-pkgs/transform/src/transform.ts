@@ -9,7 +9,6 @@ import {
   NodeRange,
   Attrs,
 } from 'prosemirror-model';
-
 import { Mapping } from './map';
 import { Step } from './step';
 import { addMark, removeMark, clearIncompatible } from './mark';
@@ -88,6 +87,27 @@ export class Transform {
   /// steps).
   get docChanged() {
     return this.steps.length > 0;
+  }
+
+  /// Return a single range, in post-transform document positions,
+  /// that covers all content changed by this transform. Returns null
+  /// if no replacements are made. Note that this will ignore changes
+  /// that add/remove marks without replacing the underlying content.
+  changedRange() {
+    let from = 1e9;
+    let to = -1e9;
+    for (let i = 0; i < this.mapping.maps.length; i++) {
+      let map = this.mapping.maps[i];
+      if (i) {
+        from = map.map(from, 1);
+        to = map.map(to, -1);
+      }
+      map.forEach((_f, _t, fromB, toB) => {
+        from = Math.min(from, fromB);
+        to = Math.max(to, toB);
+      });
+    }
+    return from == 1e9 ? null : { from, to };
   }
 
   /// @internal
@@ -249,7 +269,7 @@ export class Transform {
         this.step(new RemoveNodeMarkStep(pos, mark));
     } else {
       let set = node.marks;
-      let found;
+      let found: Mark | undefined;
       let steps: Step[] = [];
       while ((found = mark.isInSet(set))) {
         steps.push(new RemoveNodeMarkStep(pos, found));

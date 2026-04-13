@@ -1,14 +1,14 @@
 export function simpleMode(states) {
   ensureState(states, 'start');
-  const states_ = {};
-  const meta = states.languageData || {};
-  let hasIndentation = false;
-  for (const state in states)
+  var states_ = {};
+  var meta = states.languageData || {};
+  var hasIndentation = false;
+  for (var state in states)
     if (state != meta && states.hasOwnProperty(state)) {
-      const list = (states_[state] = []);
-      const orig = states[state];
-      for (let i = 0; i < orig.length; i++) {
-        const data = orig[i];
+      var list = (states_[state] = []);
+      var orig = states[state];
+      for (var i = 0; i < orig.length; i++) {
+        var data = orig[i];
         list.push(new Rule(data, states));
         if (data.indent || data.dedent) hasIndentation = true;
       }
@@ -23,7 +23,7 @@ export function simpleMode(states) {
       };
     },
     copyState: function (state) {
-      const s = {
+      var s = {
         state: state.state,
         pending: state.pending,
         indent: state.indent && state.indent.slice(0),
@@ -45,9 +45,10 @@ function ensureState(states, name) {
 
 function toRegex(val, caret) {
   if (!val) return /(?:)/;
-  let flags = '';
+  var flags = '';
   if (val instanceof RegExp) {
     if (val.ignoreCase) flags = 'i';
+    if (val.unicode) flags += 'u';
     val = val.source;
   } else {
     val = String(val);
@@ -58,9 +59,9 @@ function toRegex(val, caret) {
 function asToken(val) {
   if (!val) return null;
   if (val.apply) return val;
-  if (typeof val === 'string') return val.replace(/\./g, ' ');
-  const result = [];
-  for (let i = 0; i < val.length; i++)
+  if (typeof val == 'string') return val.replace(/\./g, ' ');
+  var result = [];
+  for (var i = 0; i < val.length; i++)
     result.push(val[i] && val[i].replace(/\./g, ' '));
   return result;
 }
@@ -75,16 +76,16 @@ function Rule(data, states) {
 function tokenFunction(states) {
   return function (stream, state) {
     if (state.pending) {
-      const pend = state.pending.shift();
+      var pend = state.pending.shift();
       if (state.pending.length == 0) state.pending = null;
       stream.pos += pend.text.length;
       return pend.token;
     }
 
-    const curState = states[state.state];
-    for (let i = 0; i < curState.length; i++) {
-      const rule = curState[i];
-      const matches =
+    var curState = states[state.state];
+    for (var i = 0; i < curState.length; i++) {
+      var rule = curState[i];
+      var matches =
         (!rule.data.sol || stream.sol()) && stream.match(rule.regex);
       if (matches) {
         if (rule.data.next) {
@@ -99,15 +100,11 @@ function tokenFunction(states) {
         if (rule.data.indent)
           state.indent.push(stream.indentation() + stream.indentUnit);
         if (rule.data.dedent) state.indent.pop();
-        let token = rule.token;
+        var token = rule.token;
         if (token && token.apply) token = token(matches);
-        if (
-          matches.length > 2 &&
-          rule.token &&
-          typeof rule.token !== 'string'
-        ) {
+        if (matches.length > 2 && rule.token && typeof rule.token != 'string') {
           state.pending = [];
-          for (let j = 2; j < matches.length; j++)
+          for (var j = 2; j < matches.length; j++)
             if (matches[j])
               state.pending.push({
                 text: matches[j],
@@ -137,13 +134,13 @@ function indentFunction(states, meta) {
     )
       return null;
 
-    let pos = state.indent.length - 1;
-    let rules = states[state.state];
+    var pos = state.indent.length - 1;
+    var rules = states[state.state];
     scan: for (;;) {
-      for (let i = 0; i < rules.length; i++) {
-        const rule = rules[i];
+      for (var i = 0; i < rules.length; i++) {
+        var rule = rules[i];
         if (rule.data.dedent && rule.data.dedentIfLineStart !== false) {
-          const m = rule.regex.exec(textAfter);
+          var m = rule.regex.exec(textAfter);
           if (m && m[0]) {
             pos--;
             if (rule.next || rule.push) rules = states[rule.next || rule.push];

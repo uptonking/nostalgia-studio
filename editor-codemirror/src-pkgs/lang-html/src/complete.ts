@@ -1,10 +1,7 @@
-import type { EditorState, Text } from '@codemirror/state';
+import { EditorState, Text } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
-import type {
-  CompletionContext,
-  CompletionResult,
-} from '@codemirror/autocomplete';
-import type { SyntaxNode } from '@lezer/common';
+import { CompletionContext, CompletionResult } from '@codemirror/autocomplete';
+import { SyntaxNode } from '@lezer/common';
 
 /// Type used to specify tags to complete.
 export interface TagSpec {
@@ -28,7 +25,9 @@ const Encs = [
   'text/plain',
 ];
 const Bool = ['true', 'false'];
+
 const S: TagSpec = {}; // Empty tag spec
+
 const Tags: Record<string, TagSpec> = {
   a: {
     attrs: {
@@ -441,6 +440,7 @@ const Tags: Record<string, TagSpec> = {
   },
   wbr: S,
 };
+
 const GlobalAttrs: Record<string, null | readonly string[]> = {
   accesskey: null,
   class: null,
@@ -542,7 +542,7 @@ export const eventAttributes = (
 )
   .split(' ')
   .map((n) => 'on' + n);
-for (const a of eventAttributes) GlobalAttrs[a] = null;
+for (let a of eventAttributes) GlobalAttrs[a] = null;
 
 export class Schema {
   tags: Record<string, TagSpec>;
@@ -569,8 +569,8 @@ export function elementName(
   max = doc.length,
 ) {
   if (!tree) return '';
-  const tag = tree.firstChild;
-  const name = tag && tag.getChild('TagName');
+  let tag = tree.firstChild;
+  let name = tag && tag.getChild('TagName');
   return name ? doc.sliceString(name.from, Math.min(name.to, max)) : '';
 }
 
@@ -584,18 +584,18 @@ function findParentElement(tree: SyntaxNode | null, skip = false) {
 }
 
 function allowedChildren(doc: Text, tree: SyntaxNode | null, schema: Schema) {
-  const parentInfo = schema.tags[elementName(doc, findParentElement(tree))];
+  let parentInfo = schema.tags[elementName(doc, findParentElement(tree))];
   return parentInfo?.children || schema.allTags;
 }
 
 function openTags(doc: Text, tree: SyntaxNode) {
-  const open = [];
+  let open = [];
   for (
     let parent: SyntaxNode | null = findParentElement(tree);
     parent && !parent.type.isTop;
     parent = findParentElement(parent.parent)
   ) {
-    const tagName = elementName(doc, parent);
+    let tagName = elementName(doc, parent);
     if (tagName && parent.lastChild!.name == 'CloseTag') break;
     if (
       tagName &&
@@ -616,8 +616,8 @@ function completeTag(
   from: number,
   to: number,
 ) {
-  const end = /\s*>/.test(state.sliceDoc(to, to + 5)) ? '' : '>';
-  const parent = findParentElement(tree, true);
+  let end = /\s*>/.test(state.sliceDoc(to, to + 5)) ? '' : '>';
+  let parent = findParentElement(tree, true);
   return {
     from,
     to,
@@ -641,7 +641,7 @@ function completeCloseTag(
   from: number,
   to: number,
 ) {
-  const end = /\s*>/.test(state.sliceDoc(to, to + 5)) ? '' : '>';
+  let end = /\s*>/.test(state.sliceDoc(to, to + 5)) ? '' : '>';
   return {
     from,
     to,
@@ -661,11 +661,11 @@ function completeStartTag(
   tree: SyntaxNode,
   pos: number,
 ) {
-  const options = [];
+  let options = [];
   let level = 0;
-  for (const tagName of allowedChildren(state.doc, tree, schema))
+  for (let tagName of allowedChildren(state.doc, tree, schema))
     options.push({ label: '<' + tagName, type: 'type' });
-  for (const open of openTags(state.doc, tree))
+  for (let open of openTags(state.doc, tree))
     options.push({
       label: '</' + open + '>',
       type: 'type',
@@ -686,10 +686,10 @@ function completeAttrName(
   from: number,
   to: number,
 ) {
-  const elt = findParentElement(tree);
-  const info = elt ? schema.tags[elementName(state.doc, elt)] : null;
-  const localAttrs = info && info.attrs ? Object.keys(info.attrs) : [];
-  const names =
+  let elt = findParentElement(tree);
+  let info = elt ? schema.tags[elementName(state.doc, elt)] : null;
+  let localAttrs = info && info.attrs ? Object.keys(info.attrs) : [];
+  let names =
     info && info.globalAttrs === false
       ? localAttrs
       : localAttrs.length
@@ -710,16 +710,16 @@ function completeAttrValue(
   from: number,
   to: number,
 ) {
-  const nameNode = tree.parent?.getChild('AttributeName');
-  const options = [];
+  let nameNode = tree.parent?.getChild('AttributeName');
+  let options = [];
   let token = undefined;
   if (nameNode) {
-    const attrName = state.sliceDoc(nameNode.from, nameNode.to);
+    let attrName = state.sliceDoc(nameNode.from, nameNode.to);
     let attrs: readonly string[] | null | undefined =
       schema.globalAttrs[attrName];
     if (!attrs) {
-      const elt = findParentElement(tree);
-      const info = elt ? schema.tags[elementName(state.doc, elt)] : null;
+      let elt = findParentElement(tree);
+      let info = elt ? schema.tags[elementName(state.doc, elt)] : null;
       attrs = info?.attrs && info.attrs[attrName];
     }
     if (attrs) {
@@ -735,7 +735,7 @@ function completeAttrValue(
       } else {
         token = /^[^\s<>='"]*$/;
       }
-      for (const value of attrs)
+      for (let value of attrs)
         options.push({
           label: value,
           apply: quoteStart + value + quoteEnd,
@@ -750,7 +750,7 @@ function htmlCompletionFor(
   schema: Schema,
   context: CompletionContext,
 ): CompletionResult | null {
-  const { state, pos } = context;
+  let { state, pos } = context;
   let tree = syntaxTree(state).resolveInner(pos, -1);
   let around = tree.resolve(pos);
   for (
@@ -758,7 +758,7 @@ function htmlCompletionFor(
     around == tree && (before = tree.childBefore(scan));
 
   ) {
-    const last = before.lastChild;
+    let last = before.lastChild;
     if (!last || !last.type.isError || last.from < last.to) break;
     around = tree = before;
     scan = last.from;
@@ -824,8 +824,8 @@ export function htmlCompletionSourceWith(config: {
   /// Add global attributes that are available on all tags.
   extraGlobalAttributes?: Record<string, null | readonly string[]>;
 }) {
-  const { extraTags, extraGlobalAttributes: extraAttrs } = config;
-  const schema =
+  let { extraTags, extraGlobalAttributes: extraAttrs } = config;
+  let schema =
     extraAttrs || extraTags
       ? new Schema(extraTags, extraAttrs)
       : Schema.default;

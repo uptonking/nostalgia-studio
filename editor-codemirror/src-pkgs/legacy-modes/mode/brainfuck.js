@@ -1,4 +1,4 @@
-const reserve = '><+-.,[]'.split('');
+var reserve = '><+-.,[]'.split('');
 /*
   comments can be either:
   placed behind lines
@@ -27,7 +27,7 @@ export const brainfuck = {
     if (stream.sol()) {
       state.commentLine = false;
     }
-    const ch = stream.next().toString();
+    var ch = stream.next().toString();
     if (reserve.indexOf(ch) !== -1) {
       if (state.commentLine === true) {
         if (stream.eol()) {

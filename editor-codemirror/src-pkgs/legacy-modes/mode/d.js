@@ -1,13 +1,14 @@
 function words(str) {
-  const obj = {};
-  const words = str.split(' ');
-  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
+  var obj = {};
+  var words = str.split(' ');
+  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
 
-const blockKeywordsStr =
+var blockKeywordsStr =
   'body catch class do else enum for foreach foreach_reverse if in interface mixin ' +
   'out scope struct switch try union unittest version while with';
+
 const parserConfig = {
   keywords: words(
     'abstract alias align asm assert auto break case cast cdouble cent cfloat const continue ' +
@@ -31,20 +32,21 @@ const parserConfig = {
   },
 };
 
-const statementIndentUnit = parserConfig.statementIndentUnit;
-const keywords = parserConfig.keywords;
-const builtin = parserConfig.builtin;
-const blockKeywords = parserConfig.blockKeywords;
-const atoms = parserConfig.atoms;
-const hooks = parserConfig.hooks;
-const multiLineStrings = parserConfig.multiLineStrings;
-const isOperatorChar = /[+\-*&%=<>!?|\/]/;
-let curPunc;
+var statementIndentUnit = parserConfig.statementIndentUnit;
+var keywords = parserConfig.keywords;
+var builtin = parserConfig.builtin;
+var blockKeywords = parserConfig.blockKeywords;
+var atoms = parserConfig.atoms;
+var hooks = parserConfig.hooks;
+var multiLineStrings = parserConfig.multiLineStrings;
+var isOperatorChar = /[+\-*&%=<>!?|\/]/;
+
+var curPunc;
 
 function tokenBase(stream, state) {
-  const ch = stream.next();
+  var ch = stream.next();
   if (hooks[ch]) {
-    const result = hooks[ch](stream, state);
+    var result = hooks[ch](stream, state);
     if (result !== false) return result;
   }
   if (ch == '"' || ch == "'" || ch == '`') {
@@ -78,7 +80,7 @@ function tokenBase(stream, state) {
     return 'operator';
   }
   stream.eatWhile(/[\w\$_\xa1-\uffff]/);
-  const cur = stream.current();
+  var cur = stream.current();
   if (keywords.propertyIsEnumerable(cur)) {
     if (blockKeywords.propertyIsEnumerable(cur)) curPunc = 'newstatement';
     return 'keyword';
@@ -93,9 +95,9 @@ function tokenBase(stream, state) {
 
 function tokenString(quote) {
   return function (stream, state) {
-    let escaped = false;
-    let next;
-    let end = false;
+    var escaped = false;
+    var next;
+    var end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -109,8 +111,8 @@ function tokenString(quote) {
 }
 
 function tokenComment(stream, state) {
-  let maybeEnd = false;
-  let ch;
+  var maybeEnd = false;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = null;
@@ -122,8 +124,8 @@ function tokenComment(stream, state) {
 }
 
 function tokenNestedComment(stream, state) {
-  let maybeEnd = false;
-  let ch;
+  var maybeEnd = false;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = null;
@@ -142,13 +144,13 @@ function Context(indented, column, type, align, prev) {
   this.prev = prev;
 }
 function pushContext(state, col, type) {
-  let indent = state.indented;
+  var indent = state.indented;
   if (state.context && state.context.type == 'statement')
     indent = state.context.indented;
   return (state.context = new Context(indent, col, type, null, state.context));
 }
 function popContext(state) {
-  const t = state.context.type;
+  var t = state.context.type;
   if (t == ')' || t == ']' || t == '}') state.indented = state.context.indented;
   return (state.context = state.context.prev);
 }
@@ -167,7 +169,7 @@ export const d = {
   },
 
   token: function (stream, state) {
-    let ctx = state.context;
+    var ctx = state.context;
     if (stream.sol()) {
       if (ctx.align == null) ctx.align = false;
       state.indented = stream.indentation();
@@ -175,7 +177,7 @@ export const d = {
     }
     if (stream.eatSpace()) return null;
     curPunc = null;
-    const style = (state.tokenize || tokenBase)(stream, state);
+    var style = (state.tokenize || tokenBase)(stream, state);
     if (style == 'comment' || style == 'meta') return style;
     if (ctx.align == null) ctx.align = true;
 
@@ -203,10 +205,10 @@ export const d = {
 
   indent: function (state, textAfter, cx) {
     if (state.tokenize != tokenBase && state.tokenize != null) return null;
-    let ctx = state.context;
-    const firstChar = textAfter && textAfter.charAt(0);
+    var ctx = state.context;
+    var firstChar = textAfter && textAfter.charAt(0);
     if (ctx.type == 'statement' && firstChar == '}') ctx = ctx.prev;
-    const closing = firstChar == ctx.type;
+    var closing = firstChar == ctx.type;
     if (ctx.type == 'statement')
       return (
         ctx.indented + (firstChar == '{' ? 0 : statementIndentUnit || cx.unit)

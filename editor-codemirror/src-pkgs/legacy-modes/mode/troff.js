@@ -1,10 +1,10 @@
-const words = {};
+var words = {};
 
 function tokenBase(stream) {
   if (stream.eatSpace()) return null;
 
-  const sol = stream.sol();
-  const ch = stream.next();
+  var sol = stream.sol();
+  var ch = stream.next();
 
   if (ch === '\\') {
     if (
@@ -60,7 +60,7 @@ function tokenBase(stream) {
     }
   }
   stream.eatWhile(/[\w-]/);
-  const cur = stream.current();
+  var cur = stream.current();
   return words.hasOwnProperty(cur) ? words[cur] : null;
 }
 

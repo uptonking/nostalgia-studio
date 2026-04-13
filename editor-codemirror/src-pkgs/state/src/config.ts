@@ -12,20 +12,20 @@ export function combineConfig<Config extends object>(
     [P in keyof Config]?: (first: Config[P], second: Config[P]) => Config[P];
   } = {},
 ): Config {
-  const result: any = {};
-  for (const config of configs)
-    for (const key of Object.keys(config) as (keyof Config)[]) {
-      const value = config[key];
-      const current = result[key];
+  let result: any = {};
+  for (let config of configs)
+    for (let key of Object.keys(config) as (keyof Config)[]) {
+      let value = config[key];
+      let current = result[key];
       if (current === undefined) result[key] = value;
       else if (current === value || value === undefined) {
       } // No conflict
-      else if (Object.hasOwn(combine, key))
+      else if (Object.hasOwnProperty.call(combine, key))
         result[key] = combine[key]!(current as any, value as any);
       else
         throw new Error('Config merge conflict for field ' + (key as string));
     }
-  for (const key in defaults)
+  for (let key in defaults)
     if (result[key] === undefined) result[key] = defaults[key];
   return result;
 }

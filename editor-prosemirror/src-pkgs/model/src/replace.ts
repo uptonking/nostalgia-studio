@@ -144,7 +144,7 @@ function insertInto(
   content: Fragment,
   dist: number,
   insert: Fragment,
-  parent?: Node,
+  parent?: Node | null,
 ): Fragment | null {
   let { index, offset } = content.findIndex(dist);
   let child = content.maybeChild(index);
@@ -152,7 +152,7 @@ function insertInto(
     if (parent && !parent.canReplace(index, index, insert)) return null;
     return content.cut(0, dist).append(insert).append(content.cut(dist));
   }
-  let inner = insertInto(child!.content, dist - offset - 1, insert);
+  let inner = insertInto(child!.content, dist - offset - 1, insert, child);
   return inner && content.replaceChild(index, child!.copy(inner));
 }
 

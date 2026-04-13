@@ -45,7 +45,7 @@ export const spreadsheet = {
         return 'operator';
     }
 
-    const peek = stream.peek();
+    var peek = stream.peek();
 
     //no stack
     switch (peek) {

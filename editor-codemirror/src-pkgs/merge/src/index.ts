@@ -17,6 +17,6 @@ export {
   updateOriginalDoc,
 } from './unified';
 
-export { uncollapseUnchanged } from './deco';
+export { uncollapseUnchanged, mergeViewSiblings } from './deco';
 
 export { Chunk } from './chunk';

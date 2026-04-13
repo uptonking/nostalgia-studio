@@ -1,13 +1,9 @@
-import {
-  Prec,
-  type Extension,
-  type EditorState,
-  type StateEffect,
-} from '@codemirror/state';
-import { keymap, type KeyBinding } from '@codemirror/view';
-import type { Completion, Option } from './completion';
-import { completionState, State, setSelectedEffect } from './state';
-import { type CompletionConfig, completionConfig } from './config';
+import { Prec, Extension, EditorState, StateEffect } from '@codemirror/state';
+import { keymap, KeyBinding } from '@codemirror/view';
+import { Completion, Option } from './completion';
+import { completionState, State } from './state';
+import { setSelectedEffect } from './tooltip';
+import { CompletionConfig, completionConfig } from './config';
 import {
   completionPlugin,
   moveCompletionSelection,
@@ -102,7 +98,7 @@ const completionKeymapExt = Prec.highest(
 export function completionStatus(
   state: EditorState,
 ): null | 'active' | 'pending' {
-  const cState = state.field(completionState, false);
+  let cState = state.field(completionState, false);
   return cState && cState.active.some((a) => a.isPending)
     ? 'pending'
     : cState && cState.active.some((a) => a.state != State.Inactive)
@@ -115,7 +111,7 @@ const completionArrayCache: WeakMap<readonly Option[], readonly Completion[]> =
 
 /// Returns the available completions as an array.
 export function currentCompletions(state: EditorState): readonly Completion[] {
-  const open = state.field(completionState, false)?.open;
+  let open = state.field(completionState, false)?.open;
   if (!open || open.disabled) return [];
   let completions = completionArrayCache.get(open.options);
   if (!completions)
@@ -128,7 +124,7 @@ export function currentCompletions(state: EditorState): readonly Completion[] {
 
 /// Return the currently selected completion, if any.
 export function selectedCompletion(state: EditorState): Completion | null {
-  const open = state.field(completionState, false)?.open;
+  let open = state.field(completionState, false)?.open;
   return open && !open.disabled && open.selected >= 0
     ? open.options[open.selected].completion
     : null;
@@ -137,7 +133,7 @@ export function selectedCompletion(state: EditorState): Completion | null {
 /// Returns the currently selected position in the active completion
 /// list, or null if no completions are active.
 export function selectedCompletionIndex(state: EditorState): number | null {
-  const open = state.field(completionState, false)?.open;
+  let open = state.field(completionState, false)?.open;
   return open && !open.disabled && open.selected >= 0 ? open.selected : null;
 }
 

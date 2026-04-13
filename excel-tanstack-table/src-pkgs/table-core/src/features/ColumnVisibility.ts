@@ -269,7 +269,7 @@ export const ColumnVisibility: TableFeature = {
 
     table.resetColumnVisibility = (defaultState) => {
       table.setColumnVisibility(
-        defaultState ? {} : table.initialState.columnVisibility ?? {},
+        defaultState ? {} : (table.initialState.columnVisibility ?? {}),
       );
     };
 

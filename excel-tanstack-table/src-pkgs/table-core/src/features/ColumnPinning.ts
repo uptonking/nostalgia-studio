@@ -231,7 +231,7 @@ export const ColumnPinning: TableFeature = {
       const position = column.getIsPinned();
 
       return position
-        ? table.getState().columnPinning?.[position]?.indexOf(column.id) ?? -1
+        ? (table.getState().columnPinning?.[position]?.indexOf(column.id) ?? -1)
         : 0;
     };
   },
@@ -291,7 +291,8 @@ export const ColumnPinning: TableFeature = {
       table.setColumnPinning(
         defaultState
           ? getDefaultColumnPinningState()
-          : table.initialState?.columnPinning ?? getDefaultColumnPinningState(),
+          : (table.initialState?.columnPinning ??
+              getDefaultColumnPinningState()),
       );
 
     table.getIsSomeColumnsPinned = (position) => {

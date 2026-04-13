@@ -1,22 +1,22 @@
-const BUILTIN = 'builtin';
-const COMMENT = 'comment';
-const STRING = 'string';
-const ATOM = 'atom';
-const NUMBER = 'number';
-const KEYWORD = 'keyword';
-const MODTAG = 'header';
-const COBOLLINENUM = 'def';
-const PERIOD = 'link';
+var BUILTIN = 'builtin';
+var COMMENT = 'comment';
+var STRING = 'string';
+var ATOM = 'atom';
+var NUMBER = 'number';
+var KEYWORD = 'keyword';
+var MODTAG = 'header';
+var COBOLLINENUM = 'def';
+var PERIOD = 'link';
 function makeKeywords(str) {
-  const obj = {};
-  const words = str.split(' ');
-  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
+  var obj = {};
+  var words = str.split(' ');
+  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
-const atoms = makeKeywords(
+var atoms = makeKeywords(
   'TRUE FALSE ZEROES ZEROS ZERO SPACES SPACE LOW-VALUE LOW-VALUES ',
 );
-const keywords = makeKeywords(
+var keywords = makeKeywords(
   'ACCEPT ACCESS ACQUIRE ADD ADDRESS ' +
     'ADVANCING AFTER ALIAS ALL ALPHABET ' +
     'ALPHABETIC ALPHABETIC-LOWER ALPHABETIC-UPPER ALPHANUMERIC ALPHANUMERIC-EDITED ' +
@@ -128,8 +128,9 @@ const keywords = makeKeywords(
     'WORDS WORKING-STORAGE WRITE XML XML-CODE ' +
     'XML-EVENT XML-NTEXT XML-TEXT ZERO ZERO-FILL ',
 );
-const builtins = makeKeywords('- * ** / + < <= = > >= ');
-const tests = {
+
+var builtins = makeKeywords('- * ** / + < <= = > >= ');
+var tests = {
   digit: /\d/,
   digit_or_colon: /[\d:]/,
   hex: /[0-9a-f]/i,
@@ -182,7 +183,7 @@ export const cobol = {
     if (stream.eatSpace()) {
       return null;
     }
-    let returnType = null;
+    var returnType = null;
     switch (state.mode) {
       case 'string': // multi-line string parsing mode
         var next = false;

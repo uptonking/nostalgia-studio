@@ -1,14 +1,15 @@
 import {
   NodeWeakMap,
-  type SyntaxNodeRef,
-  type SyntaxNode,
+  SyntaxNodeRef,
+  SyntaxNode,
   IterMode,
 } from '@lezer/common';
-import type { Completion, CompletionSource } from '@codemirror/autocomplete';
+import { Completion, CompletionSource } from '@codemirror/autocomplete';
 import { syntaxTree } from '@codemirror/language';
-import type { Text } from '@codemirror/state';
+import { Text } from '@codemirror/state';
 
 const cache = new NodeWeakMap<readonly Completion[]>();
+
 const ScopeNodes = new Set([
   'SourceFile',
   'Block',
@@ -68,25 +69,25 @@ const gatherCompletions: {
 };
 
 function getScope(doc: Text, node: SyntaxNode) {
-  const cached = cache.get(node);
+  let cached = cache.get(node);
   if (cached) return cached;
 
-  const completions: Completion[] = [];
+  let completions: Completion[] = [];
   let top = true;
   function def(node: SyntaxNodeRef, type: string) {
-    const name = doc.sliceString(node.from, node.to);
+    let name = doc.sliceString(node.from, node.to);
     completions.push({ label: name, type });
   }
   node.cursor(IterMode.IncludeAnonymous).iterate((node) => {
     if (top) {
       top = false;
     } else if (node.name) {
-      const gather = gatherCompletions[node.name];
+      let gather = gatherCompletions[node.name];
       if ((gather && gather(node, def)) || ScopeNodes.has(node.name))
         return false;
     } else if (node.to - node.from > 8192) {
       // Allow caching for bigger internal nodes
-      for (const c of getScope(doc, node.node)) completions.push(c);
+      for (let c of getScope(doc, node.node)) completions.push(c);
       return false;
     }
   });
@@ -109,9 +110,9 @@ export const dontComplete = [
 
 /// Completion source that looks up locally defined names in Go code.
 export const localCompletionSource: CompletionSource = (context) => {
-  const inner = syntaxTree(context.state).resolveInner(context.pos, -1);
+  let inner = syntaxTree(context.state).resolveInner(context.pos, -1);
   if (dontComplete.indexOf(inner.name) > -1) return null;
-  const isWord =
+  let isWord =
     inner.name == 'VariableName' ||
     (inner.to - inner.from < 20 &&
       Identifier.test(context.state.sliceDoc(inner.from, inner.to)));

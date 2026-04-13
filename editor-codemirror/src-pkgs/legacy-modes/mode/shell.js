@@ -1,12 +1,12 @@
-const words = {};
+var words = {};
 function define(style, dict) {
-  for (let i = 0; i < dict.length; i++) {
+  for (var i = 0; i < dict.length; i++) {
     words[dict[i]] = style;
   }
 }
 
-const commonAtoms = ['true', 'false'];
-const commonKeywords = [
+var commonAtoms = ['true', 'false'];
+var commonKeywords = [
   'if',
   'then',
   'do',
@@ -27,7 +27,7 @@ const commonKeywords = [
   'export',
   'function',
 ];
-const commonCommands = [
+var commonCommands = [
   'ab',
   'awk',
   'bash',
@@ -104,8 +104,8 @@ define('builtin', commonCommands);
 function tokenBase(stream, state) {
   if (stream.eatSpace()) return null;
 
-  const sol = stream.sol();
-  const ch = stream.next();
+  var sol = stream.sol();
+  var ch = stream.next();
 
   if (ch === '\\') {
     stream.next();
@@ -137,7 +137,7 @@ function tokenBase(stream, state) {
   }
   if (ch == '<') {
     if (stream.match('<<')) return 'operator';
-    const heredoc = stream.match(/^<-?\s*(?:['"]([^'"]*)['"]|([^'"\s]*))/);
+    var heredoc = stream.match(/^<-?\s*(?:['"]([^'"]*)['"]|([^'"\s]*))/);
     if (heredoc) {
       state.tokens.unshift(tokenHeredoc(heredoc[1] || heredoc[2]));
       return 'string.special';
@@ -150,16 +150,16 @@ function tokenBase(stream, state) {
     }
   }
   stream.eatWhile(/[\w-]/);
-  const cur = stream.current();
+  var cur = stream.current();
   if (stream.peek() === '=' && /\w+/.test(cur)) return 'def';
   return words.hasOwnProperty(cur) ? words[cur] : null;
 }
 
 function tokenString(quote, style) {
-  const close = quote == '(' ? ')' : quote == '{' ? '}' : quote;
+  var close = quote == '(' ? ')' : quote == '{' ? '}' : quote;
   return function (stream, state) {
-    let next;
-    let escaped = false;
+    var next;
+    var escaped = false;
     while ((next = stream.next()) != null) {
       if (next === close && !escaped) {
         state.tokens.shift();
@@ -198,7 +198,7 @@ function tokenStringStart(quote, style) {
 
 var tokenDollar = function (stream, state) {
   if (state.tokens.length > 1) stream.eat('$');
-  const ch = stream.next();
+  var ch = stream.next();
   if (/['"({]/.test(ch)) {
     state.tokens[0] = tokenString(
       ch,

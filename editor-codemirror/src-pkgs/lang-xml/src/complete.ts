@@ -1,7 +1,7 @@
-import type { Completion, CompletionSource } from '@codemirror/autocomplete';
-import type { EditorState, Text } from '@codemirror/state';
+import { Completion, CompletionSource } from '@codemirror/autocomplete';
+import { EditorState, Text } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
-import type { SyntaxNode } from '@lezer/common';
+import { SyntaxNode } from '@lezer/common';
 
 /// Describes an element in your XML document schema.
 export interface ElementSpec {
@@ -43,20 +43,20 @@ export interface AttrSpec {
 }
 
 function tagName(doc: Text, tag: SyntaxNode | null) {
-  const name = tag && tag.getChild('TagName');
+  let name = tag && tag.getChild('TagName');
   return name ? doc.sliceString(name.from, name.to) : '';
 }
 
 function elementName(doc: Text, tree: SyntaxNode | null) {
-  const tag = tree && tree.firstChild;
+  let tag = tree && tree.firstChild;
   return !tag || tag.name != 'OpenTag' ? '' : tagName(doc, tag);
 }
 
 function attrName(doc: Text, tag: SyntaxNode | null, pos: number) {
-  const attr =
+  let attr =
     tag &&
     tag.getChildren('Attribute').find((a) => a.from <= pos && a.to >= pos);
-  const name = attr && attr.getChild('AttributeName');
+  let name = attr && attr.getChild('AttributeName');
   return name ? doc.sliceString(name.from, name.to) : '';
 }
 
@@ -84,7 +84,7 @@ function findLocation(state: EditorState, pos: number): Location {
     )
       inTag = cur;
   if (inTag && (inTag.to > pos || inTag.lastChild!.type.isError)) {
-    const elt = inTag.parent!;
+    let elt = inTag.parent!;
     if (at.name == 'TagName')
       return inTag.name == 'CloseTag' || inTag.name == 'MismatchedCloseTag'
         ? { type: 'closeTag', from: at.from, context: elt }
@@ -93,7 +93,7 @@ function findLocation(state: EditorState, pos: number): Location {
       return { type: 'attrName', from: at.from, context: inTag };
     if (at.name == 'AttributeValue')
       return { type: 'attrValue', from: at.from, context: inTag };
-    const before =
+    let before =
       at == inTag || at.name == 'Attribute' ? at.childBefore(pos) : at;
     if (before?.name == 'StartTag')
       return { type: 'openTag', from: pos, context: findParentElement(elt) };
@@ -157,7 +157,7 @@ function attrCompletion(spec: AttrSpec): Completion {
 }
 
 function valueCompletion(spec: string | Completion): Completion {
-  return typeof spec === 'string'
+  return typeof spec == 'string'
     ? { label: `"${spec}"`, type: 'constant' }
     : /^"/.test(spec.label)
       ? spec
@@ -169,27 +169,27 @@ export function completeFromSchema(
   eltSpecs: readonly ElementSpec[],
   attrSpecs: readonly AttrSpec[],
 ): CompletionSource {
-  const allAttrs: Completion[] = [];
-  const globalAttrs: Completion[] = [];
-  const attrValues: { [name: string]: readonly Completion[] } =
+  let allAttrs: Completion[] = [];
+  let globalAttrs: Completion[] = [];
+  let attrValues: { [name: string]: readonly Completion[] } =
     Object.create(null);
-  for (const s of attrSpecs) {
-    const completion = attrCompletion(s);
+  for (let s of attrSpecs) {
+    let completion = attrCompletion(s);
     allAttrs.push(completion);
     if (s.global) globalAttrs.push(completion);
     if (s.values) attrValues[s.name] = s.values.map(valueCompletion);
   }
 
-  const allElements: Element[] = [];
+  let allElements: Element[] = [];
   let topElements: Element[] = [];
-  const byName: { [name: string]: Element } = Object.create(null);
-  for (const s of eltSpecs) {
+  let byName: { [name: string]: Element } = Object.create(null);
+  for (let s of eltSpecs) {
     let attrs = globalAttrs;
     let attrVals = attrValues;
     if (s.attributes)
       attrs = attrs.concat(
         s.attributes.map((s) => {
-          if (typeof s === 'string')
+          if (typeof s == 'string')
             return (
               allAttrs.find((a) => a.label == s) || {
                 label: s,
@@ -203,33 +203,32 @@ export function completeFromSchema(
           return attrCompletion(s);
         }),
       );
-    const elt = new Element(s, attrs, attrVals);
+    let elt = new Element(s, attrs, attrVals);
     byName[elt.name] = elt;
     allElements.push(elt);
     if (s.top) topElements.push(elt);
   }
   if (!topElements.length) topElements = allElements;
   for (let i = 0; i < allElements.length; i++) {
-    const s = eltSpecs[i];
-    const elt = allElements[i];
+    let s = eltSpecs[i];
+    let elt = allElements[i];
     if (s.children) {
-      for (const ch of s.children)
-        if (byName[ch]) elt.children.push(byName[ch]);
+      for (let ch of s.children) if (byName[ch]) elt.children.push(byName[ch]);
     } else {
       elt.children = allElements;
     }
   }
 
   return (cx) => {
-    const { doc } = cx.state;
-    const loc = findLocation(cx.state, cx.pos);
+    let { doc } = cx.state;
+    let loc = findLocation(cx.state, cx.pos);
     if (!loc || (loc.type == 'tag' && !cx.explicit)) return null;
-    const { type, from, context } = loc;
+    let { type, from, context } = loc;
     if (type == 'openTag') {
       let children = topElements;
-      const parentName = elementName(doc, context);
+      let parentName = elementName(doc, context);
       if (parentName) {
-        const parent = byName[parentName];
+        let parent = byName[parentName];
         children = parent?.children || allElements;
       }
       return {
@@ -238,7 +237,7 @@ export function completeFromSchema(
         validFor: Identifier,
       };
     } else if (type == 'closeTag') {
-      const parentName = elementName(doc, context);
+      let parentName = elementName(doc, context);
       return parentName
         ? {
             from,
@@ -253,17 +252,17 @@ export function completeFromSchema(
           }
         : null;
     } else if (type == 'attrName') {
-      const parent = byName[tagName(doc, context)];
+      let parent = byName[tagName(doc, context)];
       return {
         from,
         options: parent?.attrs || globalAttrs,
         validFor: Identifier,
       };
     } else if (type == 'attrValue') {
-      const attr = attrName(doc, context, from);
+      let attr = attrName(doc, context, from);
       if (!attr) return null;
-      const parent = byName[tagName(doc, context)];
-      const values = (parent?.attrValues || attrValues)[attr];
+      let parent = byName[tagName(doc, context)];
+      let values = (parent?.attrValues || attrValues)[attr];
       if (!values || !values.length) return null;
       return {
         from,
@@ -272,10 +271,10 @@ export function completeFromSchema(
         validFor: /^"[^"]*"?$/,
       };
     } else if (type == 'tag') {
-      const parentName = elementName(doc, context);
-      const parent = byName[parentName];
-      const closing = [];
-      const last = context && context.lastChild;
+      let parentName = elementName(doc, context);
+      let parent = byName[parentName];
+      let closing = [];
+      let last = context && context.lastChild;
       if (
         parentName &&
         (!last || last.name != 'CloseTag' || tagName(doc, last) != parentName)
@@ -291,7 +290,7 @@ export function completeFromSchema(
         ),
       );
       if (context && parent?.text.length) {
-        const openTag = context.firstChild!;
+        let openTag = context.firstChild!;
         if (
           openTag.to > cx.pos - 20 &&
           !/\S/.test(cx.state.sliceDoc(openTag.to, cx.pos))

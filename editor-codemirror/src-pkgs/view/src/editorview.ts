@@ -1,28 +1,27 @@
 import {
   EditorState,
   Transaction,
-  type TransactionSpec,
-  type Extension,
+  TransactionSpec,
+  Extension,
   Prec,
-  type ChangeDesc,
+  ChangeDesc,
   EditorSelection,
-  type SelectionRange,
+  SelectionRange,
   StateEffect,
   Facet,
-  type Line,
-  type EditorStateConfig,
+  Line,
+  EditorStateConfig,
 } from '@codemirror/state';
-import { StyleModule, type StyleSpec } from 'style-mod';
+import { StyleModule, StyleSpec } from 'style-mod';
 
 import { DocView } from './docview';
-import { ContentView } from './contentview';
 import { InputState, focusChangeTransaction, isFocusChange } from './input';
 import {
-  type Rect,
+  Rect,
   focusPreventScroll,
   flattenRect,
   getRoot,
-  type ScrollStrategy,
+  ScrollStrategy,
   isScrolledToBottom,
   dispatchKey,
 } from './dom';
@@ -34,14 +33,14 @@ import {
   moveVertically,
   skipAtoms,
 } from './cursor';
-import type { BlockInfo } from './heightmap';
+import { BlockInfo } from './heightmap';
 import { ViewState } from './viewstate';
 import {
   ViewUpdate,
   styleModule,
   contentAttributes,
   editorAttributes,
-  type AttrSource,
+  AttrSource,
   clickAddsSelectionRange,
   dragMovesSelection,
   mouseSelectionStyle,
@@ -50,13 +49,14 @@ import {
   logException,
   viewPlugin,
   ViewPlugin,
-  type PluginValue,
+  PluginValue,
   PluginInstance,
   decorations,
   outerDecorations,
+  blockWrappers,
   atomicRanges,
   scrollMargins,
-  type MeasureRequest,
+  MeasureRequest,
   editable,
   inputHandler,
   focusChangeEffect,
@@ -81,17 +81,18 @@ import {
   baseTheme,
 } from './theme';
 import { DOMObserver } from './domobserver';
-import { type Attrs, updateAttrs, combineAttrs } from './attributes';
+import { Attrs, updateAttrs, combineAttrs } from './attributes';
+import { Tile } from './tile';
 import browser from './browser';
 import {
   computeOrder,
   trivialOrder,
   BidiSpan,
   Direction,
-  type Isolate,
+  Isolate,
   isolatesEq,
 } from './bidi';
-import { applyDOMChange, type DOMChange } from './domchange';
+import { applyDOMChange, DOMChange } from './domchange';
 
 /// The type of object given to the [`EditorView`](#view.EditorView)
 /// constructor.
@@ -189,7 +190,7 @@ export class EditorView {
   /// [IME](https://en.wikipedia.org/wiki/Input_method), and at least
   /// one change has been made in the current composition.
   get composing() {
-    return Boolean(this.inputState) && this.inputState.composing > 0;
+    return !!this.inputState && this.inputState.composing > 0;
   }
 
   /// Indicates whether the user is currently in composing state. Note
@@ -197,7 +198,7 @@ export class EditorView {
   /// lot, since just putting the cursor on a word starts a
   /// composition there.
   get compositionStarted() {
-    return Boolean(this.inputState) && this.inputState.composing >= 0;
+    return !!this.inputState && this.inputState.composing >= 0;
   }
 
   private dispatchTransactions: (
@@ -213,7 +214,7 @@ export class EditorView {
   }
 
   /// @internal
-  get win() {
+  get win(): Window {
     return this.dom.ownerDocument.defaultView || window;
   }
 
@@ -284,7 +285,7 @@ export class EditorView {
 
     if (config.parent) config.parent.appendChild(this.dom);
 
-    const { dispatch } = config;
+    let { dispatch } = config;
     this.dispatchTransactions =
       config.dispatchTransactions ||
       (dispatch &&
@@ -296,7 +297,10 @@ export class EditorView {
       getRoot(config.parent) ||
       document) as DocumentOrShadowRoot;
 
-    this.viewState = new ViewState(config.state || EditorState.create(config));
+    this.viewState = new ViewState(
+      this,
+      config.state || EditorState.create(config),
+    );
     if (config.scrollTo && config.scrollTo.is(scrollIntoView))
       this.viewState.scrollTarget = config.scrollTo.value.clip(
         this.viewState.state,
@@ -304,7 +308,7 @@ export class EditorView {
     this.plugins = this.state
       .facet(viewPlugin)
       .map((spec) => new PluginInstance(spec));
-    for (const plugin of this.plugins) plugin.update(this);
+    for (let plugin of this.plugins) plugin.update(this);
     this.observer = new DOMObserver(this);
     this.inputState = new InputState(this);
     this.inputState.ensureHandlers(this.plugins);
@@ -316,7 +320,10 @@ export class EditorView {
 
     this.requestMeasure();
     if (document.fonts?.ready)
-      document.fonts.ready.then(() => this.requestMeasure());
+      document.fonts.ready.then(() => {
+        this.viewState.mustMeasureContent = 'refresh';
+        this.requestMeasure();
+      });
   }
 
   /// All regular editor state updates should go through this. It
@@ -336,7 +343,7 @@ export class EditorView {
   dispatch(
     ...input: (Transaction | readonly Transaction[] | TransactionSpec)[]
   ) {
-    const trs =
+    let trs =
       input.length == 1 && input[0] instanceof Transaction
         ? (input as readonly Transaction[])
         : input.length == 1 && Array.isArray(input[0])
@@ -361,7 +368,7 @@ export class EditorView {
     let attrsChanged = false;
     let update: ViewUpdate;
     let state = this.state;
-    for (const tr of transactions) {
+    for (let tr of transactions) {
       if (tr.startState != state)
         throw new RangeError(
           "Trying to update state with a transaction that doesn't start from the previous state.",
@@ -373,7 +380,7 @@ export class EditorView {
       return;
     }
 
-    const focus = this.hasFocus;
+    let focus = this.hasFocus;
     let focusFlag = 0;
     let dispatchFocus: Transaction | null = null;
     if (transactions.some((tr) => tr.annotation(isFocusChange))) {
@@ -390,7 +397,7 @@ export class EditorView {
 
     // If there was a pending DOM change, eagerly read it and try to
     // apply it after the given transactions.
-    const pendingKey = this.observer.delayedAndroidKey;
+    let pendingKey = this.observer.delayedAndroidKey;
     let domChange: DOMChange | null = null;
     if (pendingKey) {
       this.observer.clearDelayedAndroidKey();
@@ -418,10 +425,11 @@ export class EditorView {
     let scrollTarget = this.viewState.scrollTarget;
     try {
       this.updateState = UpdateState.Updating;
-      for (const tr of transactions) {
+      for (let tr of transactions) {
         if (scrollTarget) scrollTarget = scrollTarget.map(tr.changes);
         if (tr.scrollIntoView) {
-          const { main } = tr.state.selection;
+          let { main } = tr.state.selection;
+          let { x, y } = this.state.facet(EditorView.cursorScrollMargin);
           scrollTarget = new ScrollTarget(
             main.empty
               ? main
@@ -429,9 +437,13 @@ export class EditorView {
                   main.head,
                   main.head > main.anchor ? -1 : 1,
                 ),
+            'nearest',
+            'nearest',
+            y,
+            x,
           );
         }
-        for (const e of tr.effects)
+        for (let e of tr.effects)
           if (e.is(scrollIntoView)) scrollTarget = e.value.clip(this.state);
       }
       this.viewState.update(update, scrollTarget);
@@ -464,7 +476,7 @@ export class EditorView {
       this.requestMeasure();
     if (redrawn) this.docViewUpdate();
     if (!update.empty)
-      for (const listener of this.state.facet(updateListener)) {
+      for (let listener of this.state.facet(updateListener)) {
         try {
           listener(update);
         } catch (e) {
@@ -498,15 +510,15 @@ export class EditorView {
       return;
     }
     this.updateState = UpdateState.Updating;
-    const hadFocus = this.hasFocus;
+    let hadFocus = this.hasFocus;
     try {
-      for (const plugin of this.plugins) plugin.destroy(this);
-      this.viewState = new ViewState(newState);
+      for (let plugin of this.plugins) plugin.destroy(this);
+      this.viewState = new ViewState(this, newState);
       this.plugins = newState
         .facet(viewPlugin)
         .map((spec) => new PluginInstance(spec));
       this.pluginMap.clear();
-      for (const plugin of this.plugins) plugin.update(this);
+      for (let plugin of this.plugins) plugin.update(this);
       this.docView.destroy();
       this.docView = new DocView(this);
       this.inputState.ensureHandlers(this.plugins);
@@ -521,34 +533,34 @@ export class EditorView {
   }
 
   private updatePlugins(update: ViewUpdate) {
-    const prevSpecs = update.startState.facet(viewPlugin);
-    const specs = update.state.facet(viewPlugin);
+    let prevSpecs = update.startState.facet(viewPlugin);
+    let specs = update.state.facet(viewPlugin);
     if (prevSpecs != specs) {
-      const newPlugins = [];
-      for (const spec of specs) {
-        const found = prevSpecs.indexOf(spec);
+      let newPlugins = [];
+      for (let spec of specs) {
+        let found = prevSpecs.indexOf(spec);
         if (found < 0) {
           newPlugins.push(new PluginInstance(spec));
         } else {
-          const plugin = this.plugins[found];
+          let plugin = this.plugins[found];
           plugin.mustUpdate = update;
           newPlugins.push(plugin);
         }
       }
-      for (const plugin of this.plugins)
+      for (let plugin of this.plugins)
         if (plugin.mustUpdate != update) plugin.destroy(this);
       this.plugins = newPlugins;
       this.pluginMap.clear();
     } else {
-      for (const p of this.plugins) p.mustUpdate = update;
+      for (let p of this.plugins) p.mustUpdate = update;
     }
     for (let i = 0; i < this.plugins.length; i++) this.plugins[i].update(this);
     if (prevSpecs != specs) this.inputState.ensureHandlers(this.plugins);
   }
 
   private docViewUpdate() {
-    for (const plugin of this.plugins) {
-      const val = plugin.value;
+    for (let plugin of this.plugins) {
+      let val = plugin.value;
       if (val && val.docViewUpdate) {
         try {
           val.docViewUpdate(this);
@@ -574,27 +586,27 @@ export class EditorView {
     if (flush) this.observer.forceFlush();
 
     let updated: ViewUpdate | null = null;
-    const sDOM = this.scrollDOM;
-    let scrollTop = sDOM.scrollTop * this.scaleY;
+    let scroll = this.viewState.scrollParent;
+    let scrollOffset = this.viewState.getScrollOffset();
     let { scrollAnchorPos, scrollAnchorHeight } = this.viewState;
-    if (Math.abs(scrollTop - this.viewState.scrollTop) > 1)
+    if (Math.abs(scrollOffset - this.viewState.scrollOffset) > 1)
       scrollAnchorHeight = -1;
     this.viewState.scrollAnchorHeight = -1;
 
     try {
       for (let i = 0; ; i++) {
         if (scrollAnchorHeight < 0) {
-          if (isScrolledToBottom(sDOM)) {
+          if (isScrolledToBottom(scroll || this.win)) {
             scrollAnchorPos = -1;
             scrollAnchorHeight = this.viewState.heightMap.height;
           } else {
-            const block = this.viewState.scrollAnchorAt(scrollTop);
+            let block = this.viewState.scrollAnchorAt(scrollOffset);
             scrollAnchorPos = block.from;
             scrollAnchorHeight = block.top;
           }
         }
         this.updateState = UpdateState.Measuring;
-        const changed = this.viewState.measure(this);
+        let changed = this.viewState.measure();
         if (
           !changed &&
           !this.measureRequests.length &&
@@ -613,7 +625,7 @@ export class EditorView {
         // Only run measure requests in this cycle when the viewport didn't change
         if (!(changed & UpdateFlag.Viewport))
           [this.measureRequests, measuring] = [measuring, this.measureRequests];
-        const measured = measuring.map((m) => {
+        let measured = measuring.map((m) => {
           try {
             return m.read(this);
           } catch (e) {
@@ -621,7 +633,7 @@ export class EditorView {
             return BadMeasure;
           }
         });
-        const update = ViewUpdate.create(this, this.state, []);
+        let update = ViewUpdate.create(this, this.state, []);
         let redrawn = false;
         update.flags |= changed;
         if (!updated) updated = update;
@@ -637,7 +649,7 @@ export class EditorView {
         for (let i = 0; i < measuring.length; i++)
           if (measured[i] != BadMeasure) {
             try {
-              const m = measuring[i];
+              let m = measuring[i];
               if (m.write) m.write(measured[i], this);
             } catch (e) {
               logException(this.state, e);
@@ -652,14 +664,24 @@ export class EditorView {
               scrollAnchorHeight = -1;
               continue;
             } else {
-              const newAnchorHeight =
+              let newAnchorHeight =
                 scrollAnchorPos < 0
                   ? this.viewState.heightMap.height
                   : this.viewState.lineBlockAt(scrollAnchorPos).top;
-              const diff = newAnchorHeight - scrollAnchorHeight;
-              if (diff > 1 || diff < -1) {
-                scrollTop = scrollTop + diff;
-                sDOM.scrollTop = scrollTop / this.scaleY;
+              let diff = (newAnchorHeight - scrollAnchorHeight) / this.scaleY;
+              if (
+                (diff > 1 || diff < -1) &&
+                (scroll == this.scrollDOM ||
+                  this.hasFocus ||
+                  Math.max(
+                    this.inputState.lastWheelEvent,
+                    this.inputState.lastTouchTime,
+                  ) >
+                    Date.now() - 100)
+              ) {
+                scrollOffset = scrollOffset + diff;
+                if (scroll) scroll.scrollTop += diff;
+                else this.win.scrollBy(0, diff);
                 scrollAnchorHeight = -1;
                 continue;
               }
@@ -674,8 +696,7 @@ export class EditorView {
     }
 
     if (updated && !updated.empty)
-      for (const listener of this.state.facet(updateListener))
-        listener(updated);
+      for (let listener of this.state.facet(updateListener)) listener(updated);
   }
 
   /// Get the CSS classes for the currently active editor themes.
@@ -690,13 +711,13 @@ export class EditorView {
   }
 
   private updateAttrs() {
-    const editorAttrs = attrsFromFacet(this, editorAttributes, {
+    let editorAttrs = attrsFromFacet(this, editorAttributes, {
       class:
         'cm-editor' +
         (this.hasFocus ? ' cm-focused ' : ' ') +
         this.themeClasses,
     });
-    const contentAttrs: Attrs = {
+    let contentAttrs: Attrs = {
       spellcheck: 'false',
       autocorrect: 'off',
       autocapitalize: 'off',
@@ -711,17 +732,13 @@ export class EditorView {
     if (this.state.readOnly) contentAttrs['aria-readonly'] = 'true';
     attrsFromFacet(this, contentAttributes, contentAttrs);
 
-    const changed = this.observer.ignore(() => {
-      const changedContent = updateAttrs(
+    let changed = this.observer.ignore(() => {
+      let changedContent = updateAttrs(
         this.contentDOM,
         this.contentAttrs,
         contentAttrs,
       );
-      const changedEditor = updateAttrs(
-        this.dom,
-        this.editorAttrs,
-        editorAttrs,
-      );
+      let changedEditor = updateAttrs(this.dom, this.editorAttrs, editorAttrs);
       return changedContent || changedEditor;
     });
     this.editorAttrs = editorAttrs;
@@ -731,21 +748,19 @@ export class EditorView {
 
   private showAnnouncements(trs: readonly Transaction[]) {
     let first = true;
-    for (const tr of trs)
-      for (const effect of tr.effects)
+    for (let tr of trs)
+      for (let effect of tr.effects)
         if (effect.is(EditorView.announce)) {
           if (first) this.announceDOM.textContent = '';
           first = false;
-          const div = this.announceDOM.appendChild(
-            document.createElement('div'),
-          );
+          let div = this.announceDOM.appendChild(document.createElement('div'));
           div.textContent = effect.value;
         }
   }
 
   private mountStyles() {
     this.styleModules = this.state.facet(styleModule);
-    const nonce = this.state.facet(EditorView.cspNonce);
+    let nonce = this.state.facet(EditorView.cspNonce);
     StyleModule.mount(
       this.root,
       this.styleModules.concat(baseTheme).reverse(),
@@ -838,7 +853,7 @@ export class EditorView {
   }
 
   /// Find the line block (see
-  /// [`lineBlockAt`](#view.EditorView.lineBlockAt) at the given
+  /// [`lineBlockAt`](#view.EditorView.lineBlockAt)) at the given
   /// height, again interpreted relative to the [top of the
   /// document](#view.EditorView.documentTop).
   lineBlockAtHeight(height: number): BlockInfo {
@@ -909,9 +924,9 @@ export class EditorView {
   /// start or end (which is simply at `line.from`/`line.to`) if text
   /// at the start or end goes against the line's base text direction.
   visualLineSide(line: Line, end: boolean) {
-    const order = this.bidiSpans(line);
-    const dir = this.textDirectionAt(line.from);
-    const span = order[end ? order.length - 1 : 0];
+    let order = this.bidiSpans(line);
+    let dir = this.textDirectionAt(line.from);
+    let span = order[end ? order.length - 1 : 0];
     return EditorSelection.cursor(
       span.side(end, dir) + line.from,
       span.forward(!end, dir) ? 1 : -1,
@@ -958,8 +973,8 @@ export class EditorView {
   /// `visibleRanges`, the resulting DOM position isn't necessarily
   /// meaningful (it may just point before or after a placeholder
   /// element).
-  domAtPos(pos: number): { node: Node; offset: number } {
-    return this.docView.domAtPos(pos);
+  domAtPos(pos: number, side: -1 | 1 = 1): { node: Node; offset: number } {
+    return this.docView.domAtPos(pos, side);
   }
 
   /// Find the document position at the given DOM node. Can be useful
@@ -978,6 +993,29 @@ export class EditorView {
   posAtCoords(coords: { x: number; y: number }): number | null;
   posAtCoords(coords: { x: number; y: number }, precise = true): number | null {
     this.readMeasured();
+    let found = posAtCoords(this, coords, precise);
+    return found && found.pos;
+  }
+
+  /// Like [`posAtCoords`](#view.EditorView.posAtCoords), but also
+  /// returns which side of the position the coordinates are closest
+  /// to. For example, for coordinates on the left side of a
+  /// left-to-right character, the position before that letter is
+  /// returned, with `assoc` 1, whereas on the right side, you'd get
+  /// the position after the character, with `assoc` -1.
+  posAndSideAtCoords(
+    coords: { x: number; y: number },
+    precise: false,
+  ): { pos: number; assoc: -1 | 1 };
+  posAndSideAtCoords(coords: {
+    x: number;
+    y: number;
+  }): { pos: number; assoc: -1 | 1 } | null;
+  posAndSideAtCoords(
+    coords: { x: number; y: number },
+    precise = true,
+  ): { pos: number; assoc: -1 | 1 } | null {
+    this.readMeasured();
     return posAtCoords(this, coords, precise);
   }
 
@@ -988,11 +1026,11 @@ export class EditorView {
   /// another strategy to get reasonable coordinates).
   coordsAtPos(pos: number, side: -1 | 1 = 1): Rect | null {
     this.readMeasured();
-    const rect = this.docView.coordsAt(pos, side);
+    let rect = this.docView.coordsAt(pos, side);
     if (!rect || rect.left == rect.right) return rect;
-    const line = this.state.doc.lineAt(pos);
-    const order = this.bidiSpans(line);
-    const span = order[BidiSpan.find(order, pos - line.from, -1, side)];
+    let line = this.state.doc.lineAt(pos);
+    let order = this.bidiSpans(line);
+    let span = order[BidiSpan.find(order, pos - line.from, -1, side)];
     return flattenRect(rect, (span.dir == Direction.LTR) == side > 0);
   }
 
@@ -1034,7 +1072,7 @@ export class EditorView {
   /// [`textDirection`](#view.EditorView.textDirection). Note that
   /// this may trigger a DOM layout.
   textDirectionAt(pos: number) {
-    const perLine = this.state.facet(perLineTextDirection);
+    let perLine = this.state.facet(perLineTextDirection);
     if (!perLine || pos < this.viewport.from || pos > this.viewport.to)
       return this.textDirection;
     this.readMeasured();
@@ -1057,9 +1095,9 @@ export class EditorView {
   /// rightmost spans come first.
   bidiSpans(line: Line) {
     if (line.length > MaxBidiLine) return trivialOrder(line.length);
-    const dir = this.textDirectionAt(line.from);
+    let dir = this.textDirectionAt(line.from);
     let isolates: readonly Isolate[] | undefined;
-    for (const entry of this.bidiCache) {
+    for (let entry of this.bidiCache) {
       if (
         entry.from == line.from &&
         entry.dir == dir &&
@@ -1072,7 +1110,7 @@ export class EditorView {
         return entry.order;
     }
     if (!isolates) isolates = getIsolatedRanges(this, line);
-    const order = computeOrder(line.text, dir, isolates);
+    let order = computeOrder(line.text, dir, isolates);
     this.bidiCache.push(
       new CachedOrder(line.from, line.to, dir, isolates, true, order),
     );
@@ -1120,7 +1158,7 @@ export class EditorView {
   /// calling this.
   destroy() {
     if (this.root.activeElement == this.contentDOM) this.contentDOM.blur();
-    for (const plugin of this.plugins) plugin.destroy(this);
+    for (let plugin of this.plugins) plugin.destroy(this);
     this.plugins = [];
     this.inputState.destroy();
     this.docView.destroy();
@@ -1159,11 +1197,11 @@ export class EditorView {
   ): StateEffect<unknown> {
     return scrollIntoView.of(
       new ScrollTarget(
-        typeof pos === 'number' ? EditorSelection.cursor(pos) : pos,
-        options.y,
-        options.x,
-        options.yMargin,
-        options.xMargin,
+        typeof pos == 'number' ? EditorSelection.cursor(pos) : pos,
+        options.y ?? 'nearest',
+        options.x ?? 'nearest',
+        options.yMargin ?? 5,
+        options.xMargin ?? 5,
       ),
     );
   }
@@ -1179,8 +1217,8 @@ export class EditorView {
   /// not scroll to the expected position. You can
   /// [map](#state.StateEffect.map) the effect to account for changes.
   scrollSnapshot() {
-    const { scrollTop, scrollLeft } = this.scrollDOM;
-    const ref = this.viewState.scrollAnchorAt(scrollTop);
+    let { scrollTop, scrollLeft } = this.scrollDOM;
+    let ref = this.viewState.scrollAnchorAt(scrollTop);
     return scrollIntoView.of(
       new ScrollTarget(
         EditorSelection.cursor(ref.from),
@@ -1205,8 +1243,7 @@ export class EditorView {
   setTabFocusMode(to?: boolean | number) {
     if (to == null)
       this.inputState.tabFocusMode = this.inputState.tabFocusMode < 0 ? 0 : -1;
-    else if (typeof to === 'boolean')
-      this.inputState.tabFocusMode = to ? 0 : -1;
+    else if (typeof to == 'boolean') this.inputState.tabFocusMode = to ? 0 : -1;
     else if (this.inputState.tabFocusMode != 0)
       this.inputState.tabFocusMode = Date.now() + to;
   }
@@ -1329,11 +1366,18 @@ export class EditorView {
   /// [`EditorView.atomicRanges`](#view.EditorView^atomicRanges).
   static decorations = decorations;
 
+  /// [Block wrappers](#view.BlockWrapper) provide a way to add DOM
+  /// structure around editor lines and block widgets. Sets of
+  /// wrappers are provided in a similar way to decorations, and are
+  /// nested in a similar way when they overlap. A wrapper affects all
+  /// lines and block widgets that start inside its range.
+  static blockWrappers = blockWrappers;
+
   /// Facet that works much like
   /// [`decorations`](#view.EditorView^decorations), but puts its
   /// inputs at the very bottom of the precedence stack, meaning mark
   /// decorations provided here will only be split by other, partially
-  /// overlapping \`outerDecorations\` ranges, and wrap around all
+  /// overlapping `outerDecorations` ranges, and wrap around all
   /// regular decorations. Use this for mark elements that should, as
   /// much as possible, remain in one piece.
   static outerDecorations = outerDecorations;
@@ -1358,11 +1402,31 @@ export class EditorView {
   /// supported.)
   static bidiIsolatedRanges = bidiIsolatedRanges;
 
+  /// Can be used to specify the distance that scrolling cursor into
+  /// view keeps it away from the sides of the editor, either as a
+  /// single pixel number or two different values for the different
+  /// axes. Defaults to 5 pixels on both axes.
+  static cursorScrollMargin = Facet.define<
+    number | { x: number; y: number },
+    { x: number; y: number }
+  >({
+    combine: (inputs) => {
+      let x = 5;
+      let y = 5;
+      for (let i of inputs) {
+        if (typeof i == 'number') x = y = i;
+        else ({ x, y } = i);
+      }
+      return { x, y };
+    },
+  });
+
   /// Facet that allows extensions to provide additional scroll
   /// margins (space around the sides of the scrolling element that
   /// should be considered invisible). This can be useful when the
   /// plugin introduces elements that cover part of that element (for
-  /// example a horizontally fixed gutter).
+  /// example a horizontally fixed gutter). Not to be confused with
+  /// [`cursorScrollMargin`](#view.EditorView^cursorScrollMargin).
   static scrollMargins = scrollMargins;
 
   /// Create a theme extension. The first argument can be a
@@ -1385,8 +1449,8 @@ export class EditorView {
     spec: { [selector: string]: StyleSpec },
     options?: { dark?: boolean },
   ): Extension {
-    const prefix = StyleModule.newName();
-    const result = [
+    let prefix = StyleModule.newName();
+    let result = [
       theme.of(prefix),
       styleModule.of(buildTheme(`.${prefix}`, spec)),
     ];
@@ -1443,9 +1507,9 @@ export class EditorView {
   /// Retrieve an editor view instance from the view's DOM
   /// representation.
   static findFromDOM(dom: HTMLElement): EditorView | null {
-    const content = dom.querySelector('.cm-content');
-    const cView = (content && ContentView.get(content)) || ContentView.get(dom);
-    return (cView?.rootView as DocView)?.view || null;
+    let content = dom.querySelector('.cm-content');
+    let tile = (content && Tile.get(content)) || Tile.get(dom);
+    return tile?.root?.view || null;
   }
 }
 
@@ -1470,6 +1534,7 @@ export type DOMEventHandlers<This> = {
 
 // Maximum line length for which we compute accurate bidi info
 const MaxBidiLine = 4096;
+
 const BadMeasure = {};
 
 class CachedOrder {
@@ -1484,10 +1549,10 @@ class CachedOrder {
 
   static update(cache: CachedOrder[], changes: ChangeDesc) {
     if (changes.empty && !cache.some((c) => c.fresh)) return cache;
-    const result = [];
-    const lastDir = cache.length ? cache[cache.length - 1].dir : Direction.LTR;
+    let result = [];
+    let lastDir = cache.length ? cache[cache.length - 1].dir : Direction.LTR;
     for (let i = Math.max(0, cache.length - 10); i < cache.length; i++) {
-      const entry = cache[i];
+      let entry = cache[i];
       if (entry.dir == lastDir && !changes.touchesRange(entry.from, entry.to))
         result.push(
           new CachedOrder(
@@ -1514,8 +1579,8 @@ function attrsFromFacet(
     i >= 0;
     i--
   ) {
-    const source = sources[i];
-    const value = typeof source === 'function' ? source(view) : source;
+    let source = sources[i];
+    let value = typeof source == 'function' ? source(view) : source;
     if (value) combineAttrs(value, base);
   }
   return base;

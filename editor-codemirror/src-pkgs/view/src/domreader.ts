@@ -1,5 +1,6 @@
-import { ContentView } from './contentview';
+import { Tile } from './tile';
 import { domIndex, maxOffset, isBlockElement } from './dom';
+import { EditorView } from './editorview';
 import { EditorState } from '@codemirror/state';
 
 export const LineBreakPlaceholder = '\uffff';
@@ -10,9 +11,9 @@ export class DOMReader {
 
   constructor(
     private points: DOMPoint[],
-    state: EditorState,
+    private view: EditorView,
   ) {
-    this.lineSeparator = state.facet(EditorState.lineSeparator);
+    this.lineSeparator = view.state.facet(EditorState.lineSeparator);
   }
 
   append(text: string) {
@@ -25,22 +26,27 @@ export class DOMReader {
 
   readRange(start: Node | null, end: Node | null) {
     if (!start) return this;
-    const parent = start.parentNode!;
+    let parent = start.parentNode!;
     for (let cur = start; ; ) {
       this.findPointBefore(parent, cur);
-      const oldLen = this.text.length;
+      let oldLen = this.text.length;
       this.readNode(cur);
-      const next: Node | null = cur.nextSibling;
-      if (next == end) break;
-      const view = ContentView.get(cur);
-      const nextView = ContentView.get(next!);
+      let tile = Tile.get(cur);
+      let next: Node | null = cur.nextSibling;
+      if (next == end) {
+        if (tile?.breakAfter && !next && parent != this.view.contentDOM)
+          this.lineBreak();
+        break;
+      }
+      let nextTile = Tile.get(next!);
       if (
-        view && nextView
-          ? view.breakAfter
-          : (view ? view.breakAfter : isBlockElement(cur)) ||
+        (tile && nextTile
+          ? tile.breakAfter
+          : (tile ? tile.breakAfter : isBlockElement(cur)) ||
             (isBlockElement(next!) &&
-              (cur.nodeName != 'BR' || (cur as any).cmIgnore) &&
-              this.text.length > oldLen)
+              (cur.nodeName != 'BR' || tile?.isWidget()) &&
+              this.text.length > oldLen)) &&
+        !isEmptyToEnd(next, end)
       )
         this.lineBreak();
       cur = next!;
@@ -50,8 +56,8 @@ export class DOMReader {
   }
 
   readTextNode(node: Text) {
-    const text = node.nodeValue!;
-    for (const point of this.points)
+    let text = node.nodeValue!;
+    for (let point of this.points)
       if (point.node == node)
         point.pos = this.text.length + Math.min(point.offset, text.length);
 
@@ -70,7 +76,7 @@ export class DOMReader {
       if (nextBreak < 0) break;
       this.lineBreak();
       if (breakSize > 1)
-        for (const point of this.points)
+        for (let point of this.points)
           if (point.node == node && point.pos > this.text.length)
             point.pos -= breakSize - 1;
       off = nextBreak + breakSize;
@@ -78,9 +84,8 @@ export class DOMReader {
   }
 
   readNode(node: Node) {
-    if ((node as any).cmIgnore) return;
-    const view = ContentView.get(node);
-    const fromView = view && view.overrideDOMText;
+    let tile = Tile.get(node);
+    let fromView = tile && tile.overrideDOMText;
     if (fromView != null) {
       this.findPointInside(node, fromView.length);
       for (let i = fromView.iter(); !i.next().done; ) {
@@ -97,13 +102,13 @@ export class DOMReader {
   }
 
   findPointBefore(node: Node, next: Node | null) {
-    for (const point of this.points)
+    for (let point of this.points)
       if (point.node == node && node.childNodes[point.offset] == next)
         point.pos = this.text.length;
   }
 
   findPointInside(node: Node, length: number) {
-    for (const point of this.points)
+    for (let point of this.points)
       if (node.nodeType == 3 ? point.node == node : node.contains(point.node))
         point.pos =
           this.text.length +
@@ -118,6 +123,22 @@ function isAtEnd(parent: Node, node: Node | null, offset: number) {
     offset = domIndex(node) + 1;
     node = node.parentNode;
   }
+}
+
+function isEmptyToEnd(node: Node | null, end: Node | null) {
+  let widgets: Tile[] | undefined;
+  for (; ; node = node.nextSibling) {
+    if (node == end || !node) break;
+    let view = Tile.get(node);
+    if (!view?.isWidget()) return false;
+    if (view) (widgets || (widgets = [])).push(view);
+  }
+  if (widgets)
+    for (let w of widgets) {
+      let override = w.overrideDOMText;
+      if (override?.length) return false;
+    }
+  return true;
 }
 
 export class DOMPoint {

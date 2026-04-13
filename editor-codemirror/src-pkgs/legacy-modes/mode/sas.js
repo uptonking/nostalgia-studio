@@ -1,5 +1,5 @@
-const words = {};
-const isDoubleOperatorSym = {
+var words = {};
+var isDoubleOperatorSym = {
   eq: 'operator',
   lt: 'operator',
   le: 'operator',
@@ -9,15 +9,15 @@ const isDoubleOperatorSym = {
   ne: 'operator',
   or: 'operator',
 };
-const isDoubleOperatorChar = /(<=|>=|!=|<>)/;
-const isSingleOperatorChar = /[=\(:\),{}.*<>+\-\/^\[\]]/;
+var isDoubleOperatorChar = /(<=|>=|!=|<>)/;
+var isSingleOperatorChar = /[=\(:\),{}.*<>+\-\/^\[\]]/;
 
 // Takes a string of words separated by spaces and adds them as
 // keys with the value of the first argument 'style'
 function define(style, string, context) {
   if (context) {
-    const split = string.split(' ');
-    for (let i = 0; i < split.length; i++) {
+    var split = string.split(' ');
+    for (var i = 0; i < split.length; i++) {
       words[split[i]] = { style: style, state: context };
     }
   }
@@ -85,7 +85,7 @@ define('operator', 'and not ', ['inDataStep', 'inProc']);
 // Main function
 function tokenize(stream, state) {
   // Finally advance the stream
-  const ch = stream.next();
+  var ch = stream.next();
 
   // BLOCKCOMMENT
   if (ch === '/' && stream.eat('*')) {
@@ -114,7 +114,7 @@ function tokenize(stream, state) {
   }
 
   // DoubleOperator match
-  const doubleOperator = ch + stream.peek();
+  var doubleOperator = ch + stream.peek();
 
   if ((ch === '"' || ch === "'") && !state.continueString) {
     state.continueString = ch;
@@ -154,7 +154,7 @@ function tokenize(stream, state) {
   }
 
   // Matches one whole word -- even if the word is a character
-  let word;
+  var word;
   if (stream.match(/[%&;\w]+/, false) != null) {
     word = ch + stream.match(/[%&;\w]+/, true);
     if (/&/.test(word)) return 'variable';
@@ -193,7 +193,7 @@ function tokenize(stream, state) {
       //backup to the start of the word
       if (stream.start < stream.pos) stream.backUp(stream.pos - stream.start);
       //advance the length of the word and return
-      for (let i = 0; i < word.length; ++i) stream.next();
+      for (var i = 0; i < word.length; ++i) stream.next();
       return words[word].style;
     }
   }

@@ -1,24 +1,23 @@
 import {
-  type EditorState,
-  type Transaction,
+  EditorState,
+  Transaction,
   StateEffect,
-  type StateEffectType,
+  StateEffectType,
   Facet,
   StateField,
-  type Extension,
+  Extension,
   MapMode,
-  type FacetReader,
+  FacetReader,
 } from '@codemirror/state';
 import { EditorView } from './editorview';
 import {
   ViewPlugin,
-  type ViewUpdate,
+  ViewUpdate,
   logException,
   getScrollMargins,
 } from './extension';
 import { Direction } from './bidi';
-import { WidgetView } from './inlineview';
-import type { Rect } from './dom';
+import { Rect } from './dom';
 import browser from './browser';
 
 type Measured = {
@@ -62,21 +61,21 @@ class TooltipViewManager {
   }
 
   update(update: ViewUpdate, above?: boolean[]) {
-    const input = update.state.facet(this.facet);
-    const tooltips = input.filter((x) => x) as Tooltip[];
+    let input = update.state.facet(this.facet);
+    let tooltips = input.filter((x) => x) as Tooltip[];
     if (input === this.input) {
-      for (const t of this.tooltipViews) if (t.update) t.update(update);
+      for (let t of this.tooltipViews) if (t.update) t.update(update);
       return false;
     }
 
-    const tooltipViews: TooltipView[] = [];
-    const newAbove: boolean[] | null = above ? [] : null;
+    let tooltipViews: TooltipView[] = [];
+    let newAbove: boolean[] | null = above ? [] : null;
     for (let i = 0; i < tooltips.length; i++) {
-      const tip = tooltips[i];
+      let tip = tooltips[i];
       let known = -1;
       if (!tip) continue;
       for (let i = 0; i < this.tooltips.length; i++) {
-        const other = this.tooltips[i];
+        let other = this.tooltips[i];
         if (other && other.create == tip.create) known = i;
       }
       if (known < 0) {
@@ -84,14 +83,14 @@ class TooltipViewManager {
           tip,
           i ? tooltipViews[i - 1] : null,
         );
-        if (newAbove) newAbove[i] = Boolean(tip.above);
+        if (newAbove) newAbove[i] = !!tip.above;
       } else {
-        const tooltipView = (tooltipViews[i] = this.tooltipViews[known]);
+        let tooltipView = (tooltipViews[i] = this.tooltipViews[known]);
         if (newAbove) newAbove[i] = above![known];
         if (tooltipView.update) tooltipView.update(update);
       }
     }
-    for (const t of this.tooltipViews)
+    for (let t of this.tooltipViews)
       if (tooltipViews.indexOf(t) < 0) {
         this.removeTooltipView(t);
         t.destroy?.();
@@ -150,7 +149,7 @@ type TooltipConfig = {
 };
 
 function windowSpace(view: EditorView) {
-  const docElt = view.dom.ownerDocument.documentElement;
+  let docElt = view.dom.ownerDocument.documentElement;
   return {
     top: 0,
     left: 0,
@@ -169,7 +168,9 @@ const tooltipConfig = Facet.define<Partial<TooltipConfig>, TooltipConfig>({
       values.find((conf) => conf.tooltipSpace)?.tooltipSpace || windowSpace,
   }),
 });
+
 const knownHeight = new WeakMap<TooltipView, number>();
+
 const tooltipPlugin = ViewPlugin.fromClass(
   class {
     manager: TooltipViewManager;
@@ -191,7 +192,7 @@ const tooltipPlugin = ViewPlugin.fromClass(
     measureTimeout = -1;
 
     constructor(readonly view: EditorView) {
-      const config = view.state.facet(tooltipConfig);
+      let config = view.state.facet(tooltipConfig);
       this.position = config.position;
       this.parent = config.parent;
       this.classes = view.themeClasses;
@@ -202,7 +203,7 @@ const tooltipPlugin = ViewPlugin.fromClass(
         key: this,
       };
       this.resizeObserver =
-        typeof ResizeObserver === 'function'
+        typeof ResizeObserver == 'function'
           ? new ResizeObserver(() => this.measureSoon())
           : null;
       this.manager = new TooltipViewManager(
@@ -214,9 +215,9 @@ const tooltipPlugin = ViewPlugin.fromClass(
           t.dom.remove();
         },
       );
-      this.above = this.manager.tooltips.map((t) => Boolean(t.above));
+      this.above = this.manager.tooltips.map((t) => !!t.above);
       this.intersectionObserver =
-        typeof IntersectionObserver === 'function'
+        typeof IntersectionObserver == 'function'
           ? new IntersectionObserver(
               (entries) => {
                 if (
@@ -251,7 +252,7 @@ const tooltipPlugin = ViewPlugin.fromClass(
     observeIntersection() {
       if (this.intersectionObserver) {
         this.intersectionObserver.disconnect();
-        for (const tooltip of this.manager.tooltipViews)
+        for (let tooltip of this.manager.tooltipViews)
           this.intersectionObserver.observe(tooltip.dom);
       }
     }
@@ -266,13 +267,13 @@ const tooltipPlugin = ViewPlugin.fromClass(
 
     update(update: ViewUpdate) {
       if (update.transactions.length) this.lastTransaction = Date.now();
-      const updated = this.manager.update(update, this.above);
+      let updated = this.manager.update(update, this.above);
       if (updated) this.observeIntersection();
       let shouldMeasure = updated || update.geometryChanged;
-      const newConfig = update.state.facet(tooltipConfig);
+      let newConfig = update.state.facet(tooltipConfig);
       if (newConfig.position != this.position && !this.madeAbsolute) {
         this.position = newConfig.position;
-        for (const t of this.manager.tooltipViews)
+        for (let t of this.manager.tooltipViews)
           t.dom.style.position = this.position;
         shouldMeasure = true;
       }
@@ -280,7 +281,7 @@ const tooltipPlugin = ViewPlugin.fromClass(
         if (this.parent) this.container.remove();
         this.parent = newConfig.parent;
         this.createContainer();
-        for (const t of this.manager.tooltipViews)
+        for (let t of this.manager.tooltipViews)
           this.container.appendChild(t.dom);
         shouldMeasure = true;
       } else if (this.parent && this.view.themeClasses != this.classes) {
@@ -290,14 +291,14 @@ const tooltipPlugin = ViewPlugin.fromClass(
     }
 
     createTooltip(tooltip: Tooltip, prev: TooltipView | null) {
-      const tooltipView = tooltip.create(this.view);
-      const before = prev ? prev.dom : null;
+      let tooltipView = tooltip.create(this.view);
+      let before = prev ? prev.dom : null;
       tooltipView.dom.classList.add('cm-tooltip');
       if (
         tooltip.arrow &&
         !tooltipView.dom.querySelector('.cm-tooltip > .cm-tooltip-arrow')
       ) {
-        const arrow = document.createElement('div');
+        let arrow = document.createElement('div');
         arrow.className = 'cm-tooltip-arrow';
         tooltipView.dom.appendChild(arrow);
       }
@@ -312,7 +313,7 @@ const tooltipPlugin = ViewPlugin.fromClass(
 
     destroy() {
       this.view.win.removeEventListener('resize', this.measureSoon);
-      for (const tooltipView of this.manager.tooltipViews) {
+      for (let tooltipView of this.manager.tooltipViews) {
         tooltipView.dom.remove();
         tooltipView.destroy?.();
       }
@@ -327,23 +328,25 @@ const tooltipPlugin = ViewPlugin.fromClass(
       let scaleY = 1;
       let makeAbsolute = false;
       if (this.position == 'fixed' && this.manager.tooltipViews.length) {
-        const { dom } = this.manager.tooltipViews[0];
-        if (browser.gecko) {
-          // Firefox sets the element's `offsetParent` to the
-          // transformed element when a transform interferes with fixed
-          // positioning.
-          makeAbsolute = dom.offsetParent != this.container.ownerDocument.body;
-        } else if (dom.style.top == Outside && dom.style.left == '0px') {
-          // On other browsers, we have to awkwardly try and use other
-          // information to detect a transform.
-          const rect = dom.getBoundingClientRect();
+        let { dom } = this.manager.tooltipViews[0];
+        if (browser.safari) {
+          // Safari always sets offsetParent to null, even if a fixed
+          // element is positioned relative to a transformed parent. So
+          // we use this kludge to try and detect this.
+          let rect = dom.getBoundingClientRect();
           makeAbsolute =
             Math.abs(rect.top + 10000) > 1 || Math.abs(rect.left) > 1;
+        } else {
+          // More conforming browsers will set offsetParent to the
+          // transformed element.
+          makeAbsolute =
+            !!dom.offsetParent &&
+            dom.offsetParent != this.container.ownerDocument.body;
         }
       }
       if (makeAbsolute || this.position == 'absolute') {
         if (this.parent) {
-          const rect = this.parent.getBoundingClientRect();
+          let rect = this.parent.getBoundingClientRect();
           if (rect.width && rect.height) {
             scaleX = rect.width / this.parent.offsetWidth;
             scaleY = rect.height / this.parent.offsetHeight;
@@ -352,8 +355,8 @@ const tooltipPlugin = ViewPlugin.fromClass(
           ({ scaleX, scaleY } = this.view.viewState);
         }
       }
-      const visible = this.view.scrollDOM.getBoundingClientRect();
-      const margins = getScrollMargins(this.view);
+      let visible = this.view.scrollDOM.getBoundingClientRect();
+      let margins = getScrollMargins(this.view);
       return {
         visible: {
           left: visible.left + margins.left,
@@ -365,7 +368,7 @@ const tooltipPlugin = ViewPlugin.fromClass(
           ? this.container.getBoundingClientRect()
           : this.view.dom.getBoundingClientRect(),
         pos: this.manager.tooltips.map((t, i) => {
-          const tv = this.manager.tooltipViews[i];
+          let tv = this.manager.tooltipViews[i];
           return tv.getCoords
             ? tv.getCoords(t.pos)
             : this.view.coordsAtPos(t.pos);
@@ -384,18 +387,18 @@ const tooltipPlugin = ViewPlugin.fromClass(
       if (measured.makeAbsolute) {
         this.madeAbsolute = true;
         this.position = 'absolute';
-        for (const t of this.manager.tooltipViews)
+        for (let t of this.manager.tooltipViews)
           t.dom.style.position = 'absolute';
       }
 
-      const { visible, space, scaleX, scaleY } = measured;
-      const others = [];
+      let { visible, space, scaleX, scaleY } = measured;
+      let others = [];
       for (let i = 0; i < this.manager.tooltips.length; i++) {
-        const tooltip = this.manager.tooltips[i];
-        const tView = this.manager.tooltipViews[i];
-        const { dom } = tView;
-        const pos = measured.pos[i];
-        const size = measured.size[i];
+        let tooltip = this.manager.tooltips[i];
+        let tView = this.manager.tooltipViews[i];
+        let { dom } = tView;
+        let pos = measured.pos[i];
+        let size = measured.size[i];
         // Hide tooltips that are outside of the editor.
         if (
           !pos ||
@@ -408,15 +411,15 @@ const tooltipPlugin = ViewPlugin.fromClass(
           dom.style.top = Outside;
           continue;
         }
-        const arrow: HTMLElement | null = tooltip.arrow
+        let arrow: HTMLElement | null = tooltip.arrow
           ? tView.dom.querySelector('.cm-tooltip-arrow')
           : null;
-        const arrowHeight = arrow ? Arrow.Size : 0;
-        const width = size.right - size.left;
+        let arrowHeight = arrow ? Arrow.Size : 0;
+        let width = size.right - size.left;
         let height = knownHeight.get(tView) ?? size.bottom - size.top;
-        const offset = tView.offset || noOffset;
-        const ltr = this.view.textDirection == Direction.LTR;
-        const left =
+        let offset = tView.offset || noOffset;
+        let ltr = this.view.textDirection == Direction.LTR;
+        let left =
           size.width > space.right - space.left
             ? ltr
               ? space.left
@@ -445,7 +448,7 @@ const tooltipPlugin = ViewPlugin.fromClass(
           above == space.bottom - pos.bottom > pos.top - space.top
         )
           above = this.above[i] = !above;
-        const spaceVert =
+        let spaceVert =
           (above ? pos.top - space.top : space.bottom - pos.bottom) -
           arrowHeight;
         if (spaceVert < height && tView.resize !== false) {
@@ -461,9 +464,9 @@ const tooltipPlugin = ViewPlugin.fromClass(
         let top = above
           ? pos.top - height - arrowHeight - offset.y
           : pos.bottom + arrowHeight + offset.y;
-        const right = left + width;
+        let right = left + width;
         if (tView.overlap !== true)
-          for (const r of others)
+          for (let r of others)
             if (
               r.left < right &&
               r.right > left &&
@@ -481,7 +484,7 @@ const tooltipPlugin = ViewPlugin.fromClass(
           setLeftStyle(dom, left / scaleX);
         }
         if (arrow) {
-          const arrowLeft =
+          let arrowLeft =
             pos.left +
             (ltr ? offset.x : -offset.x) -
             (left + Arrow.Offset - Arrow.Size);
@@ -502,7 +505,7 @@ const tooltipPlugin = ViewPlugin.fromClass(
         if (this.inView != this.view.inView) {
           this.inView = this.view.inView;
           if (!this.inView)
-            for (const tv of this.manager.tooltipViews)
+            for (let tv of this.manager.tooltipViews)
               tv.dom.style.top = Outside;
         }
       }
@@ -518,7 +521,7 @@ const tooltipPlugin = ViewPlugin.fromClass(
 );
 
 function setLeftStyle(elt: HTMLElement, value: number) {
-  const current = parseInt(elt.style.left, 10);
+  let current = parseInt(elt.style.left, 10);
   if (isNaN(current) || Math.abs(value - current) > 1)
     elt.style.left = value + 'px';
 }
@@ -686,7 +689,7 @@ class HoverTooltipHost implements TooltipView {
   }
 
   createHostedView(tooltip: Tooltip, prev: TooltipView | null) {
-    const hostedView = tooltip.create(this.view);
+    let hostedView = tooltip.create(this.view);
     hostedView.dom.classList.add('cm-tooltip-section');
     this.dom.insertBefore(
       hostedView.dom,
@@ -697,14 +700,14 @@ class HoverTooltipHost implements TooltipView {
   }
 
   mount(view: EditorView) {
-    for (const hostedView of this.manager.tooltipViews) {
+    for (let hostedView of this.manager.tooltipViews) {
       if (hostedView.mount) hostedView.mount(view);
     }
     this.mounted = true;
   }
 
   positioned(space: Rect) {
-    for (const hostedView of this.manager.tooltipViews) {
+    for (let hostedView of this.manager.tooltipViews) {
       if (hostedView.positioned) hostedView.positioned(space);
     }
   }
@@ -714,15 +717,15 @@ class HoverTooltipHost implements TooltipView {
   }
 
   destroy() {
-    for (const t of this.manager.tooltipViews) t.destroy?.();
+    for (let t of this.manager.tooltipViews) t.destroy?.();
   }
 
   passProp<Key extends keyof TooltipView>(
     name: Key,
   ): TooltipView[Key] | undefined {
     let value: TooltipView[Key] | undefined = undefined;
-    for (const view of this.manager.tooltipViews) {
-      const given = view[name];
+    for (let view of this.manager.tooltipViews) {
+      let given = view[name];
       if (given !== undefined) {
         if (value === undefined) value = given;
         else if (value !== given) return undefined;
@@ -751,7 +754,7 @@ class HoverTooltipHost implements TooltipView {
 const showHoverTooltipHost = showTooltip.compute(
   [showHoverTooltip],
   (state) => {
-    const tooltips = state.facet(showHoverTooltip);
+    let tooltips = state.facet(showHoverTooltip);
     if (tooltips.length === 0) return null;
 
     return {
@@ -821,7 +824,7 @@ class HoverPlugin {
   checkHover() {
     this.hoverTimeout = -1;
     if (this.active.length) return;
-    const hovered = Date.now() - this.lastMove.time;
+    let hovered = Date.now() - this.lastMove.time;
     if (hovered < this.hoverTime)
       this.hoverTimeout = setTimeout(this.checkHover, this.hoverTime - hovered);
     else this.startHover();
@@ -829,17 +832,17 @@ class HoverPlugin {
 
   startHover() {
     clearTimeout(this.restartTimeout);
-    const { view, lastMove } = this;
-    const desc = view.docView.nearest(lastMove.target);
-    if (!desc) return;
+    let { view, lastMove } = this;
+    let tile = view.docView.tile.nearest(lastMove.target);
+    if (!tile) return;
     let pos: number;
     let side: -1 | 1 = 1;
-    if (desc instanceof WidgetView) {
-      pos = desc.posAtStart;
+    if (tile.isWidget()) {
+      pos = tile.posAtStart;
     } else {
       pos = view.posAtCoords(lastMove)!;
       if (pos == null) return;
-      const posCoords = view.coordsAtPos(pos);
+      let posCoords = view.coordsAtPos(pos);
       if (
         !posCoords ||
         lastMove.y < posCoords.top ||
@@ -848,16 +851,16 @@ class HoverPlugin {
         lastMove.x > posCoords.right + view.defaultCharacterWidth
       )
         return;
-      const bidi = view
+      let bidi = view
         .bidiSpans(view.state.doc.lineAt(pos))
         .find((s) => s.from <= pos! && s.to >= pos!);
-      const rtl = bidi && bidi.dir == Direction.RTL ? -1 : 1;
+      let rtl = bidi && bidi.dir == Direction.RTL ? -1 : 1;
       side = (lastMove.x < posCoords.left ? -rtl : rtl) as -1 | 1;
     }
-    const open = this.source(view, pos, side);
+    let open = this.source(view, pos, side);
 
     if ((open as any)?.then) {
-      const pending = (this.pending = { pos });
+      let pending = (this.pending = { pos });
       (open as Promise<Tooltip | null>).then(
         (result) => {
           if (this.pending == pending) {
@@ -880,8 +883,8 @@ class HoverPlugin {
   }
 
   get tooltip() {
-    const plugin = this.view.plugin(tooltipPlugin);
-    const index = plugin
+    let plugin = this.view.plugin(tooltipPlugin);
+    let index = plugin
       ? plugin.manager.tooltips.findIndex(
           (t) => t.create == HoverTooltipHost.create,
         )
@@ -898,13 +901,13 @@ class HoverPlugin {
     };
     if (this.hoverTimeout < 0)
       this.hoverTimeout = setTimeout(this.checkHover, this.hoverTime);
-    const { active, tooltip } = this;
+    let { active, tooltip } = this;
     if (
       (active.length && tooltip && !isInTooltip(tooltip.dom, event)) ||
       this.pending
     ) {
-      const { pos } = active[0] || this.pending!;
-      const end = active[0]?.end ?? pos;
+      let { pos } = active[0] || this.pending!;
+      let end = active[0]?.end ?? pos;
       if (
         pos == end
           ? this.view.posAtCoords(this.lastMove) != pos
@@ -926,10 +929,10 @@ class HoverPlugin {
   mouseleave(event: MouseEvent) {
     clearTimeout(this.hoverTimeout);
     this.hoverTimeout = -1;
-    const { active } = this;
+    let { active } = this;
     if (active.length) {
-      const { tooltip } = this;
-      const inTooltip =
+      let { tooltip } = this;
+      let inTooltip =
         tooltip && tooltip.dom.contains(event.relatedTarget as HTMLElement);
       if (!inTooltip) this.view.dispatch({ effects: this.setHover.of([]) });
       else this.watchTooltipLeave(tooltip!.dom);
@@ -937,7 +940,7 @@ class HoverPlugin {
   }
 
   watchTooltipLeave(tooltip: HTMLElement) {
-    const watch = (event: MouseEvent) => {
+    let watch = (event: MouseEvent) => {
       tooltip.removeEventListener('mouseleave', watch);
       if (
         this.active.length &&
@@ -950,6 +953,7 @@ class HoverPlugin {
 
   destroy() {
     clearTimeout(this.hoverTimeout);
+    clearTimeout(this.restartTimeout);
     this.view.dom.removeEventListener('mouseleave', this.mouseleave);
     this.view.dom.removeEventListener('mousemove', this.mousemove);
   }
@@ -961,7 +965,7 @@ function isInTooltip(tooltip: HTMLElement, event: MouseEvent) {
   let { left, right, top, bottom } = tooltip.getBoundingClientRect();
   let arrow;
   if ((arrow = tooltip.querySelector('.cm-tooltip-arrow'))) {
-    const arrowRect = arrow.getBoundingClientRect();
+    let arrowRect = arrow.getBoundingClientRect();
     top = Math.min(arrowRect.top, top);
     bottom = Math.max(arrowRect.bottom, bottom);
   }
@@ -981,8 +985,8 @@ function isOverRange(
   y: number,
   margin: number,
 ) {
-  const rect = view.scrollDOM.getBoundingClientRect();
-  const docBottom =
+  let rect = view.scrollDOM.getBoundingClientRect();
+  let docBottom =
     view.documentTop + view.documentPadding.top + view.contentHeight;
   if (
     rect.left > x ||
@@ -991,7 +995,7 @@ function isOverRange(
     Math.min(rect.bottom, docBottom) < y
   )
     return false;
-  const pos = view.posAtCoords({ x, y }, false);
+  let pos = view.posAtCoords({ x, y }, false);
   return pos >= from && pos <= to;
 }
 
@@ -1025,8 +1029,8 @@ export function hoverTooltip(
     hoverTime?: number;
   } = {},
 ): Extension & { active: StateField<readonly Tooltip[]> } {
-  const setHover = StateEffect.define<readonly Tooltip[]>();
-  const hoverState = StateField.define<readonly Tooltip[]>({
+  let setHover = StateEffect.define<readonly Tooltip[]>();
+  let hoverState = StateField.define<readonly Tooltip[]>({
     create() {
       return [];
     },
@@ -1037,11 +1041,11 @@ export function hoverTooltip(
         else if (options.hideOn)
           value = value.filter((v) => !options.hideOn!(tr, v));
         if (tr.docChanged) {
-          const mapped = [];
-          for (const tooltip of value) {
-            const newPos = tr.changes.mapPos(tooltip.pos, -1, MapMode.TrackDel);
+          let mapped = [];
+          for (let tooltip of value) {
+            let newPos = tr.changes.mapPos(tooltip.pos, -1, MapMode.TrackDel);
             if (newPos != null) {
-              const copy: Tooltip = Object.assign(Object.create(null), tooltip);
+              let copy: Tooltip = Object.assign(Object.create(null), tooltip);
               copy.pos = newPos;
               if (copy.end != null) copy.end = tr.changes.mapPos(copy.end);
               mapped.push(copy);
@@ -1050,7 +1054,7 @@ export function hoverTooltip(
           value = mapped;
         }
       }
-      for (const effect of tr.effects) {
+      for (let effect of tr.effects) {
         if (effect.is(setHover)) value = effect.value;
         if (effect.is(closeHoverTooltipEffect)) value = [];
       }
@@ -1084,9 +1088,9 @@ export function getTooltip(
   view: EditorView,
   tooltip: Tooltip,
 ): TooltipView | null {
-  const plugin = view.plugin(tooltipPlugin);
+  let plugin = view.plugin(tooltipPlugin);
   if (!plugin) return null;
-  const found = plugin.manager.tooltips.indexOf(tooltip);
+  let found = plugin.manager.tooltips.indexOf(tooltip);
   return found < 0 ? null : plugin.manager.tooltipViews[found];
 }
 
@@ -1105,6 +1109,6 @@ export const closeHoverTooltips = closeHoverTooltipEffect.of(null);
 /// re-positioning or CSS change affecting the editor) that could
 /// invalidate the existing tooltip positions.
 export function repositionTooltips(view: EditorView) {
-  const plugin = view.plugin(tooltipPlugin);
+  let plugin = view.plugin(tooltipPlugin);
   if (plugin) plugin.maybeMeasure();
 }

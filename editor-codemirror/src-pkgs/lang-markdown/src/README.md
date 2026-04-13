@@ -42,6 +42,10 @@ const view = new EditorView({
 
 @insertNewlineContinueMarkup
 
+@insertNewlineContinueMarkupCommand
+
 @deleteMarkupBackward
 
 @markdownKeymap
+
+@pasteURLAsLink

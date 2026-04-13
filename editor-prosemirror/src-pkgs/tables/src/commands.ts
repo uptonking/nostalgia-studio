@@ -1,27 +1,20 @@
 // This file defines a number of table-related commands.
 
-import {
-  Fragment,
-  Node,
-  NodeType,
-  ResolvedPos,
-  Slice,
-} from 'prosemirror-model';
-import {
-  Command,
-  EditorState,
-  TextSelection,
-  Transaction,
-} from 'prosemirror-state';
+import type { Node, NodeType, ResolvedPos } from 'prosemirror-model';
+import { Fragment, Slice } from 'prosemirror-model';
+import type { Command, EditorState, Transaction } from 'prosemirror-state';
+import { TextSelection } from 'prosemirror-state';
 
 import { CellSelection } from './cellselection';
 import type { Direction } from './input';
-import { tableNodeTypes, TableRole } from './schema';
-import { Rect, TableMap } from './tablemap';
+import type { TableRole } from './schema';
+import { tableNodeTypes } from './schema';
+import type { Rect } from './tablemap';
+import { TableMap } from './tablemap';
+import type { CellAttrs } from './util';
 import {
   addColSpan,
   cellAround,
-  CellAttrs,
   cellWrapping,
   columnIsHeader,
   isInTable,
@@ -29,6 +22,8 @@ import {
   removeColSpan,
   selectionCell,
 } from './util';
+import { moveColumn } from './utils/move-column';
+import { moveRow } from './utils/move-row';
 
 /**
  * @public
@@ -189,7 +184,7 @@ export function deleteColumn(
         ? tr.doc.nodeAt(rect.tableStart - 1)
         : tr.doc;
       if (!table) {
-        throw RangeError('No table found');
+        throw new RangeError('No table found');
       }
       rect.table = table;
       rect.map = TableMap.get(table);
@@ -353,7 +348,7 @@ export function deleteRow(
         ? tr.doc.nodeAt(rect.tableStart - 1)
         : tr.doc;
       if (!table) {
-        throw RangeError('No table found');
+        throw new RangeError('No table found');
       }
       rect.table = table;
       rect.map = TableMap.get(rect.table);
@@ -450,7 +445,7 @@ export function mergeCells(
       ),
       rowspan: rect.bottom - rect.top,
     });
-    if (content.size) {
+    if (content.size > 0) {
       const end = mergedPos + 1 + mergedCell.content.size;
       const start = isEmpty(mergedCell) ? mergedPos + 1 : end;
       tr.replaceWith(start + rect.tableStart, end + rect.tableStart, content);
@@ -632,7 +627,7 @@ function deprecated_toggleHeader(type: ToggleHeaderType): Command {
             types.cell,
             nodes[i].attrs,
           );
-      if (tr.steps.length == 0)
+      if (tr.steps.length === 0)
         for (
           let i = 0;
           i < cells.length;
@@ -685,7 +680,7 @@ export type ToggleHeaderType = 'column' | 'row' | 'cell';
  */
 export function toggleHeader(
   type: ToggleHeaderType,
-  options?: { useDeprecatedLogic: boolean } | undefined,
+  options?: { useDeprecatedLogic: boolean },
 ): Command {
   options = options || { useDeprecatedLogic: false };
 
@@ -890,4 +885,106 @@ export function deleteCellSelection(
     if (tr.docChanged) dispatch(tr);
   }
   return true;
+}
+
+/**
+ * Options for moveTableRow
+ *
+ * @public
+ */
+export interface MoveTableRowOptions {
+  /**
+   * The source row index to move from.
+   */
+  from: number;
+
+  /**
+   * The destination row index to move to.
+   */
+  to: number;
+
+  /**
+   * Whether to select the moved row after the operation.
+   *
+   * @default true
+   */
+  select?: boolean;
+
+  /**
+   * Optional position to resolve table from. If not provided, uses the current selection.
+   */
+  pos?: number;
+}
+
+/**
+ * Move a table row from index `from` to index `to`.
+ *
+ * @public
+ */
+export function moveTableRow(options: MoveTableRowOptions): Command {
+  return (state, dispatch) => {
+    const {
+      from: originIndex,
+      to: targetIndex,
+      select = true,
+      pos = state.selection.from,
+    } = options;
+    const tr = state.tr;
+    if (moveRow({ tr, originIndex, targetIndex, select, pos })) {
+      dispatch?.(tr);
+      return true;
+    }
+    return false;
+  };
+}
+
+/**
+ * Options for moveTableColumn
+ *
+ * @public
+ */
+export interface MoveTableColumnOptions {
+  /**
+   * The source column index to move from.
+   */
+  from: number;
+
+  /**
+   * The destination column index to move to.
+   */
+  to: number;
+
+  /**
+   * Whether to select the moved column after the operation.
+   *
+   * @default true
+   */
+  select?: boolean;
+
+  /**
+   * Optional position to resolve table from. If not provided, uses the current selection.
+   */
+  pos?: number;
+}
+
+/**
+ * Move a table column from index `from` to index `to`.
+ *
+ * @public
+ */
+export function moveTableColumn(options: MoveTableColumnOptions): Command {
+  return (state, dispatch) => {
+    const {
+      from: originIndex,
+      to: targetIndex,
+      select = true,
+      pos = state.selection.from,
+    } = options;
+    const tr = state.tr;
+    if (moveColumn({ tr, originIndex, targetIndex, select, pos })) {
+      dispatch?.(tr);
+      return true;
+    }
+    return false;
+  };
 }

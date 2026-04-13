@@ -239,7 +239,7 @@ export const DndContext = memo(function DndContext({
   // Use the rect of the drag overlay if it is mounted
   const draggingNode = dragOverlay.nodeRef.current ?? activeNode;
   const draggingNodeRect = isInitialized
-    ? dragOverlay.rect ?? activeNodeRect
+    ? (dragOverlay.rect ?? activeNodeRect)
     : null;
   const usesDragOverlay = Boolean(
     dragOverlay.nodeRef.current && dragOverlay.rect,
@@ -255,7 +255,7 @@ export const DndContext = memo(function DndContext({
 
   // Get scrollable ancestors of the dragging node
   const scrollableAncestors = useScrollableAncestors(
-    isInitialized ? overNode ?? activeNode : null,
+    isInitialized ? (overNode ?? activeNode) : null,
   );
   const scrollableAncestorRects = useRects(scrollableAncestors);
 

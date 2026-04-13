@@ -24,9 +24,9 @@ export const goLanguage = LRLanguage.define({
         IfStatement: continuedIndent({ except: /^\s*({|else\b)/ }),
         LabeledStatement: flatIndent,
         'SwitchBlock SelectBlock': (context) => {
-          const after = context.textAfter;
-          const closed = /^\s*\}/.test(after);
-          const isCase = /^\s*(case|default)\b/.test(after);
+          let after = context.textAfter;
+          let closed = /^\s*\}/.test(after);
+          let isCase = /^\s*(case|default)\b/.test(after);
           return context.baseIndent + (closed || isCase ? 0 : context.unit);
         },
         Block: delimitedIndent({ closing: '}' }),
@@ -49,7 +49,8 @@ export const goLanguage = LRLanguage.define({
   },
 });
 
-const kwCompletion = (name: string) => ({ label: name, type: 'keyword' });
+let kwCompletion = (name: string) => ({ label: name, type: 'keyword' });
+
 const keywords =
   'interface struct chan map package go return break continue goto fallthrough else defer range true false nil'
     .split(' ')
@@ -58,7 +59,7 @@ const keywords =
 /// Go support. Includes [snippet](#lang-go.snippets) and local
 /// variable completion.
 export function go() {
-  const completions = snippets.concat(keywords);
+  let completions = snippets.concat(keywords);
   return new LanguageSupport(goLanguage, [
     goLanguage.data.of({
       autocomplete: ifNotIn(dontComplete, completeFromList(completions)),

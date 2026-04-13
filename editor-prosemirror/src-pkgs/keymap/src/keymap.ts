@@ -36,7 +36,14 @@ function normalizeKeyName(name: string) {
 
 function normalize(map: { [key: string]: Command }) {
   let copy: { [key: string]: Command } = Object.create(null);
-  for (let prop in map) copy[normalizeKeyName(prop)] = map[prop];
+  for (let prop in map) {
+    let norm = normalizeKeyName(prop);
+    if (Object.prototype.hasOwnProperty.call(copy, norm))
+      throw new Error(
+        'Multiple bindings for key ' + norm + ' in a single keymap',
+      );
+    copy[norm] = map[prop];
+  }
   return copy;
 }
 
@@ -109,9 +116,8 @@ export function keydownHandler(bindings: {
         baseName != name
       ) {
         // Try falling back to the keyCode when there's a modifier
-        // active or the character produced isn't ASCII, and our table
-        // produces a different name from the the keyCode. See #668,
-        // #1060, #1529.
+        // active, and our table produces a different name from the
+        // the keyCode. See #668, #1060, #1529.
         let fromCode = map[modifiers(baseName, event)];
         if (fromCode && fromCode(view.state, view.dispatch, view)) return true;
       }

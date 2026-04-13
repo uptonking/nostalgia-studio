@@ -1,5 +1,5 @@
-import type { Transaction, StateEffect, StateEffectType } from './transaction';
-import type { EditorState } from './state';
+import { Transaction, StateEffect, StateEffectType } from './transaction';
+import { EditorState } from './state';
 
 let nextID = 0;
 
@@ -64,7 +64,7 @@ export class Facet<Input, Output = readonly Input[]>
       | ((self: Facet<Input, Output>) => Extension),
   ) {
     this.default = combine([]);
-    this.extensions = typeof enables === 'function' ? enables(this) : enables;
+    this.extensions = typeof enables == 'function' ? enables(this) : enables;
   }
 
   /// Returns a facet reader for this facet, which can be used to
@@ -82,7 +82,7 @@ export class Facet<Input, Output = readonly Input[]>
       config.compareInput || ((a, b) => a === b),
       config.compare ||
         (!config.combine ? (sameArray as any) : (a, b) => a === b),
-      Boolean(config.static),
+      !!config.static,
       config.enables,
     );
   }
@@ -173,15 +173,15 @@ class FacetProvider<Input> {
   ) {}
 
   dynamicSlot(addresses: { [id: number]: number }): DynamicSlot {
-    const getter: (state: EditorState) => any = this.value as any;
-    const compare = this.facet.compareInput;
-    const id = this.id;
-    const idx = addresses[id] >> 1;
-    const multi = this.type == Provider.Multi;
+    let getter: (state: EditorState) => any = this.value as any;
+    let compare = this.facet.compareInput;
+    let id = this.id;
+    let idx = addresses[id] >> 1;
+    let multi = this.type == Provider.Multi;
     let depDoc = false;
     let depSel = false;
-    const depAddrs: number[] = [];
-    for (const dep of this.dependencies) {
+    let depAddrs: number[] = [];
+    for (let dep of this.dependencies) {
       if (dep == 'doc') depDoc = true;
       else if (dep == 'selection') depSel = true;
       else if (((addresses[dep.id] ?? 1) & 1) == 0)
@@ -199,7 +199,7 @@ class FacetProvider<Input> {
           (depSel && (tr.docChanged || tr.selection)) ||
           ensureAll(state, depAddrs)
         ) {
-          const newVal = getter(state);
+          let newVal = getter(state);
           if (
             multi
               ? !compareArray(newVal, state.values[idx], compare)
@@ -213,9 +213,9 @@ class FacetProvider<Input> {
       },
       reconfigure: (state, oldState) => {
         let newVal;
-        const oldAddr = oldState.config.address[id];
+        let oldAddr = oldState.config.address[id];
         if (oldAddr != null) {
-          const oldVal = getAddr(oldState, oldAddr);
+          let oldVal = getAddr(oldState, oldAddr);
           if (
             this.dependencies.every((dep) => {
               return dep instanceof Facet
@@ -253,7 +253,7 @@ function compareArray<T>(
 
 function ensureAll(state: EditorState, addrs: readonly number[]) {
   let changed = false;
-  for (const addr of addrs)
+  for (let addr of addrs)
     if (ensureAddr(state, addr) & SlotStatus.Changed) changed = true;
   return changed;
 }
@@ -263,17 +263,17 @@ function dynamicFacetSlot<Input, Output>(
   facet: Facet<Input, Output>,
   providers: readonly FacetProvider<Input>[],
 ): DynamicSlot {
-  const providerAddrs = providers.map((p) => addresses[p.id]);
-  const providerTypes = providers.map((p) => p.type);
-  const dynamic = providerAddrs.filter((p) => !(p & 1));
-  const idx = addresses[facet.id] >> 1;
+  let providerAddrs = providers.map((p) => addresses[p.id]);
+  let providerTypes = providers.map((p) => p.type);
+  let dynamic = providerAddrs.filter((p) => !(p & 1));
+  let idx = addresses[facet.id] >> 1;
 
   function get(state: EditorState) {
-    const values: Input[] = [];
+    let values: Input[] = [];
     for (let i = 0; i < providerAddrs.length; i++) {
-      const value = getAddr(state, providerAddrs[i]);
+      let value = getAddr(state, providerAddrs[i]);
       if (providerTypes[i] == Provider.Multi)
-        for (const val of value) values.push(val);
+        for (let val of value) values.push(val);
       else values.push(value);
     }
     return facet.combine(values);
@@ -281,26 +281,26 @@ function dynamicFacetSlot<Input, Output>(
 
   return {
     create(state) {
-      for (const addr of providerAddrs) ensureAddr(state, addr);
+      for (let addr of providerAddrs) ensureAddr(state, addr);
       state.values[idx] = get(state);
       return SlotStatus.Changed;
     },
     update(state, tr) {
       if (!ensureAll(state, dynamic)) return 0;
-      const value = get(state);
+      let value = get(state);
       if (facet.compare(value, state.values[idx])) return 0;
       state.values[idx] = value;
       return SlotStatus.Changed;
     },
     reconfigure(state, oldState) {
-      const depChanged = ensureAll(state, providerAddrs);
-      const oldProviders = oldState.config.facets[facet.id];
-      const oldValue = oldState.facet(facet);
+      let depChanged = ensureAll(state, providerAddrs);
+      let oldProviders = oldState.config.facets[facet.id];
+      let oldValue = oldState.facet(facet);
       if (oldProviders && !depChanged && sameArray(providers, oldProviders)) {
         state.values[idx] = oldValue;
         return 0;
       }
-      const value = get(state);
+      let value = get(state);
       if (facet.compare(value, oldValue)) {
         state.values[idx] = oldValue;
         return 0;
@@ -366,7 +366,7 @@ export class StateField<Value> {
 
   /// Define a state field.
   static define<Value>(config: StateFieldSpec<Value>): StateField<Value> {
-    const field = new StateField<Value>(
+    let field = new StateField<Value>(
       nextID++,
       config.create,
       config.update,
@@ -378,28 +378,28 @@ export class StateField<Value> {
   }
 
   private create(state: EditorState) {
-    const init = state.facet(initField).find((i) => i.field == this);
+    let init = state.facet(initField).find((i) => i.field == this);
     return (init?.create || this.createF)(state);
   }
 
   /// @internal
   slot(addresses: { [id: number]: number }): DynamicSlot {
-    const idx = addresses[this.id] >> 1;
+    let idx = addresses[this.id] >> 1;
     return {
       create: (state) => {
         state.values[idx] = this.create(state);
         return SlotStatus.Changed;
       },
       update: (state, tr) => {
-        const oldVal = state.values[idx];
-        const value = this.updateF(oldVal, tr);
+        let oldVal = state.values[idx];
+        let value = this.updateF(oldVal, tr);
         if (this.compareF(oldVal, value)) return 0;
         state.values[idx] = value;
         return SlotStatus.Changed;
       },
       reconfigure: (state, oldState) => {
-        const init = state.facet(initField);
-        const oldInit = oldState.facet(initField);
+        let init = state.facet(initField);
+        let oldInit = oldState.facet(initField);
         let reInit;
         if (
           (reInit = init.find((i) => i.field == this)) &&
@@ -547,7 +547,7 @@ export class Configuration {
   }
 
   staticFacet<Output>(facet: Facet<any, Output>) {
-    const addr = this.address[facet.id];
+    let addr = this.address[facet.id];
     return addr == null ? facet.default : this.staticValues[addr >> 1];
   }
 
@@ -556,36 +556,36 @@ export class Configuration {
     compartments: Map<Compartment, Extension>,
     oldState?: EditorState,
   ) {
-    const fields: StateField<any>[] = [];
-    const facets: { [id: number]: FacetProvider<any>[] } = Object.create(null);
-    const newCompartments = new Map<Compartment, Extension>();
+    let fields: StateField<any>[] = [];
+    let facets: { [id: number]: FacetProvider<any>[] } = Object.create(null);
+    let newCompartments = new Map<Compartment, Extension>();
 
-    for (const ext of flatten(base, compartments, newCompartments)) {
+    for (let ext of flatten(base, compartments, newCompartments)) {
       if (ext instanceof StateField) fields.push(ext);
       else (facets[ext.facet.id] || (facets[ext.facet.id] = [])).push(ext);
     }
 
-    const address: { [id: number]: number } = Object.create(null);
-    const staticValues: any[] = [];
-    const dynamicSlots: ((address: { [id: number]: number }) => DynamicSlot)[] =
+    let address: { [id: number]: number } = Object.create(null);
+    let staticValues: any[] = [];
+    let dynamicSlots: ((address: { [id: number]: number }) => DynamicSlot)[] =
       [];
 
-    for (const field of fields) {
+    for (let field of fields) {
       address[field.id] = dynamicSlots.length << 1;
       dynamicSlots.push((a) => field.slot(a));
     }
 
-    const oldFacets = oldState?.config.facets;
-    for (const id in facets) {
-      const providers = facets[id];
-      const facet = providers[0].facet;
-      const oldProviders = (oldFacets && oldFacets[id]) || [];
+    let oldFacets = oldState?.config.facets;
+    for (let id in facets) {
+      let providers = facets[id];
+      let facet = providers[0].facet;
+      let oldProviders = (oldFacets && oldFacets[id]) || [];
       if (providers.every((p) => p.type == Provider.Static)) {
         address[facet.id] = (staticValues.length << 1) | 1;
         if (sameArray(oldProviders, providers)) {
           staticValues.push(oldState!.facet(facet));
         } else {
-          const value = facet.combine(providers.map((p) => p.value));
+          let value = facet.combine(providers.map((p) => p.value));
           staticValues.push(
             oldState && facet.compare(value, oldState.facet(facet))
               ? oldState.facet(facet)
@@ -593,7 +593,7 @@ export class Configuration {
           );
         }
       } else {
-        for (const p of providers) {
+        for (let p of providers) {
           if (p.type == Provider.Static) {
             address[p.id] = (staticValues.length << 1) | 1;
             staticValues.push(p.value);
@@ -607,7 +607,7 @@ export class Configuration {
       }
     }
 
-    const dynamic = dynamicSlots.map((f) => f(address));
+    let dynamic = dynamicSlots.map((f) => f(address));
     return new Configuration(
       base,
       newCompartments,
@@ -624,30 +624,24 @@ function flatten(
   compartments: Map<Compartment, Extension>,
   newCompartments: Map<Compartment, Extension>,
 ) {
-  const result: (FacetProvider<any> | StateField<any>)[][] = [
-    [],
-    [],
-    [],
-    [],
-    [],
-  ];
-  const seen = new Map<Extension, number>();
+  let result: (FacetProvider<any> | StateField<any>)[][] = [[], [], [], [], []];
+  let seen = new Map<Extension, number>();
   function inner(ext: Extension, prec: number) {
-    const known = seen.get(ext);
+    let known = seen.get(ext);
     if (known != null) {
       if (known <= prec) return;
-      const found = result[known].indexOf(ext as any);
+      let found = result[known].indexOf(ext as any);
       if (found > -1) result[known].splice(found, 1);
       if (ext instanceof CompartmentInstance)
         newCompartments.delete(ext.compartment);
     }
     seen.set(ext, prec);
     if (Array.isArray(ext)) {
-      for (const e of ext) inner(e, prec);
+      for (let e of ext) inner(e, prec);
     } else if (ext instanceof CompartmentInstance) {
       if (newCompartments.has(ext.compartment))
         throw new RangeError(`Duplicate use of compartment in extensions`);
-      const content = compartments.get(ext.compartment) || ext.inner;
+      let content = compartments.get(ext.compartment) || ext.inner;
       newCompartments.set(ext.compartment, content);
       inner(content, prec);
     } else if (ext instanceof PrecExtension) {
@@ -659,7 +653,7 @@ function flatten(
       result[prec].push(ext);
       if (ext.facet.extensions) inner(ext.facet.extensions, Prec_.default);
     } else {
-      const content = (ext as any).extension;
+      let content = (ext as any).extension;
       if (!content)
         throw new Error(
           `Unrecognized extension value in extension set (${ext}). This sometimes happens because multiple instances of @codemirror/state are loaded, breaking instanceof checks.`,
@@ -680,13 +674,13 @@ export const enum SlotStatus {
 
 export function ensureAddr(state: EditorState, addr: number) {
   if (addr & 1) return SlotStatus.Computed;
-  const idx = addr >> 1;
-  const status = state.status[idx];
+  let idx = addr >> 1;
+  let status = state.status[idx];
   if (status == SlotStatus.Computing)
     throw new Error('Cyclic dependency between fields and/or facets');
   if (status & SlotStatus.Computed) return status;
   state.status[idx] = SlotStatus.Computing;
-  const changed = state.computeSlot!(state, state.config.dynamicSlots[idx]);
+  let changed = state.computeSlot!(state, state.config.dynamicSlots[idx]);
   return (state.status[idx] = SlotStatus.Computed | changed);
 }
 

@@ -1,6 +1,7 @@
-import type { Text, TextIterator } from '@codemirror/state';
+import { Text, TextIterator } from '@codemirror/state';
 
 const empty = { from: -1, to: -1, match: /.*/.exec('')! };
+
 const baseFlags = 'gm' + (/x/.unicode == null ? '' : 'u');
 
 export interface RegExpCursorOptions {
@@ -45,7 +46,7 @@ export class RegExpCursor
     this.re = new RegExp(query, baseFlags + (options?.ignoreCase ? 'i' : ''));
     this.test = options?.test;
     this.iter = text.iter();
-    const startLine = text.lineAt(from);
+    let startLine = text.lineAt(from);
     this.curLineStart = startLine.from;
     this.matchPos = toCharEnd(text, from);
     this.getLine(this.curLineStart);
@@ -73,10 +74,10 @@ export class RegExpCursor
   next() {
     for (let off = this.matchPos - this.curLineStart; ; ) {
       this.re.lastIndex = off;
-      const match = this.matchPos <= this.to && this.re.exec(this.curLine);
+      let match = this.matchPos <= this.to && this.re.exec(this.curLine);
       if (match) {
-        const from = this.curLineStart + match.index;
-        const to = from + match[0].length;
+        let from = this.curLineStart + match.index;
+        let to = from + match[0].length;
         this.matchPos = toCharEnd(this.text, to + (from == to ? 1 : 0));
         if (from == this.curLineStart + this.curLine.length) this.nextLine();
         if (
@@ -117,9 +118,9 @@ class FlattenedDoc {
   }
 
   static get(doc: Text, from: number, to: number) {
-    const cached = flattened.get(doc);
+    let cached = flattened.get(doc);
     if (!cached || cached.from >= to || cached.to <= from) {
-      const flat = new FlattenedDoc(from, doc.sliceString(from, to));
+      let flat = new FlattenedDoc(from, doc.sliceString(from, to));
       flattened.set(doc, flat);
       return flat;
     }
@@ -172,7 +173,7 @@ class MultilineRegExpCursor
 
   next() {
     for (;;) {
-      const off = (this.re.lastIndex = this.matchPos - this.flat.from);
+      let off = (this.re.lastIndex = this.matchPos - this.flat.from);
       let match = this.re.exec(this.flat.text);
       // Skip empty matches directly after the last match
       if (match && !match[0] && match.index == off) {
@@ -180,8 +181,8 @@ class MultilineRegExpCursor
         match = this.re.exec(this.flat.text);
       }
       if (match) {
-        const from = this.flat.from + match.index;
-        const to = from + match[0].length;
+        let from = this.flat.from + match.index;
+        let to = from + match[0].length;
         // If a match goes almost to the end of a noncomplete chunk, try
         // again, since it'll likely be able to match more
         if (
@@ -214,7 +215,7 @@ class MultilineRegExpCursor
   }>;
 }
 
-if (typeof Symbol !== 'undefined') {
+if (typeof Symbol != 'undefined') {
   RegExpCursor.prototype[Symbol.iterator] = MultilineRegExpCursor.prototype[
     Symbol.iterator
   ] = function (this: RegExpCursor) {
@@ -233,7 +234,7 @@ export function validRegExp(source: string) {
 
 function toCharEnd(text: Text, pos: number) {
   if (pos >= text.length) return pos;
-  const line = text.lineAt(pos);
+  let line = text.lineAt(pos);
   let next;
   while (
     pos < line.to &&

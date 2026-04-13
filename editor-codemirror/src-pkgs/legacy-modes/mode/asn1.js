@@ -1,7 +1,7 @@
 function words(str) {
-  const obj = {};
-  const words = str.split(' ');
-  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
+  var obj = {};
+  var words = str.split(' ');
+  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
 
@@ -53,22 +53,22 @@ const defaults = {
 };
 
 export function asn1(parserConfig) {
-  const keywords = parserConfig.keywords || defaults.keywords;
-  const cmipVerbs = parserConfig.cmipVerbs || defaults.cmipVerbs;
-  const compareTypes = parserConfig.compareTypes || defaults.compareTypes;
-  const status = parserConfig.status || defaults.status;
-  const tags = parserConfig.tags || defaults.tags;
-  const storage = parserConfig.storage || defaults.storage;
-  const modifier = parserConfig.modifier || defaults.modifier;
-  const accessTypes = parserConfig.accessTypes || defaults.accessTypes;
-  const multiLineStrings =
+  var keywords = parserConfig.keywords || defaults.keywords;
+  var cmipVerbs = parserConfig.cmipVerbs || defaults.cmipVerbs;
+  var compareTypes = parserConfig.compareTypes || defaults.compareTypes;
+  var status = parserConfig.status || defaults.status;
+  var tags = parserConfig.tags || defaults.tags;
+  var storage = parserConfig.storage || defaults.storage;
+  var modifier = parserConfig.modifier || defaults.modifier;
+  var accessTypes = parserConfig.accessTypes || defaults.accessTypes;
+  var multiLineStrings =
     parserConfig.multiLineStrings || defaults.multiLineStrings;
-  const indentStatements = parserConfig.indentStatements !== false;
-  const isOperatorChar = /[\|\^]/;
-  let curPunc;
+  var indentStatements = parserConfig.indentStatements !== false;
+  var isOperatorChar = /[\|\^]/;
+  var curPunc;
 
   function tokenBase(stream, state) {
-    const ch = stream.next();
+    var ch = stream.next();
     if (ch == '"' || ch == "'") {
       state.tokenize = tokenString(ch);
       return state.tokenize(stream, state);
@@ -93,7 +93,7 @@ export function asn1(parserConfig) {
     }
 
     stream.eatWhile(/[\w\-]/);
-    const cur = stream.current();
+    var cur = stream.current();
     if (keywords.propertyIsEnumerable(cur)) return 'keyword';
     if (cmipVerbs.propertyIsEnumerable(cur)) return 'variableName';
     if (compareTypes.propertyIsEnumerable(cur)) return 'atom';
@@ -108,12 +108,12 @@ export function asn1(parserConfig) {
 
   function tokenString(quote) {
     return function (stream, state) {
-      let escaped = false;
-      let next;
-      let end = false;
+      var escaped = false;
+      var next;
+      var end = false;
       while ((next = stream.next()) != null) {
         if (next == quote && !escaped) {
-          let afterNext = stream.peek();
+          var afterNext = stream.peek();
           //look if the character if the quote is like the B in '10100010'B
           if (afterNext) {
             afterNext = afterNext.toLowerCase();
@@ -138,7 +138,7 @@ export function asn1(parserConfig) {
     this.prev = prev;
   }
   function pushContext(state, col, type) {
-    let indent = state.indented;
+    var indent = state.indented;
     if (state.context && state.context.type == 'statement')
       indent = state.context.indented;
     return (state.context = new Context(
@@ -150,7 +150,7 @@ export function asn1(parserConfig) {
     ));
   }
   function popContext(state) {
-    const t = state.context.type;
+    var t = state.context.type;
     if (t == ')' || t == ']' || t == '}')
       state.indented = state.context.indented;
     return (state.context = state.context.prev);
@@ -169,7 +169,7 @@ export function asn1(parserConfig) {
     },
 
     token: function (stream, state) {
-      let ctx = state.context;
+      var ctx = state.context;
       if (stream.sol()) {
         if (ctx.align == null) ctx.align = false;
         state.indented = stream.indentation();
@@ -177,7 +177,7 @@ export function asn1(parserConfig) {
       }
       if (stream.eatSpace()) return null;
       curPunc = null;
-      const style = (state.tokenize || tokenBase)(stream, state);
+      var style = (state.tokenize || tokenBase)(stream, state);
       if (style == 'comment') return style;
       if (ctx.align == null) ctx.align = true;
 

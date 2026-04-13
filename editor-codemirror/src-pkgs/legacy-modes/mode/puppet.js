@@ -1,14 +1,14 @@
 // Stores the words from the define method
-const words = {};
+var words = {};
 // Taken, mostly, from the Puppet official variable standards regex
-const variable_regex =
+var variable_regex =
   /({)?([a-z][a-z0-9_]*)?((::[a-z][a-z0-9_]*)*::)?[a-zA-Z0-9_]+(})?/;
 
 // Takes a string of words separated by spaces and adds them as
 // keys with the value of the first argument 'style'
 function define(style, string) {
-  const split = string.split(' ');
-  for (let i = 0; i < split.length; i++) {
+  var split = string.split(' ');
+  for (var i = 0; i < split.length; i++) {
     words[split[i]] = style;
   }
 }
@@ -35,9 +35,9 @@ define(
 // If a variable is encountered along the way, we display it differently when it
 // is encapsulated in a double-quoted string.
 function tokenString(stream, state) {
-  let current;
-  let prev;
-  let found_var = false;
+  var current;
+  var prev;
+  var found_var = false;
   while (!stream.eol() && (current = stream.next()) != state.pending) {
     if (current === '$' && prev != '\\' && state.pending == '"') {
       found_var = true;
@@ -59,16 +59,17 @@ function tokenString(stream, state) {
 // Main function
 function tokenize(stream, state) {
   // Matches one whole word
-  const word = stream.match(/[\w]+/, false);
+  var word = stream.match(/[\w]+/, false);
   // Matches attributes (i.e. ensure => present ; 'ensure' would be matched)
-  const attribute = stream.match(/(\s+)?\w+\s+=>.*/, false);
+  var attribute = stream.match(/(\s+)?\w+\s+=>.*/, false);
   // Matches non-builtin resource declarations
   // (i.e. "apache::vhost {" or "mycustomclasss {" would be matched)
-  const resource = stream.match(/(\s+)?[\w:_]+(\s+)?{/, false);
+  var resource = stream.match(/(\s+)?[\w:_]+(\s+)?{/, false);
   // Matches virtual and exported resources (i.e. @@user { ; and the like)
-  const special_resource = stream.match(/(\s+)?[@]{1,2}[\w:_]+(\s+)?{/, false);
+  var special_resource = stream.match(/(\s+)?[@]{1,2}[\w:_]+(\s+)?{/, false);
+
   // Finally advance the stream
-  const ch = stream.next();
+  var ch = stream.next();
 
   // Have we found a variable?
   if (ch === '$') {
@@ -192,7 +193,7 @@ export const puppet = {
   name: 'puppet',
 
   startState: function () {
-    const state = {};
+    var state = {};
     state.inDefinition = false;
     state.inInclude = false;
     state.continueString = false;

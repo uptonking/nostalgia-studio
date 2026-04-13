@@ -1,12 +1,12 @@
 function words(array) {
-  const keys = {};
-  for (let i = 0; i < array.length; ++i) {
+  var keys = {};
+  for (var i = 0; i < array.length; ++i) {
     keys[array[i]] = true;
   }
   return keys;
 }
 
-const keywords = words([
+var keywords = words([
   'abstract',
   'accept',
   'allocatable',
@@ -99,7 +99,7 @@ const keywords = words([
   'while',
   'write',
 ]);
-const builtins = words([
+var builtins = words([
   'abort',
   'abs',
   'access',
@@ -363,7 +363,8 @@ const builtins = words([
   'zsin',
   'zsqrt',
 ]);
-const dataTypes = words([
+
+var dataTypes = words([
   'c_bool',
   'c_char',
   'c_double',
@@ -401,15 +402,15 @@ const dataTypes = words([
   'logical',
   'real',
 ]);
-const isOperatorChar = /[+\-*&=<>\/\:]/;
-const litOperator = /^\.(and|or|eq|lt|le|gt|ge|ne|not|eqv|neqv)\./i;
+var isOperatorChar = /[+\-*&=<>\/\:]/;
+var litOperator = /^\.(and|or|eq|lt|le|gt|ge|ne|not|eqv|neqv)\./i;
 
 function tokenBase(stream, state) {
   if (stream.match(litOperator)) {
     return 'operator';
   }
 
-  const ch = stream.next();
+  var ch = stream.next();
   if (ch == '!') {
     stream.skipToEnd();
     return 'comment';
@@ -430,7 +431,7 @@ function tokenBase(stream, state) {
     return 'operator';
   }
   stream.eatWhile(/[\w\$_]/);
-  const word = stream.current().toLowerCase();
+  var word = stream.current().toLowerCase();
 
   if (keywords.hasOwnProperty(word)) {
     return 'keyword';
@@ -443,9 +444,9 @@ function tokenBase(stream, state) {
 
 function tokenString(quote) {
   return function (stream, state) {
-    let escaped = false;
-    let next;
-    let end = false;
+    var escaped = false;
+    var next;
+    var end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -468,7 +469,7 @@ export const fortran = {
 
   token: function (stream, state) {
     if (stream.eatSpace()) return null;
-    const style = (state.tokenize || tokenBase)(stream, state);
+    var style = (state.tokenize || tokenBase)(stream, state);
     if (style == 'comment' || style == 'meta') return style;
     return style;
   },

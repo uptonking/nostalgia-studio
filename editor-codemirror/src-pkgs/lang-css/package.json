@@ -29,7 +29,7 @@
     "@codemirror/autocomplete": "6.16.1111",
     "@codemirror/language": "6.10.1111",
     "@codemirror/state": "6.4.1111",
-    "@lezer/common": "^1.2.1",
+    "@lezer/common": "^1.5.2",
     "@lezer/css": "^1.1.7"
   },
   "devDependencies": {

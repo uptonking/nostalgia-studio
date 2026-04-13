@@ -511,7 +511,7 @@ export function replaceRange(
   if (fitsTrivially($from, $to, slice))
     return tr.step(new ReplaceStep(from, to, slice));
 
-  let targetDepths = coveredDepths($from, tr.doc.resolve(to));
+  let targetDepths = coveredDepths($from, $to);
   // Can't replace the whole document, so remove 0 if it's present
   if (targetDepths[targetDepths.length - 1] == 0) targetDepths.pop();
   // Negative numbers represent not expansion over the whole node at
@@ -637,6 +637,32 @@ export function replaceRangeWith(
 export function deleteRange(tr: Transform, from: number, to: number) {
   let $from = tr.doc.resolve(from);
   let $to = tr.doc.resolve(to);
+
+  // When the deleted range spans from the start of one textblock to
+  // the start of another one, move out of the start of both blocks.
+  if (
+    $from.parent.isTextblock &&
+    $to.parent.isTextblock &&
+    $from.start() != $to.start() &&
+    $from.parentOffset == 0 &&
+    $to.parentOffset == 0
+  ) {
+    let shared = $from.sharedDepth(to);
+    let isolated = false;
+    for (let d = $from.depth; d > shared; d--)
+      if ($from.node(d).type.spec.isolating) isolated = true;
+    for (let d = $to.depth; d > shared; d--)
+      if ($to.node(d).type.spec.isolating) isolated = true;
+    if (!isolated) {
+      for (let d = $from.depth; d > 0 && from == $from.start(d); d--)
+        from = $from.before(d);
+      for (let d = $to.depth; d > 0 && to == $to.start(d); d--)
+        to = $to.before(d);
+      $from = tr.doc.resolve(from);
+      $to = tr.doc.resolve(to);
+    }
+  }
+
   let covered = coveredDepths($from, $to);
   for (let i = 0; i < covered.length; i++) {
     let depth = covered[i];

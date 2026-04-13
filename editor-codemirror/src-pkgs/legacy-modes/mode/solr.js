@@ -1,6 +1,6 @@
-const isStringChar = /[^\s\|\!\+\-\*\?\~\^\&\:\(\)\[\]\{\}\"\\]/;
-const isOperatorChar = /[\|\!\+\-\*\?\~\^\&]/;
-const isOperatorString = /^(OR|AND|NOT|TO)$/;
+var isStringChar = /[^\s\|\!\+\-\*\?\~\^\&\:\(\)\[\]\{\}\"\\]/;
+var isOperatorChar = /[\|\!\+\-\*\?\~\^\&]/;
+var isOperatorString = /^(OR|AND|NOT|TO)$/;
 
 function isNumber(word) {
   return parseFloat(word).toString() === word;
@@ -8,8 +8,8 @@ function isNumber(word) {
 
 function tokenString(quote) {
   return function (stream, state) {
-    let escaped = false;
-    let next;
+    var escaped = false;
+    var next;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) break;
       escaped = !escaped && next == '\\';
@@ -32,7 +32,7 @@ function tokenOperator(operator) {
 
 function tokenWord(ch) {
   return function (stream, state) {
-    let word = ch;
+    var word = ch;
     while ((ch = stream.peek()) && ch.match(isStringChar) != null) {
       word += stream.next();
     }
@@ -46,7 +46,7 @@ function tokenWord(ch) {
 }
 
 function tokenBase(stream, state) {
-  const ch = stream.next();
+  var ch = stream.next();
   if (ch == '"') state.tokenize = tokenString(ch);
   else if (isOperatorChar.test(ch)) state.tokenize = tokenOperator(ch);
   else if (isStringChar.test(ch)) state.tokenize = tokenWord(ch);

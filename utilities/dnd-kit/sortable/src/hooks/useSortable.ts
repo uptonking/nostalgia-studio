@@ -117,14 +117,14 @@ export function useSortable({
     shouldDisplaceDragSource && displaceItem ? transform : null;
   const strategy = localStrategy ?? globalStrategy;
   const finalTransform = displaceItem
-    ? dragSourceDisplacement ??
+    ? (dragSourceDisplacement ??
       strategy({
         rects: sortedRects,
         activeNodeRect,
         activeIndex,
         overIndex,
         index,
-      })
+      }))
     : null;
   const newIndex =
     isValidIndex(activeIndex) && isValidIndex(overIndex)

@@ -1,11 +1,11 @@
 function words(str) {
-  const obj = {};
-  const words = str.split(' ');
-  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
+  var obj = {};
+  var words = str.split(' ');
+  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
 
-const bodiedOps = words(
+var bodiedOps = words(
   'Assert BackQuote D Defun Deriv For ForEach FromFile ' +
     'FromString Function Integrate InverseTaylor Limit ' +
     'LocalSymbols Macro MacroRule MacroRulePattern ' +
@@ -13,17 +13,19 @@ const bodiedOps = words(
     'TSum Taylor Taylor1 Taylor2 Taylor3 ToFile ' +
     'ToStdout ToString TraceRule Until While',
 );
+
 // patterns
-const pFloatForm = '(?:(?:\\.\\d+|\\d+\\.\\d*|\\d+)(?:[eE][+-]?\\d+)?)';
-const pIdentifier = "(?:[a-zA-Z\\$'][a-zA-Z0-9\\$']*)";
+var pFloatForm = '(?:(?:\\.\\d+|\\d+\\.\\d*|\\d+)(?:[eE][+-]?\\d+)?)';
+var pIdentifier = "(?:[a-zA-Z\\$'][a-zA-Z0-9\\$']*)";
+
 // regular expressions
-const reFloatForm = new RegExp(pFloatForm);
-const reIdentifier = new RegExp(pIdentifier);
-const rePattern = new RegExp(pIdentifier + '?_' + pIdentifier);
-const reFunctionLike = new RegExp(pIdentifier + '\\s*\\(');
+var reFloatForm = new RegExp(pFloatForm);
+var reIdentifier = new RegExp(pIdentifier);
+var rePattern = new RegExp(pIdentifier + '?_' + pIdentifier);
+var reFunctionLike = new RegExp(pIdentifier + '\\s*\\(');
 
 function tokenBase(stream, state) {
-  let ch;
+  var ch;
 
   // get next character
   ch = stream.next();
@@ -50,10 +52,10 @@ function tokenBase(stream, state) {
   stream.backUp(1);
 
   // update scope info
-  const m = stream.match(/^(\w+)\s*\(/, false);
+  var m = stream.match(/^(\w+)\s*\(/, false);
   if (m !== null && bodiedOps.hasOwnProperty(m[1])) state.scopes.push('bodied');
 
-  let scope = currentScope(state);
+  var scope = currentScope(state);
 
   if (scope === 'bodied' && ch === '[') state.scopes.pop();
 
@@ -122,9 +124,9 @@ function tokenBase(stream, state) {
 }
 
 function tokenString(stream, state) {
-  let next;
-  let end = false;
-  let escaped = false;
+  var next;
+  var end = false;
+  var escaped = false;
   while ((next = stream.next()) != null) {
     if (next === '"' && !escaped) {
       end = true;
@@ -139,8 +141,8 @@ function tokenString(stream, state) {
 }
 
 function tokenComment(stream, state) {
-  let prev;
-  let next;
+  var prev;
+  var next;
   while ((next = stream.next()) != null) {
     if (prev === '*' && next === '/') {
       state.tokenize = tokenBase;
@@ -152,7 +154,7 @@ function tokenComment(stream, state) {
 }
 
 function currentScope(state) {
-  let scope = null;
+  var scope = null;
   if (state.scopes.length > 0) scope = state.scopes[state.scopes.length - 1];
   return scope;
 }
@@ -172,7 +174,7 @@ export const yacas = {
   indent: function (state, textAfter, cx) {
     if (state.tokenize !== tokenBase && state.tokenize !== null) return null;
 
-    let delta = 0;
+    var delta = 0;
     if (
       textAfter === ']' ||
       textAfter === '];' ||

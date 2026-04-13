@@ -352,8 +352,8 @@ export const RowSorting: TableFeature = {
         ? column.columnDef.sortingFn
         : column.columnDef.sortingFn === 'auto'
           ? column.getAutoSortingFn()
-          : table.options.sortingFns?.[column.columnDef.sortingFn as string] ??
-            sortingFns[column.columnDef.sortingFn as BuiltInSortingFn];
+          : (table.options.sortingFns?.[column.columnDef.sortingFn as string] ??
+            sortingFns[column.columnDef.sortingFn as BuiltInSortingFn]);
     };
     column.toggleSorting = (desc, multi) => {
       // if (column.columns.length) {
@@ -468,7 +468,7 @@ export const RowSorting: TableFeature = {
       if (
         isSorted !== firstSortDirection &&
         (table.options.enableSortingRemoval ?? true) && // If enableSortRemove, enable in general
-        (multi ? table.options.enableMultiRemove ?? true : true) // If multi, don't allow if enableMultiRemove))
+        (multi ? (table.options.enableMultiRemove ?? true) : true) // If multi, don't allow if enableMultiRemove))
       ) {
         return false;
       }
@@ -528,7 +528,7 @@ export const RowSorting: TableFeature = {
   createTable: <TData extends RowData>(table: Table<TData>): void => {
     table.setSorting = (updater) => table.options.onSortingChange?.(updater);
     table.resetSorting = (defaultState) => {
-      table.setSorting(defaultState ? [] : table.initialState?.sorting ?? []);
+      table.setSorting(defaultState ? [] : (table.initialState?.sorting ?? []));
     };
     table.getPreSortedRowModel = () => table.getGroupedRowModel();
     table.getSortedRowModel = () => {

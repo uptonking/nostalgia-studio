@@ -75,7 +75,7 @@ export async function detectOverflow(
   const clippingClientRect = rectToClientRect(
     await platform.getClippingRect({
       element:
-        (await platform.isElement?.(element)) ?? true
+        ((await platform.isElement?.(element)) ?? true)
           ? element
           : element.contextElement ||
             (await platform.getDocumentElement?.(elements.floating)),

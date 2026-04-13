@@ -1,15 +1,18 @@
 import { simpleMode } from './simple-mode.js';
 
-const from = 'from';
-const fromRegex = new RegExp('^(\\s*)\\b(' + from + ')\\b', 'i');
-const shells = ['run', 'cmd', 'entrypoint', 'shell'];
-const shellsAsArrayRegex = new RegExp(
+var from = 'from';
+var fromRegex = new RegExp('^(\\s*)\\b(' + from + ')\\b', 'i');
+
+var shells = ['run', 'cmd', 'entrypoint', 'shell'];
+var shellsAsArrayRegex = new RegExp(
   '^(\\s*)(' + shells.join('|') + ')(\\s+\\[)',
   'i',
 );
-const expose = 'expose';
-const exposeRegex = new RegExp('^(\\s*)(' + expose + ')(\\s+)', 'i');
-const others = [
+
+var expose = 'expose';
+var exposeRegex = new RegExp('^(\\s*)(' + expose + ')(\\s+)', 'i');
+
+var others = [
   'arg',
   'from',
   'maintainer',
@@ -25,14 +28,15 @@ const others = [
   'healthcheck',
   'shell',
 ];
+
 // Collect all Dockerfile directives
-const instructions = [from, expose].concat(shells).concat(others);
-const instructionRegex = '(' + instructions.join('|') + ')';
-const instructionOnlyLine = new RegExp(
+var instructions = [from, expose].concat(shells).concat(others);
+var instructionRegex = '(' + instructions.join('|') + ')';
+var instructionOnlyLine = new RegExp(
   '^(\\s*)' + instructionRegex + '(\\s*)(#.*)?$',
   'i',
 );
-const instructionWithArguments = new RegExp(
+var instructionWithArguments = new RegExp(
   '^(\\s*)' + instructionRegex + '(\\s+)',
   'i',
 );

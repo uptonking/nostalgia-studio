@@ -16,10 +16,10 @@ export function getIcon(
     | { path: string; width: number; height: number }
     | { text: string; css?: string }
     | { dom: Node },
-): HTMLElement {
+): HTMLButtonElement {
   let doc =
     (root.nodeType == 9 ? (root as Document) : root.ownerDocument) || document;
-  let node = doc.createElement('div');
+  let node = doc.createElement('button');
   node.className = prefix;
   if ((icon as any).path) {
     let { path, width, height } = icon as {

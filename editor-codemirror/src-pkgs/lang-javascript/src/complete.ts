@@ -1,19 +1,20 @@
 import {
   NodeWeakMap,
-  type SyntaxNodeRef,
-  type SyntaxNode,
+  SyntaxNodeRef,
+  SyntaxNode,
   IterMode,
 } from '@lezer/common';
-import type {
+import {
   Completion,
   CompletionContext,
   CompletionResult,
   CompletionSource,
 } from '@codemirror/autocomplete';
 import { syntaxTree } from '@codemirror/language';
-import type { Text } from '@codemirror/state';
+import { Text } from '@codemirror/state';
 
 const cache = new NodeWeakMap<readonly Completion[]>();
+
 const ScopeNodes = new Set([
   'Script',
   'Block',
@@ -29,13 +30,14 @@ function defID(type: string) {
     node: SyntaxNodeRef,
     def: (node: SyntaxNodeRef, type: string) => void,
   ) => {
-    const id = node.node.getChild('VariableDefinition');
+    let id = node.node.getChild('VariableDefinition');
     if (id) def(id, type);
     return true;
   };
 }
 
 const functionContext = ['FunctionDeclaration'];
+
 const gatherCompletions: {
   [node: string]: (
     node: SyntaxNodeRef,
@@ -58,25 +60,25 @@ const gatherCompletions: {
 };
 
 function getScope(doc: Text, node: SyntaxNode) {
-  const cached = cache.get(node);
+  let cached = cache.get(node);
   if (cached) return cached;
 
-  const completions: Completion[] = [];
+  let completions: Completion[] = [];
   let top = true;
   function def(node: SyntaxNodeRef, type: string) {
-    const name = doc.sliceString(node.from, node.to);
+    let name = doc.sliceString(node.from, node.to);
     completions.push({ label: name, type });
   }
   node.cursor(IterMode.IncludeAnonymous).iterate((node) => {
     if (top) {
       top = false;
     } else if (node.name) {
-      const gather = gatherCompletions[node.name];
+      let gather = gatherCompletions[node.name];
       if ((gather && gather(node, def)) || ScopeNodes.has(node.name))
         return false;
     } else if (node.to - node.from > 8192) {
       // Allow caching for bigger internal nodes
-      for (const c of getScope(doc, node.node)) completions.push(c);
+      for (let c of getScope(doc, node.node)) completions.push(c);
       return false;
     }
   });
@@ -113,9 +115,9 @@ export const dontComplete = [
 export function localCompletionSource(
   context: CompletionContext,
 ): CompletionResult | null {
-  const inner = syntaxTree(context.state).resolveInner(context.pos, -1);
+  let inner = syntaxTree(context.state).resolveInner(context.pos, -1);
   if (dontComplete.indexOf(inner.name) > -1) return null;
-  const isWord =
+  let isWord =
     inner.name == 'VariableName' ||
     (inner.to - inner.from < 20 &&
       Identifier.test(context.state.sliceDoc(inner.from, inner.to)));
@@ -137,9 +139,9 @@ function pathFor(
   member: SyntaxNode,
   name: string,
 ) {
-  const path: string[] = [];
+  let path: string[] = [];
   for (;;) {
-    const obj = member.firstChild;
+    let obj = member.firstChild;
     let prop;
     if (obj?.name == 'VariableName') {
       path.push(read(obj));
@@ -167,9 +169,9 @@ function pathFor(
 export function completionPath(
   context: CompletionContext,
 ): { path: readonly string[]; name: string } | null {
-  const read = (node: SyntaxNode) =>
+  let read = (node: SyntaxNode) =>
     context.state.doc.sliceString(node.from, node.to);
-  const inner = syntaxTree(context.state).resolveInner(context.pos, -1);
+  let inner = syntaxTree(context.state).resolveInner(context.pos, -1);
   if (inner.name == 'PropertyName') {
     return pathFor(read, inner.parent!, read(inner));
   } else if (
@@ -195,10 +197,11 @@ function enumeratePropertyCompletions(
   obj: any,
   top: boolean,
 ): readonly Completion[] {
-  const options: Completion[] = [];
-  const seen: Set<string> = new Set();
+  let originalObj = obj;
+  let options: Completion[] = [];
+  let seen: Set<string> = new Set();
   for (let depth = 0; ; depth++) {
-    for (const name of (Object.getOwnPropertyNames || Object.keys)(obj)) {
+    for (let name of (Object.getOwnPropertyNames || Object.keys)(obj)) {
       if (
         !/^[a-zA-Z_$\xaa-\uffdc][\w$\xaa-\uffdc]*$/.test(name) ||
         seen.has(name)
@@ -207,14 +210,14 @@ function enumeratePropertyCompletions(
       seen.add(name);
       let value;
       try {
-        value = obj[name];
+        value = originalObj[name];
       } catch (_) {
         continue;
       }
       options.push({
         label: name,
         type:
-          typeof value === 'function'
+          typeof value == 'function'
             ? /^[A-Z]/.test(name)
               ? 'class'
               : top
@@ -226,7 +229,7 @@ function enumeratePropertyCompletions(
         boost: -depth,
       });
     }
-    const next = Object.getPrototypeOf(obj);
+    let next = Object.getPrototypeOf(obj);
     if (!next) return options;
     obj = next;
   }
@@ -237,12 +240,12 @@ function enumeratePropertyCompletions(
 /// Will enter properties of the object when completing properties on
 /// a directly-named path.
 export function scopeCompletionSource(scope: any): CompletionSource {
-  const cache: Map<any, readonly Completion[]> = new Map();
+  let cache: Map<any, readonly Completion[]> = new Map();
   return (context: CompletionContext) => {
-    const path = completionPath(context);
+    let path = completionPath(context);
     if (!path) return null;
     let target = scope;
-    for (const step of path.path) {
+    for (let step of path.path) {
       target = target[step];
       if (!target) return null;
     }

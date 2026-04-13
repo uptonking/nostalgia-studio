@@ -1,25 +1,25 @@
-import { NodeProp, type SyntaxNode, type NodeIterator } from '@lezer/common';
+import { NodeProp, SyntaxNode, NodeIterator } from '@lezer/common';
 import {
   combineConfig,
-  type EditorState,
+  EditorState,
   StateEffect,
-  type ChangeDesc,
+  ChangeDesc,
   Facet,
   StateField,
-  type Extension,
+  Extension,
   RangeSet,
   RangeSetBuilder,
 } from '@codemirror/state';
 import {
   EditorView,
-  type BlockInfo,
-  type Command,
+  BlockInfo,
+  Command,
   Decoration,
-  type DecorationSet,
+  DecorationSet,
   WidgetType,
-  type KeyBinding,
+  KeyBinding,
   ViewPlugin,
-  type ViewUpdate,
+  ViewUpdate,
   gutter,
   GutterMarker,
 } from '@codemirror/view';
@@ -52,30 +52,30 @@ export const foldNodeProp = new NodeProp<
 export function foldInside(
   node: SyntaxNode,
 ): { from: number; to: number } | null {
-  const first = node.firstChild;
-  const last = node.lastChild;
+  let first = node.firstChild;
+  let last = node.lastChild;
   return first && first.to < last!.from
     ? { from: first.to, to: last!.type.isError ? node.to : last!.from }
     : null;
 }
 
 function syntaxFolding(state: EditorState, start: number, end: number) {
-  const tree = syntaxTree(state);
+  let tree = syntaxTree(state);
   if (tree.length < end) return null;
-  const stack = tree.resolveStack(end, 1);
+  let stack = tree.resolveStack(end, 1);
   let found: null | { from: number; to: number } = null;
   for (let iter: NodeIterator | null = stack; iter; iter = iter.next) {
-    const cur = iter.node;
+    let cur = iter.node;
     if (cur.to <= end || cur.from > end) continue;
     if (found && cur.from < start) break;
-    const prop = cur.type.prop(foldNodeProp);
+    let prop = cur.type.prop(foldNodeProp);
     if (
       prop &&
       (cur.to < tree.length - 50 ||
         tree.length == state.doc.length ||
         !isUnfinished(cur))
     ) {
-      const value = prop(cur, state);
+      let value = prop(cur, state);
       if (value && value.from <= end && value.from >= start && value.to > end)
         found = value;
     }
@@ -84,7 +84,7 @@ function syntaxFolding(state: EditorState, start: number, end: number) {
 }
 
 function isUnfinished(node: SyntaxNode) {
-  const ch = node.lastChild;
+  let ch = node.lastChild;
   return ch && ch.to == node.to && ch.type.isError;
 }
 
@@ -99,8 +99,8 @@ export function foldable(
   lineStart: number,
   lineEnd: number,
 ) {
-  for (const service of state.facet(foldService)) {
-    const result = service(state, lineStart, lineEnd);
+  for (let service of state.facet(foldService)) {
+    let result = service(state, lineStart, lineEnd);
     if (result) return result;
   }
   return syntaxFolding(state, lineStart, lineEnd);
@@ -109,8 +109,8 @@ export function foldable(
 type DocRange = { from: number; to: number };
 
 function mapRange(range: DocRange, mapping: ChangeDesc) {
-  const from = mapping.mapPos(range.from, 1);
-  const to = mapping.mapPos(range.to, -1);
+  let from = mapping.mapPos(range.from, 1);
+  let to = mapping.mapPos(range.to, -1);
   return from >= to ? undefined : { from, to };
 }
 
@@ -125,8 +125,8 @@ export const foldEffect = StateEffect.define<DocRange>({ map: mapRange });
 export const unfoldEffect = StateEffect.define<DocRange>({ map: mapRange });
 
 function selectedLines(view: EditorView) {
-  const lines: BlockInfo[] = [];
-  for (const { head } of view.state.selection.ranges) {
+  let lines: BlockInfo[] = [];
+  for (let { head } of view.state.selection.ranges) {
     if (lines.some((l) => l.from <= head && l.to >= head)) continue;
     lines.push(view.lineBlockAt(head));
   }
@@ -148,10 +148,10 @@ export const foldState = StateField.define<DecorationSet>({
         (fromA, toA) => (folded = clearTouchedFolds(folded, fromA, toA)),
       );
     folded = folded.map(tr.changes);
-    for (const e of tr.effects) {
+    for (let e of tr.effects) {
       if (e.is(foldEffect) && !foldExists(folded, e.value.from, e.value.to)) {
-        const { preparePlaceholder } = tr.state.facet(foldConfig);
-        const widget = !preparePlaceholder
+        let { preparePlaceholder } = tr.state.facet(foldConfig);
+        let widget = !preparePlaceholder
           ? foldWidget
           : Decoration.replace({
               widget: new PreparedFoldWidget(
@@ -176,7 +176,7 @@ export const foldState = StateField.define<DecorationSet>({
   },
   provide: (f) => EditorView.decorations.from(f),
   toJSON(folded, state) {
-    const ranges: number[] = [];
+    let ranges: number[] = [];
     folded.between(0, state.doc.length, (from, to) => {
       ranges.push(from, to);
     });
@@ -185,11 +185,11 @@ export const foldState = StateField.define<DecorationSet>({
   fromJSON(value) {
     if (!Array.isArray(value) || value.length % 2)
       throw new RangeError('Invalid JSON for fold state');
-    const ranges = [];
+    let ranges = [];
     for (let i = 0; i < value.length; ) {
-      const from = value[i++];
-      const to = value[i++];
-      if (typeof from !== 'number' || typeof to !== 'number')
+      let from = value[i++];
+      let to = value[i++];
+      if (typeof from != 'number' || typeof to != 'number')
         throw new RangeError('Invalid JSON for fold state');
       ranges.push(foldWidget.range(from, to));
     }
@@ -244,8 +244,8 @@ function maybeEnable(
 
 /// Fold the lines that are selected, if possible.
 export const foldCode: Command = (view) => {
-  for (const line of selectedLines(view)) {
-    const range = foldable(view.state, line.from, line.to);
+  for (let line of selectedLines(view)) {
+    let range = foldable(view.state, line.from, line.to);
     if (range) {
       view.dispatch({
         effects: maybeEnable(view.state, [
@@ -262,9 +262,9 @@ export const foldCode: Command = (view) => {
 /// Unfold folded ranges on selected lines.
 export const unfoldCode: Command = (view) => {
   if (!view.state.field(foldState, false)) return false;
-  const effects = [];
-  for (const line of selectedLines(view)) {
-    const folded = findFold(view.state, line.from, line.to);
+  let effects = [];
+  for (let line of selectedLines(view)) {
+    let folded = findFold(view.state, line.from, line.to);
     if (folded)
       effects.push(unfoldEffect.of(folded), announceFold(view, folded, false));
   }
@@ -277,8 +277,8 @@ function announceFold(
   range: { from: number; to: number },
   fold = true,
 ) {
-  const lineFrom = view.state.doc.lineAt(range.from).number;
-  const lineTo = view.state.doc.lineAt(range.to).number;
+  let lineFrom = view.state.doc.lineAt(range.from).number;
+  let lineTo = view.state.doc.lineAt(range.to).number;
   return EditorView.announce.of(
     `${view.state.phrase(fold ? 'Folded lines' : 'Unfolded lines')} ${lineFrom} ${view.state.phrase(
       'to',
@@ -294,24 +294,24 @@ function announceFold(
 /// document is so big that the parser decided not to parse it
 /// entirely).
 export const foldAll: Command = (view) => {
-  const { state } = view;
-  const effects = [];
+  let { state } = view;
+  let effects = [];
   for (let pos = 0; pos < state.doc.length; ) {
-    const line = view.lineBlockAt(pos);
-    const range = foldable(state, line.from, line.to);
+    let line = view.lineBlockAt(pos);
+    let range = foldable(state, line.from, line.to);
     if (range) effects.push(foldEffect.of(range));
     pos = (range ? view.lineBlockAt(range.to) : line).to + 1;
   }
   if (effects.length)
     view.dispatch({ effects: maybeEnable(view.state, effects) });
-  return Boolean(effects.length);
+  return !!effects.length;
 };
 
 /// Unfold all folded code.
 export const unfoldAll: Command = (view) => {
-  const field = view.state.field(foldState, false);
+  let field = view.state.field(foldState, false);
   if (!field || !field.size) return false;
-  const effects: StateEffect<any>[] = [];
+  let effects: StateEffect<any>[] = [];
   field.between(0, view.state.doc.length, (from, to) => {
     effects.push(unfoldEffect.of({ from, to }));
   });
@@ -324,7 +324,7 @@ function foldableContainer(view: EditorView, lineBlock: BlockInfo) {
   // Look backwards through line blocks until we find a foldable region that
   // intersects with the line
   for (let line = lineBlock; ; ) {
-    const foldableRegion = foldable(view.state, line.from, line.to);
+    let foldableRegion = foldable(view.state, line.from, line.to);
     if (foldableRegion && foldableRegion.to > lineBlock.from)
       return foldableRegion;
     if (!line.from) return null;
@@ -336,20 +336,20 @@ function foldableContainer(view: EditorView, lineBlock: BlockInfo) {
 /// starting in that line, tries to find a foldable range around it
 /// otherwise.
 export const toggleFold: Command = (view) => {
-  const effects: StateEffect<any>[] = [];
-  for (const line of selectedLines(view)) {
-    const folded = findFold(view.state, line.from, line.to);
+  let effects: StateEffect<any>[] = [];
+  for (let line of selectedLines(view)) {
+    let folded = findFold(view.state, line.from, line.to);
     if (folded) {
       effects.push(unfoldEffect.of(folded), announceFold(view, folded, false));
     } else {
-      const foldRange = foldableContainer(view, line);
+      let foldRange = foldableContainer(view, line);
       if (foldRange)
         effects.push(foldEffect.of(foldRange), announceFold(view, foldRange));
     }
   }
   if (effects.length > 0)
     view.dispatch({ effects: maybeEnable(view.state, effects) });
-  return Boolean(effects.length);
+  return !!effects.length;
 };
 
 /// Default fold-related key bindings.
@@ -402,6 +402,7 @@ const defaultConfig: Required<FoldConfig> = {
   preparePlaceholder: null as any,
   placeholderText: '…',
 };
+
 const foldConfig = Facet.define<FoldConfig, Required<FoldConfig>>({
   combine(values) {
     return combineConfig(values, defaultConfig);
@@ -410,22 +411,22 @@ const foldConfig = Facet.define<FoldConfig, Required<FoldConfig>>({
 
 /// Create an extension that configures code folding.
 export function codeFolding(config?: FoldConfig): Extension {
-  const result = [foldState, baseTheme];
+  let result = [foldState, baseTheme];
   if (config) result.push(foldConfig.of(config));
   return result;
 }
 
 function widgetToDOM(view: EditorView, prepared: any) {
-  const { state } = view;
-  const conf = state.facet(foldConfig);
-  const onclick = (event: Event) => {
-    const line = view.lineBlockAt(view.posAtDOM(event.target as HTMLElement));
-    const folded = findFold(view.state, line.from, line.to);
+  let { state } = view;
+  let conf = state.facet(foldConfig);
+  let onclick = (event: Event) => {
+    let line = view.lineBlockAt(view.posAtDOM(event.target as HTMLElement));
+    let folded = findFold(view.state, line.from, line.to);
     if (folded) view.dispatch({ effects: unfoldEffect.of(folded) });
     event.preventDefault();
   };
   if (conf.placeholderDOM) return conf.placeholderDOM(view, onclick, prepared);
-  const element = document.createElement('span');
+  let element = document.createElement('span');
   element.textContent = conf.placeholderText;
   element.setAttribute('aria-label', state.phrase('folded code'));
   element.title = state.phrase('unfold');
@@ -499,7 +500,7 @@ class FoldMarker extends GutterMarker {
   toDOM(view: EditorView) {
     if (this.config.markerDOM) return this.config.markerDOM(this.open);
 
-    const span = document.createElement('span');
+    let span = document.createElement('span');
     span.textContent = this.open
       ? this.config.openText
       : this.config.closedText;
@@ -512,10 +513,11 @@ class FoldMarker extends GutterMarker {
 /// fold status indicator before foldable lines (which can be clicked
 /// to fold or unfold the line).
 export function foldGutter(config: FoldGutterConfig = {}): Extension {
-  const fullConfig = { ...foldGutterDefaults, ...config };
-  const canFold = new FoldMarker(fullConfig, true);
-  const canUnfold = new FoldMarker(fullConfig, false);
-  const markers = ViewPlugin.fromClass(
+  let fullConfig = { ...foldGutterDefaults, ...config };
+  let canFold = new FoldMarker(fullConfig, true);
+  let canUnfold = new FoldMarker(fullConfig, false);
+
+  let markers = ViewPlugin.fromClass(
     class {
       markers: RangeSet<FoldMarker>;
       from: number;
@@ -539,9 +541,9 @@ export function foldGutter(config: FoldGutterConfig = {}): Extension {
       }
 
       buildMarkers(view: EditorView) {
-        const builder = new RangeSetBuilder<FoldMarker>();
-        for (const line of view.viewportLineBlocks) {
-          const mark = findFold(view.state, line.from, line.to)
+        let builder = new RangeSetBuilder<FoldMarker>();
+        for (let line of view.viewportLineBlocks) {
+          let mark = findFold(view.state, line.from, line.to)
             ? canUnfold
             : foldable(view.state, line.from, line.to)
               ? canFold
@@ -552,7 +554,8 @@ export function foldGutter(config: FoldGutterConfig = {}): Extension {
       }
     },
   );
-  const { domEventHandlers } = fullConfig;
+
+  let { domEventHandlers } = fullConfig;
 
   return [
     markers,
@@ -573,12 +576,12 @@ export function foldGutter(config: FoldGutterConfig = {}): Extension {
           )
             return true;
 
-          const folded = findFold(view.state, line.from, line.to);
+          let folded = findFold(view.state, line.from, line.to);
           if (folded) {
             view.dispatch({ effects: unfoldEffect.of(folded) });
             return true;
           }
-          const range = foldable(view.state, line.from, line.to);
+          let range = foldable(view.state, line.from, line.to);
           if (range) {
             view.dispatch({ effects: foldEffect.of(range) });
             return true;

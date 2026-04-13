@@ -1,22 +1,22 @@
-import type { CompletionSource, Completion } from '@codemirror/autocomplete';
+import { CompletionSource, Completion } from '@codemirror/autocomplete';
 import { syntaxTree } from '@codemirror/language';
 import {
-  type SyntaxNode,
-  type SyntaxNodeRef,
+  SyntaxNode,
+  SyntaxNodeRef,
   NodeWeakMap,
   IterMode,
 } from '@lezer/common';
-import type { Text } from '@codemirror/state';
+import { Text } from '@codemirror/state';
 
 let _properties: readonly Completion[] | null = null;
 function properties() {
-  if (!_properties && typeof document === 'object' && document.body) {
-    const { style } = document.body;
-    const names = [];
-    const seen = new Set();
+  if (!_properties && typeof document == 'object' && document.body) {
+    let { style } = document.body;
+    let names = [];
+    let seen = new Set();
     for (let prop in style)
       if (prop != 'cssText' && prop != 'cssFloat') {
-        if (typeof style[prop] === 'string') {
+        if (typeof style[prop] == 'string') {
           if (/[A-Z]/.test(prop))
             prop = prop.replace(/[A-Z]/g, (ch) => '-' + ch.toLowerCase());
           if (!seen.has(prop)) {
@@ -97,6 +97,7 @@ const pseudoClasses = [
   'visited',
   'where',
 ].map((name) => ({ type: 'class', label: name }));
+
 const values = [
   'above',
   'absolute',
@@ -665,6 +666,7 @@ const values = [
       'yellowgreen',
     ].map((name) => ({ type: 'constant', label: name })),
   );
+
 const tags = [
   'a',
   'abbr',
@@ -745,6 +747,7 @@ const tags = [
   'u',
   'ul',
 ].map((name) => ({ type: 'type', label: name }));
+
 const atRules = [
   '@charset',
   '@color-profile',
@@ -766,13 +769,14 @@ const atRules = [
   '@supports',
   '@view-transition',
 ].map((label) => ({ type: 'keyword', label }));
+
 const identifier = /^(\w[\w-]*|-\w[\w-]*|)$/;
 const variable = /^-(-[\w-]*)?$/;
 
 function isVarArg(node: SyntaxNode, doc: Text) {
   if (node.name == '(' || node.type.isError) node = node.parent || node;
   if (node.name != 'ArgList') return false;
-  const callee = node.parent?.firstChild;
+  let callee = node.parent?.firstChild;
   if (callee?.name != 'Callee') return false;
   return doc.sliceString(callee.from, callee.to) == 'var';
 }
@@ -793,14 +797,14 @@ function variableNames(
   isVariable: (node: SyntaxNodeRef) => boolean,
 ): readonly Completion[] {
   if (node.to - node.from > 4096) {
-    const known = VariablesByNode.get(node);
+    let known = VariablesByNode.get(node);
     if (known) return known;
-    const result = [];
-    const seen = new Set();
-    const cursor = node.cursor(IterMode.IncludeAnonymous);
+    let result = [];
+    let seen = new Set();
+    let cursor = node.cursor(IterMode.IncludeAnonymous);
     if (cursor.firstChild())
       do {
-        for (const option of variableNames(doc, cursor.node, isVariable))
+        for (let option of variableNames(doc, cursor.node, isVariable))
           if (!seen.has(option.label)) {
             seen.add(option.label);
             result.push(option);
@@ -809,15 +813,15 @@ function variableNames(
     VariablesByNode.set(node, result);
     return result;
   } else {
-    const result: Completion[] = [];
-    const seen = new Set();
+    let result: Completion[] = [];
+    let seen = new Set();
     node.cursor().iterate((node) => {
       if (
         isVariable(node) &&
         node.matchContext(declSelector) &&
         node.node.nextSibling?.name == ':'
       ) {
-        const name = doc.sliceString(node.from, node.to);
+        let name = doc.sliceString(node.from, node.to);
         if (!seen.has(name)) {
           seen.add(name);
           result.push({ label: name, type: 'variable' });
@@ -835,9 +839,9 @@ function variableNames(
 export const defineCSSCompletionSource =
   (isVariable: (node: SyntaxNodeRef) => boolean): CompletionSource =>
   (context) => {
-    const { state, pos } = context;
-    const node = syntaxTree(state).resolveInner(pos, -1);
-    const isDash =
+    let { state, pos } = context;
+    let node = syntaxTree(state).resolveInner(pos, -1);
+    let isDash =
       node.type.isError &&
       node.from == node.to - 1 &&
       state.doc.sliceString(node.from, node.to) == '-';
@@ -875,8 +879,8 @@ export const defineCSSCompletionSource =
 
     if (!context.explicit) return null;
 
-    const above = node.resolve(pos);
-    const before = above.childBefore(pos);
+    let above = node.resolve(pos);
+    let before = above.childBefore(pos);
     if (before && before.name == ':' && above.name == 'PseudoClassSelector')
       return { from: pos, options: pseudoClasses, validFor: identifier };
     if (

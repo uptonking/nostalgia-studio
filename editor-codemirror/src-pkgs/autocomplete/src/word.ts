@@ -1,5 +1,5 @@
-import type { Text } from '@codemirror/state';
-import type { Completion, CompletionSource } from './completion';
+import { Text } from '@codemirror/state';
+import { Completion, CompletionSource } from './completion';
 
 const enum C {
   Range = 50000,
@@ -8,7 +8,7 @@ const enum C {
 }
 
 function wordRE(wordChars: string) {
-  const escaped = wordChars.replace(/[\]\-\\]/g, '\\$&');
+  let escaped = wordChars.replace(/[\]\-\\]/g, '\\$&');
   try {
     return new RegExp(`[\\p{Alphabetic}\\p{Number}_${escaped}]+`, 'ug');
   } catch {
@@ -36,7 +36,7 @@ function storeWords(
   ignoreAt: number,
 ) {
   for (let lines = doc.iterLines(), pos = 0; !lines.next().done; ) {
-    const { value } = lines;
+    let { value } = lines;
     let m;
     wordRE.lastIndex = 0;
     while ((m = wordRE.exec(value))) {
@@ -57,16 +57,16 @@ function collectWords(
   to: number,
   ignoreAt: number,
 ) {
-  const big = doc.length >= C.MinCacheLen;
-  const cached = big && cache.get(doc);
+  let big = doc.length >= C.MinCacheLen;
+  let cached = big && cache.get(doc);
   if (cached) return cached;
-  const result: Completion[] = [];
-  const seen: { [word: string]: boolean } = Object.create(null);
+  let result: Completion[] = [];
+  let seen: { [word: string]: boolean } = Object.create(null);
   if (doc.children) {
     let pos = 0;
-    for (const ch of doc.children) {
+    for (let ch of doc.children) {
       if (ch.length >= C.MinCacheLen) {
-        for (const c of collectWords(
+        for (let c of collectWords(
           ch,
           cache,
           wordRE,
@@ -94,14 +94,13 @@ function collectWords(
 /// [character categorizer](#state.EditorState.charCategorizer)), and
 /// return those as completions.
 export const completeAnyWord: CompletionSource = (context) => {
-  const wordChars = context.state
-    .languageDataAt<string>('wordChars', context.pos)
-    .join('');
-  const re = wordRE(wordChars);
-  const token = context.matchBefore(mapRE(re, (s) => s + '$'));
+  let wordChars =
+    context.state.languageDataAt<string>('wordChars', context.pos)[0] ?? '';
+  let re = wordRE(wordChars);
+  let token = context.matchBefore(mapRE(re, (s) => s + '$'));
   if (!token && !context.explicit) return null;
-  const from = token ? token.from : context.pos;
-  const options = collectWords(
+  let from = token ? token.from : context.pos;
+  let options = collectWords(
     context.state.doc,
     wordCache(wordChars),
     re,

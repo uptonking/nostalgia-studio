@@ -30,8 +30,8 @@ function inText(stream, state) {
     return parser(stream, state);
   }
 
-  const sol = stream.sol();
-  const ch = stream.next();
+  var sol = stream.sol();
+  var ch = stream.next();
 
   //non start of line
   switch (
@@ -111,11 +111,11 @@ function inText(stream, state) {
 }
 
 // Return variables for tokenizers
-let pluginName;
-let type;
+var pluginName;
+var type;
 function inPlugin(stream, state) {
-  const ch = stream.next();
-  let peek = stream.peek();
+  var ch = stream.next();
+  var peek = stream.peek();
 
   if (ch == '}') {
     state.tokenize = inText;
@@ -162,8 +162,8 @@ function inAttribute(quote) {
 function inAttributeNoQuote() {
   return function (stream, state) {
     while (!stream.eol()) {
-      const ch = stream.next();
-      const peek = stream.peek();
+      var ch = stream.next();
+      var peek = stream.peek();
       if (ch == ' ' || ch == ',' || /[ )}]/.test(peek)) {
         state.tokenize = inPlugin;
         break;
@@ -173,10 +173,10 @@ function inAttributeNoQuote() {
   };
 }
 
-let curState;
-let setStyle;
+var curState;
+var setStyle;
 function pass() {
-  for (let i = arguments.length - 1; i >= 0; i--)
+  for (var i = arguments.length - 1; i >= 0; i--)
     curState.cc.push(arguments[i]);
 }
 
@@ -186,7 +186,7 @@ function cont() {
 }
 
 function pushContext(pluginName, startOfLine) {
-  const noIndent = curState.context && curState.context.noIndent;
+  var noIndent = curState.context && curState.context.noIndent;
   curState.context = {
     prev: curState.context,
     pluginName: pluginName,
@@ -205,7 +205,7 @@ function element(type) {
     curState.pluginName = pluginName;
     return cont(attributes, endplugin(curState.startOfLine));
   } else if (type == 'closePlugin') {
-    let err = false;
+    var err = false;
     if (curState.context) {
       err = curState.context.pluginName != pluginName;
       popContext();
@@ -281,11 +281,11 @@ export const tiki = {
     if (stream.eatSpace()) return null;
 
     setStyle = type = pluginName = null;
-    const style = state.tokenize(stream, state);
+    var style = state.tokenize(stream, state);
     if ((style || type) && style != 'comment') {
       curState = state;
       while (true) {
-        const comb = state.cc.pop() || element;
+        var comb = state.cc.pop() || element;
         if (comb(type || style)) break;
       }
     }
@@ -293,7 +293,7 @@ export const tiki = {
     return setStyle || style;
   },
   indent: function (state, textAfter, cx) {
-    let context = state.context;
+    var context = state.context;
     if (context && context.noIndent) return 0;
     if (context && /^{\//.test(textAfter)) context = context.prev;
     while (context && !context.startOfLine) context = context.prev;

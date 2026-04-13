@@ -1,5 +1,5 @@
-let curPunc;
-const keywords = buildRE([
+var curPunc;
+var keywords = buildRE([
   'abs',
   'acos',
   'aj',
@@ -172,13 +172,13 @@ const keywords = buildRE([
   'xprev',
   'xrank',
 ]);
-const E = /[|/&^!+:\\\-*%$=~#;@><,?_\'\"\[\(\]\)\s{}]/;
+var E = /[|/&^!+:\\\-*%$=~#;@><,?_\'\"\[\(\]\)\s{}]/;
 function buildRE(w) {
   return new RegExp('^(' + w.join('|') + ')$');
 }
 function tokenBase(stream, state) {
-  const sol = stream.sol();
-  let c = stream.next();
+  var sol = stream.sol();
+  var c = stream.next();
   curPunc = null;
   if (sol)
     if (c == '/') return (state.tokenize = tokenLineComment)(stream, state);
@@ -198,7 +198,7 @@ function tokenBase(stream, state) {
   if (c == '"') return (state.tokenize = tokenString)(stream, state);
   if (c == '`') return (stream.eatWhile(/[A-Za-z\d_:\/.]/), 'macroName');
   if (('.' == c && /\d/.test(stream.peek())) || /\d/.test(c)) {
-    let t = null;
+    var t = null;
     stream.backUp(1);
     if (
       stream.match(
@@ -240,7 +240,7 @@ function tokenLineComment(stream, state) {
   );
 }
 function tokenBlockComment(stream, state) {
-  const f = stream.sol() && stream.peek() == '\\';
+  var f = stream.sol() && stream.peek() == '\\';
   stream.skipToEnd();
   if (f && /^\\\s*$/.test(stream.current())) state.tokenize = tokenBase;
   return 'comment';
@@ -249,9 +249,9 @@ function tokenCommentToEOF(stream) {
   return (stream.skipToEnd(), 'comment');
 }
 function tokenString(stream, state) {
-  let escaped = false;
-  let next;
-  let end = false;
+  var escaped = false;
+  var next;
+  var end = false;
   while ((next = stream.next())) {
     if (next == '"' && !escaped) {
       end = true;
@@ -286,7 +286,7 @@ export const q = {
       state.indent = stream.indentation();
     }
     //if (stream.eatSpace()) return null;
-    const style = state.tokenize(stream, state);
+    var style = state.tokenize(stream, state);
     if (
       style != 'comment' &&
       state.context &&
@@ -319,11 +319,11 @@ export const q = {
     return style;
   },
   indent: function (state, textAfter, cx) {
-    const firstChar = textAfter && textAfter.charAt(0);
-    let context = state.context;
+    var firstChar = textAfter && textAfter.charAt(0);
+    var context = state.context;
     if (/[\]\}]/.test(firstChar))
       while (context && context.type == 'pattern') context = context.prev;
-    const closing = context && firstChar == context.type;
+    var closing = context && firstChar == context.type;
     if (!context) return 0;
     else if (context.type == 'pattern') return context.col;
     else if (context.align) return context.col + (closing ? 0 : 1);

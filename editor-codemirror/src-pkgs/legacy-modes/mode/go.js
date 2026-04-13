@@ -1,4 +1,4 @@
-const keywords = {
+var keywords = {
   break: true,
   case: true,
   chan: true,
@@ -47,7 +47,8 @@ const keywords = {
   any: true,
   comparable: true,
 };
-const atoms = {
+
+var atoms = {
   true: true,
   false: true,
   iota: true,
@@ -68,11 +69,13 @@ const atoms = {
   real: true,
   recover: true,
 };
-const isOperatorChar = /[+\-*&^%:=<>!|\/]/;
-let curPunc;
+
+var isOperatorChar = /[+\-*&^%:=<>!|\/]/;
+
+var curPunc;
 
 function tokenBase(stream, state) {
-  const ch = stream.next();
+  var ch = stream.next();
   if (ch == '"' || ch == "'" || ch == '`') {
     state.tokenize = tokenString(ch);
     return state.tokenize(stream, state);
@@ -106,7 +109,7 @@ function tokenBase(stream, state) {
     return 'operator';
   }
   stream.eatWhile(/[\w\$_\xa1-\uffff]/);
-  const cur = stream.current();
+  var cur = stream.current();
   if (keywords.propertyIsEnumerable(cur)) {
     if (cur == 'case' || cur == 'default') curPunc = 'case';
     return 'keyword';
@@ -117,9 +120,9 @@ function tokenBase(stream, state) {
 
 function tokenString(quote) {
   return function (stream, state) {
-    let escaped = false;
-    let next;
-    let end = false;
+    var escaped = false;
+    var next;
+    var end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -133,8 +136,8 @@ function tokenString(quote) {
 }
 
 function tokenComment(stream, state) {
-  let maybeEnd = false;
-  let ch;
+  var maybeEnd = false;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = tokenBase;
@@ -163,7 +166,7 @@ function pushContext(state, col, type) {
 }
 function popContext(state) {
   if (!state.context.prev) return;
-  const t = state.context.type;
+  var t = state.context.type;
   if (t == ')' || t == ']' || t == '}') state.indented = state.context.indented;
   return (state.context = state.context.prev);
 }
@@ -182,7 +185,7 @@ export const go = {
   },
 
   token: function (stream, state) {
-    const ctx = state.context;
+    var ctx = state.context;
     if (stream.sol()) {
       if (ctx.align == null) ctx.align = false;
       state.indented = stream.indentation();
@@ -191,7 +194,7 @@ export const go = {
     }
     if (stream.eatSpace()) return null;
     curPunc = null;
-    const style = (state.tokenize || tokenBase)(stream, state);
+    var style = (state.tokenize || tokenBase)(stream, state);
     if (style == 'comment') return style;
     if (ctx.align == null) ctx.align = true;
 
@@ -207,11 +210,11 @@ export const go = {
 
   indent: function (state, textAfter, cx) {
     if (state.tokenize != tokenBase && state.tokenize != null) return null;
-    const ctx = state.context;
-    const firstChar = textAfter && textAfter.charAt(0);
+    var ctx = state.context;
+    var firstChar = textAfter && textAfter.charAt(0);
     if (ctx.type == 'case' && /^(?:case|default)\b/.test(textAfter))
       return ctx.indented;
-    const closing = firstChar == ctx.type;
+    var closing = firstChar == ctx.type;
     if (ctx.align) return ctx.column + (closing ? 0 : 1);
     else return ctx.indented + (closing ? 0 : cx.unit);
   },

@@ -1,14 +1,10 @@
 import { Text } from './text';
 import { findClusterBreak } from './char';
-import { ChangeSet, type ChangeSpec, DefaultSplit } from './change';
+import { ChangeSet, ChangeSpec, DefaultSplit } from './change';
+import { EditorSelection, SelectionRange, checkSelection } from './selection';
 import {
-  EditorSelection,
-  type SelectionRange,
-  checkSelection,
-} from './selection';
-import {
-  type Transaction,
-  type TransactionSpec,
+  Transaction,
+  TransactionSpec,
   resolveTransaction,
   asArray,
   StateEffect,
@@ -25,14 +21,14 @@ import {
 import {
   Configuration,
   Facet,
-  type FacetReader,
-  type Extension,
+  FacetReader,
+  Extension,
   StateField,
-  type SlotStatus,
+  SlotStatus,
   ensureAddr,
   getAddr,
   Compartment,
-  type DynamicSlot,
+  DynamicSlot,
 } from './facet';
 import { CharCategory, makeCategorizer } from './charcategory';
 
@@ -94,7 +90,7 @@ export class EditorState {
   field<T>(field: StateField<T>): T;
   field<T>(field: StateField<T>, require: false): T | undefined;
   field<T>(field: StateField<T>, require: boolean = true): T | undefined {
-    const addr = this.config.address[field.id];
+    let addr = this.config.address[field.id];
     if (addr == null) {
       if (require) throw new RangeError('Field is not present in this state');
       return undefined;
@@ -124,7 +120,7 @@ export class EditorState {
   applyTransaction(tr: Transaction) {
     let conf: Configuration | null = this.config;
     let { base, compartments } = conf;
-    for (const effect of tr.effects) {
+    for (let effect of tr.effects) {
       if (effect.is(Compartment.reconfigure)) {
         if (conf) {
           compartments = new Map();
@@ -143,7 +139,7 @@ export class EditorState {
     let startValues;
     if (!conf) {
       conf = Configuration.resolve(base, compartments, this);
-      const intermediateState = new EditorState(
+      let intermediateState = new EditorState(
         conf,
         this.doc,
         this.selection,
@@ -155,7 +151,7 @@ export class EditorState {
     } else {
       startValues = tr.startState.values.slice();
     }
-    const selection = tr.startState.facet(allowMultipleSelections)
+    let selection = tr.startState.facet(allowMultipleSelections)
       ? tr.newSelection
       : tr.newSelection.asSingle();
     new EditorState(
@@ -171,7 +167,7 @@ export class EditorState {
   /// Create a [transaction spec](#state.TransactionSpec) that
   /// replaces every selection range with the given content.
   replaceSelection(text: string | Text): TransactionSpec {
-    if (typeof text === 'string') text = this.toText(text);
+    if (typeof text == 'string') text = this.toText(text);
     return this.changeByRange((range) => ({
       changes: { from: range.from, to: range.to, insert: text },
       range: EditorSelection.cursor(range.from + text.length),
@@ -198,17 +194,17 @@ export class EditorState {
     selection: EditorSelection;
     effects: readonly StateEffect<any>[];
   } {
-    const sel = this.selection;
-    const result1 = f(sel.ranges[0]);
+    let sel = this.selection;
+    let result1 = f(sel.ranges[0]);
     let changes = this.changes(result1.changes);
-    const ranges = [result1.range];
+    let ranges = [result1.range];
     let effects = asArray(result1.effects);
     for (let i = 1; i < sel.ranges.length; i++) {
-      const result = f(sel.ranges[i]);
-      const newChanges = this.changes(result.changes);
-      const newMapped = newChanges.map(changes);
+      let result = f(sel.ranges[i]);
+      let newChanges = this.changes(result.changes);
+      let newMapped = newChanges.map(changes);
       for (let j = 0; j < i; j++) ranges[j] = ranges[j].map(newMapped);
-      const mapBy = changes.mapDesc(newChanges, true);
+      let mapBy = changes.mapDesc(newChanges, true);
       ranges.push(result.range.map(mapBy));
       changes = changes.compose(newMapped);
       effects = StateEffect.mapEffects(effects, newMapped).concat(
@@ -250,7 +246,7 @@ export class EditorState {
 
   /// Get the value of a state [facet](#state.Facet).
   facet<Output>(facet: FacetReader<Output>): Output {
-    const addr = this.config.address[facet.id];
+    let addr = this.config.address[facet.id];
     if (addr == null) return facet.default;
     ensureAddr(this, addr);
     return getAddr(this, addr);
@@ -261,13 +257,13 @@ export class EditorState {
   /// mapping property names (in the resulting object, which should
   /// not use `doc` or `selection`) to fields.
   toJSON(fields?: { [prop: string]: StateField<any> }): any {
-    const result: any = {
+    let result: any = {
       doc: this.sliceDoc(),
       selection: this.selection.toJSON(),
     };
     if (fields)
-      for (const prop in fields) {
-        const value = fields[prop];
+      for (let prop in fields) {
+        let value = fields[prop];
         if (
           value instanceof StateField &&
           this.config.address[value.id] != null
@@ -286,14 +282,14 @@ export class EditorState {
     config: EditorStateConfig = {},
     fields?: { [prop: string]: StateField<any> },
   ): EditorState {
-    if (!json || typeof json.doc !== 'string')
+    if (!json || typeof json.doc != 'string')
       throw new RangeError('Invalid JSON representation for EditorState');
-    const fieldInit = [];
+    let fieldInit = [];
     if (fields)
-      for (const prop in fields) {
-        if (Object.hasOwn(json, prop)) {
-          const field = fields[prop];
-          const value = json[prop];
+      for (let prop in fields) {
+        if (Object.prototype.hasOwnProperty.call(json, prop)) {
+          let field = fields[prop];
+          let value = json[prop];
           fieldInit.push(
             field.init((state) => field.spec.fromJSON!(value, state)),
           );
@@ -313,11 +309,11 @@ export class EditorState {
   /// initializing an editor—updated states are created by applying
   /// transactions.
   static create(config: EditorStateConfig = {}): EditorState {
-    const configuration = Configuration.resolve(
+    let configuration = Configuration.resolve(
       config.extensions || [],
       new Map(),
     );
-    const doc =
+    let doc =
       config.doc instanceof Text
         ? config.doc
         : Text.of(
@@ -408,8 +404,8 @@ export class EditorState {
   /// its argument.
   static phrases = Facet.define<{ [key: string]: string }>({
     compare(a, b) {
-      const kA = Object.keys(a);
-      const kB = Object.keys(b);
+      let kA = Object.keys(a);
+      let kB = Object.keys(b);
       return (
         kA.length == kB.length && kA.every((k) => a[k as any] == b[k as any])
       );
@@ -425,15 +421,15 @@ export class EditorState {
   /// A single `$` is equivalent to `$1`, and `$$` will produce a
   /// literal dollar sign.
   phrase(phrase: string, ...insert: any[]): string {
-    for (const map of this.facet(EditorState.phrases))
-      if (Object.hasOwn(map, phrase)) {
+    for (let map of this.facet(EditorState.phrases))
+      if (Object.prototype.hasOwnProperty.call(map, phrase)) {
         phrase = map[phrase];
         break;
       }
     if (insert.length)
       phrase = phrase.replace(/\$(\$|\d*)/g, (m, i) => {
         if (i == '$') return '$';
-        const n = Number(i || 1);
+        let n = +(i || 1);
         return !n || n > insert.length ? m : insert[n - 1];
       });
     return phrase;
@@ -462,10 +458,11 @@ export class EditorState {
     pos: number,
     side: -1 | 0 | 1 = -1,
   ): readonly T[] {
-    const values: T[] = [];
-    for (const provider of this.facet(languageData)) {
-      for (const result of provider(this, pos, side)) {
-        if (Object.hasOwn(result, name)) values.push(result[name]);
+    let values: T[] = [];
+    for (let provider of this.facet(languageData)) {
+      for (let result of provider(this, pos, side)) {
+        if (Object.prototype.hasOwnProperty.call(result, name))
+          values.push(result[name]);
       }
     }
     return values;
@@ -481,9 +478,8 @@ export class EditorState {
   ///  - Space (contains only whitespace)
   ///  - Other (anything else)
   charCategorizer(at: number): (char: string) => CharCategory {
-    return makeCategorizer(
-      this.languageDataAt<string>('wordChars', at).join(''),
-    );
+    let chars = this.languageDataAt<string>('wordChars', at);
+    return makeCategorizer(chars.length ? chars[0] : '');
   }
 
   /// Find the word at the given position, meaning the range
@@ -491,17 +487,17 @@ export class EditorState {
   /// around it. If no word characters are adjacent to the position,
   /// this returns null.
   wordAt(pos: number): SelectionRange | null {
-    const { text, from, length } = this.doc.lineAt(pos);
-    const cat = this.charCategorizer(pos);
+    let { text, from, length } = this.doc.lineAt(pos);
+    let cat = this.charCategorizer(pos);
     let start = pos - from;
     let end = pos - from;
     while (start > 0) {
-      const prev = findClusterBreak(text, start, false);
+      let prev = findClusterBreak(text, start, false);
       if (cat(text.slice(prev, start)) != CharCategory.Word) break;
       start = prev;
     }
     while (end < length) {
-      const next = findClusterBreak(text, end);
+      let next = findClusterBreak(text, end);
       if (cat(text.slice(end, next)) != CharCategory.Word) break;
       end = next;
     }

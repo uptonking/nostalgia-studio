@@ -1,4 +1,4 @@
-const builtInFuncs = {
+var builtInFuncs = {
   '+': ['conjugate', 'add'],
   '−': ['negate', 'subtract'],
   '×': ['signOf', 'multiply'],
@@ -50,13 +50,15 @@ const builtInFuncs = {
   '⊣': ['stop', 'left'],
   '⊢': ['pass', 'right'],
 };
-const isOperator = /[\.\/⌿⍀¨⍣]/;
-const isNiladic = /⍬/;
-const isFunction = /[\+−×÷⌈⌊∣⍳\?⋆⍟○!⌹<≤=>≥≠≡≢∈⍷∪∩∼∨∧⍱⍲⍴,⍪⌽⊖⍉↑↓⊂⊃⌷⍋⍒⊤⊥⍕⍎⊣⊢]/;
-const isArrow = /←/;
-const isComment = /[⍝#].*$/;
-const stringEater = function (type) {
-  let prev;
+
+var isOperator = /[\.\/⌿⍀¨⍣]/;
+var isNiladic = /⍬/;
+var isFunction = /[\+−×÷⌈⌊∣⍳\?⋆⍟○!⌹<≤=>≥≠≡≢∈⍷∪∩∼∨∧⍱⍲⍴,⍪⌽⊖⍉↑↓⊂⊃⌷⍋⍒⊤⊥⍕⍎⊣⊢]/;
+var isArrow = /←/;
+var isComment = /[⍝#].*$/;
+
+var stringEater = function (type) {
+  var prev;
   prev = false;
   return function (c) {
     prev = c;
@@ -79,7 +81,7 @@ export const apl = {
     };
   },
   token: function (stream, state) {
-    let ch;
+    var ch;
     if (stream.eatSpace()) {
       return null;
     }

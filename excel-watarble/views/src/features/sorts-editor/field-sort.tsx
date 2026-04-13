@@ -33,7 +33,7 @@ export const FieldSort: React.FC<IProps> = ({
   const fieldId = value?.fieldId;
   const fields = useOrderedFields();
   const field = fieldId
-    ? fields.find((f) => f.id.value === fieldId) ?? null
+    ? (fields.find((f) => f.id.value === fieldId) ?? null)
     : null;
 
   const [selectedField, setField] = useState<Field | null>(field);

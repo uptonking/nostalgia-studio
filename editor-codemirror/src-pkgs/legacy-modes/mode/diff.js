@@ -1,4 +1,4 @@
-const TOKEN_NAMES = {
+var TOKEN_NAMES = {
   '+': 'inserted',
   '-': 'deleted',
   '@': 'meta',
@@ -7,7 +7,7 @@ const TOKEN_NAMES = {
 export const diff = {
   name: 'diff',
   token: function (stream) {
-    const tw_pos = stream.string.search(/[\t ]+?$/);
+    var tw_pos = stream.string.search(/[\t ]+?$/);
 
     if (!stream.sol() || tw_pos === 0) {
       stream.skipToEnd();
@@ -17,7 +17,7 @@ export const diff = {
       );
     }
 
-    const token_name = TOKEN_NAMES[stream.peek()] || stream.skipToEnd();
+    var token_name = TOKEN_NAMES[stream.peek()] || stream.skipToEnd();
 
     if (tw_pos === -1) {
       stream.skipToEnd();

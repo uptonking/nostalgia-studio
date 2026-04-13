@@ -1,12 +1,13 @@
-import { StateField, StateEffect, type Extension } from '@codemirror/state';
-import type { EditorView } from './editorview';
-import { ViewPlugin, type MeasureRequest, type ViewUpdate } from './extension';
+import { StateField, StateEffect, Extension } from '@codemirror/state';
+import { EditorView } from './editorview';
+import { ViewPlugin, MeasureRequest, ViewUpdate } from './extension';
 
 const setDropCursorPos = StateEffect.define<number | null>({
   map(pos, mapping) {
     return pos == null ? null : mapping.mapPos(pos);
   },
 });
+
 const dropCursorPos = StateField.define<number | null>({
   create() {
     return null;
@@ -19,6 +20,7 @@ const dropCursorPos = StateField.define<number | null>({
     );
   },
 });
+
 const drawDropCursor = ViewPlugin.fromClass(
   class {
     cursor: HTMLElement | null = null;
@@ -36,7 +38,7 @@ const drawDropCursor = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      const cursorPos = update.state.field(dropCursorPos);
+      let cursorPos = update.state.field(dropCursorPos);
       if (cursorPos == null) {
         if (this.cursor != null) {
           this.cursor?.remove();
@@ -59,11 +61,11 @@ const drawDropCursor = ViewPlugin.fromClass(
     }
 
     readPos(): { left: number; top: number; height: number } | null {
-      const { view } = this;
-      const pos = view.state.field(dropCursorPos);
-      const rect = pos != null && view.coordsAtPos(pos);
+      let { view } = this;
+      let pos = view.state.field(dropCursorPos);
+      let rect = pos != null && view.coordsAtPos(pos);
       if (!rect) return null;
-      const outer = view.scrollDOM.getBoundingClientRect();
+      let outer = view.scrollDOM.getBoundingClientRect();
       return {
         left: rect.left - outer.left + view.scrollDOM.scrollLeft * view.scaleX,
         top: rect.top - outer.top + view.scrollDOM.scrollTop * view.scaleY,
@@ -73,7 +75,7 @@ const drawDropCursor = ViewPlugin.fromClass(
 
     drawCursor(pos: { left: number; top: number; height: number } | null) {
       if (this.cursor) {
-        const { scaleX, scaleY } = this.view;
+        let { scaleX, scaleY } = this.view;
         if (pos) {
           this.cursor.style.left = pos.left / scaleX + 'px';
           this.cursor.style.top = pos.top / scaleY + 'px';

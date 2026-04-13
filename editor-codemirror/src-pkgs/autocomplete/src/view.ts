@@ -1,17 +1,16 @@
 import {
   EditorView,
-  type Command,
+  Command,
   ViewPlugin,
-  type PluginValue,
-  type ViewUpdate,
+  PluginValue,
+  ViewUpdate,
   logException,
   getTooltip,
-  type TooltipView,
+  TooltipView,
 } from '@codemirror/view';
-import { type Transaction, Prec } from '@codemirror/state';
+import { Transaction, Prec } from '@codemirror/state';
 import {
   completionState,
-  setSelectedEffect,
   setActiveEffect,
   State,
   ActiveSource,
@@ -20,10 +19,11 @@ import {
   UpdateType,
   applyCompletion,
 } from './state';
+import { setSelectedEffect } from './tooltip';
 import { completionConfig } from './config';
 import {
   cur,
-  type CompletionResult,
+  CompletionResult,
   CompletionContext,
   startCompletionEffect,
   closeCompletionEffect,
@@ -36,7 +36,7 @@ export function moveCompletionSelection(
   by: 'option' | 'page' = 'option',
 ): Command {
   return (view: EditorView) => {
-    const cState = view.state.field(completionState, false);
+    let cState = view.state.field(completionState, false);
     if (
       !cState ||
       !cState.open ||
@@ -55,7 +55,7 @@ export function moveCompletionSelection(
             (tooltip.dom.querySelector('li') as HTMLElement).offsetHeight,
         ) - 1,
       );
-    const { length } = cState.open.options;
+    let { length } = cState.open.options;
     let selected =
       cState.open.selected > -1
         ? cState.open.selected + step * (forward ? 1 : -1)
@@ -71,7 +71,7 @@ export function moveCompletionSelection(
 
 /// Accept the current completion.
 export const acceptCompletion: Command = (view: EditorView) => {
-  const cState = view.state.field(completionState, false);
+  let cState = view.state.field(completionState, false);
   if (
     view.state.readOnly ||
     !cState ||
@@ -87,7 +87,7 @@ export const acceptCompletion: Command = (view: EditorView) => {
 
 /// Explicitly start autocompletion.
 export const startCompletion: Command = (view: EditorView) => {
-  const cState = view.state.field(completionState, false);
+  let cState = view.state.field(completionState, false);
   if (!cState) return false;
   view.dispatch({ effects: startCompletionEffect.of(true) });
   return true;
@@ -95,7 +95,7 @@ export const startCompletion: Command = (view: EditorView) => {
 
 /// Close the currently active completion.
 export const closeCompletion: Command = (view: EditorView) => {
-  const cState = view.state.field(completionState, false);
+  let cState = view.state.field(completionState, false);
   if (!cState || !cState.active.some((a) => a.state != State.Inactive))
     return false;
   view.dispatch({ effects: closeCompletionEffect.of(null) });
@@ -134,13 +134,13 @@ export const completionPlugin = ViewPlugin.fromClass(
     composing = CompositionState.None;
 
     constructor(readonly view: EditorView) {
-      for (const active of view.state.field(completionState).active)
+      for (let active of view.state.field(completionState).active)
         if (active.isPending) this.startQuery(active);
     }
 
     update(update: ViewUpdate) {
-      const cState = update.state.field(completionState);
-      const conf = update.state.facet(completionConfig);
+      let cState = update.state.field(completionState);
+      let conf = update.state.facet(completionConfig);
       if (
         !update.selectionSet &&
         !update.docChanged &&
@@ -148,8 +148,8 @@ export const completionPlugin = ViewPlugin.fromClass(
       )
         return;
 
-      const doesReset = update.transactions.some((tr) => {
-        const type = getUpdateType(tr, conf);
+      let doesReset = update.transactions.some((tr) => {
+        let type = getUpdateType(tr, conf);
         return (
           type & UpdateType.Reset ||
           ((tr.selection || tr.docChanged) &&
@@ -157,14 +157,14 @@ export const completionPlugin = ViewPlugin.fromClass(
         );
       });
       for (let i = 0; i < this.running.length; i++) {
-        const query = this.running[i];
+        let query = this.running[i];
         if (
           doesReset ||
           (query.context.abortOnDocChange && update.docChanged) ||
           (query.updates.length + update.transactions.length > MaxUpdateCount &&
             Date.now() - query.time > MinAbortTime)
         ) {
-          for (const handler of query.context.abortListeners!) {
+          for (let handler of query.context.abortListeners!) {
             try {
               handler();
             } catch (e) {
@@ -185,7 +185,7 @@ export const completionPlugin = ViewPlugin.fromClass(
         )
       )
         this.pendingStart = true;
-      const delay = this.pendingStart ? 50 : conf.activateOnTypingDelay;
+      let delay = this.pendingStart ? 50 : conf.activateOnTypingDelay;
       this.debounceUpdate = cState.active.some(
         (a) =>
           a.isPending && !this.running.some((q) => q.active.source == a.source),
@@ -194,7 +194,7 @@ export const completionPlugin = ViewPlugin.fromClass(
         : -1;
 
       if (this.composing != CompositionState.None)
-        for (const tr of update.transactions) {
+        for (let tr of update.transactions) {
           if (tr.isUserEvent('input.type'))
             this.composing = CompositionState.Changed;
           else if (this.composing == CompositionState.Changed && tr.selection)
@@ -205,9 +205,9 @@ export const completionPlugin = ViewPlugin.fromClass(
     startUpdate() {
       this.debounceUpdate = -1;
       this.pendingStart = false;
-      const { state } = this.view;
-      const cState = state.field(completionState);
-      for (const active of cState.active) {
+      let { state } = this.view;
+      let cState = state.field(completionState);
+      for (let active of cState.active) {
         if (
           active.isPending &&
           !this.running.some((r) => r.active.source == active.source)
@@ -222,15 +222,15 @@ export const completionPlugin = ViewPlugin.fromClass(
     }
 
     startQuery(active: ActiveSource) {
-      const { state } = this.view;
-      const pos = cur(state);
-      const context = new CompletionContext(
+      let { state } = this.view;
+      let pos = cur(state);
+      let context = new CompletionContext(
         state,
         pos,
         active.explicit,
         this.view,
       );
-      const pending = new RunningQuery(active, context);
+      let pending = new RunningQuery(active, context);
       this.running.push(pending);
       Promise.resolve(active.source(context)).then(
         (result) => {
@@ -261,21 +261,21 @@ export const completionPlugin = ViewPlugin.fromClass(
       if (this.debounceAccept > -1) clearTimeout(this.debounceAccept);
       this.debounceAccept = -1;
 
-      const updated: ActiveSource[] = [];
-      const conf = this.view.state.facet(completionConfig);
-      const cState = this.view.state.field(completionState);
+      let updated: ActiveSource[] = [];
+      let conf = this.view.state.facet(completionConfig);
+      let cState = this.view.state.field(completionState);
       for (let i = 0; i < this.running.length; i++) {
-        const query = this.running[i];
+        let query = this.running[i];
         if (query.done === undefined) continue;
         this.running.splice(i--, 1);
 
         if (query.done) {
-          const pos = cur(
+          let pos = cur(
             query.updates.length
               ? query.updates[0].startState
               : this.view.state,
           );
-          const limit = Math.min(
+          let limit = Math.min(
             pos,
             query.done.from + (query.active.explicit ? 0 : 1),
           );
@@ -289,14 +289,14 @@ export const completionPlugin = ViewPlugin.fromClass(
           );
           // Replay the transactions that happened since the start of
           // the request and see if that preserves the result
-          for (const tr of query.updates) active = active.update(tr, conf);
+          for (let tr of query.updates) active = active.update(tr, conf);
           if (active.hasResult()) {
             updated.push(active);
             continue;
           }
         }
 
-        const current = cState.active.find(
+        let current = cState.active.find(
           (a) => a.source == query.active.source,
         );
         if (current && current.isPending) {
@@ -304,7 +304,7 @@ export const completionPlugin = ViewPlugin.fromClass(
             // Explicitly failed. Should clear the pending status if it
             // hasn't been re-set in the meantime.
             let active = new ActiveSource(query.active.source, State.Inactive);
-            for (const tr of query.updates) active = active.update(tr, conf);
+            for (let tr of query.updates) active = active.update(tr, conf);
             if (!active.isPending) updated.push(active);
           } else {
             // Cleared by subsequent transactions. Restart.
@@ -320,14 +320,13 @@ export const completionPlugin = ViewPlugin.fromClass(
   {
     eventHandlers: {
       blur(event) {
-        const state = this.view.state.field(completionState, false);
+        let state = this.view.state.field(completionState, false);
         if (
           state &&
           state.tooltip &&
           this.view.state.facet(completionConfig).closeOnBlur
         ) {
-          const dialog =
-            state.open && getTooltip(this.view, state.open.tooltip);
+          let dialog = state.open && getTooltip(this.view, state.open.tooltip);
           if (
             !dialog ||
             !dialog.dom.contains(event.relatedTarget as HTMLElement)
@@ -358,12 +357,12 @@ export const completionPlugin = ViewPlugin.fromClass(
   },
 );
 
-const windows = typeof navigator === 'object' && /Win/.test(navigator.platform);
+const windows = typeof navigator == 'object' && /Win/.test(navigator.platform);
 
 export const commitCharacters = Prec.highest(
   EditorView.domEventHandlers({
     keydown(event, view) {
-      const field = view.state.field(completionState, false);
+      let field = view.state.field(completionState, false);
       if (
         !field ||
         !field.open ||
@@ -374,11 +373,11 @@ export const commitCharacters = Prec.highest(
         event.metaKey
       )
         return false;
-      const option = field.open.options[field.open.selected];
-      const result = field.active.find(
+      let option = field.open.options[field.open.selected];
+      let result = field.active.find(
         (a) => a.source == option.source,
       ) as ActiveResult;
-      const commitChars =
+      let commitChars =
         option.completion.commitCharacters || result.result.commitCharacters;
       if (commitChars && commitChars.indexOf(event.key) > -1)
         applyCompletion(view, option);

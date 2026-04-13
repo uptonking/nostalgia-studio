@@ -2,18 +2,20 @@ function mkGas(arch) {
   // If an architecture is specified, its initialization function may
   // populate this array with custom parsing functions which will be
   // tried in the event that the standard functions do not find a match.
-  const custom = [];
+  var custom = [];
+
   // The symbol used to start a line comment changes based on the target
   // architecture.
   // If no architecture is pased in "parserConfig" then only multiline
   // comments will have syntax support.
-  let lineCommentStartSymbol = '';
+  var lineCommentStartSymbol = '';
+
   // These directives are architecture independent.
   // Machine specific directives should go in their respective
   // architecture initialization function.
   // Reference:
   // http://sourceware.org/binutils/docs/as/Pseudo-Ops.html#Pseudo-Ops
-  const directives = {
+  var directives = {
     '.abort': 'builtin',
     '.align': 'builtin',
     '.altmacro': 'builtin',
@@ -121,7 +123,8 @@ function mkGas(arch) {
     '.weakref': 'builtin',
     '.word': 'builtin',
   };
-  const registers = {};
+
+  var registers = {};
 
   function x86() {
     lineCommentStartSymbol = '#';
@@ -221,8 +224,8 @@ function mkGas(arch) {
   }
 
   function nextUntilUnescaped(stream, end) {
-    let escaped = false;
-    let next;
+    var escaped = false;
+    var next;
     while ((next = stream.next()) != null) {
       if (next === end && !escaped) {
         return false;
@@ -233,8 +236,8 @@ function mkGas(arch) {
   }
 
   function clikeComment(stream, state) {
-    let maybeEnd = false;
-    let ch;
+    var maybeEnd = false;
+    var ch;
     while ((ch = stream.next()) != null) {
       if (ch === '/' && maybeEnd) {
         state.tokenize = null;
@@ -262,9 +265,9 @@ function mkGas(arch) {
         return null;
       }
 
-      let style;
-      let cur;
-      const ch = stream.next();
+      var style;
+      var cur;
+      var ch = stream.next();
 
       if (ch === '/') {
         if (stream.eat('*')) {
@@ -322,7 +325,7 @@ function mkGas(arch) {
         return style || null;
       }
 
-      for (let i = 0; i < custom.length; i++) {
+      for (var i = 0; i < custom.length; i++) {
         style = custom[i](ch, stream, state);
         if (style) {
           return style;

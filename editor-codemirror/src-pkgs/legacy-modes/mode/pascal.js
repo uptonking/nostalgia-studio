@@ -1,10 +1,10 @@
 function words(str) {
-  const obj = {};
-  const words = str.split(' ');
-  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
+  var obj = {};
+  var words = str.split(' ');
+  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
-const keywords = words(
+var keywords = words(
   'absolute and array asm begin case const constructor destructor div do ' +
     'downto else end file for function goto if implementation in inherited ' +
     'inline interface label mod nil not object of operator or packed procedure ' +
@@ -20,11 +20,12 @@ const keywords = words(
     'reintroduce result safecall saveregisters softfloat specialize static ' +
     'stdcall stored strict unaligned unimplemented varargs virtual write',
 );
-const atoms = { null: true };
-const isOperatorChar = /[+\-*&%=<>!?|\/]/;
+var atoms = { null: true };
+
+var isOperatorChar = /[+\-*&%=<>!?|\/]/;
 
 function tokenBase(stream, state) {
-  const ch = stream.next();
+  var ch = stream.next();
   if (ch == '#' && state.startOfLine) {
     stream.skipToEnd();
     return 'meta';
@@ -59,7 +60,7 @@ function tokenBase(stream, state) {
     return 'operator';
   }
   stream.eatWhile(/[\w\$_]/);
-  const cur = stream.current().toLowerCase();
+  var cur = stream.current().toLowerCase();
   if (keywords.propertyIsEnumerable(cur)) return 'keyword';
   if (atoms.propertyIsEnumerable(cur)) return 'atom';
   return 'variable';
@@ -67,9 +68,9 @@ function tokenBase(stream, state) {
 
 function tokenString(quote) {
   return function (stream, state) {
-    let escaped = false;
-    let next;
-    let end = false;
+    var escaped = false;
+    var next;
+    var end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -83,8 +84,8 @@ function tokenString(quote) {
 }
 
 function tokenComment(stream, state) {
-  let maybeEnd = false;
-  let ch;
+  var maybeEnd = false;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == ')' && maybeEnd) {
       state.tokenize = null;
@@ -96,7 +97,7 @@ function tokenComment(stream, state) {
 }
 
 function tokenCommentBraces(stream, state) {
-  let ch;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == '}') {
       state.tokenize = null;
@@ -117,7 +118,7 @@ export const pascal = {
 
   token: function (stream, state) {
     if (stream.eatSpace()) return null;
-    const style = (state.tokenize || tokenBase)(stream, state);
+    var style = (state.tokenize || tokenBase)(stream, state);
     if (style == 'comment' || style == 'meta') return style;
     return style;
   },

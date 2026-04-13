@@ -1,12 +1,12 @@
 function words(str) {
-  const obj = {};
-  const words = str.split(' ');
-  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
+  var obj = {};
+  var words = str.split(' ');
+  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
 
 // builtin funcs taken from trunk revision 1303237
-const pBuiltins =
+var pBuiltins =
   'ABS ACOS ARITY ASIN ATAN AVG BAGSIZE BINSTORAGE BLOOM BUILDBLOOM CBRT CEIL ' +
   'CONCAT COR COS COSH COUNT COUNT_STAR COV CONSTANTSIZE CUBEDIMENSIONS DIFF DISTINCT DOUBLEABS ' +
   'DOUBLEAVG DOUBLEBASE DOUBLEMAX DOUBLEMIN DOUBLEROUND DOUBLESUM EXP FLOOR FLOATABS FLOATAVG ' +
@@ -17,20 +17,23 @@ const pBuiltins =
   'PIGSTORAGE PIGSTREAMING RANDOM REGEX_EXTRACT REGEX_EXTRACT_ALL REPLACE ROUND SIN SINH SIZE ' +
   'SQRT STRSPLIT SUBSTRING SUM STRINGCONCAT STRINGMAX STRINGMIN STRINGSIZE TAN TANH TOBAG ' +
   'TOKENIZE TOMAP TOP TOTUPLE TRIM TEXTLOADER TUPLESIZE UCFIRST UPPER UTF8STORAGECONVERTER ';
+
 // taken from QueryLexer.g
-const pKeywords =
+var pKeywords =
   'VOID IMPORT RETURNS DEFINE LOAD FILTER FOREACH ORDER CUBE DISTINCT COGROUP ' +
   'JOIN CROSS UNION SPLIT INTO IF OTHERWISE ALL AS BY USING INNER OUTER ONSCHEMA PARALLEL ' +
   'PARTITION GROUP AND OR NOT GENERATE FLATTEN ASC DESC IS STREAM THROUGH STORE MAPREDUCE ' +
   'SHIP CACHE INPUT OUTPUT STDERROR STDIN STDOUT LIMIT SAMPLE LEFT RIGHT FULL EQ GT LT GTE LTE ' +
   'NEQ MATCHES TRUE FALSE DUMP';
+
 // data types
-const pTypes =
-  'BOOLEAN INT LONG FLOAT DOUBLE CHARARRAY BYTEARRAY BAG TUPLE MAP ';
-const builtins = words(pBuiltins);
-const keywords = words(pKeywords);
-const types = words(pTypes);
-const isOperatorChar = /[*+\-%<>=&?:\/!|]/;
+var pTypes = 'BOOLEAN INT LONG FLOAT DOUBLE CHARARRAY BYTEARRAY BAG TUPLE MAP ';
+
+var builtins = words(pBuiltins);
+var keywords = words(pKeywords);
+var types = words(pTypes);
+
+var isOperatorChar = /[*+\-%<>=&?:\/!|]/;
 
 function chain(stream, state, f) {
   state.tokenize = f;
@@ -38,8 +41,8 @@ function chain(stream, state, f) {
 }
 
 function tokenComment(stream, state) {
-  let isEnd = false;
-  let ch;
+  var isEnd = false;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == '/' && isEnd) {
       state.tokenize = tokenBase;
@@ -52,9 +55,9 @@ function tokenComment(stream, state) {
 
 function tokenString(quote) {
   return function (stream, state) {
-    let escaped = false;
-    let next;
-    let end = false;
+    var escaped = false;
+    var next;
+    var end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -68,7 +71,7 @@ function tokenString(quote) {
 }
 
 function tokenBase(stream, state) {
-  const ch = stream.next();
+  var ch = stream.next();
 
   // is a start of string?
   if (ch == '"' || ch == "'") return chain(stream, state, tokenString(ch));
@@ -140,7 +143,7 @@ export const pig = {
 
   token: function (stream, state) {
     if (stream.eatSpace()) return null;
-    const style = state.tokenize(stream, state);
+    var style = state.tokenize(stream, state);
     return style;
   },
 

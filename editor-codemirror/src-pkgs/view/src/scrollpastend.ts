@@ -1,5 +1,5 @@
-import type { Extension } from '@codemirror/state';
-import { ViewPlugin, type ViewUpdate, contentAttributes } from './extension';
+import { Extension } from '@codemirror/state';
+import { ViewPlugin, ViewUpdate, contentAttributes } from './extension';
 
 const plugin = ViewPlugin.fromClass(
   class {
@@ -7,8 +7,8 @@ const plugin = ViewPlugin.fromClass(
     attrs = { style: 'padding-bottom: 1000px' };
 
     update(update: ViewUpdate) {
-      const { view } = update;
-      const height =
+      let { view } = update;
+      let height =
         view.viewState.editorHeight -
         view.defaultLineHeight -
         view.documentPadding.top -

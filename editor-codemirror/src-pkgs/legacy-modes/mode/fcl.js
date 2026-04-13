@@ -1,4 +1,4 @@
-const keywords = {
+var keywords = {
   term: true,
   method: true,
   accu: true,
@@ -10,7 +10,8 @@ const keywords = {
   if: true,
   default: true,
 };
-const start_blocks = {
+
+var start_blocks = {
   var_input: true,
   var_output: true,
   fuzzify: true,
@@ -18,14 +19,16 @@ const start_blocks = {
   function_block: true,
   ruleblock: true,
 };
-const end_blocks = {
+
+var end_blocks = {
   end_ruleblock: true,
   end_defuzzify: true,
   end_function_block: true,
   end_fuzzify: true,
   end_var: true,
 };
-const atoms = {
+
+var atoms = {
   true: true,
   false: true,
   nan: true,
@@ -35,10 +38,11 @@ const atoms = {
   cog: true,
   cogs: true,
 };
-const isOperatorChar = /[+\-*&^%:=<>!|\/]/;
+
+var isOperatorChar = /[+\-*&^%:=<>!|\/]/;
 
 function tokenBase(stream, state) {
-  const ch = stream.next();
+  var ch = stream.next();
 
   if (/[\d\.]/.test(ch)) {
     if (ch == '.') {
@@ -67,7 +71,7 @@ function tokenBase(stream, state) {
   }
   stream.eatWhile(/[\w\$_\xa1-\uffff]/);
 
-  const cur = stream.current().toLowerCase();
+  var cur = stream.current().toLowerCase();
   if (
     keywords.propertyIsEnumerable(cur) ||
     start_blocks.propertyIsEnumerable(cur) ||
@@ -80,8 +84,8 @@ function tokenBase(stream, state) {
 }
 
 function tokenComment(stream, state) {
-  let maybeEnd = false;
-  let ch;
+  var maybeEnd = false;
+  var ch;
   while ((ch = stream.next())) {
     if ((ch == '/' || ch == ')') && maybeEnd) {
       state.tokenize = tokenBase;
@@ -112,7 +116,7 @@ function pushContext(state, col, type) {
 
 function popContext(state) {
   if (!state.context.prev) return;
-  const t = state.context.type;
+  var t = state.context.type;
   if (t == 'end_block') state.indented = state.context.indented;
   return (state.context = state.context.prev);
 }
@@ -131,7 +135,7 @@ export const fcl = {
   },
 
   token: function (stream, state) {
-    const ctx = state.context;
+    var ctx = state.context;
     if (stream.sol()) {
       if (ctx.align == null) ctx.align = false;
       state.indented = stream.indentation();
@@ -139,11 +143,11 @@ export const fcl = {
     }
     if (stream.eatSpace()) return null;
 
-    const style = (state.tokenize || tokenBase)(stream, state);
+    var style = (state.tokenize || tokenBase)(stream, state);
     if (style == 'comment') return style;
     if (ctx.align == null) ctx.align = true;
 
-    const cur = stream.current().toLowerCase();
+    var cur = stream.current().toLowerCase();
 
     if (start_blocks.propertyIsEnumerable(cur))
       pushContext(state, stream.column(), 'end_block');
@@ -155,8 +159,9 @@ export const fcl = {
 
   indent: function (state, textAfter, cx) {
     if (state.tokenize != tokenBase && state.tokenize != null) return 0;
-    const ctx = state.context;
-    const closing = end_blocks.propertyIsEnumerable(textAfter);
+    var ctx = state.context;
+
+    var closing = end_blocks.propertyIsEnumerable(textAfter);
     if (ctx.align) return ctx.column + (closing ? 0 : 1);
     else return ctx.indented + (closing ? 0 : cx.unit);
   },

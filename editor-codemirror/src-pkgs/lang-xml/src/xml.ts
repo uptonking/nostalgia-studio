@@ -1,5 +1,5 @@
 import { parser } from '@lezer/xml';
-import type { SyntaxNode } from '@lezer/common';
+import { SyntaxNode } from '@lezer/common';
 import {
   indentNodeProp,
   foldNodeProp,
@@ -8,7 +8,7 @@ import {
   bracketMatchingHandle,
   syntaxTree,
 } from '@codemirror/language';
-import { EditorSelection, type Text } from '@codemirror/state';
+import { EditorSelection, Text } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { ElementSpec, AttrSpec, completeFromSchema } from './complete';
 export { type ElementSpec, type AttrSpec, completeFromSchema };
@@ -22,7 +22,7 @@ export const xmlLanguage = LRLanguage.define({
     props: [
       indentNodeProp.add({
         Element(context) {
-          const closed = /^\s*<\//.test(context.textAfter);
+          let closed = /^\s*<\//.test(context.textAfter);
           return (
             context.lineIndent(context.node.from) + (closed ? 0 : context.unit)
           );
@@ -33,8 +33,8 @@ export const xmlLanguage = LRLanguage.define({
       }),
       foldNodeProp.add({
         Element(subtree) {
-          const first = subtree.firstChild;
-          const last = subtree.lastChild!;
+          let first = subtree.firstChild;
+          let last = subtree.lastChild!;
           if (!first || first.name != 'OpenTag') return null;
           return {
             from: first.to,
@@ -67,7 +67,7 @@ type XMLConfig = {
 /// XML language support. Includes schema-based autocompletion when
 /// configured.
 export function xml(conf: XMLConfig = {}) {
-  const support = [
+  let support = [
     xmlLanguage.data.of({
       autocomplete: completeFromSchema(
         conf.elements || [],
@@ -85,8 +85,8 @@ function elementName(
   max = doc.length,
 ) {
   if (!tree) return '';
-  const tag = tree.firstChild;
-  const name = tag && tag.getChild('TagName');
+  let tag = tree.firstChild;
+  let name = tag && tag.getChild('TagName');
   return name ? doc.sliceString(name.from, Math.min(name.to, max)) : '';
 }
 
@@ -102,34 +102,34 @@ export const autoCloseTags = EditorView.inputHandler.of(
       !xmlLanguage.isActiveAt(view.state, from, -1)
     )
       return false;
-    const base = insertTransaction();
-    const { state } = base;
-    const closeTags = state.changeByRange((range) => {
-      const { head } = range;
-      const didType = state.doc.sliceString(head - 1, head) == text;
-      const after = syntaxTree(state).resolveInner(head, -1);
+    let base = insertTransaction();
+    let { state } = base;
+    let closeTags = state.changeByRange((range) => {
+      let { head } = range;
+      let didType = state.doc.sliceString(head - 1, head) == text;
+      let after = syntaxTree(state).resolveInner(head, -1);
       let name;
       if (didType && text == '>' && after.name == 'EndTag') {
-        const tag = after.parent!;
+        let tag = after.parent!;
         if (
           tag.parent?.lastChild?.name != 'CloseTag' &&
           (name = elementName(state.doc, tag.parent, head))
         ) {
-          const to =
+          let to =
             head + (state.doc.sliceString(head, head + 1) === '>' ? 1 : 0);
-          const insert = `</${name}>`;
+          let insert = `</${name}>`;
           return { range, changes: { from: head, to, insert } };
         }
       } else if (didType && text == '/' && after.name == 'StartCloseTag') {
-        const base = after.parent!;
+        let base = after.parent!;
         if (
           after.from == head - 2 &&
           base.lastChild?.name != 'CloseTag' &&
           (name = elementName(state.doc, base, head))
         ) {
-          const to =
+          let to =
             head + (state.doc.sliceString(head, head + 1) === '>' ? 1 : 0);
-          const insert = `${name}>`;
+          let insert = `${name}>`;
           return {
             range: EditorSelection.cursor(head + insert.length, -1),
             changes: { from: head, to, insert },

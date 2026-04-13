@@ -167,8 +167,8 @@ export const GlobalFiltering: TableFeature = {
         : globalFilterFn === 'auto'
           ? table.getGlobalAutoFilterFn()
           : // @ts-ignore
-            table.options.filterFns?.[globalFilterFn as string] ??
-            filterFns[globalFilterFn as BuiltInFilterFn];
+            (table.options.filterFns?.[globalFilterFn as string] ??
+            filterFns[globalFilterFn as BuiltInFilterFn]);
     };
 
     table.setGlobalFilter = (updater) => {

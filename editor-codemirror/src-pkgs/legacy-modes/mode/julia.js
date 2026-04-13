@@ -6,12 +6,13 @@ function wordRegexp(words, end, pre) {
   return new RegExp('^' + pre + '((' + words.join(')|(') + '))' + end);
 }
 
-const octChar = '\\\\[0-7]{1,3}';
-const hexChar = '\\\\x[A-Fa-f0-9]{1,2}';
-const sChar = '\\\\[abefnrtv0%?\'"\\\\]';
-const uChar =
+var octChar = '\\\\[0-7]{1,3}';
+var hexChar = '\\\\x[A-Fa-f0-9]{1,2}';
+var sChar = '\\\\[abefnrtv0%?\'"\\\\]';
+var uChar =
   '([^\\u0027\\u005C\\uD800-\\uDFFF]|[\\uD800-\\uDFFF][\\uDC00-\\uDFFF])';
-const asciiOperatorsList = [
+
+var asciiOperatorsList = [
   '[<>]:',
   '[<>=]=',
   '<<=?',
@@ -27,7 +28,7 @@ const asciiOperatorsList = [
   '~',
   ':',
 ];
-const operators = wordRegexp(
+var operators = wordRegexp(
   [
     '[<>]:',
     '[<>=]=',
@@ -64,11 +65,13 @@ const operators = wordRegexp(
   ],
   '',
 );
-const delimiters = /^[;,()[\]{}]/;
-const identifiers =
+var delimiters = /^[;,()[\]{}]/;
+var identifiers =
   /^[_A-Za-z\u00A1-\u2217\u2219-\uFFFF][\w\u00A1-\u2217\u2219-\uFFFF]*!*/;
-const chars = wordRegexp([octChar, hexChar, sChar, uChar], "'");
-const openersList = [
+
+var chars = wordRegexp([octChar, hexChar, sChar, uChar], "'");
+
+var openersList = [
   'begin',
   'function',
   'type',
@@ -87,8 +90,10 @@ const openersList = [
   'catch',
   'do',
 ];
-const closersList = ['end', 'else', 'elseif', 'catch', 'finally'];
-const keywordsList = [
+
+var closersList = ['end', 'else', 'elseif', 'catch', 'finally'];
+
+var keywordsList = [
   'if',
   'else',
   'elseif',
@@ -126,16 +131,20 @@ const keywordsList = [
   'primitive',
   'bitstype',
 ];
-const builtinsList = ['true', 'false', 'nothing', 'NaN', 'Inf'];
-const openers = wordRegexp(openersList);
-const closers = wordRegexp(closersList);
-const keywords = wordRegexp(keywordsList);
-const builtins = wordRegexp(builtinsList);
-const macro = /^@[_A-Za-z\u00A1-\uFFFF][\w\u00A1-\uFFFF]*!*/;
-const symbol = /^:[_A-Za-z\u00A1-\uFFFF][\w\u00A1-\uFFFF]*!*/;
-const stringPrefixes = /^(`|([_A-Za-z\u00A1-\uFFFF]*"("")?))/;
-const macroOperators = wordRegexp(asciiOperatorsList, '', '@');
-const symbolOperators = wordRegexp(asciiOperatorsList, '', ':');
+
+var builtinsList = ['true', 'false', 'nothing', 'NaN', 'Inf'];
+
+var openers = wordRegexp(openersList);
+var closers = wordRegexp(closersList);
+var keywords = wordRegexp(keywordsList);
+var builtins = wordRegexp(builtinsList);
+
+var macro = /^@[_A-Za-z\u00A1-\uFFFF][\w\u00A1-\uFFFF]*!*/;
+var symbol = /^:[_A-Za-z\u00A1-\uFFFF][\w\u00A1-\uFFFF]*!*/;
+var stringPrefixes = /^(`|([_A-Za-z\u00A1-\uFFFF]*"("")?))/;
+
+var macroOperators = wordRegexp(asciiOperatorsList, '', '@');
+var symbolOperators = wordRegexp(asciiOperatorsList, '', ':');
 
 function inArray(state) {
   return state.nestedArrays > 0;
@@ -164,7 +173,7 @@ function tokenBase(stream, state) {
   }
 
   // Handle scope changes
-  let leavingExpr = state.leavingExpr;
+  var leavingExpr = state.leavingExpr;
   if (stream.sol()) {
     leavingExpr = false;
   }
@@ -186,7 +195,7 @@ function tokenBase(stream, state) {
     return null;
   }
 
-  const ch = stream.peek();
+  var ch = stream.peek();
 
   // Handle single line comments
   if (ch === '#') {
@@ -231,7 +240,7 @@ function tokenBase(stream, state) {
     }
   }
 
-  let match;
+  var match;
   if ((match = stream.match(openers, false))) {
     state.scopes.push(match[0]);
   }
@@ -263,8 +272,8 @@ function tokenBase(stream, state) {
 
   // Handle Number Literals
   if (stream.match(/^\.?\d/, false)) {
-    const imMatcher = RegExp(/^im\b/);
-    let numberLiteral = false;
+    var imMatcher = RegExp(/^im\b/);
+    var numberLiteral = false;
     if (stream.match(/^0x\.[0-9a-f_]+p[\+\-]?[_\d]+/i)) {
       numberLiteral = true;
     }
@@ -325,7 +334,7 @@ function tokenBase(stream, state) {
     return 'builtin';
   }
 
-  const isDefinition =
+  var isDefinition =
     state.isDefinition ||
     state.lastToken == 'function' ||
     state.lastToken == 'macro' ||
@@ -381,8 +390,8 @@ function tokenComment(stream, state) {
 }
 
 function tokenChar(stream, state) {
-  let isChar = false;
-  let match;
+  var isChar = false;
+  var match;
   if (stream.match(chars)) {
     isChar = true;
   } else if ((match = stream.match(/\\u([a-f0-9]{1,4})(?=')/i))) {
@@ -454,8 +463,8 @@ export const julia = {
   },
 
   token: function (stream, state) {
-    const style = state.tokenize(stream, state);
-    const current = stream.current();
+    var style = state.tokenize(stream, state);
+    var current = stream.current();
 
     if (current && style) {
       state.lastToken = current;
@@ -465,7 +474,7 @@ export const julia = {
   },
 
   indent: function (state, textAfter, cx) {
-    let delta = 0;
+    var delta = 0;
     if (
       textAfter === ']' ||
       textAfter === ')' ||

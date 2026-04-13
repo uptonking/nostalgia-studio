@@ -29,7 +29,7 @@ export const FieldSelector: React.FC<IProps> = ({
       variant='filled'
       onChange={(value) => {
         const selectedColumn = value
-          ? fields.find((f) => f.id.value === value) ?? null
+          ? (fields.find((f) => f.id.value === value) ?? null)
           : null;
         onChange(selectedColumn);
       }}

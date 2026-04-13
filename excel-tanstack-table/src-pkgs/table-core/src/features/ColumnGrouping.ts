@@ -329,12 +329,12 @@ export const ColumnGrouping: TableFeature = {
         ? column.columnDef.aggregationFn
         : column.columnDef.aggregationFn === 'auto'
           ? column.getAutoAggregationFn()
-          : table.options.aggregationFns?.[
+          : (table.options.aggregationFns?.[
               column.columnDef.aggregationFn as string
             ] ??
             aggregationFns[
               column.columnDef.aggregationFn as BuiltInAggregationFn
-            ];
+            ]);
     };
   },
 
@@ -342,7 +342,9 @@ export const ColumnGrouping: TableFeature = {
     table.setGrouping = (updater) => table.options.onGroupingChange?.(updater);
 
     table.resetGrouping = (defaultState) => {
-      table.setGrouping(defaultState ? [] : table.initialState?.grouping ?? []);
+      table.setGrouping(
+        defaultState ? [] : (table.initialState?.grouping ?? []),
+      );
     };
 
     table.getPreGroupedRowModel = () => table.getFilteredRowModel();

@@ -2,8 +2,8 @@ export const properties = {
   name: 'properties',
 
   token: function (stream, state) {
-    const sol = stream.sol() || state.afterSection;
-    const eol = stream.eol();
+    var sol = stream.sol() || state.afterSection;
+    var eol = stream.eol();
 
     state.afterSection = false;
 
@@ -25,7 +25,7 @@ export const properties = {
       while (stream.eatSpace()) {}
     }
 
-    const ch = stream.next();
+    var ch = stream.next();
 
     if (sol && (ch === '#' || ch === '!' || ch === ';')) {
       state.position = 'comment';

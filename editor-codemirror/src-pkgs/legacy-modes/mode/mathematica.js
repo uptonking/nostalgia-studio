@@ -1,11 +1,12 @@
 // used pattern building blocks
-const Identifier = '[a-zA-Z\\$][a-zA-Z0-9\\$]*';
-const pBase = '(?:\\d+)';
-const pFloat = '(?:\\.\\d+|\\d+\\.\\d*|\\d+)';
-const pFloatBase = '(?:\\.\\w+|\\w+\\.\\w*|\\w+)';
-const pPrecision = '(?:`(?:`?' + pFloat + ')?)';
+var Identifier = '[a-zA-Z\\$][a-zA-Z0-9\\$]*';
+var pBase = '(?:\\d+)';
+var pFloat = '(?:\\.\\d+|\\d+\\.\\d*|\\d+)';
+var pFloatBase = '(?:\\.\\w+|\\w+\\.\\w*|\\w+)';
+var pPrecision = '(?:`(?:`?' + pFloat + ')?)';
+
 // regular expressions
-const reBaseForm = new RegExp(
+var reBaseForm = new RegExp(
   '(?:' +
     pBase +
     '(?:\\^\\^' +
@@ -13,15 +14,15 @@ const reBaseForm = new RegExp(
     pPrecision +
     '?(?:\\*\\^[+-]?\\d+)?))',
 );
-const reFloatForm = new RegExp(
+var reFloatForm = new RegExp(
   '(?:' + pFloat + pPrecision + '?(?:\\*\\^[+-]?\\d+)?)',
 );
-const reIdInContext = new RegExp(
+var reIdInContext = new RegExp(
   '(?:`?)(?:' + Identifier + ')(?:`(?:' + Identifier + '))*(?:`?)',
 );
 
 function tokenBase(stream, state) {
-  let ch;
+  var ch;
 
   // get next character
   ch = stream.next();
@@ -152,9 +153,9 @@ function tokenBase(stream, state) {
 }
 
 function tokenString(stream, state) {
-  let next;
-  let end = false;
-  let escaped = false;
+  var next;
+  var end = false;
+  var escaped = false;
   while ((next = stream.next()) != null) {
     if (next === '"' && !escaped) {
       end = true;
@@ -169,8 +170,8 @@ function tokenString(stream, state) {
 }
 
 function tokenComment(stream, state) {
-  let prev;
-  let next;
+  var prev;
+  var next;
   while (state.commentLevel > 0 && (next = stream.next()) != null) {
     if (prev === '(' && next === '*') state.commentLevel++;
     if (prev === '*' && next === ')') state.commentLevel--;

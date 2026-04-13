@@ -18,8 +18,7 @@ export const cpFolder = async (src: string, dest: string) => {
 };
 
 export function dateNow() {
-  const date = new Date();
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+  return new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
     .toISOString()
     .slice(0, 19)
     .replace(/-|:/g, '');

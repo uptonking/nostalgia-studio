@@ -1,10 +1,10 @@
 function parseWords(str) {
-  const obj = {};
-  const words = str.split(' ');
-  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
+  var obj = {};
+  var words = str.split(' ');
+  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
-const keywords = parseWords(
+var keywords = parseWords(
   'Tcl safe after append array auto_execok auto_import auto_load ' +
     'auto_mkindex auto_mkindex_old auto_qualify auto_reset bgerror ' +
     'binary break catch cd close concat continue dde eof encoding error ' +
@@ -19,18 +19,18 @@ const keywords = parseWords(
     'tclvars tell time trace unknown unset update uplevel upvar variable ' +
     'vwait',
 );
-const functions = parseWords(
+var functions = parseWords(
   'if elseif else and not or eq ne in ni for foreach while switch',
 );
-const isOperatorChar = /[+\-*&%=<>!?^\/\|]/;
+var isOperatorChar = /[+\-*&%=<>!?^\/\|]/;
 function chain(stream, state, f) {
   state.tokenize = f;
   return f(stream, state);
 }
 function tokenBase(stream, state) {
-  const beforeParams = state.beforeParams;
+  var beforeParams = state.beforeParams;
   state.beforeParams = false;
-  const ch = stream.next();
+  var ch = stream.next();
   if ((ch == '"' || ch == "'") && state.inParams) {
     return chain(stream, state, tokenString(ch));
   } else if (/[\[\]{}\(\),;\.]/.test(ch)) {
@@ -59,7 +59,7 @@ function tokenBase(stream, state) {
     return 'comment';
   } else {
     stream.eatWhile(/[\w\$_{}\xa1-\uffff]/);
-    const word = stream.current().toLowerCase();
+    var word = stream.current().toLowerCase();
     if (keywords && keywords.propertyIsEnumerable(word)) return 'keyword';
     if (functions && functions.propertyIsEnumerable(word)) {
       state.beforeParams = true;
@@ -70,9 +70,9 @@ function tokenBase(stream, state) {
 }
 function tokenString(quote) {
   return function (stream, state) {
-    let escaped = false;
-    let next;
-    let end = false;
+    var escaped = false;
+    var next;
+    var end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -85,8 +85,8 @@ function tokenString(quote) {
   };
 }
 function tokenComment(stream, state) {
-  let maybeEnd = false;
-  let ch;
+  var maybeEnd = false;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == '#' && maybeEnd) {
       state.tokenize = tokenBase;
@@ -97,8 +97,8 @@ function tokenComment(stream, state) {
   return 'comment';
 }
 function tokenUnparsed(stream, state) {
-  let maybeEnd = 0;
-  let ch;
+  var maybeEnd = 0;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == '#' && maybeEnd == 2) {
       state.tokenize = tokenBase;

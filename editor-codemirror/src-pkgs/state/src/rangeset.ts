@@ -1,4 +1,4 @@
-import { type ChangeDesc, MapMode } from './change';
+import { ChangeDesc, MapMode } from './change';
 
 /// Each range is associated with a value, which must inherit from
 /// this class.
@@ -38,6 +38,10 @@ export abstract class RangeValue {
 RangeValue.prototype.startSide = RangeValue.prototype.endSide = 0;
 RangeValue.prototype.point = false;
 RangeValue.prototype.mapMode = MapMode.TrackDel;
+
+function cmpVal(a: RangeValue, b: RangeValue) {
+  return a == b || (a.constructor == b.constructor && a.eq(b));
+}
 
 /// A range associates a value with a range of positions.
 export class Range<T extends RangeValue> {
@@ -131,11 +135,11 @@ class Chunk<T extends RangeValue> {
   // Find the index of the given position and side. Use the ranges'
   // `from` pos when `end == false`, `to` when `end == true`.
   findIndex(pos: number, side: number, end: boolean, startAt = 0) {
-    const arr = end ? this.to : this.from;
+    let arr = end ? this.to : this.from;
     for (let lo = startAt, hi = arr.length; ; ) {
       if (lo == hi) return lo;
-      const mid = (lo + hi) >> 1;
-      const diff =
+      let mid = (lo + hi) >> 1;
+      let diff =
         arr[mid] - pos ||
         (end ? this.value[mid].endSide : this.value[mid].startSide) - side;
       if (mid == lo) return diff >= 0 ? lo : hi;
@@ -163,19 +167,19 @@ class Chunk<T extends RangeValue> {
   }
 
   map(offset: number, changes: ChangeDesc) {
-    const value: T[] = [];
-    const from = [];
-    const to = [];
+    let value: T[] = [];
+    let from = [];
+    let to = [];
     let newPos = -1;
     let maxPoint = -1;
     for (let i = 0; i < this.value.length; i++) {
-      const val = this.value[i];
-      const curFrom = this.from[i] + offset;
-      const curTo = this.to[i] + offset;
+      let val = this.value[i];
+      let curFrom = this.from[i] + offset;
+      let curTo = this.to[i] + offset;
       let newFrom;
       let newTo;
       if (curFrom == curTo) {
-        const mapped = changes.mapPos(curFrom, val.startSide, val.mapMode);
+        let mapped = changes.mapPos(curFrom, val.startSide, val.mapMode);
         if (mapped == null) continue;
         newFrom = newTo = mapped;
         if (val.startSide != val.endSide) {
@@ -211,7 +215,9 @@ class Chunk<T extends RangeValue> {
 /// only after reading the first range (if any).
 export interface RangeCursor<T> {
   /// Move the iterator forward.
-  next: () => void;
+  next(): void;
+  /// Jump the cursor to the given position.
+  goto(pos: number): void;
   /// The next range's value. Holds `null` when the cursor has reached
   /// its end.
   value: T | null;
@@ -219,6 +225,9 @@ export interface RangeCursor<T> {
   from: number;
   /// The next end position.
   to: number;
+  /// The position of the set that this range comes from in the array
+  /// of sets being iterated over.
+  rank: number;
 }
 
 type RangeSetUpdate<T extends RangeValue> = {
@@ -269,7 +278,7 @@ export class RangeSet<T extends RangeValue> {
 
   /// @internal
   get length(): number {
-    const last = this.chunk.length - 1;
+    let last = this.chunk.length - 1;
     return last < 0 ? 0 : Math.max(this.chunkEnd(last), this.nextLayer.length);
   }
 
@@ -277,7 +286,7 @@ export class RangeSet<T extends RangeValue> {
   get size(): number {
     if (this.isEmpty) return 0;
     let size = this.nextLayer.size;
-    for (const chunk of this.chunk) size += chunk.value.length;
+    for (let chunk of this.chunk) size += chunk.value.length;
     return size;
   }
 
@@ -300,23 +309,23 @@ export class RangeSet<T extends RangeValue> {
       filterFrom = 0,
       filterTo = this.length,
     } = updateSpec;
-    const filter = updateSpec.filter as
+    let filter = updateSpec.filter as
       | undefined
       | ((from: number, to: number, value: T) => boolean);
     if (add.length == 0 && !filter) return this;
     if (sort) add = add.slice().sort(cmpRange);
     if (this.isEmpty) return add.length ? RangeSet.of(add) : this;
 
-    const cur = new LayerCursor(this, null, -1).goto(0);
+    let cur = new LayerCursor(this, null, -1).goto(0);
     let i = 0;
-    const spill: Range<T>[] = [];
-    const builder = new RangeSetBuilder<T>();
+    let spill: Range<T>[] = [];
+    let builder = new RangeSetBuilder<T>();
     while (cur.value || i < add.length) {
       if (
         i < add.length &&
         (cur.from - add[i].from || cur.startSide - add[i].value.startSide) >= 0
       ) {
-        const range = add[i++];
+        let range = add[i++];
         if (!builder.addInner(range.from, range.to, range.value))
           spill.push(range);
       } else if (
@@ -362,19 +371,19 @@ export class RangeSet<T extends RangeValue> {
   map(changes: ChangeDesc): RangeSet<T> {
     if (changes.empty || this.isEmpty) return this;
 
-    const chunks = [];
-    const chunkPos = [];
+    let chunks = [];
+    let chunkPos = [];
     let maxPoint = -1;
     for (let i = 0; i < this.chunk.length; i++) {
-      const start = this.chunkPos[i];
-      const chunk = this.chunk[i];
-      const touch = changes.touchesRange(start, start + chunk.length);
+      let start = this.chunkPos[i];
+      let chunk = this.chunk[i];
+      let touch = changes.touchesRange(start, start + chunk.length);
       if (touch === false) {
         maxPoint = Math.max(maxPoint, chunk.maxPoint);
         chunks.push(chunk);
         chunkPos.push(changes.mapPos(start));
       } else if (touch === true) {
-        const { mapped, pos } = chunk.map(start, changes);
+        let { mapped, pos } = chunk.map(start, changes);
         if (mapped) {
           maxPoint = Math.max(maxPoint, mapped.maxPoint);
           chunks.push(mapped);
@@ -382,7 +391,7 @@ export class RangeSet<T extends RangeValue> {
         }
       }
     }
-    const next = this.nextLayer.map(changes);
+    let next = this.nextLayer.map(changes);
     return chunks.length == 0
       ? next
       : new RangeSet(chunkPos, chunks, next || RangeSet.empty, maxPoint);
@@ -399,8 +408,8 @@ export class RangeSet<T extends RangeValue> {
   ): void {
     if (this.isEmpty) return;
     for (let i = 0; i < this.chunk.length; i++) {
-      const start = this.chunkPos[i];
-      const chunk = this.chunk[i];
+      let start = this.chunkPos[i];
+      let chunk = this.chunk[i];
       if (
         to >= start &&
         from <= start + chunk.length &&
@@ -444,17 +453,18 @@ export class RangeSet<T extends RangeValue> {
     /// the given size. When -1, all ranges are compared.
     minPointSize: number = -1,
   ) {
-    const a = oldSets.filter(
+    let a = oldSets.filter(
       (set) =>
         set.maxPoint > 0 || (!set.isEmpty && set.maxPoint >= minPointSize!),
     );
-    const b = newSets.filter(
+    let b = newSets.filter(
       (set) =>
         set.maxPoint > 0 || (!set.isEmpty && set.maxPoint >= minPointSize!),
     );
-    const sharedChunks = findSharedChunks(a, b, textDiff);
-    const sideA = new SpanCursor(a, sharedChunks, minPointSize!);
-    const sideB = new SpanCursor(b, sharedChunks, minPointSize!);
+    let sharedChunks = findSharedChunks(a, b, textDiff);
+
+    let sideA = new SpanCursor(a, sharedChunks, minPointSize!);
+    let sideB = new SpanCursor(b, sharedChunks, minPointSize!);
 
     textDiff.iterGaps((fromA, fromB, length) =>
       compare(sideA, fromA, sideB, fromB, length, comparator),
@@ -472,18 +482,18 @@ export class RangeSet<T extends RangeValue> {
     to?: number,
   ) {
     if (to == null) to = C.Far - 1;
-    const a = oldSets.filter((set) => !set.isEmpty && newSets.indexOf(set) < 0);
-    const b = newSets.filter((set) => !set.isEmpty && oldSets.indexOf(set) < 0);
+    let a = oldSets.filter((set) => !set.isEmpty && newSets.indexOf(set) < 0);
+    let b = newSets.filter((set) => !set.isEmpty && oldSets.indexOf(set) < 0);
     if (a.length != b.length) return false;
     if (!a.length) return true;
-    const sharedChunks = findSharedChunks(a, b);
-    const sideA = new SpanCursor(a, sharedChunks, 0).goto(from);
-    const sideB = new SpanCursor(b, sharedChunks, 0).goto(from);
+    let sharedChunks = findSharedChunks(a, b);
+    let sideA = new SpanCursor(a, sharedChunks, 0).goto(from);
+    let sideB = new SpanCursor(b, sharedChunks, 0).goto(from);
     for (;;) {
       if (
         sideA.to != sideB.to ||
         !sameValues(sideA.active, sideB.active) ||
-        (sideA.point && (!sideB.point || !sideA.point.eq(sideB.point)))
+        (sideA.point && (!sideB.point || !cmpVal(sideA.point, sideB.point)))
       )
         return false;
       if (sideA.to > to) return true;
@@ -506,14 +516,14 @@ export class RangeSet<T extends RangeValue> {
     /// size are taken into account.
     minPointSize: number = -1,
   ): number {
-    const cursor = new SpanCursor(sets, null, minPointSize).goto(from);
+    let cursor = new SpanCursor(sets, null, minPointSize).goto(from);
     let pos = from;
     let openRanges = cursor.openStart;
     for (;;) {
-      const curTo = Math.min(cursor.to, to);
+      let curTo = Math.min(cursor.to, to);
       if (cursor.point) {
-        const active = cursor.activeForPoint(cursor.to);
-        const openCount =
+        let active = cursor.activeForPoint(cursor.to);
+        let openCount =
           cursor.pointFrom < from
             ? active.length + 1
             : cursor.point.startSide < 0
@@ -548,8 +558,8 @@ export class RangeSet<T extends RangeValue> {
     ranges: readonly Range<T>[] | Range<T>,
     sort = false,
   ): RangeSet<T> {
-    const build = new RangeSetBuilder<T>();
-    for (const range of ranges instanceof Range
+    let build = new RangeSetBuilder<T>();
+    for (let range of ranges instanceof Range
       ? [ranges]
       : sort
         ? lazySort(ranges)
@@ -587,7 +597,7 @@ function lazySort<T extends RangeValue>(
 ): readonly Range<T>[] {
   if (ranges.length > 1)
     for (let prev = ranges[0], i = 1; i < ranges.length; i++) {
-      const cur = ranges[i];
+      let cur = ranges[i];
       if (cmpRange(prev, cur) > 0) return ranges.slice().sort(cmpRange);
       prev = cur;
     }
@@ -643,7 +653,7 @@ export class RangeSetBuilder<T extends RangeValue> {
 
   /// @internal
   addInner(from: number, to: number, value: T) {
-    const diff = from - this.lastTo || value.startSide - this.last!.endSide;
+    let diff = from - this.lastTo || value.startSide - this.last!.endSide;
     if (
       diff <= 0 &&
       (from - this.lastFrom || value.startSide - this.last!.startSide) < 0
@@ -674,7 +684,7 @@ export class RangeSetBuilder<T extends RangeValue> {
     this.setMaxPoint = Math.max(this.setMaxPoint, chunk.maxPoint);
     this.chunks.push(chunk);
     this.chunkPos.push(from);
-    const last = chunk.value.length - 1;
+    let last = chunk.value.length - 1;
     this.last = chunk.value[last];
     this.lastFrom = chunk.from[last] + from;
     this.lastTo = chunk.to[last] + from;
@@ -691,7 +701,7 @@ export class RangeSetBuilder<T extends RangeValue> {
   finishInner(next: RangeSet<T>): RangeSet<T> {
     if (this.from.length) this.finishChunk(false);
     if (this.chunks.length == 0) return next;
-    const result = RangeSet.create(
+    let result = RangeSet.create(
       this.chunkPos,
       this.chunks,
       this.nextLayer ? this.nextLayer.finishInner(next) : next,
@@ -707,14 +717,14 @@ function findSharedChunks(
   b: readonly RangeSet<any>[],
   textDiff?: ChangeDesc,
 ) {
-  const inA = new Map<Chunk<any>, number>();
-  for (const set of a)
+  let inA = new Map<Chunk<any>, number>();
+  for (let set of a)
     for (let i = 0; i < set.chunk.length; i++)
       if (set.chunk[i].maxPoint <= 0) inA.set(set.chunk[i], set.chunkPos[i]);
-  const shared = new Set<Chunk<any>>();
-  for (const set of b)
+  let shared = new Set<Chunk<any>>();
+  for (let set of b)
     for (let i = 0; i < set.chunk.length; i++) {
-      const known = inA.get(set.chunk[i]);
+      let known = inA.get(set.chunk[i]);
       if (
         known != null &&
         (textDiff ? textDiff.mapPos(known) : known) == set.chunkPos[i] &&
@@ -755,7 +765,7 @@ class LayerCursor<T extends RangeValue> {
 
   gotoInner(pos: number, side: number, forward: boolean) {
     while (this.chunkIndex < this.layer.chunk.length) {
-      const next = this.layer.chunk[this.chunkIndex];
+      let next = this.layer.chunk[this.chunkIndex];
       if (
         !(
           (this.skip && this.skip.has(next)) ||
@@ -768,7 +778,7 @@ class LayerCursor<T extends RangeValue> {
       forward = false;
     }
     if (this.chunkIndex < this.layer.chunk.length) {
-      const rangeIndex = this.layer.chunk[this.chunkIndex].findIndex(
+      let rangeIndex = this.layer.chunk[this.chunkIndex].findIndex(
         pos - this.layer.chunkPos[this.chunkIndex],
         side,
         true,
@@ -791,9 +801,9 @@ class LayerCursor<T extends RangeValue> {
         this.value = null;
         break;
       } else {
-        const chunkPos = this.layer.chunkPos[this.chunkIndex];
-        const chunk = this.layer.chunk[this.chunkIndex];
-        const from = chunkPos + chunk.from[this.rangeIndex];
+        let chunkPos = this.layer.chunkPos[this.chunkIndex];
+        let chunk = this.layer.chunk[this.chunkIndex];
+        let from = chunkPos + chunk.from[this.rangeIndex];
         this.from = from;
         this.to = chunkPos + chunk.to[this.rangeIndex];
         this.value = chunk.value[this.rangeIndex];
@@ -853,7 +863,7 @@ class HeapCursor<T extends RangeValue> {
     skip: Set<Chunk<T>> | null = null,
     minPoint: number = -1,
   ): HeapCursor<T> | LayerCursor<T> {
-    const heap = [];
+    let heap = [];
     for (let i = 0; i < sets.length; i++) {
       for (let cur = sets[i]; !cur.isEmpty; cur = cur.nextLayer) {
         if (cur.maxPoint >= minPoint)
@@ -868,14 +878,14 @@ class HeapCursor<T extends RangeValue> {
   }
 
   goto(pos: number, side: number = -C.Far) {
-    for (const cur of this.heap) cur.goto(pos, side);
+    for (let cur of this.heap) cur.goto(pos, side);
     for (let i = this.heap.length >> 1; i >= 0; i--) heapBubble(this.heap, i);
     this.next();
     return this;
   }
 
   forward(pos: number, side: number) {
-    for (const cur of this.heap) cur.forward(pos, side);
+    for (let cur of this.heap) cur.forward(pos, side);
     for (let i = this.heap.length >> 1; i >= 0; i--) heapBubble(this.heap, i);
     if ((this.to - pos || this.value!.endSide - side) < 0) this.next();
   }
@@ -886,7 +896,7 @@ class HeapCursor<T extends RangeValue> {
       this.value = null;
       this.rank = -1;
     } else {
-      const top = this.heap[0];
+      let top = this.heap[0];
       this.from = top.from;
       this.to = top.to;
       this.value = top.value;
@@ -976,7 +986,7 @@ class SpanCursor<T extends RangeValue> {
 
   addActive(trackOpen: number[] | null) {
     let i = 0;
-    const { value, to, rank } = this.cursor;
+    let { value, to, rank } = this.cursor;
     // Organize active marks by rank first, then by size
     while (
       i < this.activeRank.length &&
@@ -993,12 +1003,12 @@ class SpanCursor<T extends RangeValue> {
   // After calling this, if `this.point` != null, the next range is a
   // point. Otherwise, it's a regular range, covered by `this.active`.
   next() {
-    const from = this.to;
-    const wasPoint = this.point;
+    let from = this.to;
+    let wasPoint = this.point;
     this.point = null;
-    const trackOpen = this.openStart < 0 ? [] : null;
+    let trackOpen = this.openStart < 0 ? [] : null;
     for (;;) {
-      const a = this.minActive;
+      let a = this.minActive;
       if (
         a > -1 &&
         (this.activeTo[a] - this.cursor.from ||
@@ -1019,7 +1029,7 @@ class SpanCursor<T extends RangeValue> {
         this.endSide = this.cursor.startSide;
         break;
       } else {
-        const nextVal = this.cursor.value;
+        let nextVal = this.cursor.value;
         if (!nextVal.point) {
           // Opening a range
           this.addActive(trackOpen);
@@ -1053,7 +1063,7 @@ class SpanCursor<T extends RangeValue> {
 
   activeForPoint(to: number) {
     if (!this.active.length) return this.active;
-    const active = [];
+    let active = [];
     for (let i = this.active.length - 1; i >= 0; i--) {
       if (this.activeRank[i] < this.pointRank) break;
       if (
@@ -1084,31 +1094,39 @@ function compare<T extends RangeValue>(
 ) {
   a.goto(startA);
   b.goto(startB);
-  const endB = startB + length;
+  let endB = startB + length;
   let pos = startB;
-  const dPos = startB - startA;
-  for (;;) {
-    const dEnd = a.to + dPos - b.to;
-    const diff = dEnd || a.endSide - b.endSide;
-    const end = diff < 0 ? a.to + dPos : b.to;
-    const clipEnd = Math.min(end, endB);
-    if (a.point || b.point) {
+  let dPos = startB - startA;
+  let bounds = !!comparator.boundChange;
+  for (let boundChange = false; ; ) {
+    let dEnd = a.to + dPos - b.to;
+    let diff = dEnd || a.endSide - b.endSide;
+    let end = diff < 0 ? a.to + dPos : b.to;
+    let clipEnd = Math.min(end, endB);
+    let point = a.point || b.point;
+    if (point) {
       if (
         !(
           a.point &&
           b.point &&
-          (a.point == b.point || a.point.eq(b.point)) &&
+          cmpVal(a.point, b.point) &&
           sameValues(a.activeForPoint(a.to), b.activeForPoint(b.to))
         )
       )
         comparator.comparePoint(pos, clipEnd, a.point, b.point);
+      boundChange = false;
     } else {
+      if (boundChange) comparator.boundChange!(pos);
       if (clipEnd > pos && !sameValues(a.active, b.active))
         comparator.compareRange(pos, clipEnd, a.active, b.active);
+      if (
+        bounds &&
+        clipEnd < endB &&
+        (dEnd || a.openEnd(end) != b.openEnd(end))
+      )
+        boundChange = true;
     }
     if (end > endB) break;
-    if ((dEnd || a.openEnd != b.openEnd) && comparator.boundChange)
-      comparator.boundChange(end);
     pos = end;
     if (diff <= 0) a.next();
     if (diff >= 0) b.next();
@@ -1118,7 +1136,7 @@ function compare<T extends RangeValue>(
 function sameValues<T extends RangeValue>(a: T[], b: T[]) {
   if (a.length != b.length) return false;
   for (let i = 0; i < a.length; i++)
-    if (a[i] != b[i] && !a[i].eq(b[i])) return false;
+    if (a[i] != b[i] && !cmpVal(a[i], b[i])) return false;
   return true;
 }
 

@@ -209,7 +209,7 @@ export const defaultMarkdownSerializer = new MarkdownSerializer(
 
 function backticksFor(node: Node, side: number) {
   let ticks = /`+/g;
-  let m;
+  let m: RegExpExecArray | null;
   let len = 0;
   if (node.isText)
     while ((m = ticks.exec(node.text!))) len = Math.max(len, m[0].length);
@@ -433,8 +433,7 @@ export class MarkdownSerializerState {
           return (
             info &&
             info.expelEnclosingWhitespace &&
-            (index == parent.childCount - 1 ||
-              !mark.isInSet(parent.child(index + 1).marks))
+            !this.isMarkAhead(parent, index + 1, mark)
           );
         })
       ) {
@@ -607,5 +606,16 @@ export class MarkdownSerializerState {
       leading: (text.match(/^(\s+)/) || [undefined])[0],
       trailing: (text.match(/(\s+)$/) || [undefined])[0],
     };
+  }
+
+  /// @internal
+  isMarkAhead(parent: Node, index: number, mark: Mark) {
+    for (; ; index++) {
+      if (index >= parent.childCount) return false;
+      let next = parent.child(index);
+      if (next.type.name != this.options.hardBreakNodeName)
+        return mark.isInSet(next.marks);
+      index++;
+    }
   }
 }

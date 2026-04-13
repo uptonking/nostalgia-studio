@@ -1,14 +1,14 @@
 import {
   Facet,
   ChangeSet,
-  type ChangeDesc,
+  ChangeDesc,
   StateField,
   Annotation,
-  type EditorState,
+  EditorState,
   StateEffect,
   Transaction,
   combineConfig,
-  type Extension,
+  Extension,
 } from '@codemirror/state';
 
 /// An update is a set of changes and effects.
@@ -63,7 +63,7 @@ const collabConfig = Facet.define<
   Required<CollabConfig>
 >({
   combine(configs) {
-    const combined = combineConfig(
+    let combined = combineConfig(
       configs,
       { startVersion: 0, clientID: null as any, sharedEffects: () => [] },
       {
@@ -75,17 +75,19 @@ const collabConfig = Facet.define<
     return combined;
   },
 });
+
 const collabReceive = Annotation.define<CollabState>();
+
 const collabField = StateField.define({
   create(state) {
     return new CollabState(state.facet(collabConfig).startVersion, []);
   },
 
   update(collab: CollabState, tr: Transaction) {
-    const isSync = tr.annotation(collabReceive);
+    let isSync = tr.annotation(collabReceive);
     if (isSync) return isSync;
-    const { sharedEffects, clientID } = tr.startState.facet(collabConfig);
-    const effects = sharedEffects(tr);
+    let { sharedEffects, clientID } = tr.startState.facet(collabConfig);
+    let effects = sharedEffects(tr);
     if (effects.length || !tr.changes.empty)
       return new CollabState(
         collab.version,
@@ -113,14 +115,15 @@ export function collab(config: CollabConfig = {}): Extension {
 /// forward to adjust to the authority's view of the document.
 export function receiveUpdates(state: EditorState, updates: readonly Update[]) {
   let { version, unconfirmed } = state.field(collabField);
-  const { clientID } = state.facet(collabConfig);
+  let { clientID } = state.facet(collabConfig);
 
   version += updates.length;
   let effects: readonly StateEffect<any>[] = [];
   let changes = null;
+
   let own = 0;
-  for (const update of updates) {
-    const ours = own < unconfirmed.length ? unconfirmed[own] : null;
+  for (let update of updates) {
+    let ours = own < unconfirmed.length ? unconfirmed[own] : null;
     if (ours && ours.clientID == update.clientID) {
       if (changes) changes = changes.map(ours.changes, true);
       effects = StateEffect.mapEffects(effects, update.changes);
@@ -136,7 +139,7 @@ export function receiveUpdates(state: EditorState, updates: readonly Update[]) {
   if (unconfirmed.length) {
     if (changes)
       unconfirmed = unconfirmed.map((update) => {
-        const updateChanges = update.changes.map(changes!);
+        let updateChanges = update.changes.map(changes!);
         changes = changes!.map(update.changes, true);
         return new LocalUpdate(
           update.origin,
@@ -146,7 +149,7 @@ export function receiveUpdates(state: EditorState, updates: readonly Update[]) {
         );
       });
     if (effects.length) {
-      const composed = unconfirmed.reduce(
+      let composed = unconfirmed.reduce(
         (ch, u) => ch.compose(u.changes),
         ChangeSet.empty(unconfirmed[0].changes.length),
       );
@@ -209,8 +212,8 @@ export function rebaseUpdates(
   if (!over.length || !updates.length) return updates;
   let changes: ChangeDesc | null = null;
   let skip = 0;
-  for (const update of over) {
-    const other = skip < updates.length ? updates[skip] : null;
+  for (let update of over) {
+    let other = skip < updates.length ? updates[skip] : null;
     if (other && other.clientID == update.clientID) {
       if (changes) changes = changes.mapDesc(other.changes, true);
       skip++;
@@ -223,7 +226,7 @@ export function rebaseUpdates(
   return !changes
     ? updates
     : updates.map((update) => {
-        const updateChanges = update.changes.map(changes!);
+        let updateChanges = update.changes.map(changes!);
         changes = changes!.mapDesc(update.changes, true);
         return {
           changes: updateChanges,

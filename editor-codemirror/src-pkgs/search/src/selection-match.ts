@@ -2,17 +2,17 @@ import {
   EditorView,
   ViewPlugin,
   Decoration,
-  type DecorationSet,
-  type ViewUpdate,
+  DecorationSet,
+  ViewUpdate,
 } from '@codemirror/view';
 import {
   Facet,
   combineConfig,
-  type Extension,
+  Extension,
   CharCategory,
   EditorSelection,
-  type EditorState,
-  type StateCommand,
+  EditorState,
+  StateCommand,
 } from '@codemirror/state';
 import { SearchCursor } from './cursor';
 
@@ -36,6 +36,7 @@ const defaultHighlightOptions = {
   maxMatches: 100,
   wholeWords: false,
 };
+
 const highlightConfig = Facet.define<
   HighlightOptions,
   Required<HighlightOptions>
@@ -56,7 +57,7 @@ const highlightConfig = Facet.define<
 export function highlightSelectionMatches(
   options?: HighlightOptions,
 ): Extension {
-  const ext = [defaultTheme, matchHighlighter];
+  let ext = [defaultTheme, matchHighlighter];
   if (options) ext.push(highlightConfig.of(options));
   return ext;
 }
@@ -107,21 +108,21 @@ const matchHighlighter = ViewPlugin.fromClass(
     }
 
     getDeco(view: EditorView) {
-      const conf = view.state.facet(highlightConfig);
-      const { state } = view;
-      const sel = state.selection;
+      let conf = view.state.facet(highlightConfig);
+      let { state } = view;
+      let sel = state.selection;
       if (sel.ranges.length > 1) return Decoration.none;
-      const range = sel.main;
+      let range = sel.main;
       let query;
       let check = null;
       if (range.empty) {
         if (!conf.highlightWordAroundCursor) return Decoration.none;
-        const word = state.wordAt(range.head);
+        let word = state.wordAt(range.head);
         if (!word) return Decoration.none;
         check = state.charCategorizer(range.head);
         query = state.sliceDoc(word.from, word.to);
       } else {
-        const len = range.to - range.from;
+        let len = range.to - range.from;
         if (len < conf.minSelectionLength || len > 200) return Decoration.none;
         if (conf.wholeWords) {
           query = state.sliceDoc(range.from, range.to); // TODO: allow and include leading/trailing space?
@@ -138,11 +139,11 @@ const matchHighlighter = ViewPlugin.fromClass(
           if (!query) return Decoration.none;
         }
       }
-      const deco = [];
-      for (const part of view.visibleRanges) {
-        const cursor = new SearchCursor(state.doc, query, part.from, part.to);
+      let deco = [];
+      for (let part of view.visibleRanges) {
+        let cursor = new SearchCursor(state.doc, query, part.from, part.to);
         while (!cursor.next().done) {
-          const { from, to } = cursor.value;
+          let { from, to } = cursor.value;
           if (!check || insideWordBoundaries(check, state, from, to)) {
             if (range.empty && from <= range.from && to >= range.to)
               deco.push(mainMatchDeco.range(from, to));
@@ -159,14 +160,16 @@ const matchHighlighter = ViewPlugin.fromClass(
     decorations: (v) => v.decorations,
   },
 );
+
 const defaultTheme = EditorView.baseTheme({
   '.cm-selectionMatch': { backgroundColor: '#99ff7780' },
   '.cm-searchMatch .cm-selectionMatch': { backgroundColor: 'transparent' },
 });
+
 // Select the words around the cursors.
 const selectWord: StateCommand = ({ state, dispatch }) => {
-  const { selection } = state;
-  const newSel = EditorSelection.create(
+  let { selection } = state;
+  let newSel = EditorSelection.create(
     selection.ranges.map(
       (range) => state.wordAt(range.head) || EditorSelection.cursor(range.head),
     ),
@@ -180,9 +183,9 @@ const selectWord: StateCommand = ({ state, dispatch }) => {
 // Find next occurrence of query relative to last cursor. Wrap around
 // the document if there are no more matches.
 function findNextOccurrence(state: EditorState, query: string) {
-  const { main, ranges } = state.selection;
-  const word = state.wordAt(main.head);
-  const fullWord = word && word.from == main.from && word.to == main.to;
+  let { main, ranges } = state.selection;
+  let word = state.wordAt(main.head);
+  let fullWord = word && word.from == main.from && word.to == main.to;
   for (
     let cycled = false,
       cursor = new SearchCursor(state.doc, query, ranges[ranges.length - 1].to);
@@ -202,7 +205,7 @@ function findNextOccurrence(state: EditorState, query: string) {
     } else {
       if (cycled && ranges.some((r) => r.from == cursor.value.from)) continue;
       if (fullWord) {
-        const word = state.wordAt(cursor.value.from);
+        let word = state.wordAt(cursor.value.from);
         if (
           !word ||
           word.from != cursor.value.from ||
@@ -218,11 +221,11 @@ function findNextOccurrence(state: EditorState, query: string) {
 /// Select next occurrence of the current selection. Expand selection
 /// to the surrounding word when the selection is empty.
 export const selectNextOccurrence: StateCommand = ({ state, dispatch }) => {
-  const { ranges } = state.selection;
+  let { ranges } = state.selection;
   if (ranges.some((sel) => sel.from === sel.to))
     return selectWord({ state, dispatch });
 
-  const searchedText = state.sliceDoc(ranges[0].from, ranges[0].to);
+  let searchedText = state.sliceDoc(ranges[0].from, ranges[0].to);
   if (
     state.selection.ranges.some(
       (r) => state.sliceDoc(r.from, r.to) != searchedText,
@@ -230,7 +233,7 @@ export const selectNextOccurrence: StateCommand = ({ state, dispatch }) => {
   )
     return false;
 
-  const range = findNextOccurrence(state, searchedText);
+  let range = findNextOccurrence(state, searchedText);
   if (!range) return false;
 
   dispatch(

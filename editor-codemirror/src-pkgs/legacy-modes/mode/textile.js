@@ -1,4 +1,4 @@
-const TOKEN_STYLES = {
+var TOKEN_STYLES = {
   addition: 'inserted',
   attributes: 'propertyName',
   bold: 'strong',
@@ -64,7 +64,7 @@ function handlePhraseModifier(stream, state, ch) {
   }
 
   if (ch === '(') {
-    const spec = stream.match(/^(r|tm|c)\)/);
+    var spec = stream.match(/^(r|tm|c)\)/);
     if (spec) return TOKEN_STYLES.specialChar;
   }
 
@@ -92,7 +92,7 @@ function handlePhraseModifier(stream, state, ch) {
   if (ch === '@') return togglePhraseModifier(stream, state, 'code', /@/, 1);
 
   if (ch === '!') {
-    const type = togglePhraseModifier(
+    var type = togglePhraseModifier(
       stream,
       state,
       'image',
@@ -112,18 +112,18 @@ function togglePhraseModifier(
   closeRE,
   openSize,
 ) {
-  const charBefore =
+  var charBefore =
     stream.pos > openSize
       ? stream.string.charAt(stream.pos - openSize - 1)
       : null;
-  const charAfter = stream.peek();
+  var charAfter = stream.peek();
   if (state[phraseModifier]) {
     if (
       (!charAfter || /\W/.test(charAfter)) &&
       charBefore &&
       /\S/.test(charBefore)
     ) {
-      const type = tokenStyles(state);
+      var type = tokenStyles(state);
       state[phraseModifier] = false;
       return type;
     }
@@ -140,10 +140,10 @@ function togglePhraseModifier(
 }
 
 function tokenStyles(state) {
-  const disabled = textileDisabled(state);
+  var disabled = textileDisabled(state);
   if (disabled) return disabled;
 
-  let styles = [];
+  var styles = [];
   if (state.layoutType) styles.push(TOKEN_STYLES[state.layoutType]);
 
   styles = styles.concat(
@@ -175,7 +175,7 @@ function tokenStyles(state) {
 }
 
 function textileDisabled(state) {
-  const type = state.layoutType;
+  var type = state.layoutType;
 
   switch (type) {
     case 'notextile':
@@ -190,18 +190,18 @@ function textileDisabled(state) {
 }
 
 function activeStyles(state) {
-  const styles = [];
-  for (let i = 1; i < arguments.length; ++i) {
+  var styles = [];
+  for (var i = 1; i < arguments.length; ++i) {
     if (state[arguments[i]]) styles.push(TOKEN_STYLES[arguments[i]]);
   }
   return styles;
 }
 
 function blankLine(state) {
-  const spanningLayout = state.spanningLayout;
-  const type = state.layoutType;
+  var spanningLayout = state.spanningLayout;
+  var type = state.layoutType;
 
-  for (const key in state) if (state.hasOwnProperty(key)) delete state[key];
+  for (var key in state) if (state.hasOwnProperty(key)) delete state[key];
 
   state.mode = Modes.newLayout;
   if (spanningLayout) {
@@ -304,16 +304,16 @@ var REs = {
     }
   },
   makeRe: function () {
-    let pattern = '';
-    for (let i = 0; i < arguments.length; ++i) {
-      const arg = arguments[i];
+    var pattern = '';
+    for (var i = 0; i < arguments.length; ++i) {
+      var arg = arguments[i];
       pattern += typeof arg === 'string' ? arg : arg.source;
     }
     return new RegExp(pattern);
   },
   choiceRe: function () {
-    const parts = [arguments[0]];
-    for (let i = 1; i < arguments.length; ++i) {
+    var parts = [arguments[0]];
+    for (var i = 1; i < arguments.length; ++i) {
       parts[i * 2 - 1] = '|';
       parts[i * 2] = arguments[i];
     }
@@ -334,7 +334,7 @@ var Modes = {
       state.spanningLayout = false;
       return (state.mode = Modes.blockType)(stream, state);
     }
-    let newMode;
+    var newMode;
     if (!textileDisabled(state)) {
       if (stream.match(RE('listLayout'), false)) newMode = Modes.list;
       else if (stream.match(RE('drawTable'), false)) newMode = Modes.table;
@@ -348,8 +348,8 @@ var Modes = {
   },
 
   blockType: function (stream, state) {
-    let match;
-    let type;
+    var match;
+    var type;
     state.layoutType = null;
 
     if ((match = stream.match(RE('type')))) type = match[0];
@@ -381,7 +381,7 @@ var Modes = {
   text: function (stream, state) {
     if (stream.match(RE('text'))) return tokenStyles(state);
 
-    const ch = stream.next();
+    var ch = stream.next();
     if (ch === '"') return (state.mode = Modes.link)(stream, state);
     return handlePhraseModifier(stream, state, ch);
   },
@@ -401,9 +401,9 @@ var Modes = {
   },
 
   list: function (stream, state) {
-    const match = stream.match(RE('list'));
+    var match = stream.match(RE('list'));
     state.listDepth = match[0].length;
-    const listMod = (state.listDepth - 1) % 3;
+    var listMod = (state.listDepth - 1) % 3;
     if (!listMod) state.layoutType = 'list1';
     else if (listMod === 1) state.layoutType = 'list2';
     else state.layoutType = 'list3';

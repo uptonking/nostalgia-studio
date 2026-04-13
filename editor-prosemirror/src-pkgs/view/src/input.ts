@@ -45,6 +45,7 @@ export class InputState {
   compositionNodes: ViewDesc[] = [];
   compositionEndedAt = -2e8;
   compositionID = 1;
+  badSafariComposition = false;
   // Set to a composition ID when there are pending changes at compositionend
   compositionPendingChanges = 0;
   domChangeCount = 0;
@@ -465,18 +466,18 @@ class MouseDown {
     const target = flushed ? null : (event.target as HTMLElement);
     const targetDesc = target ? view.docView.nearestDesc(target, true) : null;
     this.target =
-      targetDesc && targetDesc.dom.nodeType == 1
-        ? (targetDesc.dom as HTMLElement)
+      targetDesc && targetDesc.nodeDOM.nodeType == 1
+        ? (targetDesc.nodeDOM as HTMLElement)
         : null;
 
     let { selection } = view.state;
     if (
-      (event.button == 0 &&
-        targetNode.type.spec.draggable &&
+      event.button == 0 &&
+      ((targetNode.type.spec.draggable &&
         targetNode.type.spec.selectable !== false) ||
-      (selection instanceof NodeSelection &&
-        selection.from <= targetPos &&
-        selection.to > targetPos)
+        (selection instanceof NodeSelection &&
+          selection.from <= targetPos &&
+          selection.to > targetPos))
     )
       this.mightDrag = {
         node: targetNode,
@@ -639,8 +640,12 @@ editHandlers.compositionstart = editHandlers.compositionupdate = (view) => {
       (state.storedMarks ||
         (!$pos.textOffset &&
           $pos.parentOffset &&
-          $pos.nodeBefore!.marks.some((m) => m.type.spec.inclusive === false)))
+          $pos.nodeBefore!.marks.some(
+            (m) => m.type.spec.inclusive === false,
+          )) ||
+        (browser.chrome && browser.windows && selectionBeforeUneditable(view)))
     ) {
+      // Issue #1500
       // Need to wrap the cursor in mark nodes different from the ones in the DOM context
       view.markCursor = view.state.storedMarks || $pos.marks();
       endComposition(view, true);
@@ -682,6 +687,18 @@ editHandlers.compositionstart = editHandlers.compositionupdate = (view) => {
   scheduleComposeEnd(view, timeoutComposition);
 };
 
+function selectionBeforeUneditable(view: EditorView) {
+  let { focusNode, focusOffset } = view.domSelectionRange();
+  if (
+    !focusNode ||
+    focusNode.nodeType != 1 ||
+    focusOffset >= focusNode.childNodes.length
+  )
+    return false;
+  let next = focusNode.childNodes[focusOffset];
+  return next.nodeType == 1 && (next as HTMLElement).contentEditable == 'false';
+}
+
 editHandlers.compositionend = (view, event) => {
   if (view.composing) {
     view.input.composing = false;
@@ -691,7 +708,8 @@ editHandlers.compositionend = (view, event) => {
       ? view.input.compositionID
       : 0;
     view.input.compositionNode = null;
-    if (view.input.compositionPendingChanges)
+    if (view.input.badSafariComposition) view.domObserver.forceFlush();
+    else if (view.input.compositionPendingChanges)
       Promise.resolve().then(() => view.domObserver.flush());
     view.input.compositionID++;
     scheduleComposeEnd(view, 20);
@@ -947,7 +965,7 @@ handlers.dragstart = (view, _event) => {
     brokenClipboardAPI ? 'Text' : 'text/html',
     dom.innerHTML,
   );
-  // See https://github.com/ProseMirror/prosemirror/issues/1156
+  // See https://code.haverbeke.berlin/prosemirror/prosemirror/issues/1156
   event.dataTransfer.effectAllowed = 'copyMove';
   if (!brokenClipboardAPI) event.dataTransfer.setData('text/plain', text);
   view.dragging = new Dragging(slice, dragMoves(view, event), node);
@@ -962,11 +980,19 @@ handlers.dragend = (view) => {
 
 editHandlers.dragover = editHandlers.dragenter = (_, e) => e.preventDefault();
 
-editHandlers.drop = (view, _event) => {
-  let event = _event as DragEvent;
-  let dragging = view.dragging;
-  view.dragging = null;
+editHandlers.drop = (view, event) => {
+  try {
+    handleDrop(view, event as DragEvent, view.dragging);
+  } finally {
+    view.dragging = null;
+  }
+};
 
+function handleDrop(
+  view: EditorView,
+  event: DragEvent,
+  dragging: Dragging | null,
+) {
   if (!event.dataTransfer) return;
 
   let eventPos = view.posAtCoords(eventCoords(event));
@@ -975,7 +1001,7 @@ editHandlers.drop = (view, _event) => {
   let slice = dragging && dragging.slice;
   if (slice) {
     view.someProp('transformPasted', (f) => {
-      slice = f(slice!, view);
+      slice = f(slice!, view, false);
     });
   } else {
     slice = parseFromClipboard(
@@ -1035,7 +1061,7 @@ editHandlers.drop = (view, _event) => {
   }
   view.focus();
   view.dispatch(tr.setMeta('uiEvent', 'drop'));
-};
+}
 
 handlers.focus = (view) => {
   view.input.lastFocus = Date.now();

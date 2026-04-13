@@ -1,6 +1,6 @@
 function mkZ80(ez80) {
-  let keywords1;
-  let keywords2;
+  var keywords1;
+  var keywords2;
   if (ez80) {
     keywords1 =
       /^(exx?|(ld|cp)([di]r?)?|[lp]ea|pop|push|ad[cd]|cpl|daa|dec|inc|neg|sbc|sub|and|bit|[cs]cf|x?or|res|set|r[lr]c?a?|r[lr]d|s[lr]a|srl|djnz|nop|[de]i|halt|im|in([di]mr?|ir?|irx|2r?)|ot(dmr?|[id]rx|imr?)|out(0?|[di]r?|[di]2r?)|tst(io)?|slp)(\.([sl]?i)?[sl])?\b/i;
@@ -12,10 +12,10 @@ function mkZ80(ez80) {
     keywords2 = /^(call|j[pr]|ret[in]?|b_?(call|jump))\b/i;
   }
 
-  const variables1 = /^(af?|bc?|c|de?|e|hl?|l|i[xy]?|r|sp)\b/i;
-  const variables2 = /^(n?[zc]|p[oe]?|m)\b/i;
-  const errors = /^([hl][xy]|i[xy][hl]|slia|sll)\b/i;
-  const numbers = /^([\da-f]+h|[0-7]+o|[01]+b|\d+d?)\b/i;
+  var variables1 = /^(af?|bc?|c|de?|e|hl?|l|i[xy]?|r|sp)\b/i;
+  var variables2 = /^(n?[zc]|p[oe]?|m)\b/i;
+  var errors = /^([hl][xy]|i[xy][hl]|slia|sll)\b/i;
+  var numbers = /^([\da-f]+h|[0-7]+o|[01]+b|\d+d?)\b/i;
 
   return {
     name: 'z80',
@@ -29,7 +29,7 @@ function mkZ80(ez80) {
 
       if (stream.eatSpace()) return null;
 
-      let w;
+      var w;
 
       if (stream.eatWhile(/\w/)) {
         if (ez80 && stream.eat('.')) {

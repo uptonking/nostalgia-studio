@@ -4,26 +4,25 @@ import { Schema, NodeType, MarkType } from './schema';
 import { Mark } from './mark';
 import { DOMNode } from './dom';
 
-/// A description of a DOM structure. Can be either a string, which is
-/// interpreted as a text node, a DOM node, which is interpreted as
-/// itself, a `{dom, contentDOM}` object, or an array.
+/// A description of a DOM structure. Can be either a DOM element, a
+/// `{dom, contentDOM}` object, or an array.
 ///
 /// An array describes a DOM element. The first value in the array
-/// should be a string—the name of the DOM element, optionally prefixed
-/// by a namespace URL and a space. If the second element is plain
-/// object, it is interpreted as a set of attributes for the element.
-/// Any elements after that (including the 2nd if it's not an attribute
-/// object) are interpreted as children of the DOM elements, and must
-/// either be valid `DOMOutputSpec` values, or the number zero.
+/// should be a string—the name of the DOM element, optionally
+/// prefixed by a namespace URL and a space. If the second element is
+/// plain object, it is interpreted as a set of attributes for the
+/// element. Any elements after that (including the 2nd if it's not an
+/// attribute object) are interpreted as children of the DOM elements,
+/// and must either be valid `DOMOutputSpec` values, strings (for text
+/// nodes), or the number zero.
 ///
 /// The number zero (pronounced “hole”) is used to indicate the place
 /// where a node's child nodes should be inserted. If it occurs in an
 /// output spec, it should be the only child element in its parent
 /// node.
 export type DOMOutputSpec =
-  | string
-  | DOMNode
-  | { dom: DOMNode; contentDOM?: HTMLElement }
+  | HTMLElement
+  | { dom: HTMLElement; contentDOM?: HTMLElement }
   | readonly [string, ...any[]];
 
 /// A DOM serializer knows how to convert ProseMirror nodes and
@@ -92,6 +91,7 @@ export class DOMSerializer {
 
   /// @internal
   serializeNodeInner(node: Node, options: { document?: Document }) {
+    if (node.isText) return doc(options).createTextNode(node.text!);
     let { dom, contentDOM } = renderSpec(
       doc(options),
       this.nodes[node.type.name](node),
@@ -143,7 +143,7 @@ export class DOMSerializer {
     structure: DOMOutputSpec,
     xmlNS?: string | null,
   ): {
-    dom: DOMNode;
+    dom: HTMLElement;
     contentDOM?: HTMLElement;
   };
   static renderSpec(
@@ -152,9 +152,13 @@ export class DOMSerializer {
     xmlNS: string | null = null,
     blockArraysIn?: { [name: string]: any },
   ): {
-    dom: DOMNode;
+    dom: HTMLElement;
     contentDOM?: HTMLElement;
   } {
+    // Kludge for backwards-compatibility with accidental original behavious
+    if (typeof structure == 'string')
+      return { dom: doc.createTextNode(structure) as any };
+
     return renderSpec(doc, structure, xmlNS, blockArraysIn);
   }
 
@@ -243,15 +247,13 @@ function renderSpec(
   xmlNS: string | null,
   blockArraysIn?: { [name: string]: any },
 ): {
-  dom: DOMNode;
+  dom: HTMLElement;
   contentDOM?: HTMLElement;
 } {
-  if (typeof structure == 'string')
-    return { dom: doc.createTextNode(structure) };
-  if ((structure as DOMNode).nodeType != null)
-    return { dom: structure as DOMNode };
-  if ((structure as any).dom && (structure as any).dom.nodeType != null)
-    return structure as { dom: DOMNode; contentDOM?: HTMLElement };
+  if ((structure as DOMNode).nodeType == 3)
+    return { dom: structure as HTMLElement };
+  if ((structure as any).dom && (structure as any).dom.nodeType == 3)
+    return structure as { dom: HTMLElement; contentDOM?: HTMLElement };
   let tagName = (structure as [string])[0];
   let suspicious;
   if (typeof tagName != 'string')
@@ -296,13 +298,15 @@ function renderSpec(
       }
   }
   for (let i = start; i < (structure as readonly any[]).length; i++) {
-    let child = (structure as any)[i] as DOMOutputSpec | 0;
+    let child = (structure as any)[i] as DOMOutputSpec | string | 0;
     if (child === 0) {
       if (i < (structure as readonly any[]).length - 1 || i > start)
         throw new RangeError(
           'Content hole must be the only child of its parent node',
         );
       return { dom, contentDOM: dom };
+    } else if (typeof child == 'string') {
+      dom.appendChild(doc.createTextNode(child));
     } else {
       let { dom: inner, contentDOM: innerContent } = renderSpec(
         doc,

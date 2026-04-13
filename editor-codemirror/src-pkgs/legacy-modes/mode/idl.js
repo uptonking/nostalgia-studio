@@ -2,7 +2,7 @@ function wordRegexp(words) {
   return new RegExp('^((' + words.join(')|(') + '))\\b', 'i');
 }
 
-const builtinArray = [
+var builtinArray = [
   'a_correlate',
   'abs',
   'acos',
@@ -906,8 +906,9 @@ const builtinArray = [
   'zoom',
   'zoom_24',
 ];
-const builtins = wordRegexp(builtinArray);
-const keywordArray = [
+var builtins = wordRegexp(builtinArray);
+
+var keywordArray = [
   'begin',
   'end',
   'endcase',
@@ -933,10 +934,12 @@ const keywordArray = [
   'pro',
   'function',
 ];
-const keywords = wordRegexp(keywordArray);
-const identifiers = new RegExp('^[_a-z\xa1-\uffff][_a-z0-9\xa1-\uffff]*', 'i');
-const singleOperators = /[+\-*&=<>\/@#~$]/;
-const boolOperators = new RegExp('(and|or|eq|lt|le|gt|ge|ne|not)', 'i');
+var keywords = wordRegexp(keywordArray);
+
+var identifiers = new RegExp('^[_a-z\xa1-\uffff][_a-z0-9\xa1-\uffff]*', 'i');
+
+var singleOperators = /[+\-*&=<>\/@#~$]/;
+var boolOperators = new RegExp('(and|or|eq|lt|le|gt|ge|ne|not)', 'i');
 
 function tokenBase(stream) {
   // whitespaces

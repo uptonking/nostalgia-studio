@@ -1,23 +1,23 @@
 import {
   EditorView,
   Decoration,
-  type DecorationSet,
+  DecorationSet,
   ViewPlugin,
-  type ViewUpdate,
+  ViewUpdate,
   WidgetType,
   GutterMarker,
   gutter,
 } from '@codemirror/view';
 import {
-  type EditorState,
+  EditorState,
   RangeSetBuilder,
-  type Text,
+  Text,
   StateField,
   StateEffect,
   RangeSet,
   Prec,
 } from '@codemirror/state';
-import type { Chunk } from './chunk';
+import { Chunk } from './chunk';
 import { ChunkField, mergeConfig } from './merge';
 
 export const decorateChunks = ViewPlugin.fromClass(
@@ -63,6 +63,7 @@ const changedLine = Decoration.line({ class: 'cm-changedLine' });
 export const changedText = Decoration.mark({ class: 'cm-changedText' });
 const inserted = Decoration.mark({ tagName: 'ins', class: 'cm-insertedLine' });
 const deleted = Decoration.mark({ tagName: 'del', class: 'cm-deletedLine' });
+
 const changedLineGutterMarker = new (class extends GutterMarker {
   elementClass = 'cm-changedLineGutter';
 })();
@@ -75,8 +76,8 @@ function buildChunkDeco(
   builder: RangeSetBuilder<Decoration>,
   gutterBuilder: RangeSetBuilder<GutterMarker> | null,
 ) {
-  const from = isA ? chunk.fromA : chunk.fromB;
-  const to = isA ? chunk.toA : chunk.toB;
+  let from = isA ? chunk.fromA : chunk.fromB;
+  let to = isA ? chunk.toA : chunk.toB;
   let changeI = 0;
   if (from != to) {
     builder.add(from, from, changedLine);
@@ -93,14 +94,14 @@ function buildChunkDeco(
         if (gutterBuilder) gutterBuilder.add(pos, pos, changedLineGutterMarker);
         continue;
       }
-      const lineEnd = pos + iter.value.length;
+      let lineEnd = pos + iter.value.length;
       if (highlight)
         while (changeI < chunk.changes.length) {
-          const nextChange = chunk.changes[changeI];
-          const nextFrom = from + (isA ? nextChange.fromA : nextChange.fromB);
-          const nextTo = from + (isA ? nextChange.toA : nextChange.toB);
-          const chFrom = Math.max(pos, nextFrom);
-          const chTo = Math.min(lineEnd, nextTo);
+          let nextChange = chunk.changes[changeI];
+          let nextFrom = from + (isA ? nextChange.fromA : nextChange.fromB);
+          let nextTo = from + (isA ? nextChange.toA : nextChange.toB);
+          let chFrom = Math.max(pos, nextFrom);
+          let chTo = Math.min(lineEnd, nextTo);
           if (chFrom < chTo) builder.add(chFrom, chTo, changedText);
           if (nextTo < lineEnd) changeI++;
           else break;
@@ -111,14 +112,14 @@ function buildChunkDeco(
 }
 
 function getChunkDeco(view: EditorView) {
-  const chunks = view.state.field(ChunkField);
-  const { side, highlightChanges, markGutter, overrideChunk } =
+  let chunks = view.state.field(ChunkField);
+  let { side, highlightChanges, markGutter, overrideChunk } =
     view.state.facet(mergeConfig);
-  const isA = side == 'a';
-  const builder = new RangeSetBuilder<Decoration>();
-  const gutterBuilder = markGutter ? new RangeSetBuilder<GutterMarker>() : null;
-  const { from, to } = view.viewport;
-  for (const chunk of chunks) {
+  let isA = side == 'a';
+  let builder = new RangeSetBuilder<Decoration>();
+  let gutterBuilder = markGutter ? new RangeSetBuilder<GutterMarker>() : null;
+  let { from, to } = view.viewport;
+  for (let chunk of chunks) {
     if ((isA ? chunk.fromA : chunk.fromB) >= to) break;
     if ((isA ? chunk.toA : chunk.toB) > from) {
       if (
@@ -151,7 +152,7 @@ class Spacer extends WidgetType {
   }
 
   toDOM() {
-    const elt = document.createElement('div');
+    let elt = document.createElement('div');
     elt.className = 'cm-mergeSpacer';
     elt.style.height = this.height + 'px';
     return elt;
@@ -178,7 +179,7 @@ export const adjustSpacers = StateEffect.define<DecorationSet>({
 export const Spacers = StateField.define<DecorationSet>({
   create: () => Decoration.none,
   update: (spacers, tr) => {
-    for (const e of tr.effects) if (e.is(adjustSpacers)) return e.value;
+    for (let e of tr.effects) if (e.is(adjustSpacers)) return e.value;
     return spacers.map(tr.changes);
   },
   provide: (f) => EditorView.decorations.from(f),
@@ -188,8 +189,8 @@ const epsilon = 0.01;
 
 function compareSpacers(a: DecorationSet, b: DecorationSet) {
   if (a.size != b.size) return false;
-  const iA = a.iter();
-  const iB = b.iter();
+  let iA = a.iter();
+  let iB = b.iter();
   while (iA.value) {
     if (
       iA.from != iB.from ||
@@ -210,25 +211,25 @@ export function updateSpacers(
   b: EditorView,
   chunks: readonly Chunk[],
 ) {
-  const buildA = new RangeSetBuilder<Decoration>();
-  const buildB = new RangeSetBuilder<Decoration>();
-  const spacersA = a.state.field(Spacers).iter();
-  const spacersB = b.state.field(Spacers).iter();
+  let buildA = new RangeSetBuilder<Decoration>();
+  let buildB = new RangeSetBuilder<Decoration>();
+  let spacersA = a.state.field(Spacers).iter();
+  let spacersB = b.state.field(Spacers).iter();
   let posA = 0;
   let posB = 0;
   let offA = 0;
   let offB = 0;
-  const vpA = a.viewport;
-  const vpB = b.viewport;
+  let vpA = a.viewport;
+  let vpB = b.viewport;
   chunks: for (let chunkI = 0; ; chunkI++) {
-    const chunk = chunkI < chunks.length ? chunks[chunkI] : null;
-    const endA = chunk ? chunk.fromA : a.state.doc.length;
-    const endB = chunk ? chunk.fromB : b.state.doc.length;
+    let chunk = chunkI < chunks.length ? chunks[chunkI] : null;
+    let endA = chunk ? chunk.fromA : a.state.doc.length;
+    let endB = chunk ? chunk.fromB : b.state.doc.length;
     // A range at posA/posB is unchanged, must be aligned.
     if (posA < endA) {
-      const heightA = a.lineBlockAt(posA).top + offA;
-      const heightB = b.lineBlockAt(posB).top + offB;
-      const diff = heightA - heightB;
+      let heightA = a.lineBlockAt(posA).top + offA;
+      let heightB = b.lineBlockAt(posB).top + offB;
+      let diff = heightA - heightB;
       if (diff < -epsilon) {
         offA -= diff;
         buildA.add(
@@ -264,7 +265,7 @@ export function updateSpacers(
       posB < vpB.from &&
       endB > vpB.from
     ) {
-      const off = Math.min(vpA.from - posA, vpB.from - posB);
+      let off = Math.min(vpA.from - posA, vpB.from - posB);
       posA += off;
       posB += off;
       chunkI--;
@@ -291,7 +292,7 @@ export function updateSpacers(
     offB -= (spacersB.value.spec.widget as any).height;
     spacersB.next();
   }
-  const docDiff = a.contentHeight + offA - (b.contentHeight + offB);
+  let docDiff = a.contentHeight + offA - (b.contentHeight + offB);
   if (docDiff < epsilon) {
     buildA.add(
       a.state.doc.length,
@@ -314,8 +315,8 @@ export function updateSpacers(
     );
   }
 
-  const decoA = buildA.finish();
-  const decoB = buildB.finish();
+  let decoA = buildA.finish();
+  let decoB = buildB.finish();
   if (!compareSpacers(decoA, a.state.field(Spacers)))
     a.dispatch({ effects: adjustSpacers.of(decoA) });
   if (!compareSpacers(decoB, b.state.field(Spacers)))
@@ -328,6 +329,18 @@ export const uncollapseUnchanged = StateEffect.define<number>({
   map: (value, change) => change.mapPos(value),
 });
 
+/// Query whether the given view is displayed next to another editor
+/// in a merge view. Returns `null` if it isn't, and a pair of editors
+/// (one of which will be the view itself) otherwise.
+export function mergeViewSiblings(view: EditorView) {
+  let conf = view.state.facet(mergeConfig);
+  return !conf || !conf.sibling
+    ? null
+    : conf.side == 'a'
+      ? { a: view, b: conf.sibling() }
+      : { a: conf.sibling(), b: view };
+}
+
 class CollapseWidget extends WidgetType {
   constructor(readonly lines: number) {
     super();
@@ -338,13 +351,13 @@ class CollapseWidget extends WidgetType {
   }
 
   toDOM(view: EditorView) {
-    const outer = document.createElement('div');
+    let outer = document.createElement('div');
     outer.className = 'cm-collapsedLines';
     outer.textContent = view.state.phrase('$ unchanged lines', this.lines);
     outer.addEventListener('click', (e) => {
-      const pos = view.posAtDOM(e.target as HTMLElement);
+      let pos = view.posAtDOM(e.target as HTMLElement);
       view.dispatch({ effects: uncollapseUnchanged.of(pos) });
-      const { side, sibling } = view.state.facet(mergeConfig);
+      let { side, sibling } = view.state.facet(mergeConfig);
       if (sibling)
         sibling().dispatch({
           effects: uncollapseUnchanged.of(
@@ -372,7 +385,7 @@ function mapPos(pos: number, chunks: readonly Chunk[], isA: boolean) {
   let startOur = 0;
   let startOther = 0;
   for (let i = 0; ; i++) {
-    const next = i < chunks.length ? chunks[i] : null;
+    let next = i < chunks.length ? chunks[i] : null;
     if (!next || (isA ? next.fromA : next.fromB) >= pos)
       return startOther + (pos - startOur);
     [startOur, startOther] = isA ? [next.toA, next.toB] : [next.toB, next.toA];
@@ -385,7 +398,7 @@ const CollapsedRanges = StateField.define<DecorationSet>({
   },
   update(deco, tr) {
     deco = deco.map(tr.changes);
-    for (const e of tr.effects)
+    for (let e of tr.effects)
       if (e.is(uncollapseUnchanged))
         deco = deco.update({ filter: (from) => from != e.value });
     return deco;
@@ -410,17 +423,17 @@ function buildCollapsedRanges(
   margin: number,
   minLines: number,
 ) {
-  const builder = new RangeSetBuilder<Decoration>();
-  const isA = state.facet(mergeConfig).side == 'a';
-  const chunks = state.field(ChunkField);
+  let builder = new RangeSetBuilder<Decoration>();
+  let isA = state.facet(mergeConfig).side == 'a';
+  let chunks = state.field(ChunkField);
   let prevLine = 1;
   for (let i = 0; ; i++) {
-    const chunk = i < chunks.length ? chunks[i] : null;
-    const collapseFrom = i ? prevLine + margin : 1;
-    const collapseTo = chunk
+    let chunk = i < chunks.length ? chunks[i] : null;
+    let collapseFrom = i ? prevLine + margin : 1;
+    let collapseTo = chunk
       ? state.doc.lineAt(isA ? chunk.fromA : chunk.fromB).number - 1 - margin
       : state.doc.lines;
-    const lines = collapseTo - collapseFrom + 1;
+    let lines = collapseTo - collapseFrom + 1;
     if (lines >= minLines) {
       builder.add(
         state.doc.line(collapseFrom).from,

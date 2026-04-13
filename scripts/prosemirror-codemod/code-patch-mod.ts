@@ -11,10 +11,10 @@ async function removeDeclareFromClassField() {
     '../../editor-prosemirror/src-pkgs',
   );
   const paths = [
-    `${prosemirrorProjectRoot}/state/src/text.ts`,
+    // `${prosemirrorProjectRoot}/state/src/text.ts`,
     `${prosemirrorProjectRoot}/state/src/transaction.ts`,
-    `${prosemirrorProjectRoot}/view/src/editorview.ts`,
-    `${prosemirrorProjectRoot}/view/src/contentview.ts`,
+    // `${prosemirrorProjectRoot}/view/src/editorview.ts`,
+    // `${prosemirrorProjectRoot}/view/src/contentview.ts`,
     // unnecessary to remove declare
     // `${prosemirrorProjectRoot}/view/src/blockview.ts`,
   ];
@@ -43,34 +43,34 @@ async function assignClassFieldValue() {
     '../../editor-prosemirror/src-pkgs',
   );
   const filesSrc = [
-    {
-      path: `${prosemirrorProjectRoot}/state/src/rangeset.ts`,
-      className: 'RangeValue',
-      fieldName: 'point',
-      fieldValue: false,
-    },
-    {
-      path: `${prosemirrorProjectRoot}/view/src/gutter.ts`,
-      className: 'GutterMarker',
-      fieldName: 'startSide',
-      fieldValue: -1,
-      addFieldIfNotExist: true,
-    },
-    {
-      path: `${prosemirrorProjectRoot}/view/src/gutter.ts`,
-      className: 'GutterMarker',
-      fieldName: 'endSide',
-      fieldValue: -1,
-      addFieldIfNotExist: true,
-    },
-    {
-      path: `${prosemirrorProjectRoot}/view/src/gutter.ts`,
-      className: 'GutterMarker',
-      fieldName: 'mapMode',
-      fieldValue: 'MapMode.TrackBefore',
-      addFieldIfNotExist: true,
-      literalFieldValue: true,
-    },
+    // {
+    //   path: `${prosemirrorProjectRoot}/state/src/rangeset.ts`,
+    //   className: 'RangeValue',
+    //   fieldName: 'point',
+    //   fieldValue: false,
+    // },
+    // {
+    //   path: `${prosemirrorProjectRoot}/view/src/gutter.ts`,
+    //   className: 'GutterMarker',
+    //   fieldName: 'startSide',
+    //   fieldValue: -1,
+    //   addFieldIfNotExist: true,
+    // },
+    // {
+    //   path: `${prosemirrorProjectRoot}/view/src/gutter.ts`,
+    //   className: 'GutterMarker',
+    //   fieldName: 'endSide',
+    //   fieldValue: -1,
+    //   addFieldIfNotExist: true,
+    // },
+    // {
+    //   path: `${prosemirrorProjectRoot}/view/src/gutter.ts`,
+    //   className: 'GutterMarker',
+    //   fieldName: 'mapMode',
+    //   fieldValue: 'MapMode.TrackBefore',
+    //   addFieldIfNotExist: true,
+    //   literalFieldValue: true,
+    // },
   ];
   const options = {
     dry: false,

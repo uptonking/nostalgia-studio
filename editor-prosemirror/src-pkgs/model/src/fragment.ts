@@ -291,7 +291,7 @@ export class Fragment {
     if (!value) return Fragment.empty;
     if (!Array.isArray(value))
       throw new RangeError('Invalid input for Fragment.fromJSON');
-    return new Fragment(value.map(schema.nodeFromJSON));
+    return Fragment.fromArray(value.map(schema.nodeFromJSON));
   }
 
   /// Build a fragment from an array of nodes. Ensures that adjacent

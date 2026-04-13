@@ -1,8 +1,9 @@
-import type {
+import {
   Line,
   EditorState,
   TransactionSpec,
   StateCommand,
+  ChangeSpec,
 } from '@codemirror/state';
 
 /// An object of this type can be provided as [language
@@ -19,9 +20,9 @@ export interface CommentTokens {
 /// Comment or uncomment the current selection. Will use line comments
 /// if available, otherwise falling back to block comments.
 export const toggleComment: StateCommand = (target) => {
-  const { state } = target;
-  const line = state.doc.lineAt(state.selection.main.from);
-  const config = getConfig(target.state, line.from);
+  let { state } = target;
+  let line = state.doc.lineAt(state.selection.main.from);
+  let config = getConfig(target.state, line.from);
   return config.line
     ? toggleLineComment(target)
     : config.block
@@ -41,7 +42,7 @@ function command(
 ): StateCommand {
   return ({ state, dispatch }) => {
     if (state.readOnly) return false;
-    const tr = f(option, state);
+    let tr = f(option, state);
     if (!tr) return false;
     dispatch(state.update(tr));
     return true;
@@ -92,7 +93,7 @@ export const toggleBlockCommentByLine = command(
 );
 
 function getConfig(state: EditorState, pos: number) {
-  const data = state.languageDataAt<CommentTokens>('commentTokens', pos, 1);
+  let data = state.languageDataAt<CommentTokens>('commentTokens', pos, 1);
   return data.length ? data[0] : {};
 }
 
@@ -113,11 +114,11 @@ function findBlockComment(
   from: number,
   to: number,
 ): BlockComment | null {
-  const textBefore = state.sliceDoc(from - SearchMargin, from);
-  const textAfter = state.sliceDoc(to, to + SearchMargin);
-  const spaceBefore = /\s*$/.exec(textBefore)![0].length;
-  const spaceAfter = /^\s*/.exec(textAfter)![0].length;
-  const beforeOff = textBefore.length - spaceBefore;
+  let textBefore = state.sliceDoc(from - SearchMargin, from);
+  let textAfter = state.sliceDoc(to, to + SearchMargin);
+  let spaceBefore = /\s*$/.exec(textBefore)![0].length;
+  let spaceAfter = /^\s*/.exec(textAfter)![0].length;
+  let beforeOff = textBefore.length - spaceBefore;
   if (
     textBefore.slice(beforeOff - open.length, beforeOff) == open &&
     textAfter.slice(spaceAfter, spaceAfter + close.length) == close
@@ -136,9 +137,9 @@ function findBlockComment(
     startText = state.sliceDoc(from, from + SearchMargin);
     endText = state.sliceDoc(to - SearchMargin, to);
   }
-  const startSpace = /^\s*/.exec(startText)![0].length;
-  const endSpace = /\s*$/.exec(endText)![0].length;
-  const endOff = endText.length - endSpace - close.length;
+  let startSpace = /^\s*/.exec(startText)![0].length;
+  let endSpace = /\s*$/.exec(endText)![0].length;
+  let endOff = endText.length - endSpace - close.length;
   if (
     startText.slice(startSpace, startSpace + open.length) == open &&
     endText.slice(endOff, endOff + close.length) == close
@@ -158,13 +159,13 @@ function findBlockComment(
 }
 
 function selectedLineRanges(state: EditorState) {
-  const ranges: { from: number; to: number }[] = [];
-  for (const r of state.selection.ranges) {
-    const fromLine = state.doc.lineAt(r.from);
+  let ranges: { from: number; to: number }[] = [];
+  for (let r of state.selection.ranges) {
+    let fromLine = state.doc.lineAt(r.from);
     let toLine = r.to <= fromLine.to ? fromLine : state.doc.lineAt(r.to);
     if (toLine.from > fromLine.from && toLine.from == r.to)
       toLine = r.to == fromLine.to + 1 ? fromLine : state.doc.lineAt(r.to - 1);
-    const last = ranges.length - 1;
+    let last = ranges.length - 1;
     if (last >= 0 && ranges[last].to > fromLine.from)
       ranges[last].to = toLine.to;
     else
@@ -183,12 +184,12 @@ function changeBlockComment(
   state: EditorState,
   ranges: readonly { from: number; to: number }[] = state.selection.ranges,
 ) {
-  const tokens = ranges.map((r) => getConfig(state, r.from).block) as {
+  let tokens = ranges.map((r) => getConfig(state, r.from).block) as {
     open: string;
     close: string;
   }[];
   if (!tokens.every((c) => c)) return null;
-  const comments = ranges.map((r, i) =>
+  let comments = ranges.map((r, i) =>
     findBlockComment(state, tokens[i], r.from, r.to),
   );
   if (option != CommentOption.Uncomment && !comments.every((c) => c)) {
@@ -204,11 +205,11 @@ function changeBlockComment(
       ),
     };
   } else if (option != CommentOption.Comment && comments.some((c) => c)) {
-    const changes = [];
-    for (let i = 0, comment; i < comments.length; i++)
+    let changes: { from: number; to: number }[] = [];
+    for (let i = 0, comment: BlockComment | null; i < comments.length; i++)
       if ((comment = comments[i])) {
-        const token = tokens[i];
-        const { open, close } = comment;
+        let token = tokens[i];
+        let { open, close } = comment;
         changes.push(
           { from: open.pos - token.open.length, to: open.pos + open.margin },
           {
@@ -228,7 +229,7 @@ function changeLineComment(
   state: EditorState,
   ranges: readonly { from: number; to: number }[] = state.selection.ranges,
 ): TransactionSpec | null {
-  const lines: {
+  let lines: {
     line: Line;
     token: string;
     comment: number;
@@ -237,18 +238,21 @@ function changeLineComment(
     single: boolean;
   }[] = [];
   let prevLine = -1;
-  for (const { from, to } of ranges) {
-    const startI = lines.length;
+  ranges: for (let { from, to } of ranges) {
+    let startI = lines.length;
     let minIndent = 1e9;
-    const token = getConfig(state, from).line;
-    if (!token) continue;
+    let token: string | undefined;
     for (let pos = from; pos <= to; ) {
-      const line = state.doc.lineAt(pos);
+      let line = state.doc.lineAt(pos);
+      if (token == undefined) {
+        token = getConfig(state, line.from).line;
+        if (!token) continue ranges;
+      }
       if (line.from > prevLine && (from == to || to > line.from)) {
         prevLine = line.from;
-        const indent = /^\s*/.exec(line.text)![0].length;
-        const empty = indent == line.length;
-        const comment =
+        let indent = /^\s*/.exec(line.text)![0].length;
+        let empty = indent == line.length;
+        let comment =
           line.text.slice(indent, indent + token.length) == token ? indent : -1;
         if (indent < line.text.length && indent < minIndent) minIndent = indent;
         lines.push({ line, comment, token, indent, empty, single: false });
@@ -266,20 +270,20 @@ function changeLineComment(
     option != CommentOption.Uncomment &&
     lines.some((l) => l.comment < 0 && (!l.empty || l.single))
   ) {
-    const changes = [];
-    for (const { line, token, indent, empty, single } of lines)
+    let changes: ChangeSpec[] = [];
+    for (let { line, token, indent, empty, single } of lines)
       if (single || !empty)
         changes.push({ from: line.from + indent, insert: token + ' ' });
-    const changeSet = state.changes(changes);
+    let changeSet = state.changes(changes);
     return { changes: changeSet, selection: state.selection.map(changeSet, 1) };
   } else if (
     option != CommentOption.Comment &&
     lines.some((l) => l.comment >= 0)
   ) {
-    const changes = [];
-    for (const { line, comment, token } of lines)
+    let changes: ChangeSpec[] = [];
+    for (let { line, comment, token } of lines)
       if (comment >= 0) {
-        const from = line.from + comment;
+        let from = line.from + comment;
         let to = from + token.length;
         if (line.text[to - line.from] == ' ') to++;
         changes.push({ from, to });

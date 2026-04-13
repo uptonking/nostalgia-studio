@@ -1,26 +1,28 @@
 function words(str) {
-  const obj = {};
-  const words = str.split(' ');
-  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
+  var obj = {};
+  var words = str.split(' ');
+  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
 
-const keywords = words(
+var keywords = words(
   'algorithm and annotation assert block break class connect connector constant constrainedby der discrete each else elseif elsewhen encapsulated end enumeration equation expandable extends external false final flow for function if import impure in initial inner input loop model not operator or outer output package parameter partial protected public pure record redeclare replaceable return stream then true type when while within',
 );
-const builtin = words(
+var builtin = words(
   'abs acos actualStream asin atan atan2 cardinality ceil cos cosh delay div edge exp floor getInstanceName homotopy inStream integer log log10 mod pre reinit rem semiLinear sign sin sinh spatialDistribution sqrt tan tanh',
 );
-const atoms = words('Real Boolean Integer String');
-const completions = [].concat(
+var atoms = words('Real Boolean Integer String');
+
+var completions = [].concat(
   Object.keys(keywords),
   Object.keys(builtin),
   Object.keys(atoms),
 );
-const isSingleOperatorChar = /[;=\(:\),{}.*<>+\-\/^\[\]]/;
-const isDoubleOperatorChar = /(:=|<=|>=|==|<>|\.\+|\.\-|\.\*|\.\/|\.\^)/;
-const isDigit = /[0-9]/;
-const isNonDigit = /[_a-zA-Z]/;
+
+var isSingleOperatorChar = /[;=\(:\),{}.*<>+\-\/^\[\]]/;
+var isDoubleOperatorChar = /(:=|<=|>=|==|<>|\.\+|\.\-|\.\*|\.\/|\.\^)/;
+var isDigit = /[0-9]/;
+var isNonDigit = /[_a-zA-Z]/;
 
 function tokenLineComment(stream, state) {
   stream.skipToEnd();
@@ -29,8 +31,8 @@ function tokenLineComment(stream, state) {
 }
 
 function tokenBlockComment(stream, state) {
-  let maybeEnd = false;
-  let ch;
+  var maybeEnd = false;
+  var ch;
   while ((ch = stream.next())) {
     if (maybeEnd && ch == '/') {
       state.tokenize = null;
@@ -42,8 +44,8 @@ function tokenBlockComment(stream, state) {
 }
 
 function tokenString(stream, state) {
-  let escaped = false;
-  let ch;
+  var escaped = false;
+  var ch;
   while ((ch = stream.next()) != null) {
     if (ch == '"' && !escaped) {
       state.tokenize = null;
@@ -60,7 +62,7 @@ function tokenIdent(stream, state) {
   stream.eatWhile(isDigit);
   while (stream.eat(isDigit) || stream.eat(isNonDigit)) {}
 
-  const cur = stream.current();
+  var cur = stream.current();
 
   if (
     state.sol &&
@@ -129,7 +131,7 @@ export const modelica = {
       return null;
     }
 
-    const ch = stream.next();
+    var ch = stream.next();
 
     // LINECOMMENT
     if (ch == '/' && stream.eat('/')) {
@@ -178,7 +180,7 @@ export const modelica = {
   indent: function (state, textAfter, cx) {
     if (state.tokenize != null) return null;
 
-    let level = state.level;
+    var level = state.level;
     if (/(algorithm)/.test(textAfter)) level--;
     if (/(equation)/.test(textAfter)) level--;
     if (/(initial algorithm)/.test(textAfter)) level--;

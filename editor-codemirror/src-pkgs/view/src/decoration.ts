@@ -1,8 +1,8 @@
-import { MapMode, RangeValue, type Range, RangeSet } from '@codemirror/state';
-import type { Direction } from './bidi';
-import { attrsEq, type Attrs } from './attributes';
-import type { EditorView } from './editorview';
-import type { Rect } from './dom';
+import { MapMode, RangeValue, Range, RangeSet } from '@codemirror/state';
+import { Direction } from './bidi';
+import { attrsEq, Attrs, noAttrs, combineAttrs } from './attributes';
+import { EditorView } from './editorview';
+import { Rect } from './dom';
 
 interface MarkDecorationSpec {
   /// Whether the mark covers its start and end position or not. This
@@ -123,7 +123,7 @@ export abstract class WidgetType {
   /// true to indicate that it could update, false to indicate it
   /// couldn't (in which case the widget will be redrawn). The default
   /// implementation just returns false.
-  updateDOM(dom: HTMLElement, view: EditorView): boolean {
+  updateDOM(dom: HTMLElement, view: EditorView, from: this): boolean {
     return false;
   }
 
@@ -259,7 +259,7 @@ export abstract class Decoration extends RangeValue {
   /// given position.
   static widget(spec: WidgetDecorationSpec): Decoration {
     let side = Math.max(-10000, Math.min(10000, spec.side || 0));
-    const block = Boolean(spec.block);
+    let block = !!spec.block;
     side +=
       block && !spec.inlineOrder
         ? side > 0
@@ -281,14 +281,14 @@ export abstract class Decoration extends RangeValue {
   /// Create a replace decoration which replaces the given range with
   /// a widget, or simply hides it.
   static replace(spec: ReplaceDecorationSpec): Decoration {
-    const block = Boolean(spec.block);
+    let block = !!spec.block;
     let startSide;
     let endSide;
     if (spec.isBlockGap) {
       startSide = Side.GapStart;
       endSide = Side.GapEnd;
     } else {
-      const { start, end } = getInclusive(spec, block);
+      let { start, end } = getInclusive(spec, block);
       startSide =
         (start
           ? block
@@ -339,11 +339,10 @@ export abstract class Decoration extends RangeValue {
 
 export class MarkDecoration extends Decoration {
   tagName: string;
-  class: string;
-  attrs: Attrs | null;
+  attrs: Attrs;
 
   constructor(spec: MarkDecorationSpec) {
-    const { start, end } = getInclusive(spec);
+    let { start, end } = getInclusive(spec);
     super(
       start ? Side.InlineIncStart : Side.NonIncStart,
       end ? Side.InlineIncEnd : Side.NonIncEnd,
@@ -351,8 +350,12 @@ export class MarkDecoration extends Decoration {
       spec,
     );
     this.tagName = spec.tagName || 'span';
-    this.class = spec.class || '';
-    this.attrs = spec.attributes || null;
+    this.attrs =
+      spec.class && spec.attributes
+        ? combineAttrs(spec.attributes, { class: spec.class })
+        : spec.class
+          ? { class: spec.class }
+          : spec.attributes || noAttrs;
   }
 
   eq(other: Decoration): boolean {
@@ -360,9 +363,7 @@ export class MarkDecoration extends Decoration {
       this == other ||
       (other instanceof MarkDecoration &&
         this.tagName == other.tagName &&
-        (this.class || this.attrs?.class) ==
-          (other.class || other.attrs?.class) &&
-        attrsEq(this.attrs, other.attrs, 'class'))
+        attrsEq(this.attrs, other.attrs))
     );
   }
 
@@ -429,7 +430,7 @@ export class PointDecoration extends Decoration {
   get heightRelevant() {
     return (
       this.block ||
-      (Boolean(this.widget) &&
+      (!!this.widget &&
         (this.widget.estimatedHeight >= 5 || this.widget.lineBreaks > 0))
     );
   }
@@ -476,7 +477,7 @@ function getInclusive(
 }
 
 function widgetsEq(a: WidgetType | null, b: WidgetType | null): boolean {
-  return a == b || Boolean(a && b && a.compare(b));
+  return a == b || !!(a && b && a.compare(b));
 }
 
 export function addRange(
@@ -485,8 +486,53 @@ export function addRange(
   ranges: number[],
   margin = 0,
 ) {
-  const last = ranges.length - 1;
+  let last = ranges.length - 1;
   if (last >= 0 && ranges[last] + margin >= from)
     ranges[last] = Math.max(ranges[last], to);
   else ranges.push(from, to);
 }
+
+interface BlockWrapperSpec {
+  /// Tag name of the wrapping element.
+  tagName: string;
+  /// DOM attributes to add to the wrapping element.
+  attributes?: { [key: string]: string };
+}
+
+/// A block wrapper defines a DOM node that wraps lines or other block
+/// wrappers at the top of the document. It affects any line or block
+/// widget that starts inside its range, including blocks starting
+/// directly at `from` but not including `to`.
+export class BlockWrapper extends RangeValue {
+  private constructor(
+    readonly tagName: string,
+    readonly attributes: Attrs,
+  ) {
+    super();
+  }
+
+  eq(other: RangeValue): boolean {
+    return (
+      other == this ||
+      (other instanceof BlockWrapper &&
+        this.tagName == other.tagName &&
+        attrsEq(this.attributes, other.attributes))
+    );
+  }
+
+  /// Create a block wrapper object with the given tag name and
+  /// attributes.
+  static create(spec: BlockWrapperSpec) {
+    return new BlockWrapper(spec.tagName, spec.attributes || noAttrs);
+  }
+
+  /// Create a range set from the given block wrapper ranges.
+  static set(
+    of: Range<BlockWrapper> | readonly Range<BlockWrapper>[],
+    sort = false,
+  ) {
+    return RangeSet.of<BlockWrapper>(of, sort);
+  }
+}
+
+BlockWrapper.prototype.startSide = BlockWrapper.prototype.endSide = -1;

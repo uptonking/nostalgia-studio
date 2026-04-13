@@ -1,22 +1,24 @@
 // The keywords object is set to the result of this self executing
 // function. Each keyword is a property of the keywords object whose
 // value is {type: atype, style: astyle}
-const keywords = (function () {
+var keywords = (function () {
   // convenience functions used to build keywords object
   function kw(type) {
     return { type: type, style: 'keyword' };
   }
-  const operator = kw('operator');
-  const atom = { type: 'atom', style: 'atom' };
-  const punctuation = { type: 'punctuation', style: null };
-  const qualifier = { type: 'axis_specifier', style: 'qualifier' };
+  var operator = kw('operator');
+  var atom = { type: 'atom', style: 'atom' };
+  var punctuation = { type: 'punctuation', style: null };
+  var qualifier = { type: 'axis_specifier', style: 'qualifier' };
+
   // kwObj is what is return from this function at the end
-  const kwObj = {
+  var kwObj = {
     ',': punctuation,
   };
+
   // a list of 'basic' keywords. For each add a property to kwObj with the value of
   // {type: basic[i], style: "keyword"} e.g. 'after' --> {type: "after", style: "keyword"}
-  const basic = [
+  var basic = [
     'after',
     'all',
     'allowing',
@@ -193,7 +195,7 @@ const keywords = (function () {
 
   // a list of types. For each add a property to kwObj with the value of
   // {type: "atom", style: "atom"}
-  const types = [
+  var types = [
     'xs:anyAtomicType',
     'xs:anySimpleType',
     'xs:anyType',
@@ -256,7 +258,7 @@ const keywords = (function () {
   }
 
   // each operator will add a property to kwObj with value of {type: "operator", style: "keyword"}
-  const operators = [
+  var operators = [
     'eq',
     'ne',
     'lt',
@@ -287,7 +289,7 @@ const keywords = (function () {
   }
 
   // each axis_specifiers will add a property to kwObj with value of {type: "axis_specifier", style: "qualifier"}
-  const axis_specifiers = [
+  var axis_specifiers = [
     'self::',
     'attribute::',
     'child::',
@@ -315,9 +317,9 @@ function chain(stream, state, f) {
 
 // the primary mode tokenizer
 function tokenBase(stream, state) {
-  const ch = stream.next();
-  let mightBeFunction = false;
-  const isEQName = isEQNameAhead(stream);
+  var ch = stream.next();
+  var mightBeFunction = false;
+  var isEQName = isEQNameAhead(stream);
 
   // an XML tag (if not in some sub, chained tokenizer)
   if (ch == '<') {
@@ -332,10 +334,10 @@ function tokenBase(stream, state) {
       return chain(stream, state, tokenPreProcessing);
     }
 
-    const isclose = stream.eat('/');
+    var isclose = stream.eat('/');
     stream.eatSpace();
-    let tagName = '';
-    let c;
+    var tagName = '';
+    var c;
     while ((c = stream.eat(/[^\s\u00a0=<>\"\'\/?]/))) tagName += c;
 
     return chain(stream, state, tokenTag(tagName, isclose));
@@ -399,7 +401,7 @@ function tokenBase(stream, state) {
     popStateStack(state);
     return null;
   } else {
-    let known = keywords.propertyIsEnumerable(ch) && keywords[ch];
+    var known = keywords.propertyIsEnumerable(ch) && keywords[ch];
 
     // if there's a EQName ahead, consume the rest of the string portion, it's likely a function
     if (isEQName && ch === '\"') while (stream.next() !== '"') {}
@@ -409,7 +411,7 @@ function tokenBase(stream, state) {
     if (!known) stream.eatWhile(/[\w\$_-]/);
 
     // gobble a colon in the case that is a lib func type call fn:doc
-    const foundColon = stream.eat(':');
+    var foundColon = stream.eat(':');
 
     // if there's not a second colon, gobble another word. Otherwise, it's probably an axis specifier
     // which should get matched as a keyword
@@ -421,7 +423,7 @@ function tokenBase(stream, state) {
       mightBeFunction = true;
     }
     // is the word a keyword?
-    const word = stream.current();
+    var word = stream.current();
     known = keywords.propertyIsEnumerable(word) && keywords[word];
 
     // if we think it's a function call but not yet known,
@@ -450,10 +452,10 @@ function tokenBase(stream, state) {
 
 // handle comments, including nested
 function tokenComment(stream, state) {
-  let maybeEnd = false;
-  let maybeNested = false;
-  let nestedCount = 0;
-  let ch;
+  var maybeEnd = false;
+  var maybeNested = false;
+  var nestedCount = 0;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == ')' && maybeEnd) {
       if (nestedCount > 0) nestedCount--;
@@ -475,7 +477,7 @@ function tokenComment(stream, state) {
 // optionally pass a tokenizer function to set state.tokenize back to when finished
 function tokenString(quote, f) {
   return function (stream, state) {
-    let ch;
+    var ch;
     while ((ch = stream.next())) {
       if (ch == quote) {
         popStateStack(state);
@@ -494,14 +496,14 @@ function tokenString(quote, f) {
 }
 
 function startString(stream, state, quote, f) {
-  const tokenize = tokenString(quote, f);
+  let tokenize = tokenString(quote, f);
   pushStateStack(state, { type: 'string', name: quote, tokenize });
   return chain(stream, state, tokenize);
 }
 
 // tokenizer for variables
 function tokenVariable(stream, state) {
-  const isVariableChar = /[\w\$_-]/;
+  var isVariableChar = /[\w\$_-]/;
 
   // a variable may start with a quoted EQName so if the next character is quote, consume to the next quote
   if (stream.eat('"')) {
@@ -540,7 +542,7 @@ function tokenTag(name, isclose) {
 
 // tokenizer for XML attributes
 function tokenAttribute(stream, state) {
-  const ch = stream.next();
+  var ch = stream.next();
 
   if (ch == '/' && stream.eat('>')) {
     if (isInXmlAttributeBlock(state)) popStateStack(state);
@@ -574,7 +576,7 @@ function tokenAttribute(stream, state) {
 
 // handle comments, including nested
 function tokenXMLComment(stream, state) {
-  let ch;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == '-' && stream.match('->', true)) {
       state.tokenize = tokenBase;
@@ -585,7 +587,7 @@ function tokenXMLComment(stream, state) {
 
 // handle CDATA
 function tokenCDATA(stream, state) {
-  let ch;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == ']' && stream.match(']', true)) {
       state.tokenize = tokenBase;
@@ -596,7 +598,7 @@ function tokenCDATA(stream, state) {
 
 // handle preprocessing instructions
 function tokenPreProcessing(stream, state) {
-  let ch;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == '?' && stream.match('>', true)) {
       state.tokenize = tokenBase;
@@ -636,7 +638,7 @@ function pushStateStack(state, newState) {
 
 function popStateStack(state) {
   state.stack.pop();
-  const reinstateTokenize =
+  var reinstateTokenize =
     state.stack.length && state.stack[state.stack.length - 1].tokenize;
   state.tokenize = reinstateTokenize || tokenBase;
 }
@@ -654,7 +656,7 @@ export const xQuery = {
 
   token: function (stream, state) {
     if (stream.eatSpace()) return null;
-    const style = state.tokenize(stream, state);
+    var style = state.tokenize(stream, state);
     return style;
   },
 

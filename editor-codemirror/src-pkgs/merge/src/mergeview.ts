@@ -1,7 +1,7 @@
 import { EditorView } from '@codemirror/view';
 import {
-  type EditorStateConfig,
-  type Transaction,
+  EditorStateConfig,
+  Transaction,
   EditorState,
   StateEffect,
   Prec,
@@ -9,7 +9,7 @@ import {
   ChangeSet,
 } from '@codemirror/state';
 import { Chunk, defaultDiffConfig } from './chunk';
-import type { DiffConfig } from './diff';
+import { DiffConfig } from './diff';
 import { setChunks, ChunkField, mergeConfig } from './merge';
 import {
   decorateChunks,
@@ -98,7 +98,7 @@ export class MergeView {
   constructor(config: DirectMergeConfig) {
     this.diffConf = config.diffConfig || defaultDiffConfig;
 
-    const sharedExtensions = [
+    let sharedExtensions = [
       Prec.low(decorateChunks),
       baseTheme,
       externalTheme,
@@ -114,7 +114,8 @@ export class MergeView {
           this.measure();
       }),
     ];
-    const configA = [
+
+    let configA = [
       mergeConfig.of({
         side: 'a',
         sibling: () => this.b,
@@ -133,7 +134,8 @@ export class MergeView {
         sharedExtensions,
       ],
     });
-    const configB = [
+
+    let configB = [
       mergeConfig.of({
         side: 'b',
         sibling: () => this.a,
@@ -153,7 +155,7 @@ export class MergeView {
       ],
     });
     this.chunks = Chunk.build(stateA.doc, stateB.doc, this.diffConf);
-    const add = [
+    let add = [
       ChunkField.init(() => this.chunks),
       collapseCompartment.of(
         config.collapseUnchanged
@@ -168,10 +170,10 @@ export class MergeView {
     this.dom.className = 'cm-mergeView';
     this.editorDOM = this.dom.appendChild(document.createElement('div'));
     this.editorDOM.className = 'cm-mergeViewEditors';
-    const orientation = config.orientation || 'a-b';
-    const wrapA = document.createElement('div');
+    let orientation = config.orientation || 'a-b';
+    let wrapA = document.createElement('div');
     wrapA.className = 'cm-mergeViewEditor';
-    const wrapB = document.createElement('div');
+    let wrapB = document.createElement('div');
     wrapB.className = 'cm-mergeViewEditor';
     this.editorDOM.appendChild(orientation == 'a-b' ? wrapA : wrapB);
     this.editorDOM.appendChild(orientation == 'a-b' ? wrapB : wrapA);
@@ -188,7 +190,7 @@ export class MergeView {
       dispatchTransactions: (trs) => this.dispatch(trs, this.b),
     });
     this.setupRevertControls(
-      Boolean(config.revertControls),
+      !!config.revertControls,
       config.revertControls == 'b-to-a',
       config.renderRevertControl,
     );
@@ -198,8 +200,8 @@ export class MergeView {
 
   private dispatch(trs: readonly Transaction[], target: EditorView) {
     if (trs.some((tr) => tr.docChanged)) {
-      const last = trs[trs.length - 1];
-      const changes = trs.reduce(
+      let last = trs[trs.length - 1];
+      let changes = trs.reduce(
         (chs, tr) => chs.compose(tr.changes),
         ChangeSet.empty(trs[0].startState.doc.length),
       );
@@ -223,7 +225,7 @@ export class MergeView {
         ...trs,
         last.state.update({ effects: setChunks.of(this.chunks) }),
       ]);
-      const other = target == this.a ? this.b : this.a;
+      let other = target == this.a ? this.b : this.a;
       other.update([
         other.state.update({ effects: setChunks.of(this.chunks) }),
       ]);
@@ -239,10 +241,10 @@ export class MergeView {
       this.diffConf = config.diffConfig;
     }
     if ('orientation' in config) {
-      const aB = config.orientation != 'b-a';
+      let aB = config.orientation != 'b-a';
       if (aB != (this.editorDOM.firstChild == this.a.dom.parentNode)) {
-        const domA = this.a.dom.parentNode as HTMLElement;
-        const domB = this.b.dom.parentNode as HTMLElement;
+        let domA = this.a.dom.parentNode as HTMLElement;
+        let domB = this.b.dom.parentNode as HTMLElement;
         domA.remove();
         domB.remove();
         this.editorDOM.insertBefore(
@@ -255,28 +257,28 @@ export class MergeView {
       }
     }
     if ('revertControls' in config || 'renderRevertControl' in config) {
-      let controls = Boolean(this.revertDOM);
+      let controls = !!this.revertDOM;
       let toA = this.revertToA;
       let render = this.renderRevert;
       if ('revertControls' in config) {
-        controls = Boolean(config.revertControls);
+        controls = !!config.revertControls;
         toA = config.revertControls == 'b-to-a';
       }
       if ('renderRevertControl' in config) render = config.renderRevertControl;
       this.setupRevertControls(controls, toA, render);
     }
-    const highlight = 'highlightChanges' in config;
-    const gutter = 'gutter' in config;
-    const collapse = 'collapseUnchanged' in config;
+    let highlight = 'highlightChanges' in config;
+    let gutter = 'gutter' in config;
+    let collapse = 'collapseUnchanged' in config;
     if (highlight || gutter || collapse) {
-      const effectsA: StateEffect<unknown>[] = [];
-      const effectsB: StateEffect<unknown>[] = [];
+      let effectsA: StateEffect<unknown>[] = [];
+      let effectsB: StateEffect<unknown>[] = [];
       if (highlight || gutter) {
-        const currentConfig = this.a.state.facet(mergeConfig);
-        const markGutter = gutter
+        let currentConfig = this.a.state.facet(mergeConfig);
+        let markGutter = gutter
           ? config.gutter !== false
           : currentConfig.markGutter;
-        const highlightChanges = highlight
+        let highlightChanges = highlight
           ? config.highlightChanges !== false
           : currentConfig.highlightChanges;
         effectsA.push(
@@ -303,7 +305,7 @@ export class MergeView {
         );
       }
       if (collapse) {
-        const effect = collapseCompartment.reconfigure(
+        let effect = collapseCompartment.reconfigure(
           config.collapseUnchanged
             ? collapseUnchanged(config.collapseUnchanged)
             : [],
@@ -345,7 +347,7 @@ export class MergeView {
 
   private scheduleMeasure() {
     if (this.measuring < 0) {
-      const win = this.dom.ownerDocument.defaultView || window;
+      let win = this.dom.ownerDocument.defaultView || window;
       this.measuring = win.requestAnimationFrame(() => {
         this.measuring = -1;
         this.measure();
@@ -359,16 +361,16 @@ export class MergeView {
   }
 
   private updateRevertButtons() {
-    const dom = this.revertDOM!;
+    let dom = this.revertDOM!;
     let next = dom.firstChild as HTMLElement | null;
-    const vpA = this.a.viewport;
-    const vpB = this.b.viewport;
+    let vpA = this.a.viewport;
+    let vpB = this.b.viewport;
     for (let i = 0; i < this.chunks.length; i++) {
-      const chunk = this.chunks[i];
+      let chunk = this.chunks[i];
       if (chunk.fromA > vpA.to || chunk.fromB > vpB.to) break;
       if (chunk.fromA < vpA.from || chunk.fromB < vpB.from) continue;
-      const top = this.a.lineBlockAt(chunk.fromA).top + 'px';
-      while (next && Number(next.dataset.chunk!) < i) next = rm(next);
+      let top = this.a.lineBlockAt(chunk.fromA).top + 'px';
+      while (next && +next.dataset.chunk! < i) next = rm(next);
       if (next && next.dataset.chunk! == String(i)) {
         if (next.style.top != top) next.style.top = top;
         next = next.nextSibling as HTMLElement | null;
@@ -385,7 +387,7 @@ export class MergeView {
       elt = this.renderRevert();
     } else {
       elt = document.createElement('button');
-      const text = this.a.state.phrase('Revert this chunk');
+      let text = this.a.state.phrase('Revert this chunk');
       elt.setAttribute('aria-label', text);
       elt.setAttribute('title', text);
       elt.textContent = this.revertToLeft ? '⇜' : '⇝';
@@ -401,7 +403,7 @@ export class MergeView {
     while (target && target.parentNode != this.revertDOM)
       target = target.parentNode as HTMLElement | null;
     if (target && (chunk = this.chunks[target.dataset.chunk as any])) {
-      const [source, dest, srcFrom, srcTo, destFrom, destTo] = this.revertToA
+      let [source, dest, srcFrom, srcTo, destFrom, destTo] = this.revertToA
         ? [this.b, this.a, chunk.fromB, chunk.toB, chunk.fromA, chunk.toA]
         : [this.a, this.b, chunk.fromA, chunk.toA, chunk.fromB, chunk.toB];
       let insert = source.state.sliceDoc(srcFrom, Math.max(srcFrom, srcTo - 1));
@@ -432,7 +434,7 @@ export class MergeView {
 }
 
 function rm(elt: HTMLElement) {
-  const next = elt.nextSibling;
+  let next = elt.nextSibling;
   elt.remove();
   return next as HTMLElement | null;
 }

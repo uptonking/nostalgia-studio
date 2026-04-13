@@ -1,4 +1,4 @@
-import type { Extension } from '@codemirror/state';
+import { Extension } from '@codemirror/state';
 import { ViewPlugin } from './extension';
 import { MatchDecorator } from './matchdecorator';
 import { Decoration } from './decoration';
@@ -19,6 +19,7 @@ function matcher(decorator: MatchDecorator): Extension {
 
 const tabDeco = Decoration.mark({ class: 'cm-highlightTab' });
 const spaceDeco = Decoration.mark({ class: 'cm-highlightSpace' });
+
 const whitespaceHighlighter = matcher(
   new MatchDecorator({
     regexp: /\t| /g,

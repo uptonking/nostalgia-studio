@@ -1,9 +1,9 @@
 function words(str) {
-  const obj = {};
-  const words = str.split(',');
-  for (let i = 0; i < words.length; ++i) {
-    const allCaps = words[i].toUpperCase();
-    const firstCap = words[i].charAt(0).toUpperCase() + words[i].slice(1);
+  var obj = {};
+  var words = str.split(',');
+  for (var i = 0; i < words.length; ++i) {
+    var allCaps = words[i].toUpperCase();
+    var firstCap = words[i].charAt(0).toUpperCase() + words[i].slice(1);
     obj[words[i]] = true;
     obj[allCaps] = true;
     obj[firstCap] = true;
@@ -16,10 +16,11 @@ function metaHook(stream) {
   return 'meta';
 }
 
-const atoms = words('null');
-const hooks = { '`': metaHook, $: metaHook };
-const multiLineStrings = false;
-const keywords = words(
+var atoms = words('null');
+var hooks = { '`': metaHook, $: metaHook };
+var multiLineStrings = false;
+
+var keywords = words(
   'abs,access,after,alias,all,and,architecture,array,assert,attribute,begin,block,' +
     'body,buffer,bus,case,component,configuration,constant,disconnect,downto,else,elsif,end,end block,end case,' +
     'end component,end for,end generate,end if,end loop,end process,end record,end units,entity,exit,file,for,' +
@@ -28,16 +29,18 @@ const keywords = words(
     'postponed,procedure,process,pure,range,record,register,reject,rem,report,return,rol,ror,select,severity,signal,' +
     'sla,sll,sra,srl,subtype,then,to,transport,type,unaffected,units,until,use,variable,wait,when,while,with,xnor,xor',
 );
-const blockKeywords = words(
+
+var blockKeywords = words(
   'architecture,entity,begin,case,port,else,elsif,end,for,function,if',
 );
-const isOperatorChar = /[&|~><!\)\(*#%@+\/=?\:;}{,\.\^\-\[\]]/;
-let curPunc;
+
+var isOperatorChar = /[&|~><!\)\(*#%@+\/=?\:;}{,\.\^\-\[\]]/;
+var curPunc;
 
 function tokenBase(stream, state) {
-  const ch = stream.next();
+  var ch = stream.next();
   if (hooks[ch]) {
-    const result = hooks[ch](stream, state);
+    var result = hooks[ch](stream, state);
     if (result !== false) return result;
   }
   if (ch == '"') {
@@ -67,7 +70,7 @@ function tokenBase(stream, state) {
     return 'operator';
   }
   stream.eatWhile(/[\w\$_]/);
-  const cur = stream.current();
+  var cur = stream.current();
   if (keywords.propertyIsEnumerable(cur.toLowerCase())) {
     if (blockKeywords.propertyIsEnumerable(cur)) curPunc = 'newstatement';
     return 'keyword';
@@ -78,9 +81,9 @@ function tokenBase(stream, state) {
 
 function tokenString(quote) {
   return function (stream, state) {
-    let escaped = false;
-    let next;
-    let end = false;
+    var escaped = false;
+    var next;
+    var end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -94,9 +97,9 @@ function tokenString(quote) {
 }
 function tokenString2(quote) {
   return function (stream, state) {
-    let escaped = false;
-    let next;
-    let end = false;
+    var escaped = false;
+    var next;
+    var end = false;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         end = true;
@@ -126,7 +129,7 @@ function pushContext(state, col, type) {
   ));
 }
 function popContext(state) {
-  const t = state.context.type;
+  var t = state.context.type;
   if (t == ')' || t == ']' || t == '}') state.indented = state.context.indented;
   return (state.context = state.context.prev);
 }
@@ -144,7 +147,7 @@ export const vhdl = {
   },
 
   token: function (stream, state) {
-    let ctx = state.context;
+    var ctx = state.context;
     if (stream.sol()) {
       if (ctx.align == null) ctx.align = false;
       state.indented = stream.indentation();
@@ -152,7 +155,7 @@ export const vhdl = {
     }
     if (stream.eatSpace()) return null;
     curPunc = null;
-    const style = (state.tokenize || tokenBase)(stream, state);
+    var style = (state.tokenize || tokenBase)(stream, state);
     if (style == 'comment' || style == 'meta') return style;
     if (ctx.align == null) ctx.align = true;
 
@@ -178,9 +181,9 @@ export const vhdl = {
 
   indent: function (state, textAfter, cx) {
     if (state.tokenize != tokenBase && state.tokenize != null) return 0;
-    const firstChar = textAfter && textAfter.charAt(0);
-    const ctx = state.context;
-    const closing = firstChar == ctx.type;
+    var firstChar = textAfter && textAfter.charAt(0);
+    var ctx = state.context;
+    var closing = firstChar == ctx.type;
     if (ctx.type == 'statement')
       return ctx.indented + (firstChar == '{' ? 0 : cx.unit);
     else if (ctx.align) return ctx.column + (closing ? 0 : 1);

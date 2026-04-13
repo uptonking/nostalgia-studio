@@ -1,6 +1,6 @@
-const atoms = ['exten', 'same', 'include', 'ignorepat', 'switch'];
-const dpcmd = ['#include', '#exec'];
-const apps = [
+var atoms = ['exten', 'same', 'include', 'ignorepat', 'switch'];
+var dpcmd = ['#include', '#exec'];
+var apps = [
   'addqueuemember',
   'adsiprog',
   'aelsub',
@@ -203,8 +203,8 @@ const apps = [
 ];
 
 function basicToken(stream, state) {
-  let cur = '';
-  const ch = stream.next();
+  var cur = '';
+  var ch = stream.next();
   // comment
   if (state.blockComment) {
     if (ch == '-' && stream.match('-;', true)) {
@@ -256,7 +256,7 @@ function basicToken(stream, state) {
   }
   // application args
   if (ch == '$') {
-    const ch1 = stream.peek();
+    var ch1 = stream.peek();
     if (ch1 == '{') {
       stream.skipTo('}');
       stream.eat('}');
@@ -298,7 +298,7 @@ export const asterisk = {
     };
   },
   token: function (stream, state) {
-    let cur = '';
+    var cur = '';
     if (stream.eatSpace()) return null;
     // extension started
     if (state.extenStart) {

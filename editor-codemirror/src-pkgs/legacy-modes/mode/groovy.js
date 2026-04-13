@@ -1,24 +1,25 @@
 function words(str) {
-  const obj = {};
-  const words = str.split(' ');
-  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
+  var obj = {};
+  var words = str.split(' ');
+  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
-const keywords = words(
+var keywords = words(
   'abstract as assert boolean break byte case catch char class const continue def default ' +
     'do double else enum extends final finally float for goto if implements import in ' +
     'instanceof int interface long native new package private protected public return ' +
     'short static strictfp super switch synchronized threadsafe throw throws trait transient ' +
     'try void volatile while',
 );
-const blockKeywords = words(
+var blockKeywords = words(
   'catch class def do else enum finally for if interface switch trait try while',
 );
-const standaloneKeywords = words('return break continue');
-const atoms = words('null true false this');
-let curPunc;
+var standaloneKeywords = words('return break continue');
+var atoms = words('null true false this');
+
+var curPunc;
 function tokenBase(stream, state) {
-  const ch = stream.next();
+  var ch = stream.next();
   if (ch == '"' || ch == "'") {
     return startString(ch, stream, state);
   }
@@ -65,7 +66,7 @@ function tokenBase(stream, state) {
     curPunc = 'proplabel';
     return 'property';
   }
-  const cur = stream.current();
+  var cur = stream.current();
   if (atoms.propertyIsEnumerable(cur)) {
     return 'atom';
   }
@@ -80,15 +81,15 @@ function tokenBase(stream, state) {
 tokenBase.isBase = true;
 
 function startString(quote, stream, state) {
-  let tripleQuoted = false;
+  var tripleQuoted = false;
   if (quote != '/' && stream.eat(quote)) {
     if (stream.eat(quote)) tripleQuoted = true;
     else return 'string';
   }
   function t(stream, state) {
-    let escaped = false;
-    let next;
-    let end = !tripleQuoted;
+    var escaped = false;
+    var next;
+    var end = !tripleQuoted;
     while ((next = stream.next()) != null) {
       if (next == quote && !escaped) {
         if (!tripleQuoted) {
@@ -118,7 +119,7 @@ function startString(quote, stream, state) {
 }
 
 function tokenBaseUntilBrace() {
-  let depth = 1;
+  var depth = 1;
   function t(stream, state) {
     if (stream.peek() == '}') {
       depth--;
@@ -136,7 +137,7 @@ function tokenBaseUntilBrace() {
 }
 
 function tokenVariableDeref(stream, state) {
-  const next = stream.match(/^(\.|[\w\$_]+)/);
+  var next = stream.match(/^(\.|[\w\$_]+)/);
   if (!next || !stream.match(next[0] == '.' ? /^[\w$_]/ : /^\./))
     state.tokenize.pop();
   if (!next) return state.tokenize[state.tokenize.length - 1](stream, state);
@@ -144,8 +145,8 @@ function tokenVariableDeref(stream, state) {
 }
 
 function tokenComment(stream, state) {
-  let maybeEnd = false;
-  let ch;
+  var maybeEnd = false;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize.pop();
@@ -186,7 +187,7 @@ function pushContext(state, col, type) {
   ));
 }
 function popContext(state) {
-  const t = state.context.type;
+  var t = state.context.type;
   if (t == ')' || t == ']' || t == '}') state.indented = state.context.indented;
   return (state.context = state.context.prev);
 }
@@ -206,7 +207,7 @@ export const groovy = {
   },
 
   token: function (stream, state) {
-    let ctx = state.context;
+    var ctx = state.context;
     if (stream.sol()) {
       if (ctx.align == null) ctx.align = false;
       state.indented = stream.indentation();
@@ -219,7 +220,7 @@ export const groovy = {
     }
     if (stream.eatSpace()) return null;
     curPunc = null;
-    const style = state.tokenize[state.tokenize.length - 1](stream, state);
+    var style = state.tokenize[state.tokenize.length - 1](stream, state);
     if (style == 'comment') return style;
     if (ctx.align == null) ctx.align = true;
 
@@ -254,11 +255,11 @@ export const groovy = {
 
   indent: function (state, textAfter, cx) {
     if (!state.tokenize[state.tokenize.length - 1].isBase) return null;
-    const firstChar = textAfter && textAfter.charAt(0);
-    let ctx = state.context;
+    var firstChar = textAfter && textAfter.charAt(0);
+    var ctx = state.context;
     if (ctx.type == 'statement' && !expectExpression(state.lastToken, true))
       ctx = ctx.prev;
-    const closing = firstChar == ctx.type;
+    var closing = firstChar == ctx.type;
     if (ctx.type == 'statement')
       return ctx.indented + (firstChar == '{' ? 0 : cx.unit);
     else if (ctx.align) return ctx.column + (closing ? 0 : 1);

@@ -2,16 +2,16 @@ import {
   combineConfig,
   MapMode,
   Facet,
-  type Extension,
-  type EditorState,
+  Extension,
+  EditorState,
   RangeValue,
   RangeSet,
-  type RangeCursor,
+  RangeCursor,
 } from '@codemirror/state';
 import { EditorView } from './editorview';
-import { ViewPlugin, type ViewUpdate } from './extension';
-import { BlockType, type WidgetType } from './decoration';
-import type { BlockInfo } from './heightmap';
+import { ViewPlugin, ViewUpdate } from './extension';
+import { BlockType, WidgetType } from './decoration';
+import { BlockInfo } from './heightmap';
 import { Direction } from './bidi';
 
 /// A gutter marker represents a bit of information attached to a line
@@ -129,6 +129,7 @@ const defaults = {
   domEventHandlers: {},
   side: 'before' as const,
 };
+
 const activeGutters = Facet.define<Required<GutterConfig>>();
 
 /// Define an editor gutter. The order in which the gutters appear is
@@ -150,7 +151,7 @@ const unfixGutters = Facet.define<boolean, boolean>({
 /// CSS [`position:
 /// sticky`](https://developer.mozilla.org/en-US/docs/Web/CSS/position#sticky)).
 export function gutters(config?: { fixed?: boolean }): Extension {
-  const result: Extension[] = [gutterView];
+  let result: Extension[] = [gutterView];
   if (config && config.fixed === false) result.push(unfixGutters.of(true));
   return result;
 }
@@ -174,7 +175,7 @@ const gutterView = ViewPlugin.fromClass(
         .facet(activeGutters)
         .map((conf) => new SingleGutterView(view, conf));
       this.fixed = !view.state.facet(unfixGutters);
-      for (const gutter of this.gutters) {
+      for (let gutter of this.gutters) {
         if (gutter.config.side == 'after')
           this.getDOMAfter().appendChild(gutter.dom);
         else this.dom.appendChild(gutter.dom);
@@ -207,14 +208,13 @@ const gutterView = ViewPlugin.fromClass(
         // Detach during sync when the viewport changed significantly
         // (such as during scrolling), since for large updates that is
         // faster.
-        const vpA = this.prevViewport;
-        const vpB = update.view.viewport;
-        const vpOverlap =
-          Math.min(vpA.to, vpB.to) - Math.max(vpA.from, vpB.from);
+        let vpA = this.prevViewport;
+        let vpB = update.view.viewport;
+        let vpOverlap = Math.min(vpA.to, vpB.to) - Math.max(vpA.from, vpB.from);
         this.syncGutters(vpOverlap < (vpB.to - vpB.from) * 0.8);
       }
       if (update.geometryChanged) {
-        const min = this.view.contentHeight / this.view.scaleY + 'px';
+        let min = this.view.contentHeight / this.view.scaleY + 'px';
         this.dom.style.minHeight = min;
         if (this.domAfter) this.domAfter.style.minHeight = min;
       }
@@ -228,17 +228,17 @@ const gutterView = ViewPlugin.fromClass(
     }
 
     syncGutters(detach: boolean) {
-      const after = this.dom.nextSibling;
+      let after = this.dom.nextSibling;
       if (detach) {
         this.dom.remove();
         if (this.domAfter) this.domAfter.remove();
       }
-      const lineClasses = RangeSet.iter(
+      let lineClasses = RangeSet.iter(
         this.view.state.facet(gutterLineClass),
         this.view.viewport.from,
       );
       let classSet: GutterMarker[] = [];
-      const contexts = this.gutters.map(
+      let contexts = this.gutters.map(
         (gutter) =>
           new UpdateContext(
             gutter,
@@ -246,27 +246,27 @@ const gutterView = ViewPlugin.fromClass(
             -this.view.documentPadding.top,
           ),
       );
-      for (const line of this.view.viewportLineBlocks) {
+      for (let line of this.view.viewportLineBlocks) {
         if (classSet.length) classSet = [];
         if (Array.isArray(line.type)) {
           let first = true;
-          for (const b of line.type) {
+          for (let b of line.type) {
             if (b.type == BlockType.Text && first) {
               advanceCursor(lineClasses, classSet, b.from);
-              for (const cx of contexts) cx.line(this.view, b, classSet);
+              for (let cx of contexts) cx.line(this.view, b, classSet);
               first = false;
             } else if (b.widget) {
-              for (const cx of contexts) cx.widget(this.view, b);
+              for (let cx of contexts) cx.widget(this.view, b);
             }
           }
         } else if (line.type == BlockType.Text) {
           advanceCursor(lineClasses, classSet, line.from);
-          for (const cx of contexts) cx.line(this.view, line, classSet);
+          for (let cx of contexts) cx.line(this.view, line, classSet);
         } else if (line.widget) {
-          for (const cx of contexts) cx.widget(this.view, line);
+          for (let cx of contexts) cx.widget(this.view, line);
         }
       }
-      for (const cx of contexts) cx.finish();
+      for (let cx of contexts) cx.finish();
       if (detach) {
         this.view.scrollDOM.insertBefore(this.dom, after);
         if (this.domAfter) this.view.scrollDOM.appendChild(this.domAfter);
@@ -274,8 +274,8 @@ const gutterView = ViewPlugin.fromClass(
     }
 
     updateGutters(update: ViewUpdate) {
-      const prev = update.startState.facet(activeGutters);
-      const cur = update.state.facet(activeGutters);
+      let prev = update.startState.facet(activeGutters);
+      let cur = update.state.facet(activeGutters);
       let change =
         update.docChanged ||
         update.heightChanged ||
@@ -287,13 +287,13 @@ const gutterView = ViewPlugin.fromClass(
           update.view.viewport.to,
         );
       if (prev == cur) {
-        for (const gutter of this.gutters)
+        for (let gutter of this.gutters)
           if (gutter.update(update)) change = true;
       } else {
         change = true;
-        const gutters = [];
-        for (const conf of cur) {
-          const known = prev.indexOf(conf);
+        let gutters = [];
+        for (let conf of cur) {
+          let known = prev.indexOf(conf);
           if (known < 0) {
             gutters.push(new SingleGutterView(this.view, conf));
           } else {
@@ -301,11 +301,11 @@ const gutterView = ViewPlugin.fromClass(
             gutters.push(this.gutters[known]);
           }
         }
-        for (const g of this.gutters) {
+        for (let g of this.gutters) {
           g.dom.remove();
           if (gutters.indexOf(g) < 0) g.destroy();
         }
-        for (const g of gutters) {
+        for (let g of gutters) {
           if (g.config.side == 'after') this.getDOMAfter().appendChild(g.dom);
           else this.dom.appendChild(g.dom);
         }
@@ -315,7 +315,7 @@ const gutterView = ViewPlugin.fromClass(
     }
 
     destroy() {
-      for (const view of this.gutters) view.destroy();
+      for (let view of this.gutters) view.destroy();
       this.dom.remove();
       if (this.domAfter) this.domAfter.remove();
     }
@@ -323,10 +323,10 @@ const gutterView = ViewPlugin.fromClass(
   {
     provide: (plugin) =>
       EditorView.scrollMargins.of((view) => {
-        const value = view.plugin(plugin);
+        let value = view.plugin(plugin);
         if (!value || value.gutters.length == 0 || !value.fixed) return null;
-        const before = value.dom.offsetWidth * view.scaleX;
-        const after = value.domAfter
+        let before = value.dom.offsetWidth * view.scaleX;
+        let after = value.domAfter
           ? value.domAfter.offsetWidth * view.scaleX
           : 0;
         return view.textDirection == Direction.LTR
@@ -368,11 +368,11 @@ class UpdateContext {
     block: BlockInfo,
     markers: readonly GutterMarker[],
   ) {
-    const { gutter } = this;
-    const above = (block.top - this.height) / view.scaleY;
-    const height = block.height / view.scaleY;
+    let { gutter } = this;
+    let above = (block.top - this.height) / view.scaleY;
+    let height = block.height / view.scaleY;
     if (this.i == gutter.elements.length) {
-      const newElt = new GutterElement(view, height, above, markers);
+      let newElt = new GutterElement(view, height, above, markers);
       gutter.elements.push(newElt);
       gutter.dom.appendChild(newElt.dom);
     } else {
@@ -390,28 +390,28 @@ class UpdateContext {
     let localMarkers: GutterMarker[] = [];
     advanceCursor(this.cursor, localMarkers, line.from);
     if (extraMarkers.length) localMarkers = localMarkers.concat(extraMarkers);
-    const forLine = this.gutter.config.lineMarker(view, line, localMarkers);
+    let forLine = this.gutter.config.lineMarker(view, line, localMarkers);
     if (forLine) localMarkers.unshift(forLine);
 
-    const gutter = this.gutter;
+    let gutter = this.gutter;
     if (localMarkers.length == 0 && !gutter.config.renderEmptyElements) return;
     this.addElement(view, line, localMarkers);
   }
 
   widget(view: EditorView, block: BlockInfo) {
-    const marker = this.gutter.config.widgetMarker(view, block.widget!, block);
+    let marker = this.gutter.config.widgetMarker(view, block.widget!, block);
     let markers = marker ? [marker] : null;
-    for (const cls of view.state.facet(gutterWidgetClass)) {
-      const marker = cls(view, block.widget!, block);
+    for (let cls of view.state.facet(gutterWidgetClass)) {
+      let marker = cls(view, block.widget!, block);
       if (marker) (markers || (markers = [])).push(marker);
     }
     if (markers) this.addElement(view, block, markers);
   }
 
   finish() {
-    const gutter = this.gutter;
+    let gutter = this.gutter;
     while (gutter.elements.length > this.i) {
-      const last = gutter.elements.pop()!;
+      let last = gutter.elements.pop()!;
       gutter.dom.removeChild(last.dom);
       last.destroy();
     }
@@ -431,19 +431,19 @@ class SingleGutterView {
     this.dom = document.createElement('div');
     this.dom.className =
       'cm-gutter' + (this.config.class ? ' ' + this.config.class : '');
-    for (const prop in config.domEventHandlers) {
+    for (let prop in config.domEventHandlers) {
       this.dom.addEventListener(prop, (event: Event) => {
         let target = event.target as HTMLElement;
         let y;
         if (target != this.dom && this.dom.contains(target)) {
           while (target.parentNode != this.dom)
             target = target.parentNode as HTMLElement;
-          const rect = target.getBoundingClientRect();
+          let rect = target.getBoundingClientRect();
           y = (rect.top + rect.bottom) / 2;
         } else {
           y = (event as MouseEvent).clientY;
         }
-        const line = view.lineBlockAtHeight(y - view.documentTop);
+        let line = view.lineBlockAtHeight(y - view.documentTop);
         if (config.domEventHandlers[prop](view, line, event))
           event.preventDefault();
       });
@@ -458,14 +458,14 @@ class SingleGutterView {
   }
 
   update(update: ViewUpdate) {
-    const prevMarkers = this.markers;
+    let prevMarkers = this.markers;
     this.markers = asArray(this.config.markers(update.view));
     if (this.spacer && this.config.updateSpacer) {
-      const updated = this.config.updateSpacer(this.spacer.markers[0], update);
+      let updated = this.config.updateSpacer(this.spacer.markers[0], update);
       if (updated != this.spacer.markers[0])
         this.spacer.update(update.view, 0, 0, [updated]);
     }
-    const vp = update.view.viewport;
+    let vp = update.view.viewport;
     return (
       !RangeSet.eq(this.markers, prevMarkers, vp.from, vp.to) ||
       (this.config.lineMarkerChange
@@ -475,7 +475,7 @@ class SingleGutterView {
   }
 
   destroy() {
-    for (const elt of this.elements) elt.destroy();
+    for (let elt of this.elements) elt.destroy();
   }
 }
 
@@ -516,10 +516,10 @@ class GutterElement {
     let domPos = this.dom.firstChild;
     for (let iNew = 0, iOld = 0; ; ) {
       let skipTo = iOld;
-      const marker = iNew < markers.length ? markers[iNew++] : null;
+      let marker = iNew < markers.length ? markers[iNew++] : null;
       let matched = false;
       if (marker) {
-        const c = marker.elementClass;
+        let c = marker.elementClass;
         if (c) cls += ' ' + c;
         for (let i = iOld; i < this.markers.length; i++)
           if (this.markers[i].compare(marker)) {
@@ -531,10 +531,10 @@ class GutterElement {
         skipTo = this.markers.length;
       }
       while (iOld < skipTo) {
-        const next = this.markers[iOld++];
+        let next = this.markers[iOld++];
         if (next.toDOM) {
           next.destroy(domPos!);
-          const after = domPos!.nextSibling;
+          let after = domPos!.nextSibling;
           domPos!.remove();
           domPos = after;
         }
@@ -595,10 +595,10 @@ const lineNumberConfig = Facet.define<
       { formatNumber: String, domEventHandlers: {} },
       {
         domEventHandlers(a: Handlers, b: Handlers) {
-          const result: Handlers = Object.assign({}, a);
-          for (const event in b) {
-            const exists = result[event];
-            const add = b[event];
+          let result: Handlers = Object.assign({}, a);
+          for (let event in b) {
+            let exists = result[event];
+            let add = b[event];
             result[event] = exists
               ? (view, line, event) =>
                   exists(view, line, event) || add(view, line, event)
@@ -642,8 +642,8 @@ const lineNumberGutter = activeGutters.compute([lineNumberConfig], (state) => ({
     );
   },
   widgetMarker: (view, widget, block) => {
-    for (const m of view.state.facet(lineNumberWidgetMarker)) {
-      const result = m(view, widget, block);
+    for (let m of view.state.facet(lineNumberWidgetMarker)) {
+      let result = m(view, widget, block);
       if (result) return result;
     }
     return null;
@@ -657,7 +657,7 @@ const lineNumberGutter = activeGutters.compute([lineNumberConfig], (state) => ({
     );
   },
   updateSpacer(spacer: GutterMarker, update: ViewUpdate) {
-    const max = formatNumber(
+    let max = formatNumber(
       update.view,
       maxLineNumber(update.view.state.doc.lines),
     );
@@ -683,13 +683,14 @@ function maxLineNumber(lines: number) {
 const activeLineGutterMarker = new (class extends GutterMarker {
   elementClass = 'cm-activeLineGutter';
 })();
+
 const activeLineGutterHighlighter = gutterLineClass.compute(
   ['selection'],
   (state) => {
-    const marks = [];
+    let marks = [];
     let last = -1;
-    for (const range of state.selection.ranges) {
-      const linePos = state.doc.lineAt(range.head).from;
+    for (let range of state.selection.ranges) {
+      let linePos = state.doc.lineAt(range.head).from;
       if (linePos > last) {
         last = linePos;
         marks.push(activeLineGutterMarker.range(linePos));

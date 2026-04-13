@@ -6,7 +6,7 @@ function look(stream, c) {
 // return a part of prefix of current stream from current position
 function prefix(stream, c) {
   if (c) {
-    const x = stream.pos - c;
+    var x = stream.pos - c;
     return stream.string.substr(x >= 0 ? x : 0, c);
   } else {
     return stream.string.substr(0, stream.pos - 1);
@@ -15,22 +15,22 @@ function prefix(stream, c) {
 
 // return a part of suffix of current stream from current position
 function suffix(stream, c) {
-  const y = stream.string.length;
-  const x = y - stream.pos + 1;
+  var y = stream.string.length;
+  var x = y - stream.pos + 1;
   return stream.string.substr(stream.pos, c && c < y ? c : x);
 }
 
 // eating and vomiting a part of stream from current position
 function eatSuffix(stream, c) {
-  const x = stream.pos + c;
-  let y;
+  var x = stream.pos + c;
+  var y;
   if (x <= 0) stream.pos = 0;
   else if (x >= (y = stream.string.length - 1)) stream.pos = y;
   else stream.pos = x;
 }
 
 // http://perldoc.perl.org
-const PERL = {
+var PERL = {
   //   null - magic touch
   //   1 - keyword
   //   2 - def
@@ -492,8 +492,9 @@ const PERL = {
   write: 1, // - print a picture record
   y: null,
 }; // - transliterate a string
-const RXstyle = 'string.special';
-const RXmodifiers = /[goseximacplud]/; // NOTE: "m", "s", "y" and "tr" need to correct real modifiers for each regexp type
+
+var RXstyle = 'string.special';
+var RXmodifiers = /[goseximacplud]/; // NOTE: "m", "s", "y" and "tr" need to correct real modifiers for each regexp type
 
 function tokenChain(stream, state, chain, style, tail) {
   // NOTE: chain.length > 2 is not working now (it's for s[...][...]geos;)
@@ -501,9 +502,9 @@ function tokenChain(stream, state, chain, style, tail) {
   state.style = null;
   state.tail = null;
   state.tokenize = function (stream, state) {
-    let e = false;
-    let c;
-    let i = 0;
+    var e = false;
+    var c;
+    var i = 0;
     while ((c = stream.next())) {
       if (c === chain[i] && !e) {
         if (chain[++i] !== undefined) {
@@ -549,13 +550,13 @@ function tokenPerl(stream, state) {
     // NOTE: \n=item...\n=cut\n
     return tokenSOMETHING(stream, state, '=cut');
   }
-  const ch = stream.next();
+  var ch = stream.next();
   if (ch == '"' || ch == "'") {
     // NOTE: ' or " or <<'SOMETHING'\n...\nSOMETHING\n or <<"SOMETHING"\n...\nSOMETHING\n
     if (prefix(stream, 3) == '<<' + ch) {
       var p = stream.pos;
       stream.eatWhile(/\w/);
-      const n = stream.current().substr(1);
+      var n = stream.current().substr(1);
       if (n && stream.eat(ch)) return tokenSOMETHING(stream, state, n);
       stream.pos = p;
     }

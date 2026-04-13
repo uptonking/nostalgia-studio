@@ -1,14 +1,14 @@
-import type { EditorView } from '@codemirror/view';
+import { EditorView } from '@codemirror/view';
 import {
-  type EditorState,
+  EditorState,
   StateEffect,
   Annotation,
   EditorSelection,
-  type TransactionSpec,
-  type ChangeDesc,
+  TransactionSpec,
+  ChangeDesc,
 } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
-import type { SyntaxNode } from '@lezer/common';
+import { SyntaxNode } from '@lezer/common';
 
 /// Objects type used to represent individual completions.
 export interface Completion {
@@ -21,6 +21,9 @@ export interface Completion {
   /// provide a [`getMatch`](#autocomplete.CompletionResult.getMatch)
   /// function.
   displayLabel?: string;
+  /// Overrides the text that is used to sort completions. Will
+  /// default to `label` if not given.
+  sortText?: string;
   /// An optional short piece of information to show (with a different
   /// style) after the label.
   detail?: string;
@@ -92,7 +95,11 @@ export interface CompletionSection {
   /// By default, sections are ordered alphabetically by name. To
   /// specify an explicit order, `rank` can be used. Sections with a
   /// lower rank will be shown above sections with a higher rank.
-  rank?: number;
+  ///
+  /// When set to `"dynamic"`, the section's position compared to
+  /// other dynamic sections depends on the matching score of the
+  /// best-matching option in the sections.
+  rank?: number | 'dynamic';
 }
 
 /// An instance of this is passed to completion source functions.
@@ -144,10 +151,10 @@ export class CompletionContext {
   /// Get the match of the given expression directly before the
   /// cursor.
   matchBefore(expr: RegExp) {
-    const line = this.state.doc.lineAt(this.pos);
-    const start = Math.max(line.from, this.pos - 250);
-    const str = line.text.slice(start - line.from, this.pos - line.from);
-    const found = str.search(ensureAnchor(expr, false));
+    let line = this.state.doc.lineAt(this.pos);
+    let start = Math.max(line.from, this.pos - 250);
+    let str = line.text.slice(start - line.from, this.pos - line.from);
+    let found = str.search(ensureAnchor(expr, false));
     return found < 0
       ? null
       : { from: start + found, to: this.pos, text: str.slice(found) };
@@ -184,19 +191,19 @@ export class CompletionContext {
 
 function toSet(chars: { [ch: string]: true }) {
   let flat = Object.keys(chars).join('');
-  const words = /\w/.test(flat);
+  let words = /\w/.test(flat);
   if (words) flat = flat.replace(/\w/g, '');
   return `[${words ? '\\w' : ''}${flat.replace(/[^\w\s]/g, '\\$&')}]`;
 }
 
 function prefixMatch(options: readonly Completion[]) {
-  const first = Object.create(null);
-  const rest = Object.create(null);
-  for (const { label } of options) {
+  let first = Object.create(null);
+  let rest = Object.create(null);
+  for (let { label } of options) {
     first[label[0]] = true;
     for (let i = 1; i < label.length; i++) rest[label[i]] = true;
   }
-  const source = toSet(first) + toSet(rest) + '*$';
+  let source = toSet(first) + toSet(rest) + '*$';
   return [new RegExp('^' + source), new RegExp(source)];
 }
 
@@ -205,14 +212,14 @@ function prefixMatch(options: readonly Completion[]) {
 export function completeFromList(
   list: readonly (string | Completion)[],
 ): CompletionSource {
-  const options = list.map((o) =>
-    typeof o === 'string' ? { label: o } : o,
+  let options = list.map((o) =>
+    typeof o == 'string' ? { label: o } : o,
   ) as Completion[];
-  const [validFor, match] = options.every((o) => /^\w+$/.test(o.label))
+  let [validFor, match] = options.every((o) => /^\w+$/.test(o.label))
     ? [/\w*$/, /\w+$/]
     : prefixMatch(options);
   return (context: CompletionContext) => {
-    const token = context.matchBefore(match);
+    let token = context.matchBefore(match);
     return token || context.explicit
       ? { from: token ? token.from : context.pos, options, validFor }
       : null;
@@ -354,9 +361,9 @@ export function cur(state: EditorState) {
 // Make sure the given regexp has a $ at its end and, if `start` is
 // true, a ^ at its start.
 export function ensureAnchor(expr: RegExp, start: boolean) {
-  const { source } = expr;
-  const addStart = start && source[0] != '^';
-  const addEnd = source[source.length - 1] != '$';
+  let { source } = expr;
+  let addStart = start && source[0] != '^';
+  let addEnd = source[source.length - 1] != '$';
   if (!addStart && !addEnd) return expr;
   return new RegExp(
     `${addStart ? '^' : ''}(?:${source})${addEnd ? '$' : ''}`,
@@ -377,9 +384,9 @@ export function insertCompletionText(
   from: number,
   to: number,
 ): TransactionSpec {
-  const { main } = state.selection;
-  const fromOff = from - main.from;
-  const toOff = to - main.from;
+  let { main } = state.selection;
+  let fromOff = from - main.from;
+  let toOff = to - main.from;
   return {
     ...state.changeByRange((range) => {
       if (
@@ -389,7 +396,7 @@ export function insertCompletionText(
           state.sliceDoc(from, to)
       )
         return { range };
-      const lines = state.toText(text);
+      let lines = state.toText(text);
       return {
         changes: {
           from: range.from + fromOff,

@@ -215,7 +215,7 @@ export const RowPinning: TableFeature = {
       table.setRowPinning(
         defaultState
           ? getDefaultRowPinningState()
-          : table.initialState?.rowPinning ?? getDefaultRowPinningState(),
+          : (table.initialState?.rowPinning ?? getDefaultRowPinningState()),
       );
 
     table.getIsSomeRowsPinned = (position) => {
@@ -235,7 +235,7 @@ export const RowPinning: TableFeature = {
       ],
       (visibleRows, pinnedRowIds, position) => {
         const rows =
-          table.options.keepPinnedRows ?? true
+          (table.options.keepPinnedRows ?? true)
             ? //get all rows that are pinned even if they would not be otherwise visible
               //account for expanded parent rows, but not pagination or filtering
               (pinnedRowIds ?? []).map((rowId) => {

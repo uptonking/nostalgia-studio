@@ -9,13 +9,13 @@ function chain(tokenize, stream, state) {
   return tokenize(stream, state);
 }
 
-const operators = /^(?:[-+/%|&^]|\*\*?|[<>]{2})/;
-const conditionalOperators = /^(?:[=!]~|===|<=>|[<>=!]=?|[|&]{2}|~)/;
-const indexingOperators = /^(?:\[\][?=]?)/;
-const anotherOperators = /^(?:\.(?:\.{2})?|->|[?:])/;
-const idents = /^[a-z_\u009F-\uFFFF][a-zA-Z0-9_\u009F-\uFFFF]*/;
-const types = /^[A-Z_\u009F-\uFFFF][a-zA-Z0-9_\u009F-\uFFFF]*/;
-const keywords = wordRegExp([
+var operators = /^(?:[-+/%|&^]|\*\*?|[<>]{2})/;
+var conditionalOperators = /^(?:[=!]~|===|<=>|[<>=!]=?|[|&]{2}|~)/;
+var indexingOperators = /^(?:\[\][?=]?)/;
+var anotherOperators = /^(?:\.(?:\.{2})?|->|[?:])/;
+var idents = /^[a-z_\u009F-\uFFFF][a-zA-Z0-9_\u009F-\uFFFF]*/;
+var types = /^[A-Z_\u009F-\uFFFF][a-zA-Z0-9_\u009F-\uFFFF]*/;
+var keywords = wordRegExp([
   'abstract',
   'alias',
   'as',
@@ -69,8 +69,8 @@ const keywords = wordRegExp([
   '__FILE__',
   '__LINE__',
 ]);
-const atomWords = wordRegExp(['true', 'false', 'nil', 'self']);
-const indentKeywordsArray = [
+var atomWords = wordRegExp(['true', 'false', 'nil', 'self']);
+var indentKeywordsArray = [
   'def',
   'fun',
   'macro',
@@ -83,8 +83,8 @@ const indentKeywordsArray = [
   'do',
   'for',
 ];
-const indentKeywords = wordRegExp(indentKeywordsArray);
-const indentExpressionKeywordsArray = [
+var indentKeywords = wordRegExp(indentKeywordsArray);
+var indentExpressionKeywordsArray = [
   'if',
   'unless',
   'case',
@@ -93,14 +93,14 @@ const indentExpressionKeywordsArray = [
   'begin',
   'then',
 ];
-const indentExpressionKeywords = wordRegExp(indentExpressionKeywordsArray);
-const dedentKeywordsArray = ['end', 'else', 'elsif', 'rescue', 'ensure'];
-const dedentKeywords = wordRegExp(dedentKeywordsArray);
-const dedentPunctualsArray = ['\\)', '\\}', '\\]'];
-const dedentPunctuals = new RegExp(
+var indentExpressionKeywords = wordRegExp(indentExpressionKeywordsArray);
+var dedentKeywordsArray = ['end', 'else', 'elsif', 'rescue', 'ensure'];
+var dedentKeywords = wordRegExp(dedentKeywordsArray);
+var dedentPunctualsArray = ['\\)', '\\}', '\\]'];
+var dedentPunctuals = new RegExp(
   '^(?:' + dedentPunctualsArray.join('|') + ')$',
 );
-const nextTokenizer = {
+var nextTokenizer = {
   def: tokenFollowIdent,
   fun: tokenFollowIdent,
   macro: tokenMacroDef,
@@ -111,7 +111,7 @@ const nextTokenizer = {
   enum: tokenFollowType,
   union: tokenFollowType,
 };
-const matching = { '[': ']', '{': '}', '(': ')', '<': '>' };
+var matching = { '[': ']', '{': '}', '(': ')', '<': '>' };
 
 function tokenBase(stream, state) {
   if (stream.eatSpace()) {
@@ -134,7 +134,7 @@ function tokenBase(stream, state) {
   }
 
   // Variables and keywords
-  let matched;
+  var matched;
   if (stream.match(idents)) {
     stream.eat(/[?!]/);
 
@@ -216,9 +216,9 @@ function tokenBase(stream, state) {
 
   // Strings or regexps or macro variables or '%' operator
   if (stream.peek() == '%') {
-    let style = 'string';
-    let embed = true;
-    let delim;
+    var style = 'string';
+    var embed = true;
+    var delim;
 
     if (stream.match('%r')) {
       // Regexps
@@ -318,7 +318,7 @@ function tokenNest(begin, end, style, started) {
       return style;
     }
 
-    let nextStyle = tokenBase(stream, state);
+    var nextStyle = tokenBase(stream, state);
     if (stream.current() === end) {
       state.tokenize.pop();
       state.currentIndent -= 1;
@@ -352,7 +352,7 @@ function tokenMacroDef(stream, state) {
     return null;
   }
 
-  let matched;
+  var matched;
   if ((matched = stream.match(idents))) {
     if (matched == 'def') {
       return 'keyword';
@@ -392,7 +392,7 @@ function tokenFollowType(stream, state) {
 
 function tokenQuote(end, style, embed) {
   return function (stream, state) {
-    let escaped = false;
+    var escaped = false;
 
     while (stream.peek()) {
       if (!escaped) {
@@ -411,7 +411,7 @@ function tokenQuote(end, style, embed) {
           return style;
         }
 
-        const ch = stream.next();
+        var ch = stream.next();
 
         if (ch == end) {
           state.tokenize.pop();
@@ -439,7 +439,7 @@ function tokenHereDoc(phrase, embed) {
       }
     }
 
-    let escaped = false;
+    var escaped = false;
     while (stream.peek()) {
       if (!escaped) {
         if (stream.match('{%', false)) {
@@ -481,8 +481,8 @@ export const crystal = {
   },
 
   token: function (stream, state) {
-    const style = state.tokenize[state.tokenize.length - 1](stream, state);
-    const token = stream.current();
+    var style = state.tokenize[state.tokenize.length - 1](stream, state);
+    var token = stream.current();
 
     if (style && style != 'comment') {
       state.lastToken = token;

@@ -217,7 +217,9 @@ export const RowExpanding: TableFeature = {
       }
     };
     table.resetExpanded = (defaultState) => {
-      table.setExpanded(defaultState ? {} : table.initialState?.expanded ?? {});
+      table.setExpanded(
+        defaultState ? {} : (table.initialState?.expanded ?? {}),
+      );
     };
     table.getCanSomeRowsExpand = () => {
       return table

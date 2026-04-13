@@ -44,8 +44,11 @@ export class ReplaceStep extends Step {
   }
 
   map(mapping: Mappable) {
-    let from = mapping.mapResult(this.from, 1);
     let to = mapping.mapResult(this.to, -1);
+    let from =
+      this.from == this.to && ReplaceStep.MAP_BIAS < 0
+        ? to
+        : mapping.mapResult(this.from, 1);
     if (from.deletedAcross && to.deletedAcross) return null;
     return new ReplaceStep(
       from.pos,
@@ -115,6 +118,14 @@ export class ReplaceStep extends Step {
       !!json.structure,
     );
   }
+
+  /// By default, for backwards compatibility, an inserting step
+  /// mapped over an insertion at that same position fill move after
+  /// the inserted content. In a collaborative editing situation, that
+  /// can make redone insertions appear in unexpected places. You can
+  /// set this to -1 to make such mapping keep the step before the
+  /// insertion instead.
+  static MAP_BIAS: -1 | 1 = 1;
 }
 
 Step.jsonID('replace', ReplaceStep);

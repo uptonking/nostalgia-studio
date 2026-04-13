@@ -1,29 +1,29 @@
-import type { Tree, NodeType } from '@lezer/common';
+import { Tree, NodeType } from '@lezer/common';
 import {
-  type Tag,
+  Tag,
   tags,
   tagHighlighter,
-  type Highlighter,
+  Highlighter,
   highlightTree,
 } from '@lezer/highlight';
-import { type StyleSpec, StyleModule } from 'style-mod';
+import { StyleSpec, StyleModule } from 'style-mod';
 import {
   EditorView,
   ViewPlugin,
-  type ViewUpdate,
+  ViewUpdate,
   Decoration,
-  type DecorationSet,
+  DecorationSet,
 } from '@codemirror/view';
 import {
-  type EditorState,
+  EditorState,
   Prec,
   Facet,
-  type Extension,
+  Extension,
   RangeSetBuilder,
 } from '@codemirror/state';
 import { syntaxTree, Language, languageDataProp } from './language';
 
-/// A highlight style associates CSS styles with higlighting
+/// A highlight style associates CSS styles with highlighting
 /// [tags](https://lezer.codemirror.net/docs/ref#highlight.Tag).
 export class HighlightStyle implements Highlighter {
   /// A style module holding the CSS rules for this highlight style.
@@ -50,17 +50,18 @@ export class HighlightStyle implements Highlighter {
   ) {
     let modSpec: { [name: string]: StyleSpec } | undefined;
     function def(spec: StyleSpec) {
-      const cls = StyleModule.newName();
+      let cls = StyleModule.newName();
       (modSpec || (modSpec = Object.create(null)))['.' + cls] = spec;
       return cls;
     }
 
     const all =
-      typeof options.all === 'string'
+      typeof options.all == 'string'
         ? options.all
         : options.all
           ? def(options.all)
           : undefined;
+
     const scopeOpt = options.scope;
     this.scope =
       scopeOpt instanceof Language
@@ -119,6 +120,7 @@ export class HighlightStyle implements Highlighter {
 }
 
 const highlighterFacet = Facet.define<Highlighter>();
+
 const fallbackHighlighter = Facet.define<
   Highlighter,
   readonly Highlighter[] | null
@@ -129,7 +131,7 @@ const fallbackHighlighter = Facet.define<
 });
 
 function getHighlighters(state: EditorState): readonly Highlighter[] | null {
-  const main = state.facet(highlighterFacet);
+  let main = state.facet(highlighterFacet);
   return main.length ? main : state.facet(fallbackHighlighter);
 }
 
@@ -146,7 +148,7 @@ export function syntaxHighlighting(
     fallback: boolean;
   },
 ): Extension {
-  const ext: Extension[] = [treeHighlighter];
+  let ext: Extension[] = [treeHighlighter];
   let themeType: string | undefined;
   if (highlighter instanceof HighlightStyle) {
     if (highlighter.module)
@@ -176,12 +178,12 @@ export function highlightingFor(
   tags: readonly Tag[],
   scope?: NodeType,
 ): string | null {
-  const highlighters = getHighlighters(state);
+  let highlighters = getHighlighters(state);
   let result = null;
   if (highlighters)
-    for (const highlighter of highlighters) {
+    for (let highlighter of highlighters) {
       if (!highlighter.scope || (scope && highlighter.scope(scope))) {
-        const cls = highlighter.style(tags);
+        let cls = highlighter.style(tags);
         if (cls) result = result ? result + ' ' + cls : cls;
       }
     }
@@ -219,11 +221,11 @@ class TreeHighlighter {
   }
 
   update(update: ViewUpdate) {
-    const tree = syntaxTree(update.state);
-    const highlighters = getHighlighters(update.state);
-    const styleChange = highlighters != getHighlighters(update.startState);
-    const { viewport } = update.view;
-    const decoratedToMapped = update.changes.mapPos(this.decoratedTo, 1);
+    let tree = syntaxTree(update.state);
+    let highlighters = getHighlighters(update.state);
+    let styleChange = highlighters != getHighlighters(update.startState);
+    let { viewport } = update.view;
+    let decoratedToMapped = update.changes.mapPos(this.decoratedTo, 1);
     if (
       tree.length < viewport.to &&
       !styleChange &&
@@ -242,8 +244,8 @@ class TreeHighlighter {
   buildDeco(view: EditorView, highlighters: readonly Highlighter[] | null) {
     if (!highlighters || !this.tree.length) return Decoration.none;
 
-    const builder = new RangeSetBuilder<Decoration>();
-    for (const { from, to } of view.visibleRanges) {
+    let builder = new RangeSetBuilder<Decoration>();
+    for (let { from, to } of view.visibleRanges) {
       highlightTree(
         this.tree,
         highlighters,

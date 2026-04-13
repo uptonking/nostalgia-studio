@@ -1,11 +1,11 @@
-let type;
+var type;
 function ret(style, tp) {
   type = tp;
   return style;
 }
 
 function tokenBase(stream, state) {
-  const ch = stream.next();
+  var ch = stream.next();
 
   if (ch == '<' && stream.eat('!')) {
     if (stream.eatWhile(/[\-]/)) {
@@ -25,7 +25,7 @@ function tokenBase(stream, state) {
     state.tokenize = tokenString(ch);
     return state.tokenize(stream, state);
   } else if (stream.eatWhile(/[a-zA-Z\?\+\d]/)) {
-    const sc = stream.current();
+    var sc = stream.current();
     if (sc.substr(sc.length - 1, sc.length).match(/\?|\+/) !== null)
       stream.backUp(1);
     return ret('tag', 'tag');
@@ -37,8 +37,8 @@ function tokenBase(stream, state) {
 }
 
 function tokenSGMLComment(stream, state) {
-  let dashes = 0;
-  let ch;
+  var dashes = 0;
+  var ch;
   while ((ch = stream.next()) != null) {
     if (dashes >= 2 && ch == '>') {
       state.tokenize = tokenBase;
@@ -51,8 +51,8 @@ function tokenSGMLComment(stream, state) {
 
 function tokenString(quote) {
   return function (stream, state) {
-    let escaped = false;
-    let ch;
+    var escaped = false;
+    var ch;
     while ((ch = stream.next()) != null) {
       if (ch == quote && !escaped) {
         state.tokenize = tokenBase;
@@ -85,8 +85,9 @@ export const dtd = {
 
   token: function (stream, state) {
     if (stream.eatSpace()) return null;
-    const style = state.tokenize(stream, state);
-    const context = state.stack[state.stack.length - 1];
+    var style = state.tokenize(stream, state);
+
+    var context = state.stack[state.stack.length - 1];
     if (stream.current() == '[' || type === 'doindent' || type == '[')
       state.stack.push('rule');
     else if (type === 'endtag') state.stack[state.stack.length - 1] = 'endtag';
@@ -101,7 +102,7 @@ export const dtd = {
   },
 
   indent: function (state, textAfter, cx) {
-    let n = state.stack.length;
+    var n = state.stack.length;
 
     if (textAfter.charAt(0) === ']') n--;
     else if (textAfter.substr(textAfter.length - 1, textAfter.length) === '>') {

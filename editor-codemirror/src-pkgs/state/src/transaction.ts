@@ -1,5 +1,5 @@
-import { ChangeSet, type ChangeDesc, type ChangeSpec } from './change';
-import type { EditorState } from './state';
+import { ChangeSet, ChangeDesc, ChangeSpec } from './change';
+import { EditorState } from './state';
 import { EditorSelection, checkSelection } from './selection';
 import {
   changeFilter,
@@ -7,8 +7,8 @@ import {
   transactionExtender,
   lineSeparator,
 } from './extension';
-import type { Extension } from './facet';
-import type { Text } from './text';
+import { Extension } from './facet';
+import { Text } from './text';
 
 /// Annotations are tagged values that are used to add metadata to
 /// transactions in an extensible way. They should be used to model
@@ -89,7 +89,7 @@ export class StateEffect<Value> {
   /// Map this effect through a position mapping. Will return
   /// `undefined` when that ends up deleting the effect.
   map(mapping: ChangeDesc): StateEffect<Value> | undefined {
-    const mapped = this.type.map(this.value, mapping);
+    let mapped = this.type.map(this.value, mapping);
     return mapped === undefined
       ? undefined
       : mapped == this.value
@@ -117,9 +117,9 @@ export class StateEffect<Value> {
   /// Map an array of effects through a change set.
   static mapEffects(effects: readonly StateEffect<any>[], mapping: ChangeDesc) {
     if (!effects.length) return effects;
-    const result = [];
-    for (const effect of effects) {
-      const mapped = effect.map(mapping);
+    let result = [];
+    for (let effect of effects) {
+      let mapped = effect.map(mapping);
       if (mapped) result.push(mapped);
     }
     return result;
@@ -255,7 +255,7 @@ export class Transaction {
 
   /// Get the value of the given annotation type, if any.
   annotation<T>(type: AnnotationType<T>): T | undefined {
-    for (const ann of this.annotations) if (ann.type == type) return ann.value;
+    for (let ann of this.annotations) if (ann.type == type) return ann.value;
     return undefined;
   }
 
@@ -278,13 +278,13 @@ export class Transaction {
   /// has `"select.pointer"` as user event, `"select"` and
   /// `"select.pointer"` will match it.
   isUserEvent(event: string): boolean {
-    const e = this.annotation(Transaction.userEvent);
-    return Boolean(
+    let e = this.annotation(Transaction.userEvent);
+    return !!(
       e &&
-        (e == event ||
-          (e.length > event.length &&
-            e.slice(0, event.length) == event &&
-            e[event.length] == '.')),
+      (e == event ||
+        (e.length > event.length &&
+          e.slice(0, event.length) == event &&
+          e[event.length] == '.'))
     );
   }
 
@@ -330,7 +330,7 @@ export class Transaction {
 }
 
 function joinRanges(a: readonly number[], b: readonly number[]) {
-  const result = [];
+  let result = [];
   for (let iA = 0, iB = 0; ; ) {
     let from;
     let to;
@@ -392,7 +392,7 @@ function resolveTransactionInner(
   spec: TransactionSpec,
   docSize: number,
 ): ResolvedSpec {
-  const sel = spec.selection;
+  let sel = spec.selection;
   let annotations = asArray(spec.annotations);
   if (spec.userEvent)
     annotations = annotations.concat(Transaction.userEvent.of(spec.userEvent));
@@ -408,7 +408,7 @@ function resolveTransactionInner(
         : EditorSelection.single(sel.anchor, sel.head)),
     effects: asArray(spec.effects),
     annotations,
-    scrollIntoView: Boolean(spec.scrollIntoView),
+    scrollIntoView: !!spec.scrollIntoView,
   };
 }
 
@@ -425,7 +425,7 @@ export function resolveTransaction(
   if (specs.length && specs[0].filter === false) filter = false;
   for (let i = 1; i < specs.length; i++) {
     if (specs[i].filter === false) filter = false;
-    const seq = Boolean(specs[i].sequential);
+    let seq = !!specs[i].sequential;
     s = mergeTransaction(
       s,
       resolveTransactionInner(
@@ -436,7 +436,7 @@ export function resolveTransaction(
       seq,
     );
   }
-  const tr = Transaction.create(
+  let tr = Transaction.create(
     state,
     s.changes,
     s.selection,
@@ -449,12 +449,12 @@ export function resolveTransaction(
 
 // Finish a transaction by applying filters if necessary.
 function filterTransaction(tr: Transaction) {
-  const state = tr.startState;
+  let state = tr.startState;
 
   // Change filters
   let result: boolean | readonly number[] = true;
-  for (const filter of state.facet(changeFilter)) {
-    const value = filter(tr);
+  for (let filter of state.facet(changeFilter)) {
+    let value = filter(tr);
     if (value === false) {
       result = false;
       break;
@@ -469,7 +469,7 @@ function filterTransaction(tr: Transaction) {
       back = tr.changes.invertedDesc;
       changes = ChangeSet.empty(state.doc.length);
     } else {
-      const filtered = tr.changes.filter(result);
+      let filtered = tr.changes.filter(result);
       changes = filtered.changes;
       back = filtered.filtered.mapDesc(filtered.changes).invertedDesc;
     }
@@ -484,9 +484,9 @@ function filterTransaction(tr: Transaction) {
   }
 
   // Transaction filters
-  const filters = state.facet(transactionFilter);
+  let filters = state.facet(transactionFilter);
   for (let i = filters.length - 1; i >= 0; i--) {
-    const filtered = filters[i](tr);
+    let filtered = filters[i](tr);
     if (filtered instanceof Transaction) tr = filtered;
     else if (
       Array.isArray(filtered) &&
@@ -500,11 +500,11 @@ function filterTransaction(tr: Transaction) {
 }
 
 function extendTransaction(tr: Transaction) {
-  const state = tr.startState;
-  const extenders = state.facet(transactionExtender);
+  let state = tr.startState;
+  let extenders = state.facet(transactionExtender);
   let spec: ResolvedSpec = tr;
   for (let i = extenders.length - 1; i >= 0; i--) {
-    const extension = extenders[i](tr);
+    let extension = extenders[i](tr);
     if (extension && Object.keys(extension).length)
       spec = mergeTransaction(
         spec,
@@ -527,5 +527,9 @@ function extendTransaction(tr: Transaction) {
 const none: readonly any[] = [];
 
 export function asArray<T>(value: undefined | T | readonly T[]): readonly T[] {
-  return value == null ? none : Array.isArray(value) ? value : [value];
+  return value == null
+    ? none
+    : Array.isArray(value)
+      ? (value as readonly T[])
+      : [value as T];
 }

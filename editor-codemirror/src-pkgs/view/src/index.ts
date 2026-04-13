@@ -17,6 +17,7 @@ export {
   type DecorationSet,
   WidgetType,
   BlockType,
+  BlockWrapper,
 } from './decoration';
 export { BlockInfo } from './heightmap';
 export type { MouseSelectionStyle } from './input';

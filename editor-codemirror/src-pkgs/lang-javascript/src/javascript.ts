@@ -1,9 +1,9 @@
 import { parser } from '@lezer/javascript';
-import type { SyntaxNode } from '@lezer/common';
+import { SyntaxNode } from '@lezer/common';
 import {
   LRLanguage,
   LanguageSupport,
-  type Sublanguage,
+  Sublanguage,
   sublanguageProp,
   defineLanguageFacet,
   delimitedIndent,
@@ -14,7 +14,7 @@ import {
   foldInside,
   syntaxTree,
 } from '@codemirror/language';
-import { EditorSelection, type Text } from '@codemirror/state';
+import { EditorSelection, Text } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { completeFromList, ifNotIn } from '@codemirror/autocomplete';
 import { snippets, typescriptSnippets } from './snippets';
@@ -32,9 +32,9 @@ export const javascriptLanguage = LRLanguage.define({
         TryStatement: continuedIndent({ except: /^\s*({|catch\b|finally\b)/ }),
         LabeledStatement: flatIndent,
         SwitchBody: (context) => {
-          const after = context.textAfter;
-          const closed = /^\s*\}/.test(after);
-          const isCase = /^\s*(case|default)\b/.test(after);
+          let after = context.textAfter;
+          let closed = /^\s*\}/.test(after);
+          let isCase = /^\s*(case|default)\b/.test(after);
           return (
             context.baseIndent + (closed ? 0 : isCase ? 1 : 2) * context.unit
           );
@@ -44,13 +44,13 @@ export const javascriptLanguage = LRLanguage.define({
         'TemplateString BlockComment': () => null,
         'Statement Property': continuedIndent({ except: /^\s*{/ }),
         JSXElement(context) {
-          const closed = /^\s*<\//.test(context.textAfter);
+          let closed = /^\s*<\//.test(context.textAfter);
           return (
             context.lineIndent(context.node.from) + (closed ? 0 : context.unit)
           );
         },
         JSXEscape(context) {
-          const closed = /\s*\}/.test(context.textAfter);
+          let closed = /\s*\}/.test(context.textAfter);
           return (
             context.lineIndent(context.node.from) + (closed ? 0 : context.unit)
           );
@@ -64,6 +64,24 @@ export const javascriptLanguage = LRLanguage.define({
           foldInside,
         BlockComment(tree) {
           return { from: tree.from + 2, to: tree.to - 2 };
+        },
+        JSXElement(tree) {
+          let open = tree.firstChild;
+          if (!open || open.name == 'JSXSelfClosingTag') return null;
+          let close = tree.lastChild!;
+          return {
+            from: open.to,
+            to: close.type.isError ? tree.to : close.from,
+          };
+        },
+        'JSXSelfClosingTag JSXOpenTag'(tree) {
+          let name = tree.firstChild?.nextSibling;
+          let close = tree.lastChild!;
+          if (!name || name.type.isError) return null;
+          return {
+            from: name.to,
+            to: close.type.isError ? tree.to : close.from,
+          };
         },
       }),
     ],
@@ -106,7 +124,8 @@ export const tsxLanguage = javascriptLanguage.configure(
   'typescript',
 );
 
-const kwCompletion = (name: string) => ({ label: name, type: 'keyword' });
+let kwCompletion = (name: string) => ({ label: name, type: 'keyword' });
+
 const keywords =
   'break case const continue default delete export extends false finally in instanceof let new return static super switch this throw true typeof var yield'
     .split(' ')
@@ -120,14 +139,14 @@ const typescriptKeywords = keywords.concat(
 export function javascript(
   config: { jsx?: boolean; typescript?: boolean } = {},
 ) {
-  const lang = config.jsx
+  let lang = config.jsx
     ? config.typescript
       ? tsxLanguage
       : jsxLanguage
     : config.typescript
       ? typescriptLanguage
       : javascriptLanguage;
-  const completions = config.typescript
+  let completions = config.typescript
     ? typescriptSnippets.concat(typescriptKeywords)
     : snippets.concat(keywords);
   return new LanguageSupport(lang, [
@@ -172,7 +191,7 @@ function elementName(
 }
 
 const android =
-  typeof navigator === 'object' && /Android\b/.test(navigator.userAgent);
+  typeof navigator == 'object' && /Android\b/.test(navigator.userAgent);
 
 /// Extension that will automatically insert JSX close tags when a `>` or
 /// `/` is typed.
@@ -186,10 +205,10 @@ export const autoCloseTags = EditorView.inputHandler.of(
       !javascriptLanguage.isActiveAt(view.state, from, -1)
     )
       return false;
-    const base = defaultInsert();
-    const { state } = base;
-    const closeTags = state.changeByRange((range) => {
-      const { head } = range;
+    let base = defaultInsert();
+    let { state } = base;
+    let closeTags = state.changeByRange((range) => {
+      let { head } = range;
       let around = syntaxTree(state).resolveInner(head - 1, -1);
       let name;
       if (around.name == 'JSXStartTag') around = around.parent!;
@@ -201,22 +220,22 @@ export const autoCloseTags = EditorView.inputHandler.of(
       } else if (text == '>' && around.name == 'JSXFragmentTag') {
         return { range, changes: { from: head, insert: `</>` } };
       } else if (text == '/' && around.name == 'JSXStartCloseTag') {
-        const empty = around.parent!;
-        const base = empty.parent;
+        let empty = around.parent!;
+        let base = empty.parent;
         if (
           base &&
           empty.from == head - 2 &&
           ((name = elementName(state.doc, base.firstChild, head)) ||
             base.firstChild?.name == 'JSXFragmentTag')
         ) {
-          const insert = `${name}>`;
+          let insert = `${name}>`;
           return {
             range: EditorSelection.cursor(head + insert.length, -1),
             changes: { from: head, insert },
           };
         }
       } else if (text == '>') {
-        const openTag = findOpenTag(around);
+        let openTag = findOpenTag(around);
         if (
           openTag &&
           openTag.name == 'JSXOpenTag' &&

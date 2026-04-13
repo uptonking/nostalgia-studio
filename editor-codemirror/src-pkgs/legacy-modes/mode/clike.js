@@ -7,7 +7,7 @@ function Context(indented, column, type, info, align, prev) {
   this.prev = prev;
 }
 function pushContext(state, col, type, info) {
-  let indent = state.indented;
+  var indent = state.indented;
   if (state.context && state.context.type == 'statement' && type != 'statement')
     indent = state.context.indented;
   return (state.context = new Context(
@@ -20,7 +20,7 @@ function pushContext(state, col, type, info) {
   ));
 }
 function popContext(state) {
-  const t = state.context.type;
+  var t = state.context.type;
   if (t == ')' || t == ']' || t == '}') state.indented = state.context.indented;
   return (state.context = state.context.prev);
 }
@@ -42,38 +42,38 @@ function isTopScope(context) {
 }
 
 export function clike(parserConfig) {
-  const statementIndentUnit = parserConfig.statementIndentUnit;
-  const dontAlignCalls = parserConfig.dontAlignCalls;
-  const keywords = parserConfig.keywords || {};
-  const types = parserConfig.types || {};
-  const builtin = parserConfig.builtin || {};
-  const blockKeywords = parserConfig.blockKeywords || {};
-  const defKeywords = parserConfig.defKeywords || {};
-  const atoms = parserConfig.atoms || {};
-  const hooks = parserConfig.hooks || {};
-  const multiLineStrings = parserConfig.multiLineStrings;
-  const indentStatements = parserConfig.indentStatements !== false;
-  const indentSwitch = parserConfig.indentSwitch !== false;
-  const namespaceSeparator = parserConfig.namespaceSeparator;
-  const isPunctuationChar =
+  var statementIndentUnit = parserConfig.statementIndentUnit;
+  var dontAlignCalls = parserConfig.dontAlignCalls;
+  var keywords = parserConfig.keywords || {};
+  var types = parserConfig.types || {};
+  var builtin = parserConfig.builtin || {};
+  var blockKeywords = parserConfig.blockKeywords || {};
+  var defKeywords = parserConfig.defKeywords || {};
+  var atoms = parserConfig.atoms || {};
+  var hooks = parserConfig.hooks || {};
+  var multiLineStrings = parserConfig.multiLineStrings;
+  var indentStatements = parserConfig.indentStatements !== false;
+  var indentSwitch = parserConfig.indentSwitch !== false;
+  var namespaceSeparator = parserConfig.namespaceSeparator;
+  var isPunctuationChar =
     parserConfig.isPunctuationChar || /[\[\]{}\(\),;\:\.]/;
-  const numberStart = parserConfig.numberStart || /[\d\.]/;
-  const number =
+  var numberStart = parserConfig.numberStart || /[\d\.]/;
+  var number =
     parserConfig.number ||
     /^(?:0x[a-f\d]+|0b[01]+|(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?)(u|ll?|l|f)?/i;
-  const isOperatorChar = parserConfig.isOperatorChar || /[+\-*&%=<>!?|\/]/;
-  const isIdentifierChar =
-    parserConfig.isIdentifierChar || /[\w\$_\xa1-\uffff]/;
+  var isOperatorChar = parserConfig.isOperatorChar || /[+\-*&%=<>!?|\/]/;
+  var isIdentifierChar = parserConfig.isIdentifierChar || /[\w\$_\xa1-\uffff]/;
   // An optional function that takes a {string} token and returns true if it
   // should be treated as a builtin.
-  const isReservedIdentifier = parserConfig.isReservedIdentifier || false;
-  let curPunc;
-  let isDefKeyword;
+  var isReservedIdentifier = parserConfig.isReservedIdentifier || false;
+
+  var curPunc;
+  var isDefKeyword;
 
   function tokenBase(stream, state) {
-    const ch = stream.next();
+    var ch = stream.next();
     if (hooks[ch]) {
-      const result = hooks[ch](stream, state);
+      var result = hooks[ch](stream, state);
       if (result !== false) return result;
     }
     if (ch == '"' || ch == "'") {
@@ -108,7 +108,7 @@ export function clike(parserConfig) {
       while (stream.match(namespaceSeparator))
         stream.eatWhile(isIdentifierChar);
 
-    const cur = stream.current();
+    var cur = stream.current();
     if (contains(keywords, cur)) {
       if (contains(blockKeywords, cur)) curPunc = 'newstatement';
       if (contains(defKeywords, cur)) isDefKeyword = true;
@@ -128,9 +128,9 @@ export function clike(parserConfig) {
 
   function tokenString(quote) {
     return function (stream, state) {
-      let escaped = false;
-      let next;
-      let end = false;
+      var escaped = false;
+      var next;
+      var end = false;
       while ((next = stream.next()) != null) {
         if (next == quote && !escaped) {
           end = true;
@@ -144,8 +144,8 @@ export function clike(parserConfig) {
   }
 
   function tokenComment(stream, state) {
-    let maybeEnd = false;
-    let ch;
+    var maybeEnd = false;
+    var ch;
     while ((ch = stream.next())) {
       if (ch == '/' && maybeEnd) {
         state.tokenize = null;
@@ -180,7 +180,7 @@ export function clike(parserConfig) {
     },
 
     token: function (stream, state) {
-      let ctx = state.context;
+      var ctx = state.context;
       if (stream.sol()) {
         if (ctx.align == null) ctx.align = false;
         state.indented = stream.indentation();
@@ -191,7 +191,7 @@ export function clike(parserConfig) {
         return null;
       }
       curPunc = isDefKeyword = null;
-      let style = (state.tokenize || tokenBase)(stream, state);
+      var style = (state.tokenize || tokenBase)(stream, state);
       if (style == 'comment' || style == 'meta') return style;
       if (ctx.align == null) ctx.align = true;
 
@@ -228,7 +228,7 @@ export function clike(parserConfig) {
         style = 'def';
 
       if (hooks.token) {
-        const result = hooks.token(stream, state, style);
+        var result = hooks.token(stream, state, style);
         if (result !== undefined) style = result;
       }
 
@@ -247,9 +247,9 @@ export function clike(parserConfig) {
         (state.typeAtEndOfLine && isTopScope(state.context))
       )
         return null;
-      let ctx = state.context;
-      const firstChar = textAfter && textAfter.charAt(0);
-      const closing = firstChar == ctx.type;
+      var ctx = state.context;
+      var firstChar = textAfter && textAfter.charAt(0);
+      var closing = firstChar == ctx.type;
       if (ctx.type == 'statement' && firstChar == '}') ctx = ctx.prev;
       if (parserConfig.dontIndentStatements)
         while (
@@ -258,10 +258,10 @@ export function clike(parserConfig) {
         )
           ctx = ctx.prev;
       if (hooks.indent) {
-        const hook = hooks.indent(state, ctx, textAfter, context.unit);
-        if (typeof hook === 'number') return hook;
+        var hook = hooks.indent(state, ctx, textAfter, context.unit);
+        if (typeof hook == 'number') return hook;
       }
-      const switchBlock = ctx.prev && ctx.prev.info == 'switch';
+      var switchBlock = ctx.prev && ctx.prev.info == 'switch';
       if (parserConfig.allmanIndentation && /[{(]/.test(firstChar)) {
         while (ctx.type != 'top' && ctx.type != '}') ctx = ctx.prev;
         return ctx.indented;
@@ -300,9 +300,9 @@ export function clike(parserConfig) {
 }
 
 function words(str) {
-  const obj = {};
-  const words = str.split(' ');
-  for (let i = 0; i < words.length; ++i) obj[words[i]] = true;
+  var obj = {};
+  var words = str.split(' ');
+  for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
   return obj;
 }
 function contains(words, word) {
@@ -312,37 +312,42 @@ function contains(words, word) {
     return words.propertyIsEnumerable(word);
   }
 }
-const cKeywords =
+var cKeywords =
   'auto if break case register continue return default do sizeof ' +
   'static else struct switch extern typedef union for goto while enum const ' +
   'volatile inline restrict asm fortran';
+
 // Keywords from https://en.cppreference.com/w/cpp/keyword includes C++20.
-const cppKeywords =
+var cppKeywords =
   'alignas alignof and and_eq audit axiom bitand bitor catch ' +
   'class compl concept constexpr const_cast decltype delete dynamic_cast ' +
   'explicit export final friend import module mutable namespace new noexcept ' +
   'not not_eq operator or or_eq override private protected public ' +
   'reinterpret_cast requires static_assert static_cast template this ' +
   'thread_local throw try typeid typename using virtual xor xor_eq';
-const objCKeywords =
+
+var objCKeywords =
   'bycopy byref in inout oneway out self super atomic nonatomic retain copy ' +
   'readwrite readonly strong weak assign typeof nullable nonnull null_resettable _cmd ' +
   '@interface @implementation @end @protocol @encode @property @synthesize @dynamic @class ' +
   '@public @package @private @protected @required @optional @try @catch @finally @import ' +
   '@selector @encode @defs @synchronized @autoreleasepool @compatibility_alias @available';
-const objCBuiltins =
+
+var objCBuiltins =
   'FOUNDATION_EXPORT FOUNDATION_EXTERN NS_INLINE NS_FORMAT_FUNCTION ' +
   ' NS_RETURNS_RETAINEDNS_ERROR_ENUM NS_RETURNS_NOT_RETAINED NS_RETURNS_INNER_POINTER ' +
   'NS_DESIGNATED_INITIALIZER NS_ENUM NS_OPTIONS NS_REQUIRES_NIL_TERMINATION ' +
   'NS_ASSUME_NONNULL_BEGIN NS_ASSUME_NONNULL_END NS_SWIFT_NAME NS_REFINED_FOR_SWIFT';
+
 // Do not use this. Use the cTypes function below. This is global just to avoid
 // excessive calls when cTypes is being called multiple times during a parse.
-const basicCTypes = words(
+var basicCTypes = words(
   'int long char short double float unsigned signed ' + 'void bool',
 );
+
 // Do not use this. Use the objCTypes function below. This is global just to avoid
 // excessive calls when objCTypes is being called multiple times during a parse.
-const basicObjCTypes = words('SEL instancetype id Class Protocol BOOL');
+var basicObjCTypes = words('SEL instancetype id Class Protocol BOOL');
 
 // Returns true if identifier is a "C" type.
 // C type is defined as those that are reserved by the compiler (basicTypes),
@@ -357,8 +362,8 @@ function objCTypes(identifier) {
   return cTypes(identifier) || contains(basicObjCTypes, identifier);
 }
 
-const cBlockKeywords = 'case do else for if switch while struct enum union';
-const cDefKeywords = 'struct enum union';
+var cBlockKeywords = 'case do else for if switch while struct enum union';
+var cDefKeywords = 'struct enum union';
 
 function cppHook(stream, state) {
   if (!state.startOfLine) return false;
@@ -397,7 +402,7 @@ function cpp11StringHook(stream, state) {
   stream.backUp(1);
   // Raw strings.
   if (stream.match(/^(?:R|u8R|uR|UR|LR)/)) {
-    const match = stream.match(/^"([^\s\\()]{0,16})\(/);
+    var match = stream.match(/^"([^\s\\()]{0,16})\(/);
     if (!match) {
       return false;
     }
@@ -418,13 +423,13 @@ function cpp11StringHook(stream, state) {
 }
 
 function cppLooksLikeConstructor(word) {
-  const lastTwo = /(\w+)::~?(\w+)$/.exec(word);
+  var lastTwo = /(\w+)::~?(\w+)$/.exec(word);
   return lastTwo && lastTwo[1] == lastTwo[2];
 }
 
 // C#-style strings where "" escapes a quote.
 function tokenAtString(stream, state) {
-  let next;
+  var next;
   while ((next = stream.next()) != null) {
     if (next == '"' && !stream.eat('"')) {
       state.tokenize = null;
@@ -438,8 +443,8 @@ function tokenAtString(stream, state) {
 // <delim> can be a string up to 16 characters long.
 function tokenRawString(stream, state) {
   // Escape characters that have special regex meanings.
-  const delim = state.cpp11RawStringDelim.replace(/[^\w\s]/g, '\\$&');
-  const match = stream.match(new RegExp('.*?\\)' + delim + '"'));
+  var delim = state.cpp11RawStringDelim.replace(/[^\w\s]/g, '\\$&');
+  var match = stream.match(new RegExp('.*?\\)' + delim + '"'));
   if (match) state.tokenize = null;
   else stream.skipToEnd();
   return 'string';
@@ -574,7 +579,7 @@ export const csharp = clike({
 });
 
 function tokenTripleString(stream, state) {
-  let escaped = false;
+  var escaped = false;
   while (!stream.eol()) {
     if (!escaped && stream.match('"""')) {
       state.tokenize = null;
@@ -587,7 +592,7 @@ function tokenTripleString(stream, state) {
 
 function tokenNestedComment(depth) {
   return function (stream, state) {
-    let ch;
+    var ch;
     while ((ch = stream.next())) {
       if (ch == '*' && stream.eat('/')) {
         if (depth == 1) {
@@ -654,7 +659,7 @@ export const scala = clike({
       return 'atom';
     },
     '=': function (stream, state) {
-      const cx = state.context;
+      var cx = state.context;
       if (cx.type == '}' && cx.align && stream.eat('>')) {
         state.context = new Context(
           cx.indented,
@@ -683,9 +688,9 @@ export const scala = clike({
 
 function tokenKotlinString(tripleString) {
   return function (stream, state) {
-    let escaped = false;
-    let next;
-    let end = false;
+    var escaped = false;
+    var next;
+    var end = false;
     while (!stream.eol()) {
       if (!tripleString && !escaped && stream.match('"')) {
         end = true;
@@ -730,7 +735,7 @@ export const kotlin = clike({
   indentStatements: false,
   multiLineStrings: true,
   number:
-    /^(?:0x[a-f\d_]+|0b[01_]+|(?:[\d_]+(\.\d+)?|\.\d+)(?:e[-+]?[\d_]+)?)(u|ll?|l|f)?/i,
+    /^(?:0x[a-f\d_]+|0b[01_]+|(?:[\d_]+(\.\d+)?|\.\d+)(?:e[-+]?[\d_]+)?)(ul?|l|f)?/i,
   blockKeywords: words(
     'catch class do else finally for if where try while enum',
   ),
@@ -754,7 +759,7 @@ export const kotlin = clike({
       return state.tokenize(stream, state);
     },
     indent: function (state, ctx, textAfter, indentUnit) {
-      const firstChar = textAfter && textAfter.charAt(0);
+      var firstChar = textAfter && textAfter.charAt(0);
       if ((state.prevToken == '}' || state.prevToken == ')') && textAfter == '')
         return state.indented;
       if (
@@ -943,12 +948,12 @@ export const squirrel = clike({
 });
 
 // Ceylon Strings need to deal with interpolation
-let stringTokenizer = null;
+var stringTokenizer = null;
 function tokenCeylonString(type) {
   return function (stream, state) {
-    let escaped = false;
-    let next;
-    let end = false;
+    var escaped = false;
+    var next;
+    var end = false;
     while (!stream.eol()) {
       if (
         !escaped &&
@@ -981,7 +986,7 @@ export const ceylon = clike({
   ),
   types: function (word) {
     // In Ceylon all identifiers that start with an uppercase are types
-    const first = word.charAt(0);
+    var first = word.charAt(0);
     return first === first.toUpperCase() && first !== first.toLowerCase();
   },
   blockKeywords: words(
@@ -1052,20 +1057,20 @@ function sizeInterpolationStack(state) {
 }
 
 function tokenDartString(quote, stream, state, raw) {
-  let tripleQuoted = false;
+  var tripleQuoted = false;
   if (stream.eat(quote)) {
     if (stream.eat(quote)) tripleQuoted = true;
     else return 'string'; //empty string
   }
   function tokenStringHelper(stream, state) {
-    let escaped = false;
+    var escaped = false;
     while (!stream.eol()) {
       if (!raw && !escaped && stream.peek() == '$') {
         pushInterpolationStack(state);
         state.tokenize = tokenInterpolation;
         return 'string';
       }
-      const next = stream.next();
+      var next = stream.next();
       if (
         next == quote &&
         !escaped &&
@@ -1128,7 +1133,7 @@ export const dart = clike({
       return tokenDartString('"', stream, state, false);
     },
     r: function (stream, state) {
-      const peek = stream.peek();
+      var peek = stream.peek();
       if (peek == "'" || peek == '"') {
         return tokenDartString(stream.next(), stream, state, true);
       }
@@ -1152,7 +1157,7 @@ export const dart = clike({
     token: function (stream, _, style) {
       if (style == 'variable') {
         // Assume uppercase symbols are classes
-        const isUpper = RegExp('^[_$]*[A-Z][a-zA-Z0-9_$]*$', 'g');
+        var isUpper = RegExp('^[_$]*[A-Z][a-zA-Z0-9_$]*$', 'g');
         if (isUpper.test(stream.current())) {
           return 'type';
         }

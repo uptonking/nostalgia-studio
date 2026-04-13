@@ -1,4 +1,4 @@
-let keywords = [
+var keywords = [
   'and',
   'as',
   'block',
@@ -69,16 +69,16 @@ let keywords = [
   'autoescape',
   'endautoescape',
 ];
-const operator = /^[+\-*&%=<>!?|~^]/;
-const sign = /^[:\[\(\{]/;
-let atom = ['true', 'false'];
-const number = /^(\d[+\-\*\/])?\d+(\.\d+)?/;
+var operator = /^[+\-*&%=<>!?|~^]/;
+var sign = /^[:\[\(\{]/;
+var atom = ['true', 'false'];
+var number = /^(\d[+\-\*\/])?\d+(\.\d+)?/;
 
 keywords = new RegExp('((' + keywords.join(')|(') + '))\\b');
 atom = new RegExp('((' + atom.join(')|(') + '))\\b');
 
 function tokenBase(stream, state) {
-  let ch = stream.peek();
+  var ch = stream.peek();
 
   //Comment
   if (state.incomment) {
@@ -213,7 +213,7 @@ export const jinja2 = {
     return { tokenize: tokenBase, inbrackets: 0, inbraces: 0 };
   },
   token: function (stream, state) {
-    const style = state.tokenize(stream, state);
+    var style = state.tokenize(stream, state);
     if (
       stream.eol() &&
       state.lineTag &&

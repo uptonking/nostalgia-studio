@@ -1,17 +1,12 @@
 import { StateField, StateEffect } from '@codemirror/state';
-import {
-  showPanel,
-  type Panel,
-  type PanelConstructor,
-  getPanel,
-} from './panel';
+import { showPanel, Panel, PanelConstructor, getPanel } from './panel';
 import elt from 'crelt';
-import type { EditorView } from './editorview';
+import { EditorView } from './editorview';
 
 type DialogConfig = {
   /// A function to render the content of the dialog. The result
-  /// should contain at least one `<form>` element. Submit handlers a
-  /// handler for the Escape key will be added to the form.
+  /// should contain at least one `<form>` element. Submit handlers
+  /// and a handler for the Escape key will be added to the form.
   ///
   /// If this is not given, the `label`, `input`, and `submitLabel`
   /// fields will be used to create a simple form for you.
@@ -53,8 +48,8 @@ export function showDialog(
   result: Promise<HTMLFormElement | null>;
 } {
   let resolve: (form: HTMLFormElement | null) => void;
-  const promise = new Promise<HTMLFormElement | null>((r) => (resolve = r));
-  const panelCtor = (view: EditorView) => createDialog(view, config, resolve);
+  let promise = new Promise<HTMLFormElement | null>((r) => (resolve = r));
+  let panelCtor = (view: EditorView) => createDialog(view, config, resolve);
   if (view.state.field(dialogField, false)) {
     view.dispatch({ effects: openDialogEffect.of(panelCtor) });
   } else {
@@ -62,11 +57,11 @@ export function showDialog(
       effects: StateEffect.appendConfig.of(dialogField.init(() => [panelCtor])),
     });
   }
-  const close = closeDialogEffect.of(panelCtor);
+  let close = closeDialogEffect.of(panelCtor);
   return {
     close,
     result: promise.then((form) => {
-      const queue =
+      let queue =
         view.win.queueMicrotask ||
         ((f: () => void) => view.win.setTimeout(f, 10));
       queue(() => {
@@ -81,9 +76,9 @@ export function showDialog(
 /// Find the [`Panel`](#view.Panel) for an open dialog, using a class
 /// name as identifier.
 export function getDialog(view: EditorView, className: string) {
-  const dialogs = view.state.field(dialogField, false) || [];
-  for (const open of dialogs) {
-    const panel = getPanel(view, open);
+  let dialogs = view.state.field(dialogField, false) || [];
+  for (let open of dialogs) {
+    let panel = getPanel(view, open);
     if (panel && panel.dom.classList.contains(className)) return panel;
   }
   return null;
@@ -94,7 +89,7 @@ const dialogField = StateField.define<readonly PanelConstructor[]>({
     return [];
   },
   update(dialogs, tr) {
-    for (const e of tr.effects) {
+    for (let e of tr.effects) {
       if (e.is(openDialogEffect)) dialogs = [e.value].concat(dialogs);
       else if (e.is(closeDialogEffect))
         dialogs = dialogs.filter((d) => d != e.value);
@@ -103,6 +98,7 @@ const dialogField = StateField.define<readonly PanelConstructor[]>({
   },
   provide: (f) => showPanel.computeN([f], (state) => state.field(f)),
 });
+
 const openDialogEffect = StateEffect.define<PanelConstructor>();
 const closeDialogEffect = StateEffect.define<PanelConstructor>();
 
@@ -115,7 +111,7 @@ function createDialog(
   if (!content) {
     content = elt('form');
     if (config.input) {
-      const input = elt('input', config.input) as HTMLInputElement;
+      let input = elt('input', config.input) as HTMLInputElement;
       if (/^(text|password|number|email|tel|url)$/.test(input.type))
         input.classList.add('cm-textfield');
       if (!input.name) input.name = 'input';
@@ -132,10 +128,10 @@ function createDialog(
       ),
     );
   }
-  const forms =
+  let forms =
     content.nodeName == 'FORM' ? [content] : content.querySelectorAll('form');
   for (let i = 0; i < forms.length; i++) {
-    const form = forms[i] as HTMLFormElement;
+    let form = forms[i] as HTMLFormElement;
     form.addEventListener('keydown', (event: KeyboardEvent) => {
       if (event.keyCode == 27) {
         // Escape
@@ -152,7 +148,7 @@ function createDialog(
       done(form);
     });
   }
-  const panel = elt(
+  let panel = elt(
     'div',
     content,
     elt(
@@ -179,7 +175,7 @@ function createDialog(
     mount: () => {
       if (config.focus) {
         let focus: HTMLInputElement | HTMLButtonElement | undefined | null;
-        if (typeof config.focus === 'string')
+        if (typeof config.focus == 'string')
           focus = content!.querySelector(config.focus) as any;
         else
           focus =

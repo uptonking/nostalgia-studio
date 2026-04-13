@@ -112,7 +112,7 @@ export const ColumnOrdering: TableFeature = {
       table.options.onColumnOrderChange?.(updater);
     table.resetColumnOrder = (defaultState) => {
       table.setColumnOrder(
-        defaultState ? [] : table.initialState.columnOrder ?? [],
+        defaultState ? [] : (table.initialState.columnOrder ?? []),
       );
     };
     table._getOrderColumnsFn = memo(

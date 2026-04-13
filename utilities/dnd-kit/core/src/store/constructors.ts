@@ -8,7 +8,7 @@ export class DroppableContainersMap extends Map<
   DroppableContainer
 > {
   get(id: Identifier) {
-    return id != null ? super.get(id) ?? undefined : undefined;
+    return id != null ? (super.get(id) ?? undefined) : undefined;
   }
 
   toArray(): DroppableContainer[] {

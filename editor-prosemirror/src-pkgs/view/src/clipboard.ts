@@ -82,19 +82,22 @@ export function parseFromClipboard(
   let dom: HTMLElement | undefined;
   let slice: Slice | undefined;
   if (!html && !text) return null;
-  let asText = text && (plainText || inCode || !html);
+  let asText = !!text && (plainText || inCode || !html);
   if (asText) {
     view.someProp('transformPastedText', (f) => {
       text = f(text, inCode || plainText, view);
     });
-    if (inCode)
-      return text
-        ? new Slice(
-            Fragment.from(view.state.schema.text(text.replace(/\r\n?/g, '\n'))),
-            0,
-            0,
-          )
-        : Slice.empty;
+    if (inCode) {
+      slice = new Slice(
+        Fragment.from(view.state.schema.text(text.replace(/\r\n?/g, '\n'))),
+        0,
+        0,
+      );
+      view.someProp('transformPasted', (f) => {
+        slice = f(slice!, view, true);
+      });
+      return slice;
+    }
     let parsed = view.someProp('clipboardTextParser', (f) =>
       f(text, $context, plainText, view),
     );
@@ -179,7 +182,7 @@ export function parseFromClipboard(
   }
 
   view.someProp('transformPasted', (f) => {
-    slice = f(slice!, view);
+    slice = f(slice!, view, asText);
   });
   return slice;
 }

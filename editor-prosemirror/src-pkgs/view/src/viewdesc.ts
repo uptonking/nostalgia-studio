@@ -44,7 +44,7 @@ export type ViewMutationRecord =
 /// Objects returned as node views must conform to this interface.
 export interface NodeView {
   /// The outer DOM node that represents the document node.
-  dom: DOMNode;
+  dom: HTMLElement;
 
   /// The DOM node that should hold the node's content. Only meaningful
   /// if the node view also defines a `dom` property and if its node
@@ -121,7 +121,7 @@ export interface NodeView {
 /// Objects returned as mark views must conform to this interface.
 export interface MarkView {
   /// The outer DOM node that represents the document node.
-  dom: DOMNode;
+  dom: HTMLElement;
 
   /// The DOM node that should hold the mark's content. When this is not
   /// present, the `dom` property is used as the content DOM.
@@ -642,7 +642,7 @@ export class ViewDesc {
     // (one where the focus is before the anchor), but not all
     // browsers support it yet.
     let domSelExtended = false;
-    if ((domSel.extend || anchor == head) && !brKludge) {
+    if ((domSel.extend || anchor == head) && !(brKludge && browser.gecko)) {
       domSel.collapse(anchorDOM.node, anchorDOM.offset);
       try {
         if (anchor != head) domSel.extend(headDOM.node, headDOM.offset);
@@ -845,7 +845,7 @@ class MarkViewDesc extends ViewDesc {
   constructor(
     parent: ViewDesc,
     readonly mark: Mark,
-    dom: DOMNode,
+    dom: HTMLElement,
     contentDOM: HTMLElement,
     readonly spec: MarkView,
   ) {
@@ -977,7 +977,7 @@ export class NodeViewDesc extends ViewDesc {
         innerDeco,
       );
 
-    let dom = spec && spec.dom;
+    let dom: DOMNode | undefined = spec && spec.dom;
     let contentDOM = spec && spec.contentDOM;
     if (node.isText) {
       if (!dom) dom = document.createTextNode(node.text!);
@@ -991,7 +991,7 @@ export class NodeViewDesc extends ViewDesc {
         node.attrs,
       );
       ({ dom, contentDOM } = spec as {
-        dom: DOMNode;
+        dom: HTMLElement;
         contentDOM?: HTMLElement;
       });
     }
@@ -1011,9 +1011,9 @@ export class NodeViewDesc extends ViewDesc {
         node,
         outerDeco,
         innerDeco,
-        dom,
+        dom as HTMLElement,
         contentDOM || null,
-        nodeDOM,
+        nodeDOM as HTMLElement,
         spec,
         view,
         pos + 1,
@@ -1118,12 +1118,13 @@ export class NodeViewDesc extends ViewDesc {
       this.innerDeco,
       (widget, i, insideNode) => {
         if (widget.spec.marks)
-          updater.syncToMarks(widget.spec.marks, inline, view);
+          updater.syncToMarks(widget.spec.marks, inline, view, i);
         else if ((widget.type as WidgetType).side >= 0 && !insideNode)
           updater.syncToMarks(
             i == this.node.childCount ? Mark.none : this.node.child(i).marks,
             inline,
             view,
+            i,
           );
         // If the next node is a desc matching this widget, reuse it,
         // otherwise insert the widget as a new view desc.
@@ -1131,7 +1132,7 @@ export class NodeViewDesc extends ViewDesc {
       },
       (child, outerDeco, innerDeco, i) => {
         // Make sure the wrapping mark descs match the node's marks.
-        updater.syncToMarks(child.marks, inline, view);
+        updater.syncToMarks(child.marks, inline, view, i);
         // Try several strategies for drawing this node
         let compIndex;
         if (updater.findNodeMatch(child, outerDeco, innerDeco, i)) {
@@ -1156,7 +1157,7 @@ export class NodeViewDesc extends ViewDesc {
       },
     );
     // Drop all remaining descs after the current position.
-    updater.syncToMarks([], inline, view);
+    updater.syncToMarks([], inline, view, 0);
     if (this.node.isTextblock) updater.addTextblockHacks();
     updater.destroyRest();
 
@@ -1278,10 +1279,11 @@ export class NodeViewDesc extends ViewDesc {
 
   // Mark this node as being the selected node.
   selectNode() {
-    if (this.nodeDOM.nodeType == 1)
+    if (this.nodeDOM.nodeType == 1) {
       (this.nodeDOM as HTMLElement).classList.add('ProseMirror-selectednode');
-    if (this.contentDOM || !this.node.type.spec.draggable)
-      (this.dom as HTMLElement).draggable = true;
+      if (this.contentDOM || !this.node.type.spec.draggable)
+        (this.nodeDOM as HTMLElement).draggable = true;
+    }
   }
 
   // Remove selected node marking from this node.
@@ -1291,7 +1293,7 @@ export class NodeViewDesc extends ViewDesc {
         'ProseMirror-selectednode',
       );
       if (this.contentDOM || !this.node.type.spec.draggable)
-        (this.dom as HTMLElement).removeAttribute('draggable');
+        (this.nodeDOM as HTMLElement).removeAttribute('draggable');
     }
   }
 
@@ -1449,9 +1451,9 @@ class CustomNodeViewDesc extends NodeViewDesc {
     node: Node,
     outerDeco: readonly Decoration[],
     innerDeco: DecorationSource,
-    dom: DOMNode,
+    dom: HTMLElement,
     contentDOM: HTMLElement | null,
-    nodeDOM: DOMNode,
+    nodeDOM: HTMLElement,
     readonly spec: NodeView,
     view: EditorView,
     pos: number,
@@ -1743,7 +1745,12 @@ class ViewTreeUpdater {
 
   // Sync the current stack of mark descs with the given array of
   // marks, reusing existing mark descs when possible.
-  syncToMarks(marks: readonly Mark[], inline: boolean, view: EditorView) {
+  syncToMarks(
+    marks: readonly Mark[],
+    inline: boolean,
+    view: EditorView,
+    parentIndex: number,
+  ) {
     let keep = 0;
     let depth = this.stack.length >> 1;
     let maxKeep = Math.min(depth, marks.length);
@@ -1767,11 +1774,10 @@ class ViewTreeUpdater {
     while (depth < marks.length) {
       this.stack.push(this.top, this.index + 1);
       let found = -1;
-      for (
-        let i = this.index;
-        i < Math.min(this.index + 3, this.top.children.length);
-        i++
-      ) {
+      let scanTo = this.top.children.length;
+      if (parentIndex < this.preMatch.index)
+        scanTo = Math.min(this.index + 3, scanTo);
+      for (let i = this.index; i < scanTo; i++) {
         let next = this.top.children[i];
         if (next.matchesMark(marks[depth]) && !this.isLocked(next.dom)) {
           found = i;
@@ -2070,15 +2076,17 @@ class ViewTreeUpdater {
 
 // Iterate from the end of the fragment and array of descs to find
 // directly matching ones, in order to avoid overeagerly reusing those
-// for other nodes. Returns the fragment index of the first node that
-// is part of the sequence of matched nodes at the end of the
-// fragment.
+// for other nodes.
 function preMatch(
   frag: Fragment,
   parentDesc: ViewDesc,
 ): {
+  // The fragment index of the first node that is part of the sequence
+  // of matched nodes at the end of the fragment.
   index: number;
+  // A map from matched descs to fragment indices.
   matched: Map<ViewDesc, number>;
+  // The matched descs.
   matches: readonly ViewDesc[];
 } {
   let curDesc = parentDesc;
@@ -2102,7 +2110,6 @@ function preMatch(
       } else if (curDesc == parentDesc) {
         break outer;
       } else {
-        // FIXME
         descI = curDesc.parent!.children.indexOf(curDesc);
         curDesc = curDesc.parent!;
       }

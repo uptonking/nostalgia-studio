@@ -1,5 +1,5 @@
-const commentType = { slash: 0, parenthesis: 1 };
-const stateType = { comment: 0, _string: 1, characterClass: 2 };
+var commentType = { slash: 0, parenthesis: 1 };
+var stateType = { comment: 0, _string: 1, characterClass: 2 };
 
 export const ebnf = {
   name: 'ebnf',
@@ -78,7 +78,7 @@ export const ebnf = {
         return 'operator';
     }
 
-    const peek = stream.peek();
+    var peek = stream.peek();
 
     //no stack
     switch (peek) {

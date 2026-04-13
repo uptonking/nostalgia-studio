@@ -1,4 +1,4 @@
-import type { ChangeDesc } from './change';
+import { ChangeDesc } from './change';
 
 // A range's flags field is used like this:
 // - 3 bits for bidi level (7 means unset) (only meaningful for
@@ -63,7 +63,7 @@ export class SelectionRange {
   /// The bidirectional text level associated with this cursor, if
   /// any.
   get bidiLevel(): number | null {
-    const level = this.flags & RangeFlag.BidiLevelMask;
+    let level = this.flags & RangeFlag.BidiLevelMask;
     return level == 7 ? null : level;
   }
 
@@ -72,7 +72,7 @@ export class SelectionRange {
   /// [moving](#view.EditorView.moveVertically) across
   /// lines of different length.
   get goalColumn() {
-    const value = this.flags >> RangeFlag.GoalColumnOffset;
+    let value = this.flags >> RangeFlag.GoalColumnOffset;
     return value == RangeFlag.NoGoalColumn ? undefined : value;
   }
 
@@ -93,12 +93,18 @@ export class SelectionRange {
   }
 
   /// Extend this range to cover at least `from` to `to`.
-  extend(from: number, to: number = from) {
+  extend(from: number, to: number = from, assoc = 0) {
     if (from <= this.anchor && to >= this.anchor)
-      return EditorSelection.range(from, to);
-    const head =
+      return EditorSelection.range(from, to, undefined, undefined, assoc);
+    let head =
       Math.abs(from - this.anchor) > Math.abs(to - this.anchor) ? from : to;
-    return EditorSelection.range(this.anchor, head);
+    return EditorSelection.range(
+      this.anchor,
+      head,
+      undefined,
+      undefined,
+      assoc,
+    );
   }
 
   /// Compare this range to another range.
@@ -106,6 +112,7 @@ export class SelectionRange {
     return (
       this.anchor == other.anchor &&
       this.head == other.head &&
+      this.goalColumn == other.goalColumn &&
       (!includeAssoc || !this.empty || this.assoc == other.assoc)
     );
   }
@@ -118,11 +125,7 @@ export class SelectionRange {
   /// Convert a JSON representation of a range to a `SelectionRange`
   /// instance.
   static fromJSON(json: any): SelectionRange {
-    if (
-      !json ||
-      typeof json.anchor !== 'number' ||
-      typeof json.head !== 'number'
-    )
+    if (!json || typeof json.anchor != 'number' || typeof json.head != 'number')
       throw new RangeError('Invalid JSON representation for SelectionRange');
     return EditorSelection.range(json.anchor, json.head);
   }
@@ -193,7 +196,7 @@ export class EditorSelection {
   /// Replace a given range with another range, and then normalize the
   /// selection to merge and sort ranges if necessary.
   replaceRange(range: SelectionRange, which: number = this.mainIndex) {
-    const ranges = this.ranges.slice();
+    let ranges = this.ranges.slice();
     ranges[which] = range;
     return EditorSelection.create(ranges, this.mainIndex);
   }
@@ -209,7 +212,7 @@ export class EditorSelection {
     if (
       !json ||
       !Array.isArray(json.ranges) ||
-      typeof json.main !== 'number' ||
+      typeof json.main != 'number' ||
       json.main >= json.ranges.length
     )
       throw new RangeError('Invalid JSON representation for EditorSelection');
@@ -230,7 +233,7 @@ export class EditorSelection {
     if (ranges.length == 0)
       throw new RangeError('A selection needs at least one range');
     for (let pos = 0, i = 0; i < ranges.length; i++) {
-      const range = ranges[i];
+      let range = ranges[i];
       if (range.empty ? range.from <= pos : range.from < pos)
         return EditorSelection.normalized(ranges.slice(), mainIndex);
       pos = range.to;
@@ -265,10 +268,12 @@ export class EditorSelection {
     head: number,
     goalColumn?: number,
     bidiLevel?: number,
+    assoc?: number,
   ) {
-    const flags =
+    let flags =
       ((goalColumn ?? RangeFlag.NoGoalColumn) << RangeFlag.GoalColumnOffset) |
       (bidiLevel == null ? 7 : Math.min(6, bidiLevel));
+    if (!assoc && anchor != head) assoc = head < anchor ? 1 : -1;
     return head < anchor
       ? SelectionRange.create(
           head,
@@ -278,7 +283,11 @@ export class EditorSelection {
       : SelectionRange.create(
           anchor,
           head,
-          (head > anchor ? RangeFlag.AssocBefore : 0) | flags,
+          (!assoc
+            ? 0
+            : assoc < 0
+              ? RangeFlag.AssocBefore
+              : RangeFlag.AssocAfter) | flags,
         );
   }
 
@@ -287,15 +296,15 @@ export class EditorSelection {
     ranges: SelectionRange[],
     mainIndex: number = 0,
   ): EditorSelection {
-    const main = ranges[mainIndex];
+    let main = ranges[mainIndex];
     ranges.sort((a, b) => a.from - b.from);
     mainIndex = ranges.indexOf(main);
     for (let i = 1; i < ranges.length; i++) {
-      const range = ranges[i];
-      const prev = ranges[i - 1];
+      let range = ranges[i];
+      let prev = ranges[i - 1];
       if (range.empty ? range.from <= prev.to : range.from < prev.to) {
-        const from = prev.from;
-        const to = Math.max(range.to, prev.to);
+        let from = prev.from;
+        let to = Math.max(range.to, prev.to);
         if (i <= mainIndex) mainIndex--;
         ranges.splice(
           --i,
@@ -311,7 +320,7 @@ export class EditorSelection {
 }
 
 export function checkSelection(selection: EditorSelection, docLength: number) {
-  for (const range of selection.ranges)
+  for (let range of selection.ranges)
     if (range.to > docLength)
       throw new RangeError('Selection points outside of document');
 }

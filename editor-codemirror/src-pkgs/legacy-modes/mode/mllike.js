@@ -1,5 +1,5 @@
 function mlLike(parserConfig) {
-  const words = {
+  var words = {
     as: 'keyword',
     do: 'keyword',
     else: 'keyword',
@@ -21,19 +21,20 @@ function mlLike(parserConfig) {
     while: 'keyword',
     with: 'keyword',
   };
-  const extraWords = parserConfig.extraWords || {};
-  for (const prop in extraWords) {
+
+  var extraWords = parserConfig.extraWords || {};
+  for (var prop in extraWords) {
     if (extraWords.hasOwnProperty(prop)) {
       words[prop] = parserConfig.extraWords[prop];
     }
   }
-  const hintWords = [];
-  for (const k in words) {
+  var hintWords = [];
+  for (var k in words) {
     hintWords.push(k);
   }
 
   function tokenBase(stream, state) {
-    const ch = stream.next();
+    var ch = stream.next();
 
     if (ch === '"') {
       state.tokenize = tokenString;
@@ -90,16 +91,16 @@ function mlLike(parserConfig) {
     }
     if (/[\w\xa1-\uffff]/.test(ch)) {
       stream.eatWhile(/[\w\xa1-\uffff]/);
-      const cur = stream.current();
+      var cur = stream.current();
       return words.hasOwnProperty(cur) ? words[cur] : 'variable';
     }
     return null;
   }
 
   function tokenString(stream, state) {
-    let next;
-    let end = false;
-    let escaped = false;
+    var next;
+    var end = false;
+    var escaped = false;
     while ((next = stream.next()) != null) {
       if (next === '"' && !escaped) {
         end = true;
@@ -114,8 +115,8 @@ function mlLike(parserConfig) {
   }
 
   function tokenComment(stream, state) {
-    let prev;
-    let next;
+    var prev;
+    var next;
     while (state.commentLevel > 0 && (next = stream.next()) != null) {
       if (prev === '(' && next === '*') state.commentLevel++;
       if (prev === '*' && next === ')') state.commentLevel--;
@@ -128,8 +129,8 @@ function mlLike(parserConfig) {
   }
 
   function tokenLongString(stream, state) {
-    let prev;
-    let next;
+    var prev;
+    var next;
     while (state.longString && (next = stream.next()) != null) {
       if (prev === '|' && next === '}') state.longString = false;
       prev = next;

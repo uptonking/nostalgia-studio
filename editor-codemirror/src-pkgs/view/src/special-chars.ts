@@ -1,11 +1,11 @@
-import { Decoration, type DecorationSet, WidgetType } from './decoration';
-import { ViewPlugin, type ViewUpdate } from './extension';
-import type { EditorView } from './editorview';
+import { Decoration, DecorationSet, WidgetType } from './decoration';
+import { ViewPlugin, ViewUpdate } from './extension';
+import { EditorView } from './editorview';
 import { MatchDecorator } from './matchdecorator';
 import {
   combineConfig,
   Facet,
-  type Extension,
+  Extension,
   countColumn,
   codePointAt,
 } from '@codemirror/state';
@@ -44,6 +44,7 @@ const Specials = new RegExp(
   '[\u0000-\u0008\u000a-\u001f\u007f-\u009f\u00ad\u061c\u200b\u200e\u200f\u2028\u2029\u202d\u202e\u2066\u2067\u2069\ufeff\ufff9-\ufffc]',
   UnicodeRegexpSupport,
 );
+
 const Names: { [key: number]: string } = {
   0: 'null',
   7: 'bell',
@@ -72,10 +73,10 @@ let _supportsTabSize: null | boolean = null;
 function supportsTabSize() {
   if (
     _supportsTabSize == null &&
-    typeof document !== 'undefined' &&
+    typeof document != 'undefined' &&
     document.body
   ) {
-    const styles = document.body.style as any;
+    let styles = document.body.style as any;
     _supportsTabSize = (styles.tabSize ?? styles.MozTabSize) != null;
   }
   return _supportsTabSize || false;
@@ -86,7 +87,7 @@ const specialCharConfig = Facet.define<
   Required<SpecialCharConfig> & { replaceTabs?: boolean }
 >({
   combine(configs) {
-    const config: Required<SpecialCharConfig> & { replaceTabs?: boolean } =
+    let config: Required<SpecialCharConfig> & { replaceTabs?: boolean } =
       combineConfig(configs, {
         render: null,
         specialChars: Specials,
@@ -141,12 +142,12 @@ function specialCharPlugin() {
           return new MatchDecorator({
             regexp: conf.specialChars,
             decoration: (m, view, pos) => {
-              const { doc } = view.state;
-              const code = codePointAt(m[0], 0);
+              let { doc } = view.state;
+              let code = codePointAt(m[0], 0);
               if (code == 9) {
-                const line = doc.lineAt(pos);
-                const size = view.state.tabSize;
-                const col = countColumn(line.text, size, pos - line.from);
+                let line = doc.lineAt(pos);
+                let size = view.state.tabSize;
+                let col = countColumn(line.text, size, pos - line.from);
                 return Decoration.replace({
                   widget: new TabWidget(
                     ((size - (col % size)) * this.view.defaultCharacterWidth) /
@@ -166,7 +167,7 @@ function specialCharPlugin() {
         }
 
         update(update: ViewUpdate) {
-          const conf = update.state.facet(specialCharConfig);
+          let conf = update.state.facet(specialCharConfig);
           if (update.startState.facet(specialCharConfig) != conf) {
             this.decorator = this.makeDecorator(conf);
             this.decorations = this.decorator.createDeco(update.view);
@@ -208,15 +209,15 @@ class SpecialCharWidget extends WidgetType {
   }
 
   toDOM(view: EditorView) {
-    const ph = placeholder(this.code);
-    const desc =
+    let ph = placeholder(this.code);
+    let desc =
       view.state.phrase('Control character') +
       ' ' +
       (Names[this.code] || '0x' + this.code.toString(16));
-    const custom =
+    let custom =
       this.options.render && this.options.render(this.code, desc, ph);
     if (custom) return custom;
-    const span = document.createElement('span');
+    let span = document.createElement('span');
     span.textContent = ph;
     span.title = desc;
     span.setAttribute('aria-label', desc);
@@ -239,7 +240,7 @@ class TabWidget extends WidgetType {
   }
 
   toDOM() {
-    const span = document.createElement('span');
+    let span = document.createElement('span');
     span.textContent = '\t';
     span.className = 'cm-tab';
     span.style.width = this.width + 'px';

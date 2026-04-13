@@ -1,10 +1,10 @@
 function wordObj(words) {
-  const o = {};
-  for (let i = 0, e = words.length; i < e; ++i) o[words[i]] = true;
+  var o = {};
+  for (var i = 0, e = words.length; i < e; ++i) o[words[i]] = true;
   return o;
 }
 
-const keywordList = [
+var keywordList = [
   'alias',
   'and',
   'BEGIN',
@@ -65,8 +65,9 @@ const keywordList = [
   '__LINE__',
   '__dir__',
 ];
-const keywords = wordObj(keywordList);
-const indentWords = wordObj([
+var keywords = wordObj(keywordList);
+
+var indentWords = wordObj([
   'def',
   'class',
   'case',
@@ -79,10 +80,11 @@ const indentWords = wordObj([
   'proc',
   'begin',
 ]);
-const dedentWords = wordObj(['end', 'until']);
-const opening = { '[': ']', '{': '}', '(': ')' };
-const closing = { ']': '[', '}': '{', ')': '(' };
-let curPunc;
+var dedentWords = wordObj(['end', 'until']);
+var opening = { '[': ']', '{': '}', '(': ')' };
+var closing = { ']': '[', '}': '{', ')': '(' };
+
+var curPunc;
 
 function chain(newtok, stream, state) {
   state.tokenize.push(newtok);
@@ -95,8 +97,8 @@ function tokenBase(stream, state) {
     return 'comment';
   }
   if (stream.eatSpace()) return null;
-  const ch = stream.next();
-  let m;
+  var ch = stream.next();
+  var m;
   if (ch == '`' || ch == "'" || ch == '"') {
     return chain(
       readQuoted(ch, 'string', ch == '"' || ch == '`'),
@@ -108,8 +110,8 @@ function tokenBase(stream, state) {
       return chain(readQuoted(ch, 'string.special', true), stream, state);
     else return 'operator';
   } else if (ch == '%') {
-    let style = 'string';
-    let embed = true;
+    var style = 'string';
+    var embed = true;
     if (stream.eat('s')) style = 'atom';
     else if (stream.eat(/[WQ]/)) style = 'string';
     else if (stream.eat(/[r]/)) style = 'string.special';
@@ -117,7 +119,7 @@ function tokenBase(stream, state) {
       style = 'string';
       embed = false;
     }
-    let delim = stream.eat(/[^\w\s=]/);
+    var delim = stream.eat(/[^\w\s=]/);
     if (!delim) return 'operator';
     if (opening.propertyIsEnumerable(delim)) delim = opening[delim];
     return chain(readQuoted(delim, style, embed, true), stream, state);
@@ -197,7 +199,7 @@ function tokenBase(stream, state) {
   } else if (ch == '-' && stream.eat('>')) {
     return 'operator';
   } else if (/[=+\-\/*:\.^%<>~|]/.test(ch)) {
-    const more = stream.eatWhile(/[=+\-\/*:\.^%<>~|]/);
+    var more = stream.eatWhile(/[=+\-\/*:\.^%<>~|]/);
     if (ch == '.' && !more) curPunc = '.';
     return 'operator';
   } else {
@@ -206,11 +208,11 @@ function tokenBase(stream, state) {
 }
 
 function regexpAhead(stream) {
-  const start = stream.pos;
-  let depth = 0;
-  let next;
-  let found = false;
-  let escaped = false;
+  var start = stream.pos;
+  var depth = 0;
+  var next;
+  var found = false;
+  var escaped = false;
   while ((next = stream.next()) != null) {
     if (!escaped) {
       if ('[{('.indexOf(next) > -1) {
@@ -252,7 +254,7 @@ function tokenBaseUntilBrace(depth) {
   };
 }
 function tokenBaseOnce() {
-  let alreadyCalled = false;
+  var alreadyCalled = false;
   return function (stream, state) {
     if (alreadyCalled) {
       state.tokenize.pop();
@@ -264,8 +266,8 @@ function tokenBaseOnce() {
 }
 function readQuoted(quote, style, embed, unescaped) {
   return function (stream, state) {
-    let escaped = false;
-    let ch;
+    var escaped = false;
+    var ch;
 
     if (state.context.type === 'read-quoted-paused') {
       state.context = state.context.prev;
@@ -325,11 +327,11 @@ export const ruby = {
   token: function (stream, state) {
     curPunc = null;
     if (stream.sol()) state.indented = stream.indentation();
-    let style = state.tokenize[state.tokenize.length - 1](stream, state);
-    let kwtype;
-    let thisTok = curPunc;
+    var style = state.tokenize[state.tokenize.length - 1](stream, state);
+    var kwtype;
+    var thisTok = curPunc;
     if (style == 'variable') {
-      const word = stream.current();
+      var word = stream.current();
       style =
         state.lastTok == '.'
           ? 'property'
@@ -377,9 +379,9 @@ export const ruby = {
 
   indent: function (state, textAfter, cx) {
     if (state.tokenize[state.tokenize.length - 1] != tokenBase) return null;
-    const firstChar = textAfter && textAfter.charAt(0);
-    const ct = state.context;
-    const closed =
+    var firstChar = textAfter && textAfter.charAt(0);
+    var ct = state.context;
+    var closed =
       ct.type == closing[firstChar] ||
       (ct.type == 'keyword' &&
         /^(?:end|until|else|elsif|when|rescue)\b/.test(textAfter));

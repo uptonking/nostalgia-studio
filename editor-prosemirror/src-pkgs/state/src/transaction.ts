@@ -197,7 +197,7 @@ export class Transaction extends Transform {
           to == from ? $from.marks() : $from.marksAcross(this.doc.resolve(to));
       }
       this.replaceRangeWith(from, to, schema.text(text, marks));
-      if (!this.selection.empty)
+      if (!this.selection.empty && this.selection.to == from + text.length)
         this.setSelection(Selection.near(this.selection.$to));
       return this;
     }

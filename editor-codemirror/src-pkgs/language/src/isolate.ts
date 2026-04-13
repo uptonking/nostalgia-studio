@@ -1,19 +1,19 @@
 import {
   EditorView,
-  type ViewUpdate,
+  ViewUpdate,
   ViewPlugin,
-  type DecorationSet,
+  DecorationSet,
   Decoration,
   Direction,
 } from '@codemirror/view';
 import { syntaxTree } from './language';
-import { NodeProp, type Tree } from '@lezer/common';
+import { NodeProp, Tree } from '@lezer/common';
 import {
   RangeSetBuilder,
   Prec,
-  type Text,
-  type Extension,
-  type ChangeSet,
+  Text,
+  Extension,
+  ChangeSet,
   Facet,
 } from '@codemirror/state';
 
@@ -55,7 +55,7 @@ export function bidiIsolates(
     alwaysIsolate?: boolean;
   } = {},
 ): Extension {
-  const extensions: Extension[] = [isolateMarks];
+  let extensions: Extension[] = [isolateMarks];
   if (options.alwaysIsolate) extensions.push(alwaysIsolate.of(true));
   return extensions;
 }
@@ -81,7 +81,7 @@ const isolateMarks = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      const always =
+      let always =
         update.state.facet(alwaysIsolate) ||
         update.view.textDirection != Direction.LTR ||
         update.state.facet(EditorView.perLineTextDirection);
@@ -90,7 +90,7 @@ const isolateMarks = ViewPlugin.fromClass(
 
       if (!always && !this.hasRTL) return;
 
-      const tree = syntaxTree(update.state);
+      let tree = syntaxTree(update.state);
       if (
         always != this.always ||
         tree != this.tree ||
@@ -117,13 +117,13 @@ const isolateMarks = ViewPlugin.fromClass(
 );
 
 function buildDeco(view: EditorView, tree: Tree, always: boolean) {
-  const deco = new RangeSetBuilder<Decoration>();
+  let deco = new RangeSetBuilder<Decoration>();
   let ranges = view.visibleRanges;
   if (!always) ranges = clipRTLLines(ranges, view.state.doc);
-  for (const { from, to } of ranges) {
+  for (let { from, to } of ranges) {
     tree.iterate({
       enter: (node) => {
-        const iso = node.type.prop(NodeProp.isolate);
+        let iso = node.type.prop(NodeProp.isolate);
         if (iso) deco.add(node.from, node.to, marks[iso]);
       },
       from,
@@ -137,9 +137,9 @@ function clipRTLLines(
   ranges: readonly { from: number; to: number }[],
   doc: Text,
 ) {
-  const cur = doc.iter();
+  let cur = doc.iter();
   let pos = 0;
-  const result: { from: number; to: number }[] = [];
+  let result: { from: number; to: number }[] = [];
   let last = null;
   for (let { from, to } of ranges) {
     if (last && last.to > from) {
@@ -151,8 +151,8 @@ function clipRTLLines(
       pos = from;
     }
     for (;;) {
-      const start = pos;
-      const end = pos + cur.value.length;
+      let start = pos;
+      let end = pos + cur.value.length;
       if (!cur.lineBreak && buildForLine(cur.value)) {
         if (last && last.to > start - 10) last.to = Math.min(to, end);
         else result.push((last = { from: start, to: Math.min(to, end) }));

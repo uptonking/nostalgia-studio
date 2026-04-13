@@ -1,25 +1,25 @@
 import {
-  type Completion,
-  type CompletionContext,
-  type CompletionSource,
+  Completion,
+  CompletionContext,
+  CompletionSource,
   completeFromList,
   ifNotIn,
 } from '@codemirror/autocomplete';
-import type { EditorState, Text } from '@codemirror/state';
+import { EditorState, Text } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
-import type { SyntaxNode } from '@lezer/common';
+import { SyntaxNode } from '@lezer/common';
 import { Type, Keyword } from './sql.grammar.terms';
-import type { SQLDialect, SQLNamespace } from './sql';
+import { type SQLDialect, SQLNamespace } from './sql';
 
 function tokenBefore(tree: SyntaxNode) {
-  const cursor = tree.cursor().moveTo(tree.from, -1);
+  let cursor = tree.cursor().moveTo(tree.from, -1);
   while (/Comment/.test(cursor.name)) cursor.moveTo(cursor.from, -1);
   return cursor.node;
 }
 
 function idName(doc: Text, node: SyntaxNode): string {
-  const text = doc.sliceString(node.from, node.to);
-  const quoted = /^([`'"])(.*)\1$/.exec(text);
+  let text = doc.sliceString(node.from, node.to);
+  let quoted = /^([`'"])(.*)\1$/.exec(text);
   return quoted ? quoted[2] : text;
 }
 
@@ -29,7 +29,7 @@ function plainID(node: SyntaxNode | null) {
 
 function pathFor(doc: Text, id: SyntaxNode) {
   if (id.name == 'CompositeIdentifier') {
-    const path = [];
+    let path = [];
     for (let ch = id.firstChild; ch; ch = ch.nextSibling)
       if (plainID(ch)) path.push(idName(doc, ch));
     return path;
@@ -40,7 +40,7 @@ function pathFor(doc: Text, id: SyntaxNode) {
 function parentsFor(doc: Text, node: SyntaxNode | null) {
   for (let path = []; ; ) {
     if (!node || node.name != '.') return path;
-    const name = tokenBefore(node);
+    let name = tokenBefore(node);
     if (!plainID(name)) return path;
     path.unshift(idName(doc, name));
     node = tokenBefore(name);
@@ -48,8 +48,8 @@ function parentsFor(doc: Text, node: SyntaxNode | null) {
 }
 
 function sourceContext(state: EditorState, startPos: number) {
-  const pos = syntaxTree(state).resolveInner(startPos, -1);
-  const aliases = getAliases(state.doc, pos);
+  let pos = syntaxTree(state).resolveInner(startPos, -1);
+  let aliases = getAliases(state.doc, pos);
   if (
     pos.name == 'Identifier' ||
     pos.name == 'QuotedIdentifier' ||
@@ -97,7 +97,7 @@ function getAliases(doc: Text, at: SyntaxNode) {
     scan;
     scan = scan.nextSibling
   ) {
-    const kw =
+    let kw =
       scan.name == 'Keyword'
         ? doc.sliceString(scan.from, scan.to).toLowerCase()
         : null;
@@ -139,7 +139,7 @@ function isSelfTag(
   namespace: SQLNamespace,
 ): namespace is { self: Completion; children: SQLNamespace } {
   return (
-    (namespace as any).self && typeof (namespace as any).self.label === 'string'
+    (namespace as any).self && typeof (namespace as any).self.label == 'string'
   );
 }
 
@@ -153,8 +153,8 @@ class CompletionLevel {
   ) {}
 
   child(name: string) {
-    const children = this.children || (this.children = Object.create(null));
-    const found = children[name];
+    let children = this.children || (this.children = Object.create(null));
+    let found = children[name];
     if (found) return found;
     if (name && !this.list.some((c) => c.label == name))
       this.list.push(
@@ -171,15 +171,15 @@ class CompletionLevel {
   }
 
   addCompletion(option: Completion) {
-    const found = this.list.findIndex((o) => o.label == option.label);
+    let found = this.list.findIndex((o) => o.label == option.label);
     if (found > -1) this.list[found] = option;
     else this.list.push(option);
   }
 
   addCompletions(completions: readonly (Completion | string)[]) {
-    for (const option of completions)
+    for (let option of completions)
       this.addCompletion(
-        typeof option === 'string'
+        typeof option == 'string'
           ? nameCompletion(
               option,
               'property',
@@ -201,10 +201,10 @@ class CompletionLevel {
   }
 
   addNamespaceObject(namespace: { [name: string]: SQLNamespace }) {
-    for (const name of Object.keys(namespace)) {
+    for (let name of Object.keys(namespace)) {
       let children = namespace[name];
       let self: Completion | null = null;
-      const parts = name
+      let parts = name
         .replace(/\\?\./g, (p) => (p == '.' ? '\0' : p))
         .split('\0');
       let scope = this;
@@ -246,12 +246,12 @@ export function completeFromSchema(
   defaultSchemaName?: string,
   dialect?: SQLDialect,
 ): CompletionSource {
-  const idQuote = dialect?.spec.identifierQuotes?.[0] || '"';
-  const top = new CompletionLevel(
+  let idQuote = dialect?.spec.identifierQuotes?.[0] || '"';
+  let top = new CompletionLevel(
     idQuote,
-    Boolean(dialect?.spec.caseInsensitiveIdentifiers),
+    !!dialect?.spec.caseInsensitiveIdentifiers,
   );
-  const defaultSchema = defaultSchemaName ? top.child(defaultSchemaName) : null;
+  let defaultSchema = defaultSchemaName ? top.child(defaultSchemaName) : null;
   top.addNamespace(schema);
   if (tables) (defaultSchema || top).addCompletions(tables);
   if (schemas) top.addCompletions(schemas);
@@ -268,18 +268,18 @@ export function completeFromSchema(
     if (aliases && parents.length == 1)
       parents = aliases[parents[0]] || parents;
     let level = top;
-    for (const name of parents) {
+    for (let name of parents) {
       while (!level.children || !level.children[name]) {
         if (level == top && defaultSchema) level = defaultSchema;
         else if (level == defaultSchema && defaultTableName)
           level = level.child(defaultTableName);
         else return null;
       }
-      const next = level.maybeChild(name);
+      let next = level.maybeChild(name);
       if (!next) return null;
       level = next;
     }
-    const quoteAfter =
+    let quoteAfter =
       quoted && context.state.sliceDoc(context.pos, context.pos + 1) == quoted;
     let options = level.list;
     if (level == top && aliases)
@@ -308,7 +308,7 @@ export function completeKeywords(
   upperCase: boolean,
   build: (name: string, type: string) => Completion,
 ) {
-  const completions = Object.keys(keywords).map((keyword) =>
+  let completions = Object.keys(keywords).map((keyword) =>
     build(
       upperCase ? keyword.toUpperCase() : keyword,
       completionType(keywords[keyword]),

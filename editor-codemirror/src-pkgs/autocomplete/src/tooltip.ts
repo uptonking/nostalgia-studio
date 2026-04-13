@@ -1,19 +1,21 @@
 import {
-  type EditorView,
-  type ViewUpdate,
+  EditorView,
+  ViewUpdate,
   logException,
-  type TooltipView,
-  type Rect,
+  TooltipView,
+  Rect,
 } from '@codemirror/view';
-import type { StateField, EditorState } from '@codemirror/state';
-import type { CompletionState } from './state';
-import { completionConfig, type CompletionConfig } from './config';
+import { StateField, StateEffect, EditorState } from '@codemirror/state';
+import { CompletionState } from './state';
+import { completionConfig, CompletionConfig } from './config';
 import {
-  type Option,
-  type Completion,
-  type CompletionInfo,
+  Option,
+  Completion,
+  CompletionInfo,
   closeCompletionEffect,
 } from './completion';
+
+export const setSelectedEffect = StateEffect.define<number>();
 
 type OptionContentSource = (
   completion: Completion,
@@ -25,14 +27,14 @@ type OptionContentSource = (
 function optionContent(
   config: Required<CompletionConfig>,
 ): OptionContentSource[] {
-  const content = config.addToOptions.slice() as {
+  let content = config.addToOptions.slice() as {
     render: OptionContentSource;
     position: number;
   }[];
   if (config.icons)
     content.push({
       render(completion: Completion) {
-        const icon = document.createElement('div');
+        let icon = document.createElement('div');
         icon.classList.add('cm-completionIcon');
         if (completion.type)
           icon.classList.add(
@@ -53,18 +55,18 @@ function optionContent(
         _v: EditorView,
         match: readonly number[],
       ) {
-        const labelElt = document.createElement('span');
+        let labelElt = document.createElement('span');
         labelElt.className = 'cm-completionLabel';
-        const label = completion.displayLabel || completion.label;
+        let label = completion.displayLabel || completion.label;
         let off = 0;
         for (let j = 0; j < match.length; ) {
-          const from = match[j++];
-          const to = match[j++];
+          let from = match[j++];
+          let to = match[j++];
           if (from > off)
             labelElt.appendChild(
               document.createTextNode(label.slice(off, from)),
             );
-          const span = labelElt.appendChild(document.createElement('span'));
+          let span = labelElt.appendChild(document.createElement('span'));
           span.appendChild(document.createTextNode(label.slice(from, to)));
           span.className = 'cm-completionMatchedText';
           off = to;
@@ -78,7 +80,7 @@ function optionContent(
     {
       render(completion: Completion) {
         if (!completion.detail) return null;
-        const detailElt = document.createElement('span');
+        let detailElt = document.createElement('span');
         detailElt.className = 'cm-completionDetail';
         detailElt.textContent = completion.detail;
         return detailElt;
@@ -93,10 +95,10 @@ function rangeAroundSelected(total: number, selected: number, max: number) {
   if (total <= max) return { from: 0, to: total };
   if (selected < 0) selected = 0;
   if (selected <= total >> 1) {
-    const off = Math.floor(selected / max);
+    let off = Math.floor(selected / max);
     return { from: off * max, to: (off + 1) * max };
   }
-  const off = Math.floor((total - selected) / max);
+  let off = Math.floor((total - selected) / max);
   return { from: total - (off + 1) * max, to: total - off * max };
 }
 
@@ -123,9 +125,9 @@ class CompletionTooltip {
     readonly stateField: StateField<CompletionState>,
     readonly applyCompletion: (view: EditorView, option: Option) => void,
   ) {
-    const cState = view.state.field(stateField);
-    const { options, selected } = cState.open!;
-    const config = view.state.facet(completionConfig);
+    let cState = view.state.field(stateField);
+    let { options, selected } = cState.open!;
+    let config = view.state.facet(completionConfig);
     this.optionContent = optionContent(config);
     this.optionClass = config.optionClass;
     this.tooltipClass = config.tooltipClass;
@@ -140,7 +142,7 @@ class CompletionTooltip {
     this.dom.className = 'cm-tooltip-autocomplete';
     this.updateTooltipClass(view.state);
     this.dom.addEventListener('mousedown', (e: MouseEvent) => {
-      const { options } = view.state.field(stateField).open!;
+      let { options } = view.state.field(stateField).open!;
       for (
         let dom = e.target as HTMLElement | null, match;
         dom && dom != this.dom;
@@ -149,16 +151,35 @@ class CompletionTooltip {
         if (
           dom.nodeName == 'LI' &&
           (match = /-(\d+)$/.exec(dom.id)) &&
-          Number(match[1]) < options.length
+          +match[1] < options.length
         ) {
-          this.applyCompletion(view, options[Number(match[1])]);
+          this.applyCompletion(view, options[+match[1]]);
           e.preventDefault();
           return;
         }
       }
+      if (e.target == this.list) {
+        let move =
+          this.list.classList.contains('cm-completionListIncompleteTop') &&
+          e.clientY <
+            (this.list.firstChild as HTMLElement).getBoundingClientRect().top
+            ? this.range.from - 1
+            : this.list.classList.contains(
+                  'cm-completionListIncompleteBottom',
+                ) &&
+                e.clientY >
+                  (this.list.lastChild as HTMLElement).getBoundingClientRect()
+                    .bottom
+              ? this.range.to
+              : null;
+        if (move != null) {
+          view.dispatch({ effects: setSelectedEffect.of(move) });
+          e.preventDefault();
+        }
+      }
     });
     this.dom.addEventListener('focusout', (e: FocusEvent) => {
-      const state = view.state.field(this.stateField, false);
+      let state = view.state.field(this.stateField, false);
       if (
         state &&
         state.tooltip &&
@@ -185,11 +206,11 @@ class CompletionTooltip {
   }
 
   update(update: ViewUpdate) {
-    const cState = update.state.field(this.stateField);
-    const prevState = update.startState.field(this.stateField);
+    let cState = update.state.field(this.stateField);
+    let prevState = update.startState.field(this.stateField);
     this.updateTooltipClass(update.state);
     if (cState != prevState) {
-      const { options, selected, disabled } = cState.open!;
+      let { options, selected, disabled } = cState.open!;
       if (!prevState.open || prevState.open.options != options) {
         this.range = rangeAroundSelected(
           options.length,
@@ -202,17 +223,17 @@ class CompletionTooltip {
       if (disabled != prevState.open?.disabled)
         this.dom.classList.toggle(
           'cm-tooltip-autocomplete-disabled',
-          Boolean(disabled),
+          !!disabled,
         );
     }
   }
 
   updateTooltipClass(state: EditorState) {
-    const cls = this.tooltipClass(state);
+    let cls = this.tooltipClass(state);
     if (cls != this.currentClass) {
-      for (const c of this.currentClass.split(' '))
+      for (let c of this.currentClass.split(' '))
         if (c) this.dom.classList.remove(c);
-      for (const c of cls.split(' ')) if (c) this.dom.classList.add(c);
+      for (let c of cls.split(' ')) if (c) this.dom.classList.add(c);
       this.currentClass = cls;
     }
   }
@@ -223,8 +244,8 @@ class CompletionTooltip {
   }
 
   updateSel() {
-    const cState = this.view.state.field(this.stateField);
-    const open = cState.open!;
+    let cState = this.view.state.field(this.stateField);
+    let open = cState.open!;
     if (
       (open.selected > -1 && open.selected < this.range.from) ||
       open.selected >= this.range.to
@@ -236,12 +257,13 @@ class CompletionTooltip {
       );
       this.showOptions(open.options, cState.id);
     }
-    if (this.updateSelectedOption(open.selected)) {
+    let newSel = this.updateSelectedOption(open.selected);
+    if (newSel) {
       this.destroyInfo();
-      const { completion } = open.options[open.selected];
-      const { info } = completion;
+      let { completion } = open.options[open.selected];
+      let { info } = completion;
       if (!info) return;
-      const infoResult =
+      let infoResult =
         typeof info === 'string'
           ? document.createTextNode(info)
           : info(completion);
@@ -255,19 +277,22 @@ class CompletionTooltip {
           .catch((e) => logException(this.view.state, e, 'completion info'));
       } else {
         this.addInfoPane(infoResult, completion);
+        newSel.setAttribute('aria-describedby', this.info!.id);
       }
     }
   }
 
   addInfoPane(content: NonNullable<CompletionInfo>, completion: Completion) {
     this.destroyInfo();
-    const wrap = (this.info = document.createElement('div'));
+    let wrap = (this.info = document.createElement('div'));
     wrap.className = 'cm-tooltip cm-completionInfo';
+    wrap.id =
+      'cm-completionInfo-' + Math.floor(Math.random() * 0xffff).toString(16);
     if ((content as Node).nodeType != null) {
       wrap.appendChild(content as Node);
       this.infoDestroy = null;
     } else {
-      const { dom, destroy } = content as { dom: Node; destroy?(): void };
+      let { dom, destroy } = content as { dom: Node; destroy?(): void };
       wrap.appendChild(dom);
       this.infoDestroy = destroy || null;
     }
@@ -290,8 +315,10 @@ class CompletionTooltip {
           set = opt;
         }
       } else {
-        if (opt.hasAttribute('aria-selected'))
+        if (opt.hasAttribute('aria-selected')) {
           opt.removeAttribute('aria-selected');
+          opt.removeAttribute('aria-describedby');
+        }
       }
     }
     if (set) scrollIntoView(this.list, set);
@@ -299,14 +326,14 @@ class CompletionTooltip {
   }
 
   measureInfo() {
-    const sel = this.dom.querySelector('[aria-selected]') as HTMLElement | null;
+    let sel = this.dom.querySelector('[aria-selected]') as HTMLElement | null;
     if (!sel || !this.info) return null;
-    const listRect = this.dom.getBoundingClientRect();
-    const infoRect = this.info!.getBoundingClientRect();
-    const selRect = sel.getBoundingClientRect();
+    let listRect = this.dom.getBoundingClientRect();
+    let infoRect = this.info!.getBoundingClientRect();
+    let selRect = sel.getBoundingClientRect();
     let space = this.space;
     if (!space) {
-      const docElt = this.dom.ownerDocument.documentElement;
+      let docElt = this.dom.ownerDocument.documentElement;
       space = {
         left: 0,
         top: 0,
@@ -357,16 +384,16 @@ class CompletionTooltip {
     });
     let curSection: string | null = null;
     for (let i = range.from; i < range.to; i++) {
-      const { completion, match } = options[i];
-      const { section } = completion;
+      let { completion, match } = options[i];
+      let { section } = completion;
       if (section) {
-        const name = typeof section === 'string' ? section : section.name;
+        let name = typeof section == 'string' ? section : section.name;
         if (name != curSection && (i > range.from || range.from == 0)) {
           curSection = name;
-          if (typeof section !== 'string' && section.header) {
+          if (typeof section != 'string' && section.header) {
             ul.appendChild(section.header(section));
           } else {
-            const header = ul.appendChild(
+            let header = ul.appendChild(
               document.createElement('completion-section'),
             );
             header.textContent = name;
@@ -376,10 +403,10 @@ class CompletionTooltip {
       const li = ul.appendChild(document.createElement('li'));
       li.id = id + '-' + i;
       li.setAttribute('role', 'option');
-      const cls = this.optionClass(completion);
+      let cls = this.optionClass(completion);
       if (cls) li.className = cls;
-      for (const source of this.optionContent) {
-        const node = source(completion, this.view.state, this.view, match);
+      for (let source of this.optionContent) {
+        let node = source(completion, this.view.state, this.view, match);
         if (node) li.appendChild(node);
       }
     }
@@ -411,9 +438,9 @@ export function completionTooltip(
 }
 
 function scrollIntoView(container: HTMLElement, element: HTMLElement) {
-  const parent = container.getBoundingClientRect();
-  const self = element.getBoundingClientRect();
-  const scaleY = parent.height / container.offsetHeight;
+  let parent = container.getBoundingClientRect();
+  let self = element.getBoundingClientRect();
+  let scaleY = parent.height / container.offsetHeight;
   if (self.top < parent.top)
     container.scrollTop -= (parent.top - self.top) / scaleY;
   else if (self.bottom > parent.bottom)

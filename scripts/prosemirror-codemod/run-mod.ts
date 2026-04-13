@@ -84,17 +84,17 @@ function formatCode() {}
  * executing steps sequentially and separately is more reliable
  */
 async function runMod() {
-  try {
-    await backupAndUpdateCode();
-  } catch (error) {
-    console.log(';; backupThenUpdateCode failed ', error);
-  }
+  // try {
+  //   await backupAndUpdateCode();
+  // } catch (error) {
+  //   console.log(';; backupThenUpdateCode failed ', error);
+  // }
 
   // await replaceFilesBeforePatch();
 
   // formatCode(); // lint + format
 
-  // await patchCode();
+  await patchCode();
 
   // tests
 }

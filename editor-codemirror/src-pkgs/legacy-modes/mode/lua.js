@@ -6,7 +6,7 @@ function wordRE(words) {
 }
 
 // long list of standard functions from lua manual
-const builtins = wordRE([
+var builtins = wordRE([
   '_G',
   '_VERSION',
   'assert',
@@ -154,7 +154,7 @@ const builtins = wordRE([
   'table.remove',
   'table.sort',
 ]);
-const keywords = wordRE([
+var keywords = wordRE([
   'and',
   'break',
   'elseif',
@@ -177,19 +177,20 @@ const keywords = wordRE([
   'in',
   'local',
 ]);
-const indentTokens = wordRE(['function', 'if', 'repeat', 'do', '\\(', '{']);
-const dedentTokens = wordRE(['end', 'until', '\\)', '}']);
-const dedentPartial = prefixRE(['end', 'until', '\\)', '}', 'else', 'elseif']);
+
+var indentTokens = wordRE(['function', 'if', 'repeat', 'do', '\\(', '{']);
+var dedentTokens = wordRE(['end', 'until', '\\)', '}']);
+var dedentPartial = prefixRE(['end', 'until', '\\)', '}', 'else', 'elseif']);
 
 function readBracket(stream) {
-  let level = 0;
+  var level = 0;
   while (stream.eat('=')) ++level;
   stream.eat('[');
   return level;
 }
 
 function normal(stream, state) {
-  const ch = stream.next();
+  var ch = stream.next();
   if (ch == '-' && stream.eat('-')) {
     if (stream.eat('[') && stream.eat('['))
       return (state.cur = bracketed(readBracket(stream), 'comment'))(
@@ -218,8 +219,8 @@ function normal(stream, state) {
 
 function bracketed(level, style) {
   return function (stream, state) {
-    let curlev = null;
-    let ch;
+    var curlev = null;
+    var ch;
     while ((ch = stream.next()) != null) {
       if (curlev == null) {
         if (ch == ']') curlev = 0;
@@ -235,8 +236,8 @@ function bracketed(level, style) {
 
 function string(quote) {
   return function (stream, state) {
-    let escaped = false;
-    let ch;
+    var escaped = false;
+    var ch;
     while ((ch = stream.next()) != null) {
       if (ch == quote && !escaped) break;
       escaped = !escaped && ch == '\\';
@@ -255,8 +256,8 @@ export const lua = {
 
   token: function (stream, state) {
     if (stream.eatSpace()) return null;
-    let style = state.cur(stream, state);
-    const word = stream.current();
+    var style = state.cur(stream, state);
+    var word = stream.current();
     if (style == 'variable') {
       if (keywords.test(word)) style = 'keyword';
       else if (builtins.test(word)) style = 'builtin';
@@ -269,7 +270,7 @@ export const lua = {
   },
 
   indent: function (state, textAfter, cx) {
-    const closing = dedentPartial.test(textAfter);
+    var closing = dedentPartial.test(textAfter);
     return state.basecol + cx.unit * (state.indentDepth - (closing ? 1 : 0));
   },
 

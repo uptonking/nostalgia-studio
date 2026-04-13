@@ -69,7 +69,7 @@ const mean: AggregationFn<any> = (columnId, leafRows) => {
   leafRows.forEach((row) => {
     let value = row.getValue<number>(columnId);
     if (value != null && (value = +value) >= value) {
-      ++count, (sum += value);
+      (++count, (sum += value));
     }
   });
 

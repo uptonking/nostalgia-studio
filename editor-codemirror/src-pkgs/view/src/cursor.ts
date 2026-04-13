@@ -1,37 +1,31 @@
 import {
-  type EditorState,
+  EditorState,
   EditorSelection,
-  type SelectionRange,
-  type RangeSet,
+  SelectionRange,
+  RangeSet,
   CharCategory,
   findColumn,
   findClusterBreak,
+  Line,
 } from '@codemirror/state';
-import type { EditorView } from './editorview';
+import { EditorView } from './editorview';
 import { BlockType } from './decoration';
-import { LineView } from './blockview';
 import { atomicRanges } from './extension';
-import { clientRectsFor, textRange, type Rect, maxOffset } from './dom';
-import { moveVisually, movedOver, Direction } from './bidi';
-import type { BlockInfo } from './heightmap';
-import browser from './browser';
+import { textRange, Rect } from './dom';
+import { moveVisually, movedOver, Direction, BidiSpan } from './bidi';
+import { BlockInfo } from './heightmap';
+import { TileFlag, CompositeTile, TextTile } from './tile';
 
 declare global {
   interface Selection {
     modify(action: string, direction: string, granularity: string): void;
   }
-  interface Document {
-    caretPositionFromPoint(
-      x: number,
-      y: number,
-    ): { offsetNode: Node; offset: number };
-  }
 }
 
 export function groupAt(state: EditorState, pos: number, bias: 1 | -1 = 1) {
-  const categorize = state.charCategorizer(pos);
-  const line = state.doc.lineAt(pos);
-  const linePos = pos - line.from;
+  let categorize = state.charCategorizer(pos);
+  let line = state.doc.lineAt(pos);
+  let linePos = pos - line.from;
   if (line.length == 0) return EditorSelection.cursor(pos);
   if (linePos == 0) bias = 1;
   else if (linePos == line.length) bias = -1;
@@ -39,279 +33,18 @@ export function groupAt(state: EditorState, pos: number, bias: 1 | -1 = 1) {
   let to = linePos;
   if (bias < 0) from = findClusterBreak(line.text, linePos, false);
   else to = findClusterBreak(line.text, linePos);
-  const cat = categorize(line.text.slice(from, to));
+  let cat = categorize(line.text.slice(from, to));
   while (from > 0) {
-    const prev = findClusterBreak(line.text, from, false);
+    let prev = findClusterBreak(line.text, from, false);
     if (categorize(line.text.slice(prev, from)) != cat) break;
     from = prev;
   }
   while (to < line.length) {
-    const next = findClusterBreak(line.text, to);
+    let next = findClusterBreak(line.text, to);
     if (categorize(line.text.slice(to, next)) != cat) break;
     to = next;
   }
   return EditorSelection.range(from + line.from, to + line.from);
-}
-
-// Search the DOM for the {node, offset} position closest to the given
-// coordinates. Very inefficient and crude, but can usually be avoided
-// by calling caret(Position|Range)FromPoint instead.
-
-function getdx(x: number, rect: ClientRect): number {
-  return rect.left > x ? rect.left - x : Math.max(0, x - rect.right);
-}
-function getdy(y: number, rect: ClientRect): number {
-  return rect.top > y ? rect.top - y : Math.max(0, y - rect.bottom);
-}
-function yOverlap(a: ClientRect, b: ClientRect): boolean {
-  return a.top < b.bottom - 1 && a.bottom > b.top + 1;
-}
-function upTop(rect: ClientRect, top: number): ClientRect {
-  return top < rect.top
-    ? ({
-        top,
-        left: rect.left,
-        right: rect.right,
-        bottom: rect.bottom,
-      } as ClientRect)
-    : rect;
-}
-function upBot(rect: ClientRect, bottom: number): ClientRect {
-  return bottom > rect.bottom
-    ? ({
-        top: rect.top,
-        left: rect.left,
-        right: rect.right,
-        bottom,
-      } as ClientRect)
-    : rect;
-}
-
-function domPosAtCoords(
-  parent: HTMLElement,
-  x: number,
-  y: number,
-): { node: Node; offset: number } {
-  let closest;
-  let closestRect!: ClientRect;
-  let closestX!: number;
-  let closestY!: number;
-  let closestOverlap = false;
-  let above;
-  let below;
-  let aboveRect;
-  let belowRect;
-  for (
-    let child: Node | null = parent.firstChild;
-    child;
-    child = child.nextSibling
-  ) {
-    const rects = clientRectsFor(child);
-    for (let i = 0; i < rects.length; i++) {
-      let rect: ClientRect = rects[i];
-      if (closestRect && yOverlap(closestRect, rect))
-        rect = upTop(upBot(rect, closestRect.bottom), closestRect.top);
-      const dx = getdx(x, rect);
-      const dy = getdy(y, rect);
-      if (dx == 0 && dy == 0)
-        return child.nodeType == 3
-          ? domPosInText(child as Text, x, y)
-          : domPosAtCoords(child as HTMLElement, x, y);
-      if (!closest || closestY > dy || (closestY == dy && closestX > dx)) {
-        closest = child;
-        closestRect = rect;
-        closestX = dx;
-        closestY = dy;
-        closestOverlap = !dx
-          ? true
-          : x < rect.left
-            ? i > 0
-            : i < rects.length - 1;
-      }
-      if (dx == 0) {
-        if (y > rect.bottom && (!aboveRect || aboveRect.bottom < rect.bottom)) {
-          above = child;
-          aboveRect = rect;
-        } else if (y < rect.top && (!belowRect || belowRect.top > rect.top)) {
-          below = child;
-          belowRect = rect;
-        }
-      } else if (aboveRect && yOverlap(aboveRect, rect)) {
-        aboveRect = upBot(aboveRect, rect.bottom);
-      } else if (belowRect && yOverlap(belowRect, rect)) {
-        belowRect = upTop(belowRect, rect.top);
-      }
-    }
-  }
-  if (aboveRect && aboveRect.bottom >= y) {
-    closest = above;
-    closestRect = aboveRect;
-  } else if (belowRect && belowRect.top <= y) {
-    closest = below;
-    closestRect = belowRect;
-  }
-
-  if (!closest) return { node: parent, offset: 0 };
-  const clipX = Math.max(closestRect!.left, Math.min(closestRect!.right, x));
-  if (closest.nodeType == 3) return domPosInText(closest as Text, clipX, y);
-  if (closestOverlap && (closest as HTMLElement).contentEditable != 'false')
-    return domPosAtCoords(closest as HTMLElement, clipX, y);
-  const offset =
-    Array.prototype.indexOf.call(parent.childNodes, closest) +
-    (x >= (closestRect!.left + closestRect!.right) / 2 ? 1 : 0);
-  return { node: parent, offset };
-}
-
-function domPosInText(
-  node: Text,
-  x: number,
-  y: number,
-): { node: Node; offset: number } {
-  const len = node.nodeValue!.length;
-  let closestOffset = -1;
-  let closestDY = 1e9;
-  let generalSide = 0;
-  for (let i = 0; i < len; i++) {
-    const rects = textRange(node, i, i + 1).getClientRects();
-    for (let j = 0; j < rects.length; j++) {
-      const rect = rects[j];
-      if (rect.top == rect.bottom) continue;
-      if (!generalSide) generalSide = x - rect.left;
-      const dy = (rect.top > y ? rect.top - y : y - rect.bottom) - 1;
-      if (rect.left - 1 <= x && rect.right + 1 >= x && dy < closestDY) {
-        const right = x >= (rect.left + rect.right) / 2;
-        let after = right;
-        if (browser.chrome || browser.gecko) {
-          // Check for RTL on browsers that support getting client
-          // rects for empty ranges.
-          const rectBefore = textRange(node, i).getBoundingClientRect();
-          if (rectBefore.left == rect.right) after = !right;
-        }
-        if (dy <= 0) return { node, offset: i + (after ? 1 : 0) };
-        closestOffset = i + (after ? 1 : 0);
-        closestDY = dy;
-      }
-    }
-  }
-  return {
-    node,
-    offset:
-      closestOffset > -1
-        ? closestOffset
-        : generalSide > 0
-          ? node.nodeValue!.length
-          : 0,
-  };
-}
-
-export function posAtCoords(
-  view: EditorView,
-  coords: { x: number; y: number },
-  precise: boolean,
-  bias: -1 | 1 = -1,
-): number | null {
-  const content = view.contentDOM.getBoundingClientRect();
-  const docTop = content.top + view.viewState.paddingTop;
-  let block;
-  const { docHeight } = view.viewState;
-  let { x, y } = coords;
-  let yOffset = y - docTop;
-  if (yOffset < 0) return 0;
-  if (yOffset > docHeight) return view.state.doc.length;
-
-  // Scan for a text block near the queried y position
-  for (
-    let halfLine = view.viewState.heightOracle.textHeight / 2, bounced = false;
-    ;
-
-  ) {
-    block = view.elementAtHeight(yOffset);
-    if (block.type == BlockType.Text) break;
-    for (;;) {
-      // Move the y position out of this block
-      yOffset = bias > 0 ? block.bottom + halfLine : block.top - halfLine;
-      if (yOffset >= 0 && yOffset <= docHeight) break;
-      // If the document consists entirely of replaced widgets, we
-      // won't find a text block, so return 0
-      if (bounced) return precise ? null : 0;
-      bounced = true;
-      bias = -bias as -1 | 1;
-    }
-  }
-  y = docTop + yOffset;
-  const lineStart = block.from;
-  // If this is outside of the rendered viewport, we can't determine a position
-  if (lineStart < view.viewport.from)
-    return view.viewport.from == 0
-      ? 0
-      : precise
-        ? null
-        : posAtCoordsImprecise(view, content, block, x, y);
-  if (lineStart > view.viewport.to)
-    return view.viewport.to == view.state.doc.length
-      ? view.state.doc.length
-      : precise
-        ? null
-        : posAtCoordsImprecise(view, content, block, x, y);
-  // Prefer ShadowRootOrDocument.elementFromPoint if present, fall back to document if not
-  const doc = view.dom.ownerDocument;
-  const root = (view.root as any).elementFromPoint
-    ? (view.root as Document)
-    : doc;
-  let element = root.elementFromPoint(x, y);
-  if (element && !view.contentDOM.contains(element)) element = null;
-
-  // If the element is unexpected, clip x at the sides of the content area and try again
-  if (!element) {
-    x = Math.max(content.left + 1, Math.min(content.right - 1, x));
-    element = root.elementFromPoint(x, y);
-    if (element && !view.contentDOM.contains(element)) element = null;
-  }
-
-  // There's visible editor content under the point, so we can try
-  // using caret(Position|Range)FromPoint as a shortcut
-  let node: Node | undefined;
-  let offset: number = -1;
-  if (element && view.docView.nearest(element)?.isEditable != false) {
-    if (doc.caretPositionFromPoint) {
-      const pos = doc.caretPositionFromPoint(x, y);
-      if (pos) ({ offsetNode: node, offset } = pos);
-    } else if (doc.caretRangeFromPoint) {
-      const range = doc.caretRangeFromPoint(x, y);
-      if (range) {
-        ({ startContainer: node, startOffset: offset } = range);
-        if (
-          !view.contentDOM.contains(node) ||
-          (browser.safari && isSuspiciousSafariCaretResult(node, offset, x)) ||
-          (browser.chrome && isSuspiciousChromeCaretResult(node, offset, x))
-        )
-          node = undefined;
-      }
-    }
-    // Chrome will return offsets into <input> elements without child
-    // nodes, which will lead to a null deref below, so clip the
-    // offset to the node size.
-    if (node) offset = Math.min(maxOffset(node), offset);
-  }
-
-  // No luck, do our own (potentially expensive) search
-  if (!node || !view.docView.dom.contains(node)) {
-    const line = LineView.find(view.docView, lineStart);
-    if (!line)
-      return yOffset > block.top + block.height / 2 ? block.to : block.from;
-    ({ node, offset } = domPosAtCoords(line.dom!, x, y));
-  }
-  const nearest = view.docView.nearest(node);
-  if (!nearest) return null;
-  if (nearest.isWidget && nearest.dom?.nodeType == 1) {
-    const rect = (nearest.dom as HTMLElement).getBoundingClientRect();
-    return coords.y < rect.top ||
-      (coords.y <= rect.bottom && coords.x <= (rect.left + rect.right) / 2)
-      ? nearest.posAtStart
-      : nearest.posAtEnd;
-  } else {
-    return nearest.localPosFromDOM(node, offset) + nearest.posAtStart;
-  }
 }
 
 function posAtCoordsImprecise(
@@ -323,62 +56,15 @@ function posAtCoordsImprecise(
 ) {
   let into = Math.round((x - contentRect.left) * view.defaultCharacterWidth);
   if (view.lineWrapping && block.height > view.defaultLineHeight * 1.5) {
-    const textHeight = view.viewState.heightOracle.textHeight;
-    const line = Math.floor(
+    let textHeight = view.viewState.heightOracle.textHeight;
+    let line = Math.floor(
       (y - block.top - (view.defaultLineHeight - textHeight) * 0.5) /
         textHeight,
     );
     into += line * view.viewState.heightOracle.lineLength;
   }
-  const content = view.state.sliceDoc(block.from, block.to);
+  let content = view.state.sliceDoc(block.from, block.to);
   return block.from + findColumn(content, into, view.state.tabSize);
-}
-
-// In case of a high line height, Safari's caretRangeFromPoint treats
-// the space between lines as belonging to the last character of the
-// line before. This is used to detect such a result so that it can be
-// ignored (issue #401).
-function isSuspiciousSafariCaretResult(node: Node, offset: number, x: number) {
-  let len;
-  let scan = node;
-  if (node.nodeType != 3 || offset != (len = node.nodeValue!.length))
-    return false;
-  for (;;) {
-    // Check that there is no content after this node
-    const next = scan.nextSibling;
-    if (next) {
-      if (next.nodeName == 'BR') break;
-      return false;
-    } else {
-      const parent = scan.parentNode;
-      if (!parent || parent.nodeName == 'DIV') break;
-      scan = parent;
-    }
-  }
-  return (
-    textRange(node as Text, len - 1, len).getBoundingClientRect().right > x
-  );
-}
-
-// Chrome will move positions between lines to the start of the next line
-function isSuspiciousChromeCaretResult(node: Node, offset: number, x: number) {
-  if (offset != 0) return false;
-  for (let cur = node; ; ) {
-    const parent = cur.parentNode;
-    if (!parent || parent.nodeType != 1 || parent.firstChild != cur)
-      return false;
-    if ((parent as HTMLElement).classList.contains('cm-line')) break;
-    cur = parent;
-  }
-  const rect =
-    node.nodeType == 1
-      ? (node as HTMLElement).getBoundingClientRect()
-      : textRange(
-          node as Text,
-          0,
-          Math.max(node.nodeValue!.length, 1),
-        ).getBoundingClientRect();
-  return x - rect.left > 5;
 }
 
 export function blockAt(
@@ -386,10 +72,10 @@ export function blockAt(
   pos: number,
   side: -1 | 1,
 ): BlockInfo {
-  const line = view.lineBlockAt(pos);
+  let line = view.lineBlockAt(pos);
   if (Array.isArray(line.type)) {
     let best: BlockInfo | undefined;
-    for (const l of line.type) {
+    for (let l of line.type) {
       if (l.from > pos) break;
       if (l.to < pos) continue;
       if (l.from < pos && l.to > pos) return l;
@@ -411,8 +97,8 @@ export function moveToLineBoundary(
   forward: boolean,
   includeWrap: boolean,
 ) {
-  const line = blockAt(view, start.head, start.assoc || -1);
-  const coords =
+  let line = blockAt(view, start.head, start.assoc || -1);
+  let coords =
     !includeWrap ||
     line.type != BlockType.Text ||
     !(view.lineWrapping || line.widgetLineBreaks)
@@ -423,9 +109,9 @@ export function moveToLineBoundary(
             : start.head,
         );
   if (coords) {
-    const editorRect = view.dom.getBoundingClientRect();
-    const direction = view.textDirectionAt(line.from);
-    const pos = view.posAtCoords({
+    let editorRect = view.dom.getBoundingClientRect();
+    let direction = view.textDirectionAt(line.from);
+    let pos = view.posAtCoords({
       x:
         forward == (direction == Direction.LTR)
           ? editorRect.right - 1
@@ -448,7 +134,7 @@ export function moveByChar(
 ) {
   let line = view.state.doc.lineAt(start.head);
   let spans = view.bidiSpans(line);
-  const direction = view.textDirectionAt(line.from);
+  let direction = view.textDirectionAt(line.from);
   for (let cur = start, check: null | ((next: string) => boolean) = null; ; ) {
     let next = moveVisually(line, spans, direction, cur, forward);
     let char = movedOver;
@@ -470,10 +156,10 @@ export function moveByChar(
 }
 
 export function byGroup(view: EditorView, pos: number, start: string) {
-  const categorize = view.state.charCategorizer(pos);
+  let categorize = view.state.charCategorizer(pos);
   let cat = categorize(start);
   return (next: string) => {
-    const nextCat = categorize(next);
+    let nextCat = categorize(next);
     if (cat == CharCategory.Space) cat = nextCat;
     return cat == nextCat;
   };
@@ -485,20 +171,24 @@ export function moveVertically(
   forward: boolean,
   distance?: number,
 ) {
-  const startPos = start.head;
-  const dir: -1 | 1 = forward ? 1 : -1;
+  let startPos = start.head;
+  let dir: -1 | 1 = forward ? 1 : -1;
   if (startPos == (forward ? view.state.doc.length : 0))
     return EditorSelection.cursor(startPos, start.assoc);
   let goal = start.goalColumn;
   let startY;
-  const rect = view.contentDOM.getBoundingClientRect();
-  const startCoords = view.coordsAtPos(startPos, start.assoc || -1);
-  const docTop = view.documentTop;
+  let rect = view.contentDOM.getBoundingClientRect();
+  let startCoords = view.coordsAtPos(
+    startPos,
+    start.assoc ||
+      ((start.empty ? forward : start.head == start.from) ? 1 : -1),
+  );
+  let docTop = view.documentTop;
   if (startCoords) {
     if (goal == null) goal = startCoords.left - rect.left;
     startY = dir < 0 ? startCoords.top : startCoords.bottom;
   } else {
-    const line = view.viewState.lineBlockAt(startPos);
+    let line = view.viewState.lineBlockAt(startPos);
     if (goal == null)
       goal = Math.min(
         rect.right - rect.left,
@@ -506,20 +196,18 @@ export function moveVertically(
       );
     startY = (dir < 0 ? line.top : line.bottom) + docTop;
   }
-  const resolvedGoal = rect.left + goal;
-  const dist = distance ?? view.viewState.heightOracle.textHeight >> 1;
-  for (let extra = 0; ; extra += 10) {
-    const curY = startY + (dist + extra) * dir;
-    const pos = posAtCoords(view, { x: resolvedGoal, y: curY }, false, dir)!;
-    if (
-      curY < rect.top ||
-      curY > rect.bottom ||
-      (dir < 0 ? pos < startPos : pos > startPos)
-    ) {
-      const charRect = view.docView.coordsForChar(pos);
-      const assoc = !charRect || curY < charRect.top ? -1 : 1;
-      return EditorSelection.cursor(pos, assoc, undefined, goal);
-    }
+  let resolvedGoal = rect.left + goal;
+  let halfText = view.viewState.heightOracle.textHeight >> 1;
+  let dist = distance ?? halfText;
+  for (let scan = 0; ; scan += halfText) {
+    let y = startY + (dist + scan) * dir;
+    let pos = posAtCoords(view, { x: resolvedGoal, y }, false, dir)!;
+    if (forward ? y > rect.bottom : y < rect.top)
+      return EditorSelection.cursor(pos.pos, pos.assoc);
+    let posCoords = view.coordsAtPos(pos.pos, pos.assoc);
+    let mid = posCoords ? (posCoords.top + posCoords.bottom) / 2 : 0;
+    if (!posCoords || (forward ? mid > startY : mid < startY))
+      return EditorSelection.cursor(pos.pos, pos.assoc, undefined, goal);
   }
 }
 
@@ -530,10 +218,10 @@ export function skipAtomicRanges(
 ) {
   for (;;) {
     let moved = 0;
-    for (const set of atoms) {
+    for (let set of atoms) {
       set.between(pos - 1, pos + 1, (from, to, value) => {
         if (pos > from && pos < to) {
-          const side = moved || bias || (pos - from < to - pos ? -1 : 1);
+          let side = moved || bias || (pos - from < to - pos ? -1 : 1);
           pos = side < 0 ? from : to;
           moved = side;
         }
@@ -543,12 +231,40 @@ export function skipAtomicRanges(
   }
 }
 
+export function skipAtomsForSelection(
+  atoms: readonly RangeSet<any>[],
+  sel: EditorSelection,
+) {
+  let ranges = null;
+  for (let i = 0; i < sel.ranges.length; i++) {
+    let range = sel.ranges[i];
+    let updated = null;
+    if (range.empty) {
+      let pos = skipAtomicRanges(atoms, range.from, 0);
+      if (pos != range.from) updated = EditorSelection.cursor(pos, -1);
+    } else {
+      let from = skipAtomicRanges(atoms, range.from, -1);
+      let to = skipAtomicRanges(atoms, range.to, 1);
+      if (from != range.from || to != range.to)
+        updated = EditorSelection.range(
+          range.from == range.anchor ? from : to,
+          range.from == range.head ? from : to,
+        );
+    }
+    if (updated) {
+      if (!ranges) ranges = sel.ranges.slice();
+      ranges[i] = updated;
+    }
+  }
+  return ranges ? EditorSelection.create(ranges, sel.mainIndex) : sel;
+}
+
 export function skipAtoms(
   view: EditorView,
   oldPos: SelectionRange,
   pos: SelectionRange,
 ) {
-  const newPos = skipAtomicRanges(
+  let newPos = skipAtomicRanges(
     view.state.facet(atomicRanges).map((f) => f(view)),
     pos.from,
     oldPos.head > pos.from ? -1 : 1,
@@ -556,4 +272,286 @@ export function skipAtoms(
   return newPos == pos.from
     ? pos
     : EditorSelection.cursor(newPos, newPos < pos.from ? 1 : -1);
+}
+
+export class PosAssoc {
+  constructor(
+    readonly pos: number,
+    readonly assoc: -1 | 1,
+  ) {}
+}
+
+export function posAtCoords(
+  view: EditorView,
+  coords: { x: number; y: number },
+  precise: boolean,
+  scanY?: 1 | -1,
+): PosAssoc | null {
+  let content = view.contentDOM.getBoundingClientRect();
+  let docTop = content.top + view.viewState.paddingTop;
+  let { x, y } = coords;
+  let yOffset = y - docTop;
+  let block;
+  // First find the block at the given Y position, if any. If scanY is
+  // given (used for vertical cursor motion), try to skip widgets and
+  // line padding.
+  for (;;) {
+    if (yOffset < 0) return new PosAssoc(0, 1);
+    if (yOffset > view.viewState.docHeight)
+      return new PosAssoc(view.state.doc.length, -1);
+    block = view.elementAtHeight(yOffset);
+    if (scanY == null) break;
+    if (block.type == BlockType.Text) {
+      if (
+        scanY < 0
+          ? block.to < view.viewport.from
+          : block.from > view.viewport.to
+      )
+        break;
+      // Check whether we aren't landing on the top/bottom padding of the line
+      let rect = view.docView.coordsAt(
+        scanY < 0 ? block.from : block.to,
+        scanY > 0 ? -1 : 1,
+      );
+      if (
+        rect &&
+        (scanY < 0
+          ? rect.top <= yOffset + docTop
+          : rect.bottom >= yOffset + docTop)
+      )
+        break;
+    }
+    let halfLine = view.viewState.heightOracle.textHeight / 2;
+    yOffset = scanY > 0 ? block.bottom + halfLine : block.top - halfLine;
+  }
+  // If outside the viewport, return null if precise==true, an
+  // estimate otherwise.
+  if (view.viewport.from >= block.to || view.viewport.to <= block.from) {
+    if (precise) return null;
+    if (block.type == BlockType.Text) {
+      let pos = posAtCoordsImprecise(view, content, block, x, y);
+      return new PosAssoc(pos, pos == block.from ? 1 : -1);
+    }
+  }
+  if (block.type != BlockType.Text)
+    return yOffset < (block.top + block.bottom) / 2
+      ? new PosAssoc(block.from, 1)
+      : new PosAssoc(block.to, -1);
+
+  // Here we know we're in a line, so run the logic for inline layout
+  let line = view.docView.lineAt(block.from, 2);
+  if (!line || line.length != block.length)
+    line = view.docView.lineAt(block.from, -2)!;
+  return new InlineCoordsScan(
+    view,
+    x,
+    y,
+    view.textDirectionAt(block.from),
+  ).scanTile(line, block.from);
+}
+
+class InlineCoordsScan {
+  // Cached bidi info
+  line: Line | null = null;
+  spans: readonly BidiSpan[] | null = null;
+
+  constructor(
+    readonly view: EditorView,
+    readonly x: number,
+    public y: number,
+    readonly baseDir: Direction,
+  ) {}
+
+  bidiSpansAt(pos: number): { line: Line; spans: readonly BidiSpan[] } {
+    if (!this.line || this.line.from > pos || this.line.to < pos) {
+      this.line = this.view.state.doc.lineAt(pos);
+      this.spans = this.view.bidiSpans(this.line);
+    }
+    return this as any;
+  }
+
+  baseDirAt(pos: number, side: -1 | 1) {
+    let { line, spans } = this.bidiSpansAt(pos);
+    let level = spans[BidiSpan.find(spans, pos - line.from, -1, side)].level;
+    return level == this.baseDir;
+  }
+
+  dirAt(pos: number, side: -1 | 1) {
+    let { line, spans } = this.bidiSpansAt(pos);
+    return spans[BidiSpan.find(spans, pos - line.from, -1, side)].dir;
+  }
+
+  // Used to short-circuit bidi tests for content with a uniform direction
+  bidiIn(from: number, to: number) {
+    let { spans, line } = this.bidiSpansAt(from);
+    return (
+      spans.length > 1 ||
+      (spans.length &&
+        (spans[0].level != this.baseDir || spans[0].to + line.from < to))
+    );
+  }
+
+  // Scan through the rectangles for the content of a tile with inline
+  // content, looking for one that overlaps the queried position
+  // vertically andis
+  // closest horizontally. The caller is responsible for dividing its
+  // content into N pieces, and pass an array with N+1 positions
+  // (including the position after the last piece). For a text tile,
+  // these will be character clusters, for a composite tile, these
+  // will be child tiles.
+  scan(
+    positions: readonly number[],
+    getRects: (i: number) => DOMRectList | null,
+  ): { i: number; after: boolean } {
+    let lo = 0;
+    let hi = positions.length - 1;
+    let seen = new Set<number>();
+    let bidi = this.bidiIn(positions[0], positions[hi]);
+
+    let above: DOMRect | undefined;
+    let below: DOMRect | undefined;
+    let closestI = -1;
+    let closestDx = 1e9;
+    let closestRect: DOMRect | undefined;
+    // Because, when the content is bidirectional, a regular binary
+    // search is hard to perform (the content order does not
+    // correspond to visual order), this loop does something between a
+    // regular binary search and a full scan, depending on what it can
+    // get away with. The outer hi/lo bounds are only adjusted for
+    // elements that are part of the base order.
+    //
+    // To make sure all elements inside those bounds are visited,
+    // eventually, we keep a set of seen indices, and if the midpoint
+    // has already been handled, we start in a random index within the
+    // current bounds and scan forward until we find an index that
+    // hasn't been seen yet.
+    search: while (lo < hi) {
+      let dist = hi - lo;
+      let mid = (lo + hi) >> 1;
+      adjust: if (seen.has(mid)) {
+        let scan = lo + Math.floor(Math.random() * dist);
+        for (let i = 0; i < dist; i++) {
+          if (!seen.has(scan)) {
+            mid = scan;
+            break adjust;
+          }
+          scan++;
+          if (scan == hi) scan = lo; // Wrap around
+        }
+        break search; // No index found, we're done
+      }
+      seen.add(mid);
+      let rects = getRects(mid);
+      if (rects)
+        for (let i = 0; i < rects.length; i++) {
+          let rect = rects[i];
+          let side = 0;
+          // Ignore empty rectangles when there are other rectangles
+          if (rect.width == 0 && rects.length > 1) continue;
+          if (rect.bottom < this.y) {
+            if (!above || above.bottom < rect.bottom) above = rect;
+            side = 1;
+          } else if (rect.top > this.y) {
+            if (!below || below.top > rect.top) below = rect;
+            side = -1;
+          } else {
+            let off =
+              rect.left > this.x
+                ? this.x - rect.left
+                : rect.right < this.x
+                  ? this.x - rect.right
+                  : 0;
+            let dx = Math.abs(off);
+            if (dx < closestDx) {
+              closestI = mid;
+              closestDx = dx;
+              closestRect = rect;
+            }
+            if (off) side = off < 0 == (this.baseDir == Direction.LTR) ? -1 : 1;
+          }
+          // Narrow binary search when it is safe to do so
+          if (side == -1 && (!bidi || this.baseDirAt(positions[mid], 1)))
+            hi = mid;
+          else if (
+            side == 1 &&
+            (!bidi || this.baseDirAt(positions[mid + 1], -1))
+          )
+            lo = mid + 1;
+        }
+    }
+    // If no element with y overlap is found, find the nearest element
+    // on the y axis, move this.y into it, and retry the scan.
+    if (!closestRect) {
+      let side =
+        above && (!below || this.y - above.bottom < below.top - this.y)
+          ? above
+          : below!;
+      this.y = (side.top + side.bottom) / 2;
+      return this.scan(positions, getRects);
+    }
+    // Handle the case where closest matched a higher element on the
+    // same line as an element below/above the coords
+    if (closestDx) {
+      if (above && above.bottom > closestRect.top) {
+        this.y = above.bottom - 1;
+        return this.scan(positions, getRects);
+      }
+      if (below && below.top < closestRect.bottom) {
+        this.y = below.top + 1;
+        return this.scan(positions, getRects);
+      }
+    }
+    let ltr =
+      (bidi ? this.dirAt(positions[closestI], 1) : this.baseDir) ==
+      Direction.LTR;
+    return {
+      i: closestI,
+      // Test whether x is closes to the start or end of this element
+      after: this.x > (closestRect.left + closestRect.right) / 2 == ltr,
+    };
+  }
+
+  scanText(tile: TextTile, offset: number): PosAssoc {
+    let positions: number[] = [];
+    for (let i = 0; i < tile.length; i = findClusterBreak(tile.text, i))
+      positions.push(offset + i);
+    positions.push(offset + tile.length);
+    let scan = this.scan(positions, (i) => {
+      let off = positions[i] - offset;
+      let end = positions[i + 1] - offset;
+      return textRange(tile.dom, off, end).getClientRects();
+    });
+    return scan.after
+      ? new PosAssoc(positions[scan.i + 1], -1)
+      : new PosAssoc(positions[scan.i], 1);
+  }
+
+  scanTile(tile: CompositeTile, offset: number): PosAssoc {
+    if (!tile.length) return new PosAssoc(offset, 1);
+    if (tile.children.length == 1) {
+      // Short-circuit single-child tiles
+      let child = tile.children[0];
+      if (child.isText()) return this.scanText(child, offset);
+      else if (child.isComposite()) return this.scanTile(child, offset);
+    }
+    let positions = [offset];
+    for (let i = 0, pos = offset; i < tile.children.length; i++)
+      positions.push((pos += tile.children[i].length));
+    let scan = this.scan(positions, (i) => {
+      let child = tile.children[i];
+      if (child.flags & TileFlag.PointWidget) return null;
+      return (
+        child.dom.nodeType == 1
+          ? (child.dom as HTMLElement)
+          : textRange(child.dom as Text, 0, child.length)
+      ).getClientRects();
+    });
+    let child = tile.children[scan.i];
+    let pos = positions[scan.i];
+    if (child.isText()) return this.scanText(child, pos);
+    if (child.isComposite()) return this.scanTile(child, pos);
+    return scan.after
+      ? new PosAssoc(positions[scan.i + 1], -1)
+      : new PosAssoc(pos, 1);
+  }
 }

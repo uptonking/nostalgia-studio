@@ -2,16 +2,12 @@
 // table-related functionality.
 
 import { keydownHandler } from 'prosemirror-keymap';
-import { Fragment, ResolvedPos, Slice } from 'prosemirror-model';
-import {
-  Command,
-  EditorState,
-  Selection,
-  TextSelection,
-  Transaction,
-} from 'prosemirror-state';
+import type { ResolvedPos, Slice } from 'prosemirror-model';
+import { Fragment } from 'prosemirror-model';
+import type { Command, EditorState, Transaction } from 'prosemirror-state';
+import { Selection, TextSelection } from 'prosemirror-state';
+import type { EditorView } from 'prosemirror-view';
 
-import { EditorView } from 'prosemirror-view';
 import { CellSelection } from './cellselection';
 import { deleteCellSelection } from './commands';
 import { clipCells, fitSlice, insertCells, pastedCells } from './copypaste';
@@ -178,6 +174,11 @@ export function handleMouseDown(
   view: EditorView,
   startEvent: MouseEvent,
 ): void {
+  // Only handle mouse down events for the main button (usually the left button).
+  // This ensures that the cell selection won't be triggered when trying to open
+  // the context menu.
+  if (startEvent.button != 0) return;
+
   if (startEvent.ctrlKey || startEvent.metaKey) return;
 
   const startDOMCell = domInCell(view, startEvent.target as Node);
@@ -287,5 +288,11 @@ function cellUnderMouse(
     top: event.clientY,
   });
   if (!mousePos) return null;
-  return mousePos ? cellAround(view.state.doc.resolve(mousePos.pos)) : null;
+  // Prefer `inside` position for better accuracy with merged cells (rowspan/colspan),
+  // but fall back to `pos` if `inside` doesn't resolve to a valid cell
+  let { inside, pos } = mousePos;
+  return (
+    (inside >= 0 && cellAround(view.state.doc.resolve(inside))) ||
+    cellAround(view.state.doc.resolve(pos))
+  );
 }

@@ -249,7 +249,7 @@ export const RowPagination: TableFeature = {
       table.setPagination(
         defaultState
           ? getDefaultPaginationState()
-          : table.initialState.pagination ?? getDefaultPaginationState(),
+          : (table.initialState.pagination ?? getDefaultPaginationState()),
       );
     };
     table.setPageIndex = (updater) => {
@@ -274,14 +274,14 @@ export const RowPagination: TableFeature = {
       table.setPageIndex(
         defaultState
           ? defaultPageIndex
-          : table.initialState?.pagination?.pageIndex ?? defaultPageIndex,
+          : (table.initialState?.pagination?.pageIndex ?? defaultPageIndex),
       );
     };
     table.resetPageSize = (defaultState) => {
       table.setPageSize(
         defaultState
           ? defaultPageSize
-          : table.initialState?.pagination?.pageSize ?? defaultPageSize,
+          : (table.initialState?.pagination?.pageSize ?? defaultPageSize),
       );
     };
     table.setPageSize = (updater) => {

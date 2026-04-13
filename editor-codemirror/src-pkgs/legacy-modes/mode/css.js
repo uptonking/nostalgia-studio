@@ -1,25 +1,27 @@
 export function mkCSS(parserConfig) {
   parserConfig = { ...defaults, ...parserConfig };
-  const inline = parserConfig.inline;
-  const tokenHooks = parserConfig.tokenHooks;
-  const documentTypes = parserConfig.documentTypes || {};
-  const mediaTypes = parserConfig.mediaTypes || {};
-  const mediaFeatures = parserConfig.mediaFeatures || {};
-  const mediaValueKeywords = parserConfig.mediaValueKeywords || {};
-  const propertyKeywords = parserConfig.propertyKeywords || {};
-  const nonStandardPropertyKeywords =
+  var inline = parserConfig.inline;
+
+  var tokenHooks = parserConfig.tokenHooks;
+  var documentTypes = parserConfig.documentTypes || {};
+  var mediaTypes = parserConfig.mediaTypes || {};
+  var mediaFeatures = parserConfig.mediaFeatures || {};
+  var mediaValueKeywords = parserConfig.mediaValueKeywords || {};
+  var propertyKeywords = parserConfig.propertyKeywords || {};
+  var nonStandardPropertyKeywords =
     parserConfig.nonStandardPropertyKeywords || {};
-  const fontProperties = parserConfig.fontProperties || {};
-  const counterDescriptors = parserConfig.counterDescriptors || {};
-  const colorKeywords = parserConfig.colorKeywords || {};
-  const valueKeywords = parserConfig.valueKeywords || {};
-  const allowNested = parserConfig.allowNested;
-  const lineComment = parserConfig.lineComment;
-  const supportsAtComponent = parserConfig.supportsAtComponent === true;
-  const highlightNonStandardPropertyKeywords =
+  var fontProperties = parserConfig.fontProperties || {};
+  var counterDescriptors = parserConfig.counterDescriptors || {};
+  var colorKeywords = parserConfig.colorKeywords || {};
+  var valueKeywords = parserConfig.valueKeywords || {};
+  var allowNested = parserConfig.allowNested;
+  var lineComment = parserConfig.lineComment;
+  var supportsAtComponent = parserConfig.supportsAtComponent === true;
+  var highlightNonStandardPropertyKeywords =
     parserConfig.highlightNonStandardPropertyKeywords !== false;
-  let type;
-  let override;
+
+  var type;
+  var override;
   function ret(style, tp) {
     type = tp;
     return style;
@@ -28,9 +30,9 @@ export function mkCSS(parserConfig) {
   // Tokenizers
 
   function tokenBase(stream, state) {
-    const ch = stream.next();
+    var ch = stream.next();
     if (tokenHooks[ch]) {
-      const result = tokenHooks[ch](stream, state);
+      var result = tokenHooks[ch](stream, state);
       if (result !== false) return result;
     }
     if (ch == '@') {
@@ -83,8 +85,8 @@ export function mkCSS(parserConfig) {
 
   function tokenString(quote) {
     return function (stream, state) {
-      let escaped = false;
-      let ch;
+      var escaped = false;
+      var ch;
       while ((ch = stream.next()) != null) {
         if (ch == quote && !escaped) {
           if (quote == ')') stream.backUp(1);
@@ -130,14 +132,14 @@ export function mkCSS(parserConfig) {
     return states[state.context.type](type, stream, state);
   }
   function popAndPass(type, stream, state, n) {
-    for (let i = n || 1; i > 0; i--) state.context = state.context.prev;
+    for (var i = n || 1; i > 0; i--) state.context = state.context.prev;
     return pass(type, stream, state);
   }
 
   // Parser
 
   function wordAsValue(stream) {
-    const word = stream.current().toLowerCase();
+    var word = stream.current().toLowerCase();
     if (valueKeywords.hasOwnProperty(word)) override = 'atom';
     else if (colorKeywords.hasOwnProperty(word)) override = 'keyword';
     else override = 'variable';
@@ -181,7 +183,7 @@ export function mkCSS(parserConfig) {
 
   states.block = function (type, stream, state) {
     if (type == 'word') {
-      const word = stream.current().toLowerCase();
+      var word = stream.current().toLowerCase();
       if (propertyKeywords.hasOwnProperty(word)) {
         override = 'property';
         return 'maybeprop';
@@ -285,7 +287,7 @@ export function mkCSS(parserConfig) {
       return pushContext(state, stream, 'interpolation');
 
     if (type == 'word') {
-      const word = stream.current().toLowerCase();
+      var word = stream.current().toLowerCase();
       if (word == 'only' || word == 'not' || word == 'and' || word == 'or')
         override = 'keyword';
       else if (mediaTypes.hasOwnProperty(word)) override = 'attribute';
@@ -387,8 +389,8 @@ export function mkCSS(parserConfig) {
 
     token: function (stream, state) {
       if (!state.tokenize && stream.eatSpace()) return null;
-      let style = (state.tokenize || tokenBase)(stream, state);
-      if (style && typeof style === 'object') {
+      var style = (state.tokenize || tokenBase)(stream, state);
+      if (style && typeof style == 'object') {
         type = style[1];
         style = style[0];
       }
@@ -399,9 +401,9 @@ export function mkCSS(parserConfig) {
     },
 
     indent: function (state, textAfter, iCx) {
-      let cx = state.context;
-      const ch = textAfter && textAfter.charAt(0);
-      let indent = cx.indent;
+      var cx = state.context;
+      var ch = textAfter && textAfter.charAt(0);
+      var indent = cx.indent;
       if (cx.type == 'prop' && (ch == '}' || ch == ')')) cx = cx.prev;
       if (cx.prev) {
         if (
@@ -434,16 +436,17 @@ export function mkCSS(parserConfig) {
 }
 
 function keySet(array) {
-  const keys = {};
-  for (let i = 0; i < array.length; ++i) {
+  var keys = {};
+  for (var i = 0; i < array.length; ++i) {
     keys[array[i].toLowerCase()] = true;
   }
   return keys;
 }
 
-const documentTypes_ = ['domain', 'regexp', 'url', 'url-prefix'];
-const documentTypes = keySet(documentTypes_);
-const mediaTypes_ = [
+var documentTypes_ = ['domain', 'regexp', 'url', 'url-prefix'];
+var documentTypes = keySet(documentTypes_);
+
+var mediaTypes_ = [
   'all',
   'aural',
   'braille',
@@ -455,8 +458,9 @@ const mediaTypes_ = [
   'tv',
   'embossed',
 ];
-const mediaTypes = keySet(mediaTypes_);
-const mediaFeatures_ = [
+var mediaTypes = keySet(mediaTypes_);
+
+var mediaFeatures_ = [
   'width',
   'min-width',
   'max-width',
@@ -501,8 +505,9 @@ const mediaFeatures_ = [
   'dynamic-range',
   'video-dynamic-range',
 ];
-const mediaFeatures = keySet(mediaFeatures_);
-const mediaValueKeywords_ = [
+var mediaFeatures = keySet(mediaFeatures_);
+
+var mediaValueKeywords_ = [
   'landscape',
   'portrait',
   'none',
@@ -517,8 +522,9 @@ const mediaValueKeywords_ = [
   'standard',
   'high',
 ];
-const mediaValueKeywords = keySet(mediaValueKeywords_);
-const propertyKeywords_ = [
+var mediaValueKeywords = keySet(mediaValueKeywords_);
+
+var propertyKeywords_ = [
   'align-content',
   'align-items',
   'align-self',
@@ -965,8 +971,9 @@ const propertyKeywords_ = [
   'text-anchor',
   'writing-mode',
 ];
-const propertyKeywords = keySet(propertyKeywords_);
-const nonStandardPropertyKeywords_ = [
+var propertyKeywords = keySet(propertyKeywords_);
+
+var nonStandardPropertyKeywords_ = [
   'accent-color',
   'aspect-ratio',
   'border-block',
@@ -1024,8 +1031,9 @@ const nonStandardPropertyKeywords_ = [
   'shape-inside',
   'zoom',
 ];
-const nonStandardPropertyKeywords = keySet(nonStandardPropertyKeywords_);
-const fontProperties_ = [
+var nonStandardPropertyKeywords = keySet(nonStandardPropertyKeywords_);
+
+var fontProperties_ = [
   'font-display',
   'font-family',
   'src',
@@ -1036,8 +1044,9 @@ const fontProperties_ = [
   'font-weight',
   'font-style',
 ];
-const fontProperties = keySet(fontProperties_);
-const counterDescriptors_ = [
+var fontProperties = keySet(fontProperties_);
+
+var counterDescriptors_ = [
   'additive-symbols',
   'fallback',
   'negative',
@@ -1049,8 +1058,9 @@ const counterDescriptors_ = [
   'symbols',
   'system',
 ];
-const counterDescriptors = keySet(counterDescriptors_);
-const colorKeywords_ = [
+var counterDescriptors = keySet(counterDescriptors_);
+
+var colorKeywords_ = [
   'aliceblue',
   'antiquewhite',
   'aqua',
@@ -1200,8 +1210,9 @@ const colorKeywords_ = [
   'yellow',
   'yellowgreen',
 ];
-const colorKeywords = keySet(colorKeywords_);
-const valueKeywords_ = [
+var colorKeywords = keySet(colorKeywords_);
+
+var valueKeywords_ = [
   'above',
   'absolute',
   'activeborder',
@@ -1722,8 +1733,9 @@ const valueKeywords_ = [
   'xx-large',
   'xx-small',
 ];
-const valueKeywords = keySet(valueKeywords_);
-const allWords = documentTypes_
+var valueKeywords = keySet(valueKeywords_);
+
+var allWords = documentTypes_
   .concat(mediaTypes_)
   .concat(mediaFeatures_)
   .concat(mediaValueKeywords_)
@@ -1763,8 +1775,8 @@ const defaults = {
 export const css = mkCSS({ name: 'css' });
 
 function tokenCComment(stream, state) {
-  let maybeEnd = false;
-  let ch;
+  var maybeEnd = false;
+  var ch;
   while ((ch = stream.next()) != null) {
     if (maybeEnd && ch == '/') {
       state.tokenize = null;

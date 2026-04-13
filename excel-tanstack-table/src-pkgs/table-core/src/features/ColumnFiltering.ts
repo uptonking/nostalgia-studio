@@ -303,8 +303,8 @@ export const ColumnFiltering: TableFeature = {
         : column.columnDef.filterFn === 'auto'
           ? column.getAutoFilterFn()
           : // @ts-ignore
-            table.options.filterFns?.[column.columnDef.filterFn as string] ??
-            filterFns[column.columnDef.filterFn as BuiltInFilterFn];
+            (table.options.filterFns?.[column.columnDef.filterFn as string] ??
+            filterFns[column.columnDef.filterFn as BuiltInFilterFn]);
     };
     column.getCanFilter = () => {
       return (
@@ -396,7 +396,7 @@ export const ColumnFiltering: TableFeature = {
 
     table.resetColumnFilters = (defaultState) => {
       table.setColumnFilters(
-        defaultState ? [] : table.initialState?.columnFilters ?? [],
+        defaultState ? [] : (table.initialState?.columnFilters ?? []),
       );
     };
 

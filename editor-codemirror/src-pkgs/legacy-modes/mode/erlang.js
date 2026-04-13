@@ -1,8 +1,9 @@
 /////////////////////////////////////////////////////////////////////////////
 // constants
 
-const typeWords = ['-type', '-spec', '-export_type', '-opaque'];
-const keywordWords = [
+var typeWords = ['-type', '-spec', '-export_type', '-opaque'];
+
+var keywordWords = [
   'after',
   'begin',
   'catch',
@@ -18,9 +19,11 @@ const keywordWords = [
   'try',
   'when',
 ];
-const separatorRE = /[\->,;]/;
-const separatorWords = ['->', ';', ','];
-const operatorAtomWords = [
+
+var separatorRE = /[\->,;]/;
+var separatorWords = ['->', ';', ','];
+
+var operatorAtomWords = [
   'and',
   'andalso',
   'band',
@@ -36,8 +39,9 @@ const operatorAtomWords = [
   'rem',
   'xor',
 ];
-const operatorSymbolRE = /[\+\-\*\/<>=\|:!]/;
-const operatorSymbolWords = [
+
+var operatorSymbolRE = /[\+\-\*\/<>=\|:!]/;
+var operatorSymbolWords = [
   '=',
   '+',
   '-',
@@ -55,11 +59,14 @@ const operatorSymbolWords = [
   '<-',
   '!',
 ];
-const openParenRE = /[<\(\[\{]/;
-const openParenWords = ['<<', '(', '[', '{'];
-const closeParenRE = /[>\)\]\}]/;
-const closeParenWords = ['}', ']', ')', '>>'];
-const guardWords = [
+
+var openParenRE = /[<\(\[\{]/;
+var openParenWords = ['<<', '(', '[', '{'];
+
+var closeParenRE = /[>\)\]\}]/;
+var closeParenWords = ['}', ']', ')', '>>'];
+
+var guardWords = [
   'is_atom',
   'is_binary',
   'is_bitstring',
@@ -88,7 +95,8 @@ const guardWords = [
   'reference',
   'tuple',
 ];
-const bifWords = [
+
+var bifWords = [
   'abs',
   'adler32',
   'adler32_combine',
@@ -197,10 +205,11 @@ const bifWords = [
   'unregister',
   'whereis',
 ];
+
 // upper case: [A-Z] [Ø-Þ] [À-Ö]
 // lower case: [a-z] [ß-ö] [ø-ÿ]
-const anumRE = /[\w@Ø-ÞÀ-Öß-öø-ÿ]/;
-const escapesRE =
+var anumRE = /[\w@Ø-ÞÀ-Öß-öø-ÿ]/;
+var escapesRE =
   /[0-7]{1,3}|[bdefnrstv\\"']|\^[a-zA-Z]|x[0-9a-zA-Z]{2}|x{[0-9a-zA-Z]+}/;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -233,7 +242,7 @@ function tokenizer(stream, state) {
     }
   }
 
-  const ch = stream.next();
+  var ch = stream.next();
 
   // comment
   if (ch == '%') {
@@ -308,7 +317,7 @@ function tokenizer(stream, state) {
       return rval(state, stream, 'fun'); // f/0 style fun
     }
 
-    const w = stream.current();
+    var w = stream.current();
 
     if (is_member(w, keywordWords)) {
       return rval(state, stream, 'keyword');
@@ -340,8 +349,8 @@ function tokenizer(stream, state) {
   }
 
   // number
-  const digitRE = /[0-9]/;
-  const radixRE = /[0-9a-zA-Z]/; // 36#zZ style int
+  var digitRE = /[0-9]/;
+  var radixRE = /[0-9a-zA-Z]/; // 36#zZ style int
   if (digitRE.test(ch)) {
     stream.eatWhile(digitRE);
     if (stream.eat('#')) {
@@ -437,7 +446,7 @@ function singleQuote(stream) {
 
 function quote(stream, quoteChar, escapeChar) {
   while (!stream.eol()) {
-    const ch = stream.next();
+    var ch = stream.next();
     if (ch == quoteChar) {
       return true;
     } else if (ch == escapeChar) {
@@ -448,7 +457,7 @@ function quote(stream, quoteChar, escapeChar) {
 }
 
 function lookahead(stream) {
-  const m = stream.match(/^\s*([^\s%])/, false);
+  var m = stream.match(/^\s*([^\s%])/, false);
   return m ? m[1] : '';
 }
 
@@ -525,8 +534,8 @@ function fakeToken(type) {
 }
 
 function peekToken(state, depth) {
-  const len = state.tokenStack.length;
-  const dep = depth ? depth : 1;
+  var len = state.tokenStack.length;
+  var dep = depth ? depth : 1;
 
   if (len < dep) {
     return false;
@@ -543,7 +552,7 @@ function pushToken(state, token) {
 }
 
 function maybe_drop_pre(s, token) {
-  const last = s.length - 1;
+  var last = s.length - 1;
 
   if (0 < last && s[last].type === 'record' && token.type === 'dot') {
     s.pop();
@@ -558,7 +567,7 @@ function maybe_drop_pre(s, token) {
 
 function maybe_drop_post(s) {
   if (!s.length) return s;
-  const last = s.length - 1;
+  var last = s.length - 1;
 
   if (s[last].type === 'dot') {
     return [];
@@ -614,11 +623,11 @@ function d(stack, tt) {
   //  in which case it will return an empty stack.
 
   for (var type in tt) {
-    const len = stack.length - 1;
-    const tokens = tt[type];
-    for (let i = len - 1; -1 < i; i--) {
+    var len = stack.length - 1;
+    var tokens = tt[type];
+    for (var i = len - 1; -1 < i; i--) {
       if (is_member(stack[i].token, tokens)) {
-        const ss = stack.slice(0, i);
+        var ss = stack.slice(0, i);
         switch (type) {
           case 'm':
             return ss.concat(stack[i]).concat(stack[len]);
@@ -643,10 +652,10 @@ function d(stack, tt) {
 // indenter
 
 function indenter(state, textAfter, cx) {
-  let t;
-  const wordAfter = wordafter(textAfter);
-  const currT = peekToken(state, 1);
-  const prevT = peekToken(state, 2);
+  var t;
+  var wordAfter = wordafter(textAfter);
+  var currT = peekToken(state, 1);
+  var prevT = peekToken(state, 2);
 
   if (state.in_string || state.in_atom) {
     return null;
@@ -687,26 +696,26 @@ function indenter(state, textAfter, cx) {
 }
 
 function wordafter(str) {
-  const m = str.match(/,|[a-z]+|\}|\]|\)|>>|\|+|\(/);
+  var m = str.match(/,|[a-z]+|\}|\]|\)|>>|\|+|\(/);
 
   return truthy(m) && m.index === 0 ? m[0] : '';
 }
 
 function postcommaToken(state) {
-  const objs = state.tokenStack.slice(0, -1);
-  const i = getTokenIndex(objs, 'type', ['open_paren']);
+  var objs = state.tokenStack.slice(0, -1);
+  var i = getTokenIndex(objs, 'type', ['open_paren']);
 
   return truthy(objs[i]) ? objs[i] : false;
 }
 
 function defaultToken(state) {
-  const objs = state.tokenStack;
-  const stop = getTokenIndex(objs, 'type', [
+  var objs = state.tokenStack;
+  var stop = getTokenIndex(objs, 'type', [
     'open_paren',
     'separator',
     'keyword',
   ]);
-  const oper = getTokenIndex(objs, 'type', ['operator']);
+  var oper = getTokenIndex(objs, 'type', ['operator']);
 
   if (truthy(stop) && truthy(oper) && stop < oper) {
     return objs[stop + 1];
@@ -718,14 +727,14 @@ function defaultToken(state) {
 }
 
 function getToken(state, tokens) {
-  const objs = state.tokenStack;
-  const i = getTokenIndex(objs, 'token', tokens);
+  var objs = state.tokenStack;
+  var i = getTokenIndex(objs, 'token', tokens);
 
   return truthy(objs[i]) ? objs[i] : false;
 }
 
 function getTokenIndex(objs, propname, propvals) {
-  for (let i = objs.length - 1; -1 < i; i--) {
+  for (var i = objs.length - 1; -1 < i; i--) {
     if (is_member(objs[i][propname], propvals)) {
       return i;
     }

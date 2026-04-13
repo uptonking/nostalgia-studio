@@ -3,14 +3,14 @@
 function kw(type) {
   return { type: type, style: 'keyword' };
 }
-const A = kw('keyword a');
-const B = kw('keyword b');
-const C = kw('keyword c');
-const operator = kw('operator');
-const atom = { type: 'atom', style: 'atom' };
-const attribute = { type: 'attribute', style: 'attribute' };
-let type = kw('typedef');
-const keywords = {
+var A = kw('keyword a');
+var B = kw('keyword b');
+var C = kw('keyword c');
+var operator = kw('operator');
+var atom = { type: 'atom', style: 'atom' };
+var attribute = { type: 'attribute', style: 'attribute' };
+var type = kw('typedef');
+var keywords = {
   if: A,
   while: A,
   else: B,
@@ -53,7 +53,8 @@ const keywords = {
   false: atom,
   null: atom,
 };
-const isOperatorChar = /[+\-*&%=<>!?|]/;
+
+var isOperatorChar = /[+\-*&%=<>!?|]/;
 
 function chain(stream, state, f) {
   state.tokenize = f;
@@ -61,8 +62,8 @@ function chain(stream, state, f) {
 }
 
 function toUnescaped(stream, end) {
-  let escaped = false;
-  let next;
+  var escaped = false;
+  var next;
   while ((next = stream.next()) != null) {
     if (next == end && !escaped) return true;
     escaped = !escaped && next == '\\';
@@ -80,7 +81,7 @@ function ret(tp, style, cont) {
 }
 
 function haxeTokenBase(stream, state) {
-  const ch = stream.next();
+  var ch = stream.next();
   if (ch == '"' || ch == "'") {
     return chain(stream, state, haxeTokenString(ch));
   } else if (/[\[\]{}\(\),;\:\.]/.test(ch)) {
@@ -140,8 +141,8 @@ function haxeTokenString(quote) {
 }
 
 function haxeTokenComment(stream, state) {
-  let maybeEnd = false;
-  let ch;
+  var maybeEnd = false;
+  var ch;
   while ((ch = stream.next())) {
     if (ch == '/' && maybeEnd) {
       state.tokenize = haxeTokenBase;
@@ -154,7 +155,7 @@ function haxeTokenComment(stream, state) {
 
 // Parser
 
-const atomicTypes = {
+var atomicTypes = {
   atom: true,
   number: true,
   variable: true,
@@ -172,12 +173,12 @@ function HaxeLexical(indented, column, type, align, prev, info) {
 }
 
 function inScope(state, varname) {
-  for (let v = state.localVars; v; v = v.next)
+  for (var v = state.localVars; v; v = v.next)
     if (v.name == varname) return true;
 }
 
 function parseHaxe(state, style, type, content, stream) {
-  const cc = state.cc;
+  var cc = state.cc;
   // Communicate our context to the combinators.
   // (Less wasteful than consing up a hundred closures on every call.)
   cx.state = state;
@@ -187,7 +188,7 @@ function parseHaxe(state, style, type, content, stream) {
   if (!state.lexical.hasOwnProperty('align')) state.lexical.align = true;
 
   while (true) {
-    const combinator = cc.length ? cc.pop() : statement;
+    var combinator = cc.length ? cc.pop() : statement;
     if (combinator(type, content)) {
       while (cc.length && cc[cc.length - 1].lex) cc.pop()();
       if (cx.marked) return cx.marked;
@@ -202,14 +203,14 @@ function parseHaxe(state, style, type, content, stream) {
 
 function imported(state, typename) {
   if (/[a-z]/.test(typename.charAt(0))) return false;
-  const len = state.importedtypes.length;
-  for (let i = 0; i < len; i++)
+  var len = state.importedtypes.length;
+  for (var i = 0; i < len; i++)
     if (state.importedtypes[i] == typename) return true;
 }
 
 function registerimport(importname) {
-  const state = cx.state;
-  for (let t = state.importedtypes; t; t = t.next)
+  var state = cx.state;
+  for (var t = state.importedtypes; t; t = t.next)
     if (t.name == importname) return;
   state.importedtypes = { name: importname, next: state.importedtypes };
 }
@@ -217,18 +218,18 @@ function registerimport(importname) {
 
 var cx = { state: null, column: null, marked: null, cc: null };
 function pass() {
-  for (let i = arguments.length - 1; i >= 0; i--) cx.cc.push(arguments[i]);
+  for (var i = arguments.length - 1; i >= 0; i--) cx.cc.push(arguments[i]);
 }
 function cont() {
   pass.apply(null, arguments);
   return true;
 }
 function inList(name, list) {
-  for (let v = list; v; v = v.next) if (v.name == name) return true;
+  for (var v = list; v; v = v.next) if (v.name == name) return true;
   return false;
 }
 function register(varname) {
-  const state = cx.state;
+  var state = cx.state;
   if (state.context) {
     cx.marked = 'def';
     if (inList(varname, state.localVars)) return;
@@ -241,7 +242,7 @@ function register(varname) {
 
 // Combinators
 
-const defaultVars = { name: 'this', next: null };
+var defaultVars = { name: 'this', next: null };
 function pushcontext() {
   if (!cx.state.context) cx.state.localVars = defaultVars;
   cx.state.context = { prev: cx.state.context, vars: cx.state.localVars };
@@ -252,8 +253,8 @@ function popcontext() {
 }
 popcontext.lex = true;
 function pushlex(type, info) {
-  const result = function () {
-    const state = cx.state;
+  var result = function () {
+    var state = cx.state;
     state.lexical = new HaxeLexical(
       state.indented,
       cx.stream.column(),
@@ -267,7 +268,7 @@ function pushlex(type, info) {
   return result;
 }
 function poplex() {
-  const state = cx.state;
+  var state = cx.state;
   if (state.lexical.prev) {
     if (state.lexical.type == ')') state.indented = state.lexical.indented;
     state.lexical = state.lexical.prev;
@@ -505,7 +506,7 @@ function funarg(type, value) {
 export const haxe = {
   name: 'haxe',
   startState: function (indentUnit) {
-    const defaulttypes = [
+    var defaulttypes = [
       'Int',
       'Float',
       'String',
@@ -515,7 +516,7 @@ export const haxe = {
       'Dynamic',
       'Array',
     ];
-    const state = {
+    var state = {
       tokenize: haxeTokenBase,
       reAllowed: true,
       kwAllowed: true,
@@ -534,10 +535,12 @@ export const haxe = {
       state.indented = stream.indentation();
     }
     if (stream.eatSpace()) return null;
-    const style = state.tokenize(stream, state);
+    var style = state.tokenize(stream, state);
     if (type == 'comment') return style;
-    state.reAllowed = Boolean(
-      type == 'operator' || type == 'keyword c' || type.match(/^[\[{}\(,;:]$/),
+    state.reAllowed = !!(
+      type == 'operator' ||
+      type == 'keyword c' ||
+      type.match(/^[\[{}\(,;:]$/)
     );
     state.kwAllowed = type != '.';
     return parseHaxe(state, style, type, content, stream);
@@ -545,11 +548,11 @@ export const haxe = {
 
   indent: function (state, textAfter, cx) {
     if (state.tokenize != haxeTokenBase) return 0;
-    const firstChar = textAfter && textAfter.charAt(0);
-    let lexical = state.lexical;
+    var firstChar = textAfter && textAfter.charAt(0);
+    var lexical = state.lexical;
     if (lexical.type == 'stat' && firstChar == '}') lexical = lexical.prev;
-    const type = lexical.type;
-    const closing = firstChar == type;
+    var type = lexical.type;
+    var closing = firstChar == type;
     if (type == 'vardef') return lexical.indented + 4;
     else if (type == 'form' && firstChar == '{') return lexical.indented;
     else if (type == 'stat' || type == 'form')
@@ -587,7 +590,7 @@ export const hxml = {
       return 'comment';
     }
     if (sol && ch == '-') {
-      let style = 'variable-2';
+      var style = 'variable-2';
 
       stream.eat(/-/);
 

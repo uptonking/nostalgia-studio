@@ -26,9 +26,9 @@ function surrogateHigh(ch: number) {
 /// [`codePointAt`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/codePointAt)
 /// string method).
 export function codePointAt(str: string, pos: number) {
-  const code0 = str.charCodeAt(pos);
+  let code0 = str.charCodeAt(pos);
   if (!surrogateHigh(code0) || pos + 1 == str.length) return code0;
-  const code1 = str.charCodeAt(pos + 1);
+  let code1 = str.charCodeAt(pos + 1);
   if (!surrogateLow(code1)) return code0;
   return ((code0 - 0xd800) << 10) + (code1 - 0xdc00) + 0x10000;
 }

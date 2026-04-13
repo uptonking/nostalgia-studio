@@ -1,15 +1,16 @@
-const ERRORCLASS = 'error';
+var ERRORCLASS = 'error';
 
 function wordRegexp(words) {
   return new RegExp('^((' + words.join(')|(') + '))\\b');
 }
 
-const operators =
+var operators =
   /^(?:->|=>|\+[+=]?|-[\-=]?|\*[\*=]?|\/[\/=]?|[=!]=|<[><]?=?|>>?=?|%=?|&=?|\|=?|\^=?|\~|!|\?|(or|and|\|\||&&|\?)=)/;
-const delimiters = /^(?:[()\[\]{},:`=;]|\.\.?\.?)/;
-const identifiers = /^[_A-Za-z$][_A-Za-z$0-9]*/;
-const atProp = /^@[_A-Za-z$][_A-Za-z$0-9]*/;
-const wordOperators = wordRegexp([
+var delimiters = /^(?:[()\[\]{},:`=;]|\.\.?\.?)/;
+var identifiers = /^[_A-Za-z$][_A-Za-z$0-9]*/;
+var atProp = /^@[_A-Za-z$][_A-Za-z$0-9]*/;
+
+var wordOperators = wordRegexp([
   'and',
   'or',
   'not',
@@ -19,7 +20,7 @@ const wordOperators = wordRegexp([
   'instanceof',
   'typeof',
 ]);
-let indentKeywords = [
+var indentKeywords = [
   'for',
   'while',
   'loop',
@@ -32,7 +33,7 @@ let indentKeywords = [
   'finally',
   'class',
 ];
-const commonKeywords = [
+var commonKeywords = [
   'break',
   'by',
   'continue',
@@ -51,13 +52,14 @@ const commonKeywords = [
   'until',
   'extends',
 ];
-const keywords = wordRegexp(indentKeywords.concat(commonKeywords));
+
+var keywords = wordRegexp(indentKeywords.concat(commonKeywords));
 
 indentKeywords = wordRegexp(indentKeywords);
 
-const stringPrefixes = /^('{3}|\"{3}|['\"])/;
-const regexPrefixes = /^(\/{3}|\/)/;
-const commonConstants = [
+var stringPrefixes = /^('{3}|\"{3}|['\"])/;
+var regexPrefixes = /^(\/{3}|\/)/;
+var commonConstants = [
   'Infinity',
   'NaN',
   'undefined',
@@ -69,16 +71,16 @@ const commonConstants = [
   'yes',
   'no',
 ];
-const constants = wordRegexp(commonConstants);
+var constants = wordRegexp(commonConstants);
 
 // Tokenizers
 function tokenBase(stream, state) {
   // Handle scope changes
   if (stream.sol()) {
     if (state.scope.align === null) state.scope.align = false;
-    const scopeOffset = state.scope.offset;
+    var scopeOffset = state.scope.offset;
     if (stream.eatSpace()) {
-      const lineOffset = stream.indentation();
+      var lineOffset = stream.indentation();
       if (lineOffset > scopeOffset && state.scope.type == 'coffee') {
         return 'indent';
       } else if (lineOffset < scopeOffset) {
@@ -95,7 +97,7 @@ function tokenBase(stream, state) {
     return null;
   }
 
-  const ch = stream.peek();
+  var ch = stream.peek();
 
   // Handle docco title comment (single line)
   if (stream.match('####')) {
@@ -117,7 +119,7 @@ function tokenBase(stream, state) {
 
   // Handle number literals
   if (stream.match(/^-?[0-9\.]/, false)) {
-    let floatLiteral = false;
+    var floatLiteral = false;
     // Floats
     if (stream.match(/^-?\d*\.\d+(e[\+\-]?\d+)?/i)) {
       floatLiteral = true;
@@ -137,7 +139,7 @@ function tokenBase(stream, state) {
       return 'number';
     }
     // Integers
-    let intLiteral = false;
+    var intLiteral = false;
     // Hex
     if (stream.match(/^-?0x[0-9a-f]+/i)) {
       intLiteral = true;
@@ -236,10 +238,10 @@ function longComment(stream, state) {
 }
 
 function indent(stream, state, type = 'coffee') {
-  let offset = 0;
-  let align = false;
-  let alignOffset = null;
-  for (let scope = state.scope; scope; scope = scope.prev) {
+  var offset = 0;
+  var align = false;
+  var alignOffset = null;
+  for (var scope = state.scope; scope; scope = scope.prev) {
     if (scope.type === 'coffee' || scope.type == '}') {
       offset = scope.offset + stream.indentUnit;
       break;
@@ -263,9 +265,9 @@ function indent(stream, state, type = 'coffee') {
 function dedent(stream, state) {
   if (!state.scope.prev) return;
   if (state.scope.type === 'coffee') {
-    const _indent = stream.indentation();
-    let matched = false;
-    for (let scope = state.scope; scope; scope = scope.prev) {
+    var _indent = stream.indentation();
+    var matched = false;
+    for (var scope = state.scope; scope; scope = scope.prev) {
       if (_indent === scope.offset) {
         matched = true;
         break;
@@ -285,8 +287,8 @@ function dedent(stream, state) {
 }
 
 function tokenLexer(stream, state) {
-  const style = state.tokenize(stream, state);
-  const current = stream.current();
+  var style = state.tokenize(stream, state);
+  var current = stream.current();
 
   // Handle scope changes.
   if (current === 'return') {
@@ -298,7 +300,7 @@ function tokenLexer(stream, state) {
   ) {
     indent(stream, state);
   }
-  let delimiter_index = '[({'.indexOf(current);
+  var delimiter_index = '[({'.indexOf(current);
   if (delimiter_index !== -1) {
     indent(stream, state, '])}'.slice(delimiter_index, delimiter_index + 1));
   }
@@ -341,10 +343,10 @@ export const coffeeScript = {
   },
 
   token: function (stream, state) {
-    const fillAlign = state.scope.align === null && state.scope;
+    var fillAlign = state.scope.align === null && state.scope;
     if (fillAlign && stream.sol()) fillAlign.align = false;
 
-    const style = tokenLexer(stream, state);
+    var style = tokenLexer(stream, state);
     if (style && style != 'comment') {
       if (fillAlign) fillAlign.align = true;
       state.prop = style == 'punctuation' && stream.current() == '.';
@@ -355,10 +357,10 @@ export const coffeeScript = {
 
   indent: function (state, text) {
     if (state.tokenize != tokenBase) return 0;
-    let scope = state.scope;
-    const closer = text && '])}'.indexOf(text.charAt(0)) > -1;
+    var scope = state.scope;
+    var closer = text && '])}'.indexOf(text.charAt(0)) > -1;
     if (closer) while (scope.type == 'coffee' && scope.prev) scope = scope.prev;
-    const closes = closer && scope.type === text.charAt(0);
+    var closes = closer && scope.type === text.charAt(0);
     if (scope.align) return scope.alignOffset - (closes ? 1 : 0);
     else return (closes ? scope.prev : scope).offset;
   },

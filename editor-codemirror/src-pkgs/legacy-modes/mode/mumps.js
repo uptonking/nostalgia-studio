@@ -2,14 +2,12 @@ function wordRegexp(words) {
   return new RegExp('^((' + words.join(')|(') + '))\\b', 'i');
 }
 
-const singleOperators = new RegExp("^[\\+\\-\\*/&#!_?\\\\<>=\\'\\[\\]]");
-const doubleOperators = new RegExp(
-  "^(('=)|(<=)|(>=)|('>)|('<)|([[)|(]])|(^$))",
-);
-const singleDelimiters = new RegExp('^[\\.,:]');
-const brackets = new RegExp('[()]');
-const identifiers = new RegExp('^[%A-Za-z][A-Za-z0-9]*');
-const commandKeywords = [
+var singleOperators = new RegExp("^[\\+\\-\\*/&#!_?\\\\<>=\\'\\[\\]]");
+var doubleOperators = new RegExp("^(('=)|(<=)|(>=)|('>)|('<)|([[)|(]])|(^$))");
+var singleDelimiters = new RegExp('^[\\.,:]');
+var brackets = new RegExp('[()]');
+var identifiers = new RegExp('^[%A-Za-z][A-Za-z0-9]*');
+var commandKeywords = [
   'break',
   'close',
   'do',
@@ -61,7 +59,7 @@ const commandKeywords = [
   'x',
 ];
 // The following list includes intrinsic functions _and_ special variables
-const intrinsicFuncsWords = [
+var intrinsicFuncsWords = [
   '\\$ascii',
   '\\$char',
   '\\$data',
@@ -126,8 +124,8 @@ const intrinsicFuncsWords = [
   '\\$v',
   '\\$z',
 ];
-const intrinsicFuncs = wordRegexp(intrinsicFuncsWords);
-const command = wordRegexp(commandKeywords);
+var intrinsicFuncs = wordRegexp(intrinsicFuncsWords);
+var command = wordRegexp(commandKeywords);
 
 function tokenBase(stream, state) {
   if (stream.sol()) {
@@ -141,7 +139,7 @@ function tokenBase(stream, state) {
 
   // Examine each character and update a mode variable whose interpretation is:
   //   >0 => command    0 => argument    <0 => command post-conditional
-  const ch = stream.peek();
+  var ch = stream.peek();
 
   if (ch == ' ' || ch == '\t') {
     // Pre-process <space>
@@ -229,7 +227,7 @@ export const mumps = {
   },
 
   token: function (stream, state) {
-    const style = tokenBase(stream, state);
+    var style = tokenBase(stream, state);
     if (state.label) return 'tag';
     return style;
   },

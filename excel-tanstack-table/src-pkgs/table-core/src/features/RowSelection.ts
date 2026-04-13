@@ -226,7 +226,7 @@ export const RowSelection: TableFeature = {
       table.options.onRowSelectionChange?.(updater);
     table.resetRowSelection = (defaultState) =>
       table.setRowSelection(
-        defaultState ? {} : table.initialState.rowSelection ?? {},
+        defaultState ? {} : (table.initialState.rowSelection ?? {}),
       );
     table.toggleAllRowsSelected = (value) => {
       table.setRowSelection((old) => {

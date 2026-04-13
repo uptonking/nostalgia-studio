@@ -523,15 +523,15 @@ export const ColumnSizing: TableFeature = {
       table.options.onColumnSizingInfoChange?.(updater);
     table.resetColumnSizing = (defaultState) => {
       table.setColumnSizing(
-        defaultState ? {} : table.initialState.columnSizing ?? {},
+        defaultState ? {} : (table.initialState.columnSizing ?? {}),
       );
     };
     table.resetHeaderSizeInfo = (defaultState) => {
       table.setColumnSizingInfo(
         defaultState
           ? getDefaultColumnSizingInfoState()
-          : table.initialState.columnSizingInfo ??
-              getDefaultColumnSizingInfoState(),
+          : (table.initialState.columnSizingInfo ??
+              getDefaultColumnSizingInfoState()),
       );
     };
     table.getTotalSize = () =>

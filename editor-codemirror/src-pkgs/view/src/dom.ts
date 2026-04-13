@@ -1,3 +1,5 @@
+import browser from './browser';
+
 export function getSelection(root: DocumentOrShadowRoot): Selection | null {
   let target;
   // Browsers differ on whether shadow roots have a getSelection
@@ -58,7 +60,7 @@ export function isEquivalentPosition(
 }
 
 export function domIndex(node: Node): number {
-  for (let index = 0; ; index++) {
+  for (var index = 0; ; index++) {
     node = node.previousSibling!;
     if (!node) return index;
   }
@@ -82,7 +84,7 @@ function scanFor(
     if (node == targetNode && off == targetOff) return true;
     if (off == (dir < 0 ? 0 : maxOffset(node))) {
       if (node.nodeName == 'DIV') return false;
-      const parent = node.parentNode;
+      let parent = node.parentNode;
       if (!parent || parent.nodeType != 1) return false;
       off = domIndex(node) + (dir < 0 ? 0 : 1);
       node = parent;
@@ -113,12 +115,12 @@ export interface Rect {
 }
 
 export function flattenRect(rect: Rect, left: boolean) {
-  const x = left ? rect.left : rect.right;
+  let x = left ? rect.left : rect.right;
   return { left: x, right: x, top: rect.top, bottom: rect.bottom };
 }
 
 function windowRect(win: Window): Rect {
-  const vp = win.visualViewport;
+  let vp = win.visualViewport;
   if (vp)
     return {
       left: 0,
@@ -159,14 +161,14 @@ export function scrollRectIntoView(
   yMargin: number,
   ltr: boolean,
 ) {
-  const doc = dom.ownerDocument!;
-  const win = doc.defaultView || window;
+  let doc = dom.ownerDocument!;
+  let win = doc.defaultView || window;
 
   for (let cur: any = dom, stop = false; cur && !stop; ) {
     if (cur.nodeType == 1) {
       // Element
       let bounding: Rect;
-      const top = cur == doc.body;
+      let top = cur == doc.body;
       let scaleX = 1;
       let scaleY = 1;
       if (top) {
@@ -181,7 +183,7 @@ export function scrollRectIntoView(
           cur = cur.assignedSlot || cur.parentNode;
           continue;
         }
-        const rect = cur.getBoundingClientRect();
+        let rect = cur.getBoundingClientRect();
         ({ scaleX, scaleY } = getScale(cur, rect));
         // Make sure scrollbar width isn't included in the rectangle
         bounding = {
@@ -195,19 +197,19 @@ export function scrollRectIntoView(
       let moveX = 0;
       let moveY = 0;
       if (y == 'nearest') {
-        if (rect.top < bounding.top) {
+        if (rect.top < bounding.top + yMargin) {
           moveY = rect.top - (bounding.top + yMargin);
           if (side > 0 && rect.bottom > bounding.bottom + moveY)
             moveY = rect.bottom - bounding.bottom + yMargin;
-        } else if (rect.bottom > bounding.bottom) {
+        } else if (rect.bottom > bounding.bottom - yMargin) {
           moveY = rect.bottom - bounding.bottom + yMargin;
           if (side < 0 && rect.top - moveY < bounding.top)
             moveY = rect.top - (bounding.top + yMargin);
         }
       } else {
-        const rectHeight = rect.bottom - rect.top;
-        const boundingHeight = bounding.bottom - bounding.top;
-        const targetTop =
+        let rectHeight = rect.bottom - rect.top;
+        let boundingHeight = bounding.bottom - bounding.top;
+        let targetTop =
           y == 'center' && rectHeight <= boundingHeight
             ? rect.top + rectHeight / 2 - boundingHeight / 2
             : y == 'start' || (y == 'center' && side < 0)
@@ -216,17 +218,17 @@ export function scrollRectIntoView(
         moveY = targetTop - bounding.top;
       }
       if (x == 'nearest') {
-        if (rect.left < bounding.left) {
+        if (rect.left < bounding.left + xMargin) {
           moveX = rect.left - (bounding.left + xMargin);
           if (side > 0 && rect.right > bounding.right + moveX)
             moveX = rect.right - bounding.right + xMargin;
-        } else if (rect.right > bounding.right) {
+        } else if (rect.right > bounding.right - xMargin) {
           moveX = rect.right - bounding.right + xMargin;
           if (side < 0 && rect.left < bounding.left + moveX)
             moveX = rect.left - (bounding.left + xMargin);
         }
       } else {
-        const targetLeft =
+        let targetLeft =
           x == 'center'
             ? rect.left +
               (rect.right - rect.left) / 2 -
@@ -243,12 +245,12 @@ export function scrollRectIntoView(
           let movedX = 0;
           let movedY = 0;
           if (moveY) {
-            const start = cur.scrollTop;
+            let start = cur.scrollTop;
             cur.scrollTop += moveY / scaleY;
             movedY = (cur.scrollTop - start) * scaleY;
           }
           if (moveX) {
-            const start = cur.scrollLeft;
+            let start = cur.scrollLeft;
             cur.scrollLeft += moveX / scaleX;
             movedX = (cur.scrollLeft - start) * scaleX;
           }
@@ -285,16 +287,16 @@ export function scrollRectIntoView(
   }
 }
 
-export function scrollableParents(dom: HTMLElement) {
-  const doc = dom.ownerDocument;
-  let x: HTMLElement | undefined;
-  let y: HTMLElement | undefined;
+export function scrollableParents(dom: HTMLElement, getX = true) {
+  let doc = dom.ownerDocument;
+  let x: HTMLElement | null = null;
+  let y: HTMLElement | null = null;
   for (let cur = dom.parentNode as HTMLElement | null; cur; ) {
-    if (cur == doc.body || (x && y)) {
+    if (cur == doc.body || ((!getX || x) && y)) {
       break;
     } else if (cur.nodeType == 1) {
       if (!y && cur.scrollHeight > cur.clientHeight) y = cur;
-      if (!x && cur.scrollWidth > cur.clientWidth) x = cur;
+      if (getX && !x && cur.scrollWidth > cur.clientWidth) x = cur;
       cur = cur.assignedSlot || (cur.parentNode as HTMLElement | null);
     } else if (cur.nodeType == 11) {
       cur = (cur as any).host;
@@ -328,7 +330,7 @@ export class DOMSelectionState implements SelectionRange {
   }
 
   setRange(range: SelectionRange) {
-    const { anchorNode, focusNode } = range;
+    let { anchorNode, focusNode } = range;
     // Clip offsets to node size to avoid crashes when Safari reports bogus offsets (#1152)
     this.set(
       anchorNode,
@@ -352,13 +354,16 @@ export class DOMSelectionState implements SelectionRange {
 }
 
 let preventScrollSupported: null | false | { preventScroll: boolean } = null;
+// Safari 26 breaks preventScroll support
+if (browser.safari && browser.safari_version >= 26)
+  preventScrollSupported = false;
 // Feature-detects support for .focus({preventScroll: true}), and uses
 // a fallback kludge when not supported.
 export function focusPreventScroll(dom: HTMLElement) {
   if ((dom as any).setActive) return (dom as any).setActive(); // in IE
   if (preventScrollSupported) return dom.focus(preventScrollSupported);
 
-  const stack = [];
+  let stack = [];
   for (let cur: Node | null = dom; cur; cur = cur.parentNode) {
     stack.push(cur, (cur as any).scrollTop, (cur as any).scrollLeft);
     if (cur == cur.ownerDocument) break;
@@ -376,9 +381,9 @@ export function focusPreventScroll(dom: HTMLElement) {
   if (!preventScrollSupported) {
     preventScrollSupported = false;
     for (let i = 0; i < stack.length; ) {
-      const elt = stack[i++] as HTMLElement;
-      const top = stack[i++] as number;
-      const left = stack[i++] as number;
+      let elt = stack[i++] as HTMLElement;
+      let top = stack[i++] as number;
+      let left = stack[i++] as number;
       if (elt.scrollTop != top) elt.scrollTop = top;
       if (elt.scrollLeft != left) elt.scrollLeft = left;
     }
@@ -388,7 +393,7 @@ export function focusPreventScroll(dom: HTMLElement) {
 let scratchRange: Range | null;
 
 export function textRange(node: Text, from: number, to = from) {
-  const range = scratchRange || (scratchRange = document.createRange());
+  let range = scratchRange || (scratchRange = document.createRange());
   range.setEnd(node, to);
   range.setStart(node, from);
   return range;
@@ -400,7 +405,7 @@ export function dispatchKey(
   code: number,
   mods?: KeyboardEvent,
 ): boolean {
-  const options: KeyboardEventInit = {
+  let options: KeyboardEventInit = {
     key: name,
     code: name,
     keyCode: code,
@@ -414,10 +419,10 @@ export function dispatchKey(
       shiftKey: options.shiftKey,
       metaKey: options.metaKey,
     } = mods);
-  const down = new KeyboardEvent('keydown', options);
+  let down = new KeyboardEvent('keydown', options);
   (down as any).synthetic = true;
   elt.dispatchEvent(down);
-  const up = new KeyboardEvent('keyup', options);
+  let up = new KeyboardEvent('keyup', options);
   (up as any).synthetic = true;
   elt.dispatchEvent(up);
   return down.defaultPrevented || up.defaultPrevented;
@@ -451,7 +456,7 @@ export function atElementStart(doc: HTMLElement, selection: SelectionRange) {
   for (;;) {
     if (offset) {
       if (node.nodeType != 1) return false;
-      const prev: Node = node.childNodes[offset - 1];
+      let prev: Node = node.childNodes[offset - 1];
       if ((prev as HTMLElement).contentEditable == 'false') offset--;
       else {
         node = prev;
@@ -466,7 +471,15 @@ export function atElementStart(doc: HTMLElement, selection: SelectionRange) {
   }
 }
 
-export function isScrolledToBottom(elt: HTMLElement) {
+export function isScrolledToBottom(elt: HTMLElement | Window) {
+  if (elt instanceof Window)
+    return (
+      elt.pageYOffset >
+      Math.max(
+        0,
+        elt.document.documentElement.scrollHeight - elt.innerHeight - 4,
+      )
+    );
   return elt.scrollTop > Math.max(1, elt.scrollHeight - elt.clientHeight - 4);
 }
 
@@ -507,5 +520,20 @@ export function textNodeAfter(
     } else {
       return null;
     }
+  }
+}
+
+export class DOMPos {
+  constructor(
+    readonly node: Node,
+    readonly offset: number,
+    readonly precise = true,
+  ) {}
+
+  static before(dom: Node, precise?: boolean) {
+    return new DOMPos(dom.parentNode!, domIndex(dom), precise);
+  }
+  static after(dom: Node, precise?: boolean) {
+    return new DOMPos(dom.parentNode!, domIndex(dom) + 1, precise);
   }
 }

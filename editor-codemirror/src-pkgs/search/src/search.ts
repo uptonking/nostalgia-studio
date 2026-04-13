@@ -1,15 +1,15 @@
 import {
   EditorView,
   ViewPlugin,
-  type ViewUpdate,
-  type Command,
+  ViewUpdate,
+  Command,
   Decoration,
-  type DecorationSet,
+  DecorationSet,
   runScopeHandlers,
-  type KeyBinding,
-  type PanelConstructor,
+  KeyBinding,
+  PanelConstructor,
   showPanel,
-  type Panel,
+  Panel,
   getPanel,
 } from '@codemirror/view';
 import {
@@ -17,13 +17,13 @@ import {
   StateField,
   StateEffect,
   EditorSelection,
-  type SelectionRange,
-  type StateCommand,
+  SelectionRange,
+  StateCommand,
   Prec,
   Facet,
-  type Extension,
+  Extension,
   RangeSetBuilder,
-  type Text,
+  Text,
   CharCategory,
   findClusterBreak,
   combineConfig,
@@ -137,6 +137,11 @@ export class SearchQuery {
   /// @internal
   readonly unquoted: string;
 
+  /// Optional test function used to filter matches.
+  readonly test:
+    | ((match: string, state: EditorState, from: number, to: number) => boolean)
+    | undefined;
+
   /// Create a query object.
   constructor(config: {
     /// The search string.
@@ -153,16 +158,26 @@ export class SearchQuery {
     replace?: string;
     /// Enable whole-word matching.
     wholeWord?: boolean;
+
+    /// Optional custom filter. It is passed the matched string, the
+    /// editor state, and the match range. Matches for which it
+    /// returns false will be ignored.
+    test?: (
+      match: string,
+      state: EditorState,
+      from: number,
+      to: number,
+    ) => boolean;
   }) {
     this.search = config.search;
-    this.caseSensitive = Boolean(config.caseSensitive);
-    this.literal = Boolean(config.literal);
-    this.regexp = Boolean(config.regexp);
+    this.caseSensitive = !!config.caseSensitive;
+    this.literal = !!config.literal;
+    this.regexp = !!config.regexp;
     this.replace = config.replace || '';
-    this.valid =
-      Boolean(this.search) && (!this.regexp || validRegExp(this.search));
+    this.valid = !!this.search && (!this.regexp || validRegExp(this.search));
     this.unquoted = this.unquote(this.search);
-    this.wholeWord = Boolean(config.wholeWord);
+    this.wholeWord = !!config.wholeWord;
+    this.test = config.test;
   }
 
   /// @internal
@@ -181,7 +196,8 @@ export class SearchQuery {
       this.replace == other.replace &&
       this.caseSensitive == other.caseSensitive &&
       this.regexp == other.regexp &&
-      this.wholeWord == other.wholeWord
+      this.wholeWord == other.wholeWord &&
+      this.test == other.test
     );
   }
 
@@ -197,7 +213,7 @@ export class SearchQuery {
     from: number = 0,
     to?: number,
   ): Iterator<{ from: number; to: number }> {
-    const st = (state as any).doc
+    let st = (state as any).doc
       ? (state as EditorState)
       : EditorState.create({ doc: state as Text });
     if (to == null) to = st.doc.length;
@@ -243,24 +259,50 @@ const enum FindPrev {
   ChunkSize = 10000,
 }
 
+function wrapStringTest(
+  test: (
+    match: string,
+    state: EditorState,
+    from: number,
+    to: number,
+  ) => boolean,
+  state: EditorState,
+  inner:
+    | ((from: number, to: number, buffer: string, bufferPos: number) => boolean)
+    | undefined,
+) {
+  return (from: number, to: number, buffer: string, bufferPos: number) => {
+    if (inner && !inner(from, to, buffer, bufferPos)) return false;
+    let match =
+      from >= bufferPos && to <= bufferPos + buffer.length
+        ? buffer.slice(from - bufferPos, to - bufferPos)
+        : state.doc.sliceString(from, to);
+    return test(match, state, from, to);
+  };
+}
+
 function stringCursor(
   spec: SearchQuery,
   state: EditorState,
   from: number,
   to: number,
 ) {
+  let test:
+    | ((from: number, to: number, buffer: string, bufferPos: number) => boolean)
+    | undefined;
+  if (spec.wholeWord)
+    test = stringWordTest(
+      state.doc,
+      state.charCategorizer(state.selection.main.head),
+    );
+  if (spec.test) test = wrapStringTest(spec.test, state, test);
   return new SearchCursor(
     state.doc,
     spec.unquoted,
     from,
     to,
     spec.caseSensitive ? undefined : (x) => x.toLowerCase(),
-    spec.wholeWord
-      ? stringWordTest(
-          state.doc,
-          state.charCategorizer(state.selection.main.head),
-        )
-      : undefined,
+    test,
   );
 }
 
@@ -292,10 +334,7 @@ class StringQuery extends QueryType<SearchResult> {
       state.doc.length,
     ).nextOverlapping();
     if (cursor.done) {
-      const end = Math.min(
-        state.doc.length,
-        curFrom + this.spec.unquoted.length,
-      );
+      let end = Math.min(state.doc.length, curFrom + this.spec.unquoted.length);
       cursor = stringCursor(this.spec, state, 0, end).nextOverlapping();
     }
     return cursor.done ||
@@ -308,11 +347,11 @@ class StringQuery extends QueryType<SearchResult> {
   // cursor, done by scanning chunk after chunk forward.
   private prevMatchInRange(state: EditorState, from: number, to: number) {
     for (let pos = to; ; ) {
-      const start = Math.max(
+      let start = Math.max(
         from,
         pos - FindPrev.ChunkSize - this.spec.unquoted.length,
       );
-      const cursor = stringCursor(this.spec, state, start, pos);
+      let cursor = stringCursor(this.spec, state, start, pos);
       let range: SearchResult | null = null;
       while (!cursor.nextOverlapping().done) range = cursor.value;
       if (range) return range;
@@ -337,8 +376,8 @@ class StringQuery extends QueryType<SearchResult> {
   }
 
   matchAll(state: EditorState, limit: number) {
-    const cursor = stringCursor(this.spec, state, 0, state.doc.length);
-    const ranges = [];
+    let cursor = stringCursor(this.spec, state, 0, state.doc.length);
+    let ranges = [];
     while (!cursor.next().done) {
       if (ranges.length >= limit) return null;
       ranges.push(cursor.value);
@@ -352,7 +391,7 @@ class StringQuery extends QueryType<SearchResult> {
     to: number,
     add: (from: number, to: number) => void,
   ) {
-    const cursor = stringCursor(
+    let cursor = stringCursor(
       this.spec,
       state,
       Math.max(0, from - this.spec.unquoted.length),
@@ -368,21 +407,41 @@ const enum RegExp {
 
 type RegExpResult = typeof RegExpCursor.prototype.value;
 
+function wrapRegexpTest(
+  test: (
+    match: string,
+    state: EditorState,
+    from: number,
+    to: number,
+  ) => boolean,
+  state: EditorState,
+  inner:
+    | ((from: number, to: number, match: RegExpExecArray) => boolean)
+    | undefined,
+) {
+  return (from: number, to: number, match: RegExpExecArray) => {
+    return (
+      (!inner || inner(from, to, match)) && test(match[0], state, from, to)
+    );
+  };
+}
+
 function regexpCursor(
   spec: SearchQuery,
   state: EditorState,
   from: number,
   to: number,
 ) {
+  let test:
+    | ((from: number, to: number, match: RegExpExecArray) => boolean)
+    | undefined;
+  if (spec.wholeWord)
+    test = regexpWordTest(state.charCategorizer(state.selection.main.head));
+  if (spec.test) test = wrapRegexpTest(spec.test, state, test);
   return new RegExpCursor(
     state.doc,
     spec.search,
-    {
-      ignoreCase: !spec.caseSensitive,
-      test: spec.wholeWord
-        ? regexpWordTest(state.charCategorizer(state.selection.main.head))
-        : undefined,
-    },
+    { ignoreCase: !spec.caseSensitive, test },
     from,
     to,
   );
@@ -415,8 +474,8 @@ class RegExpQuery extends QueryType<RegExpResult> {
 
   private prevMatchInRange(state: EditorState, from: number, to: number) {
     for (let size = 1; ; size++) {
-      const start = Math.max(from, to - size * FindPrev.ChunkSize);
-      const cursor = regexpCursor(this.spec, state, start, to);
+      let start = Math.max(from, to - size * FindPrev.ChunkSize);
+      let cursor = regexpCursor(this.spec, state, start, to);
       let range: RegExpResult | null = null;
       while (!cursor.next().done) range = cursor.value;
       if (range && (start == from || range.from > start + 10)) return range;
@@ -438,7 +497,7 @@ class RegExpQuery extends QueryType<RegExpResult> {
         if (i == '&') return result.match[0];
         if (i == '$') return '$';
         for (let l = i.length; l > 0; l--) {
-          const n = Number(i.slice(0, l));
+          let n = +i.slice(0, l);
           if (n > 0 && n < result.match.length)
             return result.match[n] + i.slice(l);
         }
@@ -447,8 +506,8 @@ class RegExpQuery extends QueryType<RegExpResult> {
   }
 
   matchAll(state: EditorState, limit: number) {
-    const cursor = regexpCursor(this.spec, state, 0, state.doc.length);
-    const ranges = [];
+    let cursor = regexpCursor(this.spec, state, 0, state.doc.length);
+    let ranges = [];
     while (!cursor.next().done) {
       if (ranges.length >= limit) return null;
       ranges.push(cursor.value);
@@ -462,7 +521,7 @@ class RegExpQuery extends QueryType<RegExpResult> {
     to: number,
     add: (from: number, to: number) => void,
   ) {
-    const cursor = regexpCursor(
+    let cursor = regexpCursor(
       this.spec,
       state,
       Math.max(0, from - RegExp.HighlightMargin),
@@ -480,12 +539,13 @@ class RegExpQuery extends QueryType<RegExpResult> {
 export const setSearchQuery = StateEffect.define<SearchQuery>();
 
 const togglePanel = StateEffect.define<boolean>();
+
 const searchState: StateField<SearchState> = StateField.define<SearchState>({
   create(state) {
     return new SearchState(defaultQuery(state).create(), null);
   },
   update(value, tr) {
-    for (const effect of tr.effects) {
+    for (let effect of tr.effects) {
       if (effect.is(setSearchQuery))
         value = new SearchState(effect.value.create(), value.panel);
       else if (effect.is(togglePanel))
@@ -501,7 +561,7 @@ const searchState: StateField<SearchState> = StateField.define<SearchState>({
 
 /// Get the current search query from an editor state.
 export function getSearchQuery(state: EditorState) {
-  const curState = state.field(searchState, false);
+  let curState = state.field(searchState, false);
   return curState ? curState.query.spec : defaultQuery(state);
 }
 
@@ -521,6 +581,7 @@ const matchMark = Decoration.mark({ class: 'cm-searchMatch' });
 const selectedMatchMark = Decoration.mark({
   class: 'cm-searchMatch cm-searchMatch-selected',
 });
+
 const searchHighlighter = ViewPlugin.fromClass(
   class {
     decorations: DecorationSet;
@@ -530,7 +591,7 @@ const searchHighlighter = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      const state = update.state.field(searchState);
+      let state = update.state.field(searchState);
       if (
         state != update.startState.field(searchState) ||
         update.docChanged ||
@@ -542,8 +603,8 @@ const searchHighlighter = ViewPlugin.fromClass(
 
     highlight({ query, panel }: SearchState) {
       if (!panel || !query.spec.valid) return Decoration.none;
-      const { view } = this;
-      const builder = new RangeSetBuilder<Decoration>();
+      let { view } = this;
+      let builder = new RangeSetBuilder<Decoration>();
       for (
         let i = 0, ranges = view.visibleRanges, l = ranges.length;
         i < l;
@@ -556,7 +617,7 @@ const searchHighlighter = ViewPlugin.fromClass(
         )
           to = ranges[++i].to;
         query.highlight(view.state, from, to, (from, to) => {
-          const selected = view.state.selection.ranges.some(
+          let selected = view.state.selection.ranges.some(
             (r) => r.from == from && r.to == to,
           );
           builder.add(from, to, selected ? selectedMatchMark : matchMark);
@@ -574,7 +635,7 @@ function searchCommand(
   f: (view: EditorView, state: SearchState) => boolean,
 ): Command {
   return (view) => {
-    const state = view.state.field(searchState, false);
+    let state = view.state.field(searchState, false);
     return state && state.query.spec.valid
       ? f(view, state)
       : openSearchPanel(view);
@@ -586,11 +647,11 @@ function searchCommand(
 /// Will wrap around to the start of the document when it reaches the
 /// end.
 export const findNext = searchCommand((view, { query }) => {
-  const { to } = view.state.selection.main;
-  const next = query.nextMatch(view.state, to, to);
+  let { to } = view.state.selection.main;
+  let next = query.nextMatch(view.state, to, to);
   if (!next) return false;
-  const selection = EditorSelection.single(next.from, next.to);
-  const config = view.state.facet(searchConfigFacet);
+  let selection = EditorSelection.single(next.from, next.to);
+  let config = view.state.facet(searchConfigFacet);
   view.dispatch({
     selection,
     effects: [
@@ -607,12 +668,12 @@ export const findNext = searchCommand((view, { query }) => {
 /// before the current main selection. Will wrap past the start
 /// of the document to start searching at the end again.
 export const findPrevious = searchCommand((view, { query }) => {
-  const { state } = view;
-  const { from } = state.selection.main;
-  const prev = query.prevMatch(state, from, from);
+  let { state } = view;
+  let { from } = state.selection.main;
+  let prev = query.prevMatch(state, from, from);
   if (!prev) return false;
-  const selection = EditorSelection.single(prev.from, prev.to);
-  const config = view.state.facet(searchConfigFacet);
+  let selection = EditorSelection.single(prev.from, prev.to);
+  let config = view.state.facet(searchConfigFacet);
   view.dispatch({
     selection,
     effects: [
@@ -627,7 +688,7 @@ export const findPrevious = searchCommand((view, { query }) => {
 
 /// Select all instances of the search query.
 export const selectMatches = searchCommand((view, { query }) => {
-  const ranges = query.matchAll(view.state, 1000);
+  let ranges = query.matchAll(view.state, 1000);
   if (!ranges || !ranges.length) return false;
   view.dispatch({
     selection: EditorSelection.create(
@@ -640,10 +701,10 @@ export const selectMatches = searchCommand((view, { query }) => {
 
 /// Select all instances of the currently selected text.
 export const selectSelectionMatches: StateCommand = ({ state, dispatch }) => {
-  const sel = state.selection;
+  let sel = state.selection;
   if (sel.ranges.length > 1 || sel.main.empty) return false;
-  const { from, to } = sel.main;
-  const ranges = [];
+  let { from, to } = sel.main;
+  let ranges = [];
   let main = 0;
   for (
     let cur = new SearchCursor(state.doc, state.sliceDoc(from, to));
@@ -665,16 +726,16 @@ export const selectSelectionMatches: StateCommand = ({ state, dispatch }) => {
 
 /// Replace the current match of the search query.
 export const replaceNext = searchCommand((view, { query }) => {
-  const { state } = view;
-  const { from, to } = state.selection.main;
+  let { state } = view;
+  let { from, to } = state.selection.main;
   if (state.readOnly) return false;
-  const match = query.nextMatch(state, from, from);
+  let match = query.nextMatch(state, from, from);
   if (!match) return false;
   let next: SearchResult | null = match;
-  const changes = [];
+  let changes = [];
   let selection: EditorSelection | undefined;
   let replacement: Text | undefined;
-  const effects: StateEffect<unknown>[] = [];
+  let effects: StateEffect<unknown>[] = [];
   if (next.from == from && next.to == to) {
     replacement = state.toText(query.getReplacement(next));
     changes.push({ from: next.from, to: next.to, insert: replacement });
@@ -688,7 +749,7 @@ export const replaceNext = searchCommand((view, { query }) => {
       ),
     );
   }
-  const changeSet = view.state.changes(changes);
+  let changeSet = view.state.changes(changes);
   if (next) {
     selection = EditorSelection.single(next.from, next.to).map(changeSet);
     effects.push(announceMatch(view, next));
@@ -709,12 +770,12 @@ export const replaceNext = searchCommand((view, { query }) => {
 /// replacement.
 export const replaceAll = searchCommand((view, { query }) => {
   if (view.state.readOnly) return false;
-  const changes = query.matchAll(view.state, 1e9)!.map((match) => {
-    const { from, to } = match;
+  let changes = query.matchAll(view.state, 1e9)!.map((match) => {
+    let { from, to } = match;
     return { from, to, insert: query.getReplacement(match) };
   });
   if (!changes.length) return false;
-  const announceText =
+  let announceText =
     view.state.phrase('replaced $ matches', changes.length) + '.';
   view.dispatch({
     changes,
@@ -729,13 +790,13 @@ function createSearchPanel(view: EditorView) {
 }
 
 function defaultQuery(state: EditorState, fallback?: SearchQuery) {
-  const sel = state.selection.main;
-  const selText =
+  let sel = state.selection.main;
+  let selText =
     sel.empty || sel.to > sel.from + 100
       ? ''
       : state.sliceDoc(sel.from, sel.to);
   if (fallback && !selText) return fallback;
-  const config = state.facet(searchConfigFacet);
+  let config = state.facet(searchConfigFacet);
   return new SearchQuery({
     search:
       (fallback?.literal ?? config.literal)
@@ -749,7 +810,7 @@ function defaultQuery(state: EditorState, fallback?: SearchQuery) {
 }
 
 function getSearchInput(view: EditorView) {
-  const panel = getPanel(view, createSearchPanel);
+  let panel = getPanel(view, createSearchPanel);
   return (
     panel &&
     (panel.dom.querySelector('[main-field]') as HTMLInputElement | null)
@@ -757,17 +818,17 @@ function getSearchInput(view: EditorView) {
 }
 
 function selectSearchInput(view: EditorView) {
-  const input = getSearchInput(view);
+  let input = getSearchInput(view);
   if (input && input == view.root.activeElement) input.select();
 }
 
 /// Make sure the search panel is open and focused.
 export const openSearchPanel: Command = (view) => {
-  const state = view.state.field(searchState, false);
+  let state = view.state.field(searchState, false);
   if (state && state.panel) {
-    const searchInput = getSearchInput(view);
+    let searchInput = getSearchInput(view);
     if (searchInput && searchInput != view.root.activeElement) {
-      const query = defaultQuery(view.state, state.query.spec);
+      let query = defaultQuery(view.state, state.query.spec);
       if (query.valid) view.dispatch({ effects: setSearchQuery.of(query) });
       searchInput.focus();
       searchInput.select();
@@ -787,9 +848,9 @@ export const openSearchPanel: Command = (view) => {
 
 /// Close the search panel.
 export const closeSearchPanel: Command = (view) => {
-  const state = view.state.field(searchState, false);
+  let state = view.state.field(searchState, false);
   if (!state || !state.panel) return false;
-  const panel = getPanel(view, createSearchPanel);
+  let panel = getPanel(view, createSearchPanel);
   if (panel && panel.dom.contains(view.root.activeElement)) view.focus();
   view.dispatch({ effects: togglePanel.of(false) });
   return true;
@@ -834,7 +895,7 @@ class SearchPanel implements Panel {
   query: SearchQuery;
 
   constructor(readonly view: EditorView) {
-    const query = (this.query = view.state.field(searchState).query.spec);
+    let query = (this.query = view.state.field(searchState).query.spec);
     this.commit = this.commit.bind(this);
 
     this.searchField = elt('input', {
@@ -929,7 +990,7 @@ class SearchPanel implements Panel {
   }
 
   commit() {
-    const query = new SearchQuery({
+    let query = new SearchQuery({
       search: this.searchField.value,
       caseSensitive: this.caseField.checked,
       regexp: this.reField.checked,
@@ -955,8 +1016,8 @@ class SearchPanel implements Panel {
   }
 
   update(update: ViewUpdate) {
-    for (const tr of update.transactions)
-      for (const effect of tr.effects) {
+    for (let tr of update.transactions)
+      for (let effect of tr.effects) {
         if (effect.is(setSearchQuery) && !effect.value.eq(this.query))
           this.setQuery(effect.value);
       }
@@ -989,16 +1050,17 @@ function phrase(view: EditorView, phrase: string) {
 }
 
 const AnnounceMargin = 30;
+
 const Break = /[\s\.,:;?!]/;
 
 function announceMatch(
   view: EditorView,
   { from, to }: { from: number; to: number },
 ) {
-  const line = view.state.doc.lineAt(from);
-  const lineEnd = view.state.doc.lineAt(to).to;
-  const start = Math.max(line.from, from - AnnounceMargin);
-  const end = Math.min(lineEnd, to + AnnounceMargin);
+  let line = view.state.doc.lineAt(from);
+  let lineEnd = view.state.doc.lineAt(to).to;
+  let start = Math.max(line.from, from - AnnounceMargin);
+  let end = Math.min(lineEnd, to + AnnounceMargin);
   let text = view.state.sliceDoc(start, end);
   if (start != line.from) {
     for (let i = 0; i < AnnounceMargin; i++)
@@ -1052,4 +1114,5 @@ const baseTheme = EditorView.baseTheme({
   '&light .cm-searchMatch-selected': { backgroundColor: '#ff6a0054' },
   '&dark .cm-searchMatch-selected': { backgroundColor: '#ff00ff8a' },
 });
+
 const searchExtensions = [searchState, Prec.low(searchHighlighter), baseTheme];

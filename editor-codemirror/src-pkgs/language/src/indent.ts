@@ -1,15 +1,10 @@
-import {
-  NodeProp,
-  type SyntaxNode,
-  type NodeIterator,
-  type Tree,
-} from '@lezer/common';
+import { NodeProp, SyntaxNode, NodeIterator, Tree } from '@lezer/common';
 import {
   EditorState,
-  type Extension,
+  Extension,
   Facet,
   countColumn,
-  type ChangeSpec,
+  ChangeSpec,
 } from '@codemirror/state';
 import { syntaxTree } from './language';
 
@@ -31,7 +26,7 @@ export const indentService =
 export const indentUnit = Facet.define<string, string>({
   combine: (values) => {
     if (!values.length) return '  ';
-    const unit = values[0];
+    let unit = values[0];
     if (!unit || /\S/.test(unit) || Array.from(unit).some((e) => e != unit[0]))
       throw new Error('Invalid indent unit: ' + JSON.stringify(values[0]));
     return unit;
@@ -43,7 +38,7 @@ export const indentUnit = Facet.define<string, string>({
 /// facet, and [`tabSize`](#state.EditorState^tabSize) when that
 /// contains tabs.
 export function getIndentUnit(state: EditorState) {
-  const unit = state.facet(indentUnit);
+  let unit = state.facet(indentUnit);
   return unit.charCodeAt(0) == 9 ? state.tabSize * unit.length : unit.length;
 }
 
@@ -53,7 +48,7 @@ export function getIndentUnit(state: EditorState) {
 /// tabs.
 export function indentString(state: EditorState, cols: number) {
   let result = '';
-  const ts = state.tabSize;
+  let ts = state.tabSize;
   let ch = state.facet(indentUnit)[0];
   if (ch == '\t') {
     while (cols >= ts) {
@@ -78,30 +73,30 @@ export function getIndentation(
   pos: number,
 ): number | null {
   if (context instanceof EditorState) context = new IndentContext(context);
-  for (const service of context.state.facet(indentService)) {
-    const result = service(context, pos);
+  for (let service of context.state.facet(indentService)) {
+    let result = service(context, pos);
     if (result !== undefined) return result;
   }
-  const tree = syntaxTree(context.state);
+  let tree = syntaxTree(context.state);
   return tree.length >= pos ? syntaxIndentation(context, tree, pos) : null;
 }
 
 /// Create a change set that auto-indents all lines touched by the
 /// given document range.
 export function indentRange(state: EditorState, from: number, to: number) {
-  const updated: { [lineStart: number]: number } = Object.create(null);
-  const context = new IndentContext(state, {
+  let updated: { [lineStart: number]: number } = Object.create(null);
+  let context = new IndentContext(state, {
     overrideIndentation: (start) => updated[start] ?? -1,
   });
-  const changes: ChangeSpec[] = [];
+  let changes: ChangeSpec[] = [];
   for (let pos = from; pos <= to; ) {
-    const line = state.doc.lineAt(pos);
+    let line = state.doc.lineAt(pos);
     pos = line.to + 1;
     let indent = getIndentation(context, line.from);
     if (indent == null) continue;
     if (!/\S/.test(line.text)) indent = 0;
-    const cur = /^\s*/.exec(line.text)![0];
-    const norm = indentString(state, indent);
+    let cur = /^\s*/.exec(line.text)![0];
+    let norm = indentString(state, indent);
     if (cur != norm) {
       updated[line.from] = indent;
       changes.push({
@@ -156,8 +151,8 @@ export class IndentContext {
   /// argument determines whether the part of the line line before or
   /// after the break is used.
   lineAt(pos: number, bias: -1 | 1 = 1): { text: string; from: number } {
-    const line = this.state.doc.lineAt(pos);
-    const { simulateBreak, simulateDoubleBreak } = this.options;
+    let line = this.state.doc.lineAt(pos);
+    let { simulateBreak, simulateDoubleBreak } = this.options;
     if (
       simulateBreak != null &&
       simulateBreak >= line.from &&
@@ -184,15 +179,15 @@ export class IndentContext {
   textAfterPos(pos: number, bias: -1 | 1 = 1) {
     if (this.options.simulateDoubleBreak && pos == this.options.simulateBreak)
       return '';
-    const { text, from } = this.lineAt(pos, bias);
+    let { text, from } = this.lineAt(pos, bias);
     return text.slice(pos - from, Math.min(text.length, pos + 100 - from));
   }
 
   /// Find the column for the given position.
   column(pos: number, bias: -1 | 1 = 1) {
-    const { text, from } = this.lineAt(pos, bias);
+    let { text, from } = this.lineAt(pos, bias);
     let result = this.countColumn(text, pos - from);
-    const override = this.options.overrideIndentation
+    let override = this.options.overrideIndentation
       ? this.options.overrideIndentation(from)
       : -1;
     if (override > -1)
@@ -208,10 +203,10 @@ export class IndentContext {
 
   /// Find the indentation column of the line at the given point.
   lineIndent(pos: number, bias: -1 | 1 = 1) {
-    const { text, from } = this.lineAt(pos, bias);
-    const override = this.options.overrideIndentation;
+    let { text, from } = this.lineAt(pos, bias);
+    let override = this.options.overrideIndentation;
     if (override) {
-      const overriden = override(from);
+      let overriden = override(from);
       if (overriden > -1) return overriden;
     }
     return this.countColumn(text, text.search(/\S|$/));
@@ -237,12 +232,12 @@ export const indentNodeProp = new NodeProp<
 // Compute the indentation for a given position from the syntax tree.
 function syntaxIndentation(cx: IndentContext, ast: Tree, pos: number) {
   let stack = ast.resolveStack(pos);
-  const inner = ast
+  let inner = ast
     .resolveInner(pos, -1)
     .resolve(pos, 0)
     .enterUnfinishedNodesBefore(pos);
   if (inner != stack.node) {
-    const add = [];
+    let add = [];
     for (
       let cur = inner;
       cur &&
@@ -266,7 +261,7 @@ function indentFor(
   pos: number,
 ): number | null {
   for (let cur: NodeIterator | null = stack; cur; cur = cur.next) {
-    const strategy = indentStrategy(cur.node);
+    let strategy = indentStrategy(cur.node);
     if (strategy) return strategy(TreeIndentContext.create(cx, pos, cur));
   }
   return 0;
@@ -279,13 +274,13 @@ function ignoreClosed(cx: TreeIndentContext) {
 function indentStrategy(
   tree: SyntaxNode,
 ): ((context: TreeIndentContext) => number | null) | null {
-  const strategy = tree.type.prop(indentNodeProp);
+  let strategy = tree.type.prop(indentNodeProp);
   if (strategy) return strategy;
-  const first = tree.firstChild;
+  let first = tree.firstChild;
   let close: readonly string[] | undefined;
   if (first && (close = first.type.prop(NodeProp.closedBy))) {
-    const last = tree.lastChild;
-    const closed = last && close.indexOf(last.name) > -1;
+    let last = tree.lastChild;
+    let closed = last && close.indexOf(last.name) > -1;
     return (cx) =>
       delimitedStrategy(
         cx,
@@ -373,22 +368,22 @@ function isParent(parent: SyntaxNode, of: SyntaxNode) {
 // non-skipped nodes on the same line as the opening delimiter). And
 // if so, return the opening token.
 function bracketedAligned(context: TreeIndentContext) {
-  const tree = context.node;
-  const openToken = tree.childAfter(tree.from);
-  const last = tree.lastChild;
+  let tree = context.node;
+  let openToken = tree.childAfter(tree.from);
+  let last = tree.lastChild;
   if (!openToken) return null;
-  const sim = context.options.simulateBreak;
-  const openLine = context.state.doc.lineAt(openToken.from);
-  const lineEnd =
+  let sim = context.options.simulateBreak;
+  let openLine = context.state.doc.lineAt(openToken.from);
+  let lineEnd =
     sim == null || sim <= openLine.from
       ? openLine.to
       : Math.min(openLine.to, sim);
   for (let pos = openToken.to; ; ) {
-    const next = tree.childAfter(pos);
+    let next = tree.childAfter(pos);
     if (!next || next == last) return null;
     if (!next.type.isSkipped) {
       if (next.from >= lineEnd) return null;
-      const space = /^ */.exec(
+      let space = /^ */.exec(
         openLine.text.slice(openToken.to - openLine.from),
       )![0].length;
       return { from: openToken.from, to: openToken.to + space };
@@ -426,12 +421,12 @@ function delimitedStrategy(
   closing?: string,
   closedAt?: number,
 ) {
-  const after = context.textAfter;
-  const space = after.match(/^\s*/)![0].length;
-  const closed =
+  let after = context.textAfter;
+  let space = after.match(/^\s*/)![0].length;
+  let closed =
     (closing && after.slice(space, space + closing.length) == closing) ||
     closedAt == context.pos + space;
-  const aligned = align ? bracketedAligned(context) : null;
+  let aligned = align ? bracketedAligned(context) : null;
   if (aligned)
     return closed ? context.column(aligned.from) : context.column(aligned.to);
   return context.baseIndent + (closed ? 0 : context.unit * units);
@@ -452,7 +447,7 @@ export function continuedIndent({
   units = 1,
 }: { except?: RegExp; units?: number } = {}) {
   return (context: TreeIndentContext) => {
-    const matchExcept = except && except.test(context.textAfter);
+    let matchExcept = except && except.test(context.textAfter);
     return context.baseIndent + (matchExcept ? 0 : units * context.unit);
   };
 }
@@ -477,28 +472,28 @@ export function indentOnInput(): Extension {
       (!tr.isUserEvent('input.type') && !tr.isUserEvent('input.complete'))
     )
       return tr;
-    const rules = tr.startState.languageDataAt<RegExp>(
+    let rules = tr.startState.languageDataAt<RegExp>(
       'indentOnInput',
       tr.startState.selection.main.head,
     );
     if (!rules.length) return tr;
-    const doc = tr.newDoc;
-    const { head } = tr.newSelection.main;
-    const line = doc.lineAt(head);
+    let doc = tr.newDoc;
+    let { head } = tr.newSelection.main;
+    let line = doc.lineAt(head);
     if (head > line.from + DontIndentBeyond) return tr;
-    const lineStart = doc.sliceString(line.from, head);
+    let lineStart = doc.sliceString(line.from, head);
     if (!rules.some((r) => r.test(lineStart))) return tr;
-    const { state } = tr;
+    let { state } = tr;
     let last = -1;
-    const changes = [];
-    for (const { head } of state.selection.ranges) {
-      const line = state.doc.lineAt(head);
+    let changes = [];
+    for (let { head } of state.selection.ranges) {
+      let line = state.doc.lineAt(head);
       if (line.from == last) continue;
       last = line.from;
-      const indent = getIndentation(state, line.from);
+      let indent = getIndentation(state, line.from);
       if (indent == null) continue;
-      const cur = /^\s*/.exec(line.text)![0];
-      const norm = indentString(state, indent);
+      let cur = /^\s*/.exec(line.text)![0];
+      let norm = indentString(state, indent);
       if (cur != norm)
         changes.push({
           from: line.from,

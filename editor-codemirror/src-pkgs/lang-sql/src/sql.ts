@@ -5,14 +5,14 @@ import {
   LRLanguage,
   LanguageSupport,
 } from '@codemirror/language';
-import type { Extension } from '@codemirror/state';
-import type { Completion, CompletionSource } from '@codemirror/autocomplete';
+import { Extension } from '@codemirror/state';
+import { Completion, CompletionSource } from '@codemirror/autocomplete';
 import { styleTags, tags as t } from '@lezer/highlight';
-import type { ParserConfig } from '@lezer/lr';
+import { ParserConfig } from '@lezer/lr';
 import { parser as baseParser } from './sql.grammar';
 import {
   tokens,
-  type Dialect,
+  Dialect,
   tokensFor,
   SQLKeywords,
   SQLTypes,
@@ -20,7 +20,7 @@ import {
 } from './tokens';
 import { completeFromSchema, completeKeywords } from './complete';
 
-const parser = baseParser.configure({
+let parser = baseParser.configure({
   props: [
     indentNodeProp.add({
       Statement: continuedIndent(),
@@ -137,8 +137,8 @@ export class SQLDialect {
 
   /// Define a new dialect.
   static define(spec: SQLDialectSpec) {
-    const d = dialect(spec, spec.keywords, spec.types, spec.builtin);
-    const language = LRLanguage.define({
+    let d = dialect(spec, spec.keywords, spec.types, spec.builtin);
+    let language = LRLanguage.define({
       name: 'sql',
       parser: parser.configure({
         tokenizers: [{ from: tokens, to: tokensFor(d) }],
@@ -232,7 +232,7 @@ function schemaCompletion(config: SQLConfig): Extension {
 /// completion, and, if provided, schema-based completion as extra
 /// extensions.
 export function sql(config: SQLConfig = {}) {
-  const lang = config.dialect || StandardSQL;
+  let lang = config.dialect || StandardSQL;
   return new LanguageSupport(lang.language, [
     schemaCompletion(config),
     lang.language.data.of({
@@ -264,9 +264,11 @@ export const PostgreSQL = SQLDialect.define({
 
 const MySQLKeywords =
   'accessible algorithm analyze asensitive authors auto_increment autocommit avg avg_row_length binlog btree cache catalog_name chain change changed checkpoint checksum class_origin client_statistics coalesce code collations columns comment committed completion concurrent consistent contains contributors convert database databases day_hour day_microsecond day_minute day_second delay_key_write delayed delimiter des_key_file dev_pop dev_samp deviance directory disable discard distinctrow div dual dumpfile enable enclosed ends engine engines enum errors escaped even event events every explain extended fast field fields flush force found_rows fulltext grants handler hash high_priority hosts hour_microsecond hour_minute hour_second ignore ignore_server_ids import index index_statistics infile innodb insensitive insert_method install invoker iterate keys kill linear lines list load lock logs low_priority master master_heartbeat_period master_ssl_verify_server_cert masters max max_rows maxvalue message_text middleint migrate min min_rows minute_microsecond minute_second mod mode modify mutex mysql_errno no_write_to_binlog offline offset one online optimize optionally outfile pack_keys parser partition partitions password phase plugin plugins prev processlist profile profiles purge query quick range read_write rebuild recover regexp relaylog remove rename reorganize repair repeatable replace require resume rlike row_format rtree schedule schema_name schemas second_microsecond security sensitive separator serializable server share show slave slow snapshot soname spatial sql_big_result sql_buffer_result sql_cache sql_calc_found_rows sql_no_cache sql_small_result ssl starting starts std stddev stddev_pop stddev_samp storage straight_join subclass_origin sum suspend table_name table_statistics tables tablespace terminated triggers truncate uncommitted uninstall unlock upgrade use use_frm user_resources user_statistics utc_date utc_time utc_timestamp variables views warnings xa xor year_month zerofill';
+
 const MySQLTypes =
   SQLTypes +
   'bool blob long longblob longtext medium mediumblob mediumint mediumtext tinyblob tinyint tinytext text bigint int1 int2 int3 int4 int8 float4 float8 varbinary varcharacter precision datetime unsigned signed';
+
 const MySQLBuiltin =
   'charset clear edit ego help nopager notee nowarning pager print prompt quit rehash source status system tee';
 
@@ -304,7 +306,7 @@ export const MariaSQL = SQLDialect.define({
   builtin: MySQLBuiltin,
 });
 
-const MSSQLBuiltin =
+let MSSQLBuiltin =
   // Aggregate https://msdn.microsoft.com/en-us/library/ms173454.aspx
   'approx_count_distinct approx_percentile_cont approx_percentile_disc avg checksum_agg count count_big grouping grouping_id max min product stdev stdevp sum var varp ' +
   // AI https://learn.microsoft.com/en-us/sql/t-sql/functions/ai-functions-transact-sql?view=sql-server-ver17

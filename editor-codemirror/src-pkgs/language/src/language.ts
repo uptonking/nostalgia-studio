@@ -1,12 +1,12 @@
 import {
   Tree,
-  type SyntaxNode,
-  type ChangedRange,
+  SyntaxNode,
+  ChangedRange,
   TreeFragment,
   NodeProp,
   NodeType,
-  type Input,
-  type PartialParse,
+  Input,
+  PartialParse,
   Parser,
   IterMode,
 } from '@lezer/common';
@@ -14,17 +14,17 @@ import type { LRParser, ParserConfig } from '@lezer/lr';
 import {
   EditorState,
   StateField,
-  type Transaction,
-  type Extension,
+  Transaction,
+  Extension,
   StateEffect,
   Facet,
-  type ChangeDesc,
-  type Text,
-  type TextIterator,
+  ChangeDesc,
+  Text,
+  TextIterator,
 } from '@codemirror/state';
 import {
   ViewPlugin,
-  type ViewUpdate,
+  ViewUpdate,
   EditorView,
   logException,
 } from '@codemirror/view';
@@ -116,16 +116,16 @@ export class Language {
     this.extension = [
       language.of(this),
       EditorState.languageData.of((state, pos, side) => {
-        const top = topNodeAt(state, pos, side);
-        const data = top.type.prop(languageDataProp);
+        let top = topNodeAt(state, pos, side);
+        let data = top.type.prop(languageDataProp);
         if (!data) return [];
-        const base = state.facet(data);
-        const sub = top.type.prop(sublanguageProp);
+        let base = state.facet(data);
+        let sub = top.type.prop(sublanguageProp);
         if (sub) {
-          const innerNode = top.resolve(pos - top.from, side);
-          for (const sublang of sub)
+          let innerNode = top.resolve(pos - top.from, side);
+          for (let sublang of sub)
             if (sublang.test(innerNode, state)) {
-              const data = state.facet(sublang.facet);
+              let data = state.facet(sublang.facet);
               return sublang.type == 'replace' ? data : data.concat(base);
             }
         }
@@ -143,31 +143,31 @@ export class Language {
   /// The returned regions will _include_ any nested languages rooted
   /// in this language, when those exist.
   findRegions(state: EditorState) {
-    const lang = state.facet(language);
+    let lang = state.facet(language);
     if (lang?.data == this.data) return [{ from: 0, to: state.doc.length }];
     if (!lang || !lang.allowsNesting) return [];
-    const result: { from: number; to: number }[] = [];
-    const explore = (tree: Tree, from: number) => {
+    let result: { from: number; to: number }[] = [];
+    let explore = (tree: Tree, from: number) => {
       if (tree.prop(languageDataProp) == this.data) {
         result.push({ from, to: from + tree.length });
         return;
       }
-      const mount = tree.prop(NodeProp.mounted);
+      let mount = tree.prop(NodeProp.mounted);
       if (mount) {
         if (mount.tree.prop(languageDataProp) == this.data) {
           if (mount.overlay)
-            for (const r of mount.overlay)
+            for (let r of mount.overlay)
               result.push({ from: r.from + from, to: r.to + from });
           else result.push({ from: from, to: from + tree.length });
           return;
         } else if (mount.overlay) {
-          const size = result.length;
+          let size = result.length;
           explore(mount.tree, mount.overlay[0].from + from);
           if (result.length > size) return;
         }
       }
       for (let i = 0; i < tree.children.length; i++) {
-        const ch = tree.children[i];
+        let ch = tree.children[i];
         if (ch instanceof Tree) explore(ch, tree.positions[i] + from);
       }
     };
@@ -189,13 +189,17 @@ export class Language {
 }
 
 function topNodeAt(state: EditorState, pos: number, side: -1 | 0 | 1) {
-  const topLang = state.facet(language);
+  let topLang = state.facet(language);
   let tree = syntaxTree(state).topNode;
   if (!topLang || topLang.allowsNesting) {
     for (
       let node: SyntaxNode | null = tree;
       node;
-      node = node.enter(pos, side, IterMode.ExcludeBuffers)
+      node = node.enter(
+        pos,
+        side,
+        IterMode.ExcludeBuffers | IterMode.EnterBracketed,
+      )
     )
       if (node.type.isTop) tree = node;
   }
@@ -226,7 +230,7 @@ export class LRLanguage extends Language {
     /// to register for this language.
     languageData?: { [name: string]: any };
   }) {
-    const data = defineLanguageFacet(spec.languageData);
+    let data = defineLanguageFacet(spec.languageData);
     return new LRLanguage(
       data,
       spec.parser.configure({
@@ -258,7 +262,7 @@ export class LRLanguage extends Language {
 /// [language](#language.Language), or the empty tree if there is no
 /// language available.
 export function syntaxTree(state: EditorState): Tree {
-  const field = state.field(Language.state, false);
+  let field = state.field(Language.state, false);
   return field ? field.tree : Tree.empty;
 }
 
@@ -270,11 +274,11 @@ export function ensureSyntaxTree(
   upto: number,
   timeout = 50,
 ): Tree | null {
-  const parse = state.field(Language.state, false)?.context;
+  let parse = state.field(Language.state, false)?.context;
   if (!parse) return null;
-  const oldVieport = parse.viewport;
+  let oldVieport = parse.viewport;
   parse.updateViewport({ from: 0, to: upto });
-  const result =
+  let result =
     parse.isDone(upto) || parse.work(timeout, upto) ? parse.tree : null;
   parse.updateViewport(oldVieport);
   return result;
@@ -303,9 +307,9 @@ export function forceParsing(
   upto = view.viewport.to,
   timeout = 100,
 ): boolean {
-  const success = ensureSyntaxTree(view.state, upto, timeout);
+  let success = ensureSyntaxTree(view.state, upto, timeout);
   if (success != syntaxTree(view.state)) view.dispatch({});
-  return Boolean(success);
+  return !!success;
 }
 
 /// Tells you whether the language parser is planning to do more
@@ -350,7 +354,7 @@ export class DocInput implements Input {
   }
 
   read(from: number, to: number) {
-    const stringStart = this.cursorPos - this.string.length;
+    let stringStart = this.cursorPos - this.string.length;
     if (from < stringStart || to >= this.cursorPos)
       return this.doc.sliceString(from, to);
     else return this.string.slice(from - stringStart, to - stringStart);
@@ -448,8 +452,8 @@ export class ParseContext {
       return true;
     }
     return this.withContext(() => {
-      if (typeof until === 'number') {
-        const endTime = Date.now() + until;
+      if (typeof until == 'number') {
+        let endTime = Date.now() + until;
         until = () => Date.now() > endTime;
       }
       if (!this.parse) this.parse = this.startParse();
@@ -460,7 +464,7 @@ export class ParseContext {
       )
         this.parse.stopAt(upto);
       for (;;) {
-        const done = this.parse.advance();
+        let done = this.parse.advance();
         if (done) {
           this.fragments = this.withoutTempSkipped(
             TreeFragment.addTree(
@@ -501,7 +505,7 @@ export class ParseContext {
   }
 
   private withContext<T>(f: () => T): T {
-    const prev = currentContext;
+    let prev = currentContext;
     currentContext = this;
     try {
       return f();
@@ -521,7 +525,7 @@ export class ParseContext {
     let { fragments, tree, treeLen, viewport, skipped } = this;
     this.takeTree();
     if (!changes.empty) {
-      const ranges: ChangedRange[] = [];
+      let ranges: ChangedRange[] = [];
       changes.iterChangedRanges((fromA, toA, fromB, toB) =>
         ranges.push({ fromA, toA, fromB, toB }),
       );
@@ -534,9 +538,9 @@ export class ParseContext {
       };
       if (this.skipped.length) {
         skipped = [];
-        for (const r of this.skipped) {
-          const from = changes.mapPos(r.from, 1);
-          const to = changes.mapPos(r.to, -1);
+        for (let r of this.skipped) {
+          let from = changes.mapPos(r.from, 1);
+          let to = changes.mapPos(r.to, -1);
           if (from < to) skipped.push({ from, to });
         }
       }
@@ -558,9 +562,9 @@ export class ParseContext {
     if (this.viewport.from == viewport.from && this.viewport.to == viewport.to)
       return false;
     this.viewport = viewport;
-    const startLen = this.skipped.length;
+    let startLen = this.skipped.length;
     for (let i = 0; i < this.skipped.length; i++) {
-      const { from, to } = this.skipped[i];
+      let { from, to } = this.skipped[i];
       if (from < viewport.to && to > viewport.from) {
         this.fragments = cutFragments(this.fragments, from, to);
         this.skipped.splice(i--, 1);
@@ -600,14 +604,14 @@ export class ParseContext {
         fragments: readonly TreeFragment[],
         ranges: readonly { from: number; to: number }[],
       ): PartialParse {
-        const from = ranges[0].from;
-        const to = ranges[ranges.length - 1].to;
-        const parser = {
+        let from = ranges[0].from;
+        let to = ranges[ranges.length - 1].to;
+        let parser = {
           parsedPos: from,
           advance() {
-            const cx = currentContext;
+            let cx = currentContext;
             if (cx) {
-              for (const r of ranges) cx.tempSkipped.push(r);
+              for (let r of ranges) cx.tempSkipped.push(r);
               if (until)
                 cx.scheduleOn = cx.scheduleOn
                   ? Promise.all([cx.scheduleOn, until])
@@ -627,7 +631,7 @@ export class ParseContext {
   /// @internal
   isDone(upto: number) {
     upto = Math.min(upto, this.state.doc.length);
-    const frags = this.fragments;
+    let frags = this.fragments;
     return (
       this.treeLen >= upto &&
       frags.length &&
@@ -668,11 +672,11 @@ class LanguageState {
 
   apply(tr: Transaction) {
     if (!tr.docChanged && this.tree == this.context.tree) return this;
-    const newCx = this.context.changes(tr.changes, tr.state);
+    let newCx = this.context.changes(tr.changes, tr.state);
     // If the previous parse wasn't done, go forward only up to its
     // end position or the end of the viewport, to avoid slowing down
     // state updates with parse work beyond the viewport.
-    const upto =
+    let upto =
       this.context.treeLen == tr.startState.doc.length
         ? undefined
         : Math.max(tr.changes.mapPos(this.context.treeLen), newCx.viewport.to);
@@ -681,15 +685,11 @@ class LanguageState {
   }
 
   static init(state: EditorState) {
-    const vpTo = Math.min(Work.InitViewport, state.doc.length);
-    const parseState = ParseContext.create(
-      state.facet(language)!.parser,
-      state,
-      {
-        from: 0,
-        to: vpTo,
-      },
-    );
+    let vpTo = Math.min(Work.InitViewport, state.doc.length);
+    let parseState = ParseContext.create(state.facet(language)!.parser, state, {
+      from: 0,
+      to: vpTo,
+    });
     if (!parseState.work(Work.Apply, vpTo)) parseState.takeTree();
     return new LanguageState(parseState);
   }
@@ -698,7 +698,7 @@ class LanguageState {
 Language.state = StateField.define<LanguageState>({
   create: LanguageState.init,
   update(value, tr) {
-    for (const e of tr.effects) if (e.is(Language.setState)) return e.value;
+    for (let e of tr.effects) if (e.is(Language.setState)) return e.value;
     if (tr.startState.facet(language) != tr.state.facet(language))
       return LanguageState.init(tr.state);
     return value.apply(tr);
@@ -706,14 +706,14 @@ Language.state = StateField.define<LanguageState>({
 });
 
 let requestIdle = (callback: (deadline?: IdleDeadline) => void) => {
-  const timeout = setTimeout(() => callback(), Work.MaxPause);
+  let timeout = setTimeout(() => callback(), Work.MaxPause);
   return () => clearTimeout(timeout);
 };
 
-if (typeof requestIdleCallback !== 'undefined')
+if (typeof requestIdleCallback != 'undefined')
   requestIdle = (callback: (deadline?: IdleDeadline) => void) => {
     let idle = -1;
-    const timeout = setTimeout(() => {
+    let timeout = setTimeout(() => {
       idle = requestIdleCallback(callback, {
         timeout: Work.MaxPause - Work.MinPause,
       });
@@ -722,10 +722,11 @@ if (typeof requestIdleCallback !== 'undefined')
   };
 
 const isInputPending =
-  typeof navigator !== 'undefined' &&
+  typeof navigator != 'undefined' &&
   (navigator as any).scheduling?.isInputPending
     ? () => (navigator as any).scheduling.isInputPending()
     : null;
+
 const parseWorker = ViewPlugin.fromClass(
   class ParseWorker {
     working: (() => void) | null = null;
@@ -741,7 +742,7 @@ const parseWorker = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      const cx = this.view.state.field(Language.state).context;
+      let cx = this.view.state.field(Language.state).context;
       if (
         cx.updateViewport(update.view.viewport) ||
         this.view.viewport.to > cx.treeLen
@@ -756,8 +757,8 @@ const parseWorker = ViewPlugin.fromClass(
 
     scheduleWork() {
       if (this.working) return;
-      const { state } = this.view;
-      const field = state.field(Language.state);
+      let { state } = this.view;
+      let field = state.field(Language.state);
       if (
         field.tree != field.context.tree ||
         !field.context.isDone(state.doc.length)
@@ -768,7 +769,7 @@ const parseWorker = ViewPlugin.fromClass(
     work(deadline?: IdleDeadline) {
       this.working = null;
 
-      const now = Date.now();
+      let now = Date.now();
       if (this.chunkEnd < now && (this.chunkEnd < 0 || this.view.hasFocus)) {
         // Start a new chunk
         this.chunkEnd = now + Work.ChunkTime;
@@ -776,17 +777,17 @@ const parseWorker = ViewPlugin.fromClass(
       }
       if (this.chunkBudget <= 0) return; // No more budget
 
-      const {
+      let {
         state,
         viewport: { to: vpTo },
       } = this.view;
-      const field = state.field(Language.state);
+      let field = state.field(Language.state);
       if (
         field.tree == field.context.tree &&
         field.context.isDone(vpTo + Work.MaxParseAhead)
       )
         return;
-      const endTime =
+      let endTime =
         Date.now() +
         Math.min(
           this.chunkBudget,
@@ -795,9 +796,9 @@ const parseWorker = ViewPlugin.fromClass(
             ? Math.max(Work.MinSlice, deadline.timeRemaining() - 5)
             : 1e9,
         );
-      const viewportFirst =
+      let viewportFirst =
         field.context.treeLen < vpTo && state.doc.length > vpTo + 1000;
-      const done = field.context.work(
+      let done = field.context.work(
         () => {
           return (isInputPending && isInputPending()) || Date.now() > endTime;
         },
@@ -831,7 +832,7 @@ const parseWorker = ViewPlugin.fromClass(
     }
 
     isWorking() {
-      return Boolean(this.working || this.workScheduled > 0);
+      return !!(this.working || this.workScheduled > 0);
     }
   },
   {
@@ -855,7 +856,7 @@ export const language = Facet.define<Language, Language | null>({
     Language.state,
     parseWorker,
     EditorView.contentAttributes.compute([language], (state) => {
-      const lang = state.facet(language);
+      let lang = state.facet(language);
       return lang && lang.name ? { 'data-language': lang.name } : ({} as {});
     }),
   ],
@@ -968,11 +969,10 @@ export class LanguageDescription {
     descs: readonly LanguageDescription[],
     filename: string,
   ) {
-    for (const d of descs)
-      if (d.filename && d.filename.test(filename)) return d;
-    const ext = /\.([^.]+)$/.exec(filename);
+    for (let d of descs) if (d.filename && d.filename.test(filename)) return d;
+    let ext = /\.([^.]+)$/.exec(filename);
     if (ext)
-      for (const d of descs) if (d.extensions.indexOf(ext[1]) > -1) return d;
+      for (let d of descs) if (d.extensions.indexOf(ext[1]) > -1) return d;
     return null;
   }
 
@@ -987,11 +987,11 @@ export class LanguageDescription {
     fuzzy = true,
   ) {
     name = name.toLowerCase();
-    for (const d of descs) if (d.alias.some((a) => a == name)) return d;
+    for (let d of descs) if (d.alias.some((a) => a == name)) return d;
     if (fuzzy)
-      for (const d of descs)
-        for (const a of d.alias) {
-          const found = name.indexOf(a);
+      for (let d of descs)
+        for (let a of d.alias) {
+          let found = name.indexOf(a);
           if (
             found > -1 &&
             (a.length > 2 ||

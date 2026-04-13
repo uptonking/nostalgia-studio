@@ -163,9 +163,9 @@ export const FieldVariantControl: React.FC<IProps> = ({
     const schema = table.schema.toIdMap();
     const referenceFieldId = form.watch('referenceFieldId');
     const foreignTableId = referenceFieldId
-      ? (
+      ? ((
           schema.get(referenceFieldId) as ReferenceField | TreeField | undefined
-        )?.foreignTableId.into() ?? table.id.value
+        )?.foreignTableId.into() ?? table.id.value)
       : undefined;
     return (
       <>

@@ -1,16 +1,17 @@
 function mkVBScript(parserConf) {
-  const ERRORCLASS = 'error';
+  var ERRORCLASS = 'error';
 
   function wordRegexp(words) {
     return new RegExp('^((' + words.join(')|(') + '))\\b', 'i');
   }
 
-  const singleOperators = new RegExp('^[\\+\\-\\*/&\\\\\\^<>=]');
-  const doubleOperators = new RegExp('^((<>)|(<=)|(>=))');
-  const singleDelimiters = new RegExp('^[\\.,]');
-  const brackets = new RegExp('^[\\(\\)]');
-  const identifiers = new RegExp('^[A-Za-z][_A-Za-z0-9]*');
-  const openingKeywords = [
+  var singleOperators = new RegExp('^[\\+\\-\\*/&\\\\\\^<>=]');
+  var doubleOperators = new RegExp('^((<>)|(<=)|(>=))');
+  var singleDelimiters = new RegExp('^[\\.,]');
+  var brackets = new RegExp('^[\\(\\)]');
+  var identifiers = new RegExp('^[A-Za-z][_A-Za-z0-9]*');
+
+  var openingKeywords = [
     'class',
     'sub',
     'select',
@@ -21,9 +22,10 @@ function mkVBScript(parserConf) {
     'with',
     'for',
   ];
-  const middleKeywords = ['else', 'elseif', 'case'];
-  const endKeywords = ['next', 'loop', 'wend'];
-  const wordOperators = wordRegexp([
+  var middleKeywords = ['else', 'elseif', 'case'];
+  var endKeywords = ['next', 'loop', 'wend'];
+
+  var wordOperators = wordRegexp([
     'and',
     'or',
     'not',
@@ -33,7 +35,7 @@ function mkVBScript(parserConf) {
     'eqv',
     'imp',
   ]);
-  const commonkeywords = [
+  var commonkeywords = [
     'dim',
     'redim',
     'then',
@@ -58,10 +60,11 @@ function mkVBScript(parserConf) {
     'call',
     'me',
   ];
+
   //This list was from: http://msdn.microsoft.com/en-us/library/f8tbc79x(v=vs.84).aspx
-  const atomWords = ['true', 'false', 'nothing', 'empty', 'null'];
+  var atomWords = ['true', 'false', 'nothing', 'empty', 'null'];
   //This list was from: http://msdn.microsoft.com/en-us/library/3ca8tfek(v=vs.84).aspx
-  const builtinFuncsWords = [
+  var builtinFuncsWords = [
     'abs',
     'array',
     'asc',
@@ -160,8 +163,9 @@ function mkVBScript(parserConf) {
     'weekdayname',
     'year',
   ];
+
   //This list was from: http://msdn.microsoft.com/en-us/library/ydz4cfk3(v=vs.84).aspx
-  const builtinConsts = [
+  var builtinConsts = [
     'vbBlack',
     'vbRed',
     'vbGreen',
@@ -243,8 +247,8 @@ function mkVBScript(parserConf) {
     'vbArray',
   ];
   //This list was from: http://msdn.microsoft.com/en-us/library/hkc375ea(v=vs.84).aspx
-  let builtinObjsWords = ['WScript', 'err', 'debug', 'RegExp'];
-  const knownProperties = [
+  var builtinObjsWords = ['WScript', 'err', 'debug', 'RegExp'];
+  var knownProperties = [
     'description',
     'firstindex',
     'global',
@@ -258,7 +262,7 @@ function mkVBScript(parserConf) {
     'value',
     'count',
   ];
-  const knownMethods = [
+  var knownMethods = [
     'clear',
     'execute',
     'raise',
@@ -276,14 +280,15 @@ function mkVBScript(parserConf) {
     'createobject',
     'quit',
   ];
-  const aspBuiltinObjsWords = [
+
+  var aspBuiltinObjsWords = [
     'server',
     'response',
     'request',
     'session',
     'application',
   ];
-  const aspKnownProperties = [
+  var aspKnownProperties = [
     'buffer',
     'cachecontrol',
     'charset',
@@ -307,7 +312,7 @@ function mkVBScript(parserConf) {
     'timeout', //session
     'scripttimeout',
   ]; //server
-  const aspKnownMethods = [
+  var aspKnownMethods = [
     'addheader',
     'appendtolog',
     'binarywrite',
@@ -326,7 +331,8 @@ function mkVBScript(parserConf) {
     'transfer',
     'urlencode',
   ]; //server
-  let knownWords = knownMethods.concat(knownProperties);
+
+  var knownWords = knownMethods.concat(knownProperties);
 
   builtinObjsWords = builtinObjsWords.concat(builtinConsts);
 
@@ -335,19 +341,20 @@ function mkVBScript(parserConf) {
     knownWords = knownWords.concat(aspKnownMethods, aspKnownProperties);
   }
 
-  const keywords = wordRegexp(commonkeywords);
-  const atoms = wordRegexp(atomWords);
-  const builtinFuncs = wordRegexp(builtinFuncsWords);
-  const builtinObjs = wordRegexp(builtinObjsWords);
-  const known = wordRegexp(knownWords);
-  const stringPrefixes = '"';
-  const opening = wordRegexp(openingKeywords);
-  const middle = wordRegexp(middleKeywords);
-  const closing = wordRegexp(endKeywords);
-  const doubleClosing = wordRegexp(['end']);
-  const doOpening = wordRegexp(['do']);
-  const noIndentWords = wordRegexp(['on error resume next', 'exit']);
-  const comment = wordRegexp(['rem']);
+  var keywords = wordRegexp(commonkeywords);
+  var atoms = wordRegexp(atomWords);
+  var builtinFuncs = wordRegexp(builtinFuncsWords);
+  var builtinObjs = wordRegexp(builtinObjsWords);
+  var known = wordRegexp(knownWords);
+  var stringPrefixes = '"';
+
+  var opening = wordRegexp(openingKeywords);
+  var middle = wordRegexp(middleKeywords);
+  var closing = wordRegexp(endKeywords);
+  var doubleClosing = wordRegexp(['end']);
+  var doOpening = wordRegexp(['do']);
+  var noIndentWords = wordRegexp(['on error resume next', 'exit']);
+  var comment = wordRegexp(['rem']);
 
   function indent(_stream, state) {
     state.currentIndent++;
@@ -363,7 +370,7 @@ function mkVBScript(parserConf) {
       //return null;
     }
 
-    const ch = stream.peek();
+    var ch = stream.peek();
 
     // Handle Comments
     if (ch === "'") {
@@ -380,7 +387,7 @@ function mkVBScript(parserConf) {
       stream.match(/^((&H)|(&O))?[0-9\.]/i, false) &&
       !stream.match(/^((&H)|(&O))?[0-9\.]+[a-z_]/i, false)
     ) {
-      let floatLiteral = false;
+      var floatLiteral = false;
       // Floats
       if (stream.match(/^\d*\.\d+/i)) {
         floatLiteral = true;
@@ -396,7 +403,7 @@ function mkVBScript(parserConf) {
         return 'number';
       }
       // Integers
-      let intLiteral = false;
+      var intLiteral = false;
       // Hex
       if (stream.match(/^&H[0-9a-f]+/i)) {
         intLiteral = true;
@@ -510,8 +517,8 @@ function mkVBScript(parserConf) {
   }
 
   function tokenStringFactory(delimiter) {
-    const singleline = delimiter.length == 1;
-    const OUTCLASS = 'string';
+    var singleline = delimiter.length == 1;
+    var OUTCLASS = 'string';
 
     return function (stream, state) {
       while (!stream.eol()) {
@@ -531,8 +538,8 @@ function mkVBScript(parserConf) {
   }
 
   function tokenLexer(stream, state) {
-    let style = state.tokenize(stream, state);
-    let current = stream.current();
+    var style = state.tokenize(stream, state);
+    var current = stream.current();
 
     // Handle '.' connected identifiers
     if (current === '.') {
@@ -577,7 +584,7 @@ function mkVBScript(parserConf) {
         state.nextLineIndent = 0;
         state.doInCurrentLine = 0;
       }
-      let style = tokenLexer(stream, state);
+      var style = tokenLexer(stream, state);
 
       state.lastToken = { style: style, content: stream.current() };
 
@@ -587,7 +594,7 @@ function mkVBScript(parserConf) {
     },
 
     indent: function (state, textAfter, cx) {
-      const trueText = textAfter.replace(/^\s+|\s+$/g, '');
+      var trueText = textAfter.replace(/^\s+|\s+$/g, '');
       if (
         trueText.match(closing) ||
         trueText.match(doubleClosing) ||
